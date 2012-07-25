@@ -14,12 +14,6 @@ WordPress install. It scales very well and with a single click you can push a po
 than 100 sites of different platform. Currently WordPress.com blogs and standalone
 WordPress blogs are supported and we have plans to extend it to other platforms as well.
 
-== Installation ==
-As any other WordPress plugin you can enable push syndication plugin through the plugins
-page in the WordPress admin area. You also need to define an encryption key which will be
-used to encrypt user credentials and save to the database securely.
-
-define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
 
 The plugin have a settings page along with an API generator tool that can be used to generate
 API tokens needed to push content in a WordPress.com blog. In the settings page you can select
@@ -35,3 +29,10 @@ authorize where you will be redirected back to your settings page which displays
 Sites must be registered and grouped into sitegroups in order to push content.
 In the post edit screen a Syndication metabox will appear with the all the sitegroups defined.
 Select the sitegroups you want to push content and hit the publish button to push content.
+
+== Installation ==
+As any other WordPress plugin you can enable push syndication plugin through the plugins
+page in the WordPress admin area. You also need to define an encryption key which will be
+used to encrypt user credentials and save to the database securely.
+
+define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
