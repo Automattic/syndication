@@ -19,9 +19,7 @@ As any other WordPress plugin you can enable push syndication plugin through the
 page in the WordPress admin area. You also need to define an encryption key which will be
 used to encrypt user credentials and save to the database securely.
 
-[code lang="php"]
 define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
-[/code]
 
 The plugin have a settings page along with an API generator tool that can be used to generate
 API tokens needed to push content in a WordPress.com blog. In the settings page you can select
