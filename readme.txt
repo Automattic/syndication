@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: Automattic, nprasath002, batmoo
+Contributors: automattic, nprasath002, batmoo
 Tags: XMLRPC, WordPress.com REST
 Requires at least: 3.4
 Tested up to: 3.4
