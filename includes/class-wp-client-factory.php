@@ -20,7 +20,7 @@ class wp_client_factory {
 	public static function display_client_settings( $site, $class ) {
 
 		if( class_exists($class) ) {
-			return $class::display_settings( $site );
+			return call_user_func( array( $class, 'display_settings' ), $site );
 		}
 
 		throw new Exception('transport class not found');
@@ -31,7 +31,7 @@ class wp_client_factory {
 
 		$class = $_POST['transport_type'] . '_client';
 		if( class_exists($class) ) {
-			return $class::save_settings( $site_ID );
+			return call_user_func( array( $class, 'save_settings' ), $site_ID );
 		}
 
 		throw new Exception('transport class not found');
