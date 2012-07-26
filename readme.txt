@@ -36,3 +36,13 @@ page in the WordPress admin area. You also need to define an encryption key whic
 used to encrypt user credentials and save to the database securely.
 
 define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
+
+
+== Changelog ==
+
+= 1.0 =
+* Initial release
+
+== Frequently Asked Questions ==
+
+== Screenshots ==
