@@ -46,3 +46,10 @@ define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
 == Frequently Asked Questions ==
 
 == Screenshots ==
+1. Push Syndication Settings Page
+2. Registering an Application
+3. WordPress.com Authorization Page
+4. WordPress.com API credentials
+5. Registering Standalone WordPress Install
+6. Registering a WordPress.com Site
+7. Sitegroups Metabox
