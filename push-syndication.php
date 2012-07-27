@@ -174,8 +174,8 @@ class Push_Syndication {
 	}
 
 	public function register_syndicate_settings() {
-		add_submenu_page('options-general.php', __( 'Push Syndicate Settings'), __( 'Push Syndicate Settings' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
-		add_submenu_page('edit.php?post_type=syn_site', __( 'Site Options'), __( 'Site Options' ), 'manage_options', 'push-syndicate-site-options', array( &$this, 'display_site_options' ) );
+		add_submenu_page( 'options-general.php', __( 'Push Syndicate Settings'), __( 'Push Syndicate Settings' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
+		add_submenu_page( 'edit.php?post_type=syn_site', __( 'Site Options'), __( 'Site Options' ), 'manage_options', 'push-syndicate-site-options', array( &$this, 'display_site_options' ) );
 	}
 
 	public function display_syndicate_settings() {
