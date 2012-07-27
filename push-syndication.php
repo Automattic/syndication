@@ -344,6 +344,33 @@ class Push_Syndication {
 
 	public function display_site_options() {
 
+?>
+	<div class="wrap" xmlns="http://www.w3.org/1999/html">
+
+		<?php screen_icon(); // @TODO custom screen icon ?>
+
+		<h2><?php esc_html_e( 'Push Syndicate Site Options' ); ?></h2>
+
+		<form action="options.php" method="post">
+
+			<?php $this->display_site_options_selections(); ?>
+
+			<?php submit_button(); ?>
+
+		</form>
+
+	</div>
+<?php
+
+	}
+
+	public function display_site_options_selections() {
+		$site_options = wp_load_alloptions();
+
+		foreach( $site_options as $key => $value ) {
+			echo '<p><label><input type="checkbox">' . $key . '</label></p>';
+
+		}
 	}
 
 	/*******   SITE METABOXES   *********/
