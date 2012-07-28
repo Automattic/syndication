@@ -2,7 +2,7 @@
 
 **************************************************************************
 
-Plugin Name:  Push Syndication
+Plugin Name:  Push Syndication Server
 Plugin URI:   
 Description:  Push content to multiple sites
 Version:      1.0
@@ -345,7 +345,7 @@ class Push_Syndication {
 	public function display_site_options() {
 
 		$selected_sitegroups = $_POST['syn_selected_sitegroups'];
-		$selected_siteoptions = $_POST['syn_selected_siteoptions']
+		$selected_siteoptions = $_POST['syn_selected_siteoptions'];
 
 
 		update_option( 'syn_selected_siteoptions', $_POST['syn_selected_siteoptions'] );
