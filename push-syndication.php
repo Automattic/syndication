@@ -361,7 +361,7 @@ class Push_Syndication {
 
 			<?php $this->display_site_options_selections(); ?>
 
-			<?php submit_button(); ?>
+			<?php submit_button( '  Push Options  ' ); ?>
 
 		</form>
 
