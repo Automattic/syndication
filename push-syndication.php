@@ -355,6 +355,8 @@ class Push_Syndication {
 
 			<?php $this->display_site_options_selections(); ?>
 
+			<?php $this->display_sitegroups_selection(); ?>
+
 			<?php submit_button(); ?>
 
 		</form>
@@ -371,6 +373,10 @@ class Push_Syndication {
 			echo '<p><label><input type="checkbox">' . $key . '</label></p>';
 
 		}
+	}
+
+	public function display_sitegroups_selection() {
+
 	}
 
 	/*******   SITE METABOXES   *********/
