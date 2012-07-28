@@ -366,20 +366,8 @@ class Push_Syndication {
 
 	}
 
-	public function display_site_options_selections() {
-
-		echo '<h3>Select Site Options</h3>';
-
-		$site_options = wp_load_alloptions();
-
-		foreach( $site_options as $key => $value ) {
-			echo '<p><label><input type="checkbox"> ' . esc_html( $key ) . '</label></p>';
-		}
-
-
-	}
-
 	public function display_sitegroups_selection() {
+
 		echo '<h3>Select Sitegroups</h3>';
 
 		// get all sitegroups
@@ -391,6 +379,31 @@ class Push_Syndication {
 
 		foreach( $sitegroups as $sitegroup ) {
 			echo '<p><label><input type="checkbox"> ' . esc_html( $sitegroup->name ) . '</label></p>';
+		}
+
+
+	}
+
+	public function display_site_options_selections() {
+
+		echo '<h3>Select Site Options</h3>';
+
+		$selected_siteoptions = get_option( 'syn_selected_siteoptions' );
+		$selected_siteoptions = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
+
+		$site_options = wp_load_alloptions();
+
+		foreach( $site_options as $key => $value  ) {
+
+?>
+		<p>
+			<label>
+				<input type="checkbox" name="selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
+				<?php echo esc_html( $key ); ?>
+			</label>
+		</p>
+<?php
+
 		}
 
 	}
