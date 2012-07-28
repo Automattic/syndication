@@ -344,6 +344,10 @@ class Push_Syndication {
 
 	public function display_site_options() {
 
+		var_dump($_POST);
+		update_option( 'syn_selected_siteoptions', $_POST['syn_selected_siteoptions'] );
+		update_option( 'syn_selected_sitegroups', $_POST['syn_selected_sitegroups'] );
+
 ?>
 	<div class="wrap" xmlns="http://www.w3.org/1999/html">
 
@@ -351,7 +355,7 @@ class Push_Syndication {
 
 		<h2><?php esc_html_e( 'Push Syndicate Site Options' ); ?></h2>
 
-		<form action="options.php" method="post">
+		<form action="" method="post">
 
 			<?php $this->display_sitegroups_selection(); ?>
 
@@ -370,6 +374,9 @@ class Push_Syndication {
 
 		echo '<h3>Select Sitegroups</h3>';
 
+		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
+		$selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
+
 		// get all sitegroups
 		$sitegroups = get_terms( 'syn_sitegroup', array(
 			'fields' => 'all',
@@ -378,6 +385,17 @@ class Push_Syndication {
 		) );
 
 		foreach( $sitegroups as $sitegroup ) {
+
+?>
+			<p>
+				<label>
+					<input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
+					<?php echo esc_html( $sitegroup->name ); ?>
+				</label>
+				<?php echo esc_html( $sitegroup->description ); ?>
+			</p>
+<?php
+
 			echo '<p><label><input type="checkbox"> ' . esc_html( $sitegroup->name ) . '</label></p>';
 		}
 
@@ -398,7 +416,7 @@ class Push_Syndication {
 ?>
 		<p>
 			<label>
-				<input type="checkbox" name="selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
+				<input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
 				<?php echo esc_html( $key ); ?>
 			</label>
 		</p>
