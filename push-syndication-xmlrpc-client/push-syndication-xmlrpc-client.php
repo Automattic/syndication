@@ -12,3 +12,9 @@ Author URI:   http://automattic.com/wordpress-plugins/
 License:      GPLv2 or later
 
 **************************************************************************/
+
+class Push_Syndication_XMLRPC_Client {
+
+}
+
+$Push_Syndication_XMLRPC_Client = new Push_Syndication_XMLRPC_Client();

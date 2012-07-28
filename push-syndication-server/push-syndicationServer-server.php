@@ -21,7 +21,7 @@ License:      GPLv2 or later
 
 require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
 
-class Push_Syndication {
+class Push_Syndication_Server {
 
     private $push_syndicate_settings;
 	private $push_syndicate_tranports;
@@ -984,6 +984,6 @@ class Push_Syndication {
 
 }
 
-$Push_Syndication = new Push_Syndication();
+$Push_Syndication_Server = new Push_Syndication_Server();
 
 ?>
