@@ -373,7 +373,7 @@ class Push_Syndication {
 		$site_options = wp_load_alloptions();
 
 		foreach( $site_options as $key => $value ) {
-			echo '<p><label><input type="checkbox"> ' . $key . '</label></p>';
+			echo '<p><label><input type="checkbox"> ' . esc_html( $key ) . '</label></p>';
 		}
 
 
@@ -390,7 +390,7 @@ class Push_Syndication {
 		) );
 
 		foreach( $sitegroups as $sitegroup ) {
-			echo '<p><label><input type="checkbox"> ' . $sitegroup->name . '</label></p>';
+			echo '<p><label><input type="checkbox"> ' . esc_html( $sitegroup->name ) . '</label></p>';
 		}
 
 	}
