@@ -396,7 +396,6 @@ class Push_Syndication {
 			</p>
 <?php
 
-			echo '<p><label><input type="checkbox"> ' . esc_html( $sitegroup->name ) . '</label></p>';
 		}
 
 
