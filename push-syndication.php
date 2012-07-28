@@ -353,9 +353,9 @@ class Push_Syndication {
 
 		<form action="options.php" method="post">
 
-			<?php $this->display_site_options_selections(); ?>
-
 			<?php $this->display_sitegroups_selection(); ?>
+
+			<?php $this->display_site_options_selections(); ?>
 
 			<?php submit_button(); ?>
 
@@ -367,15 +367,31 @@ class Push_Syndication {
 	}
 
 	public function display_site_options_selections() {
+
+		echo '<h3>Select Site Options</h3>';
+
 		$site_options = wp_load_alloptions();
 
 		foreach( $site_options as $key => $value ) {
-			echo '<p><label><input type="checkbox">' . $key . '</label></p>';
-
+			echo '<p><label><input type="checkbox"> ' . $key . '</label></p>';
 		}
+
+
 	}
 
 	public function display_sitegroups_selection() {
+		echo '<h3>Select Sitegroups</h3>';
+
+		// get all sitegroups
+		$sitegroups = get_terms( 'syn_sitegroup', array(
+			'fields' => 'all',
+			'hide_empty' => false,
+			'orderby' => 'name'
+		) );
+
+		foreach( $sitegroups as $sitegroup ) {
+			echo '<p><label><input type="checkbox"> ' . $sitegroup->name . '</label></p>';
+		}
 
 	}
 
