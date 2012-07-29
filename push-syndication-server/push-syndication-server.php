@@ -865,7 +865,6 @@ class Push_Syndication_Server {
 	 *  edit-error - error when editing the post.
 	 *  remove-error - error when removing the post in a slave site, when the sitegroup is unselected
 	 *  new - if the state is not found or the post is deleted in the slave site.
-	 *
 	 */
 	public function get_site_info( $site_ID, &$slave_post_states, $client ) {
 
@@ -893,7 +892,6 @@ class Push_Syndication_Server {
 	 * new          -> new-error
 	 * new-error    -> new-error
 	 * remove-error -> new-error
-	 *
 	 */
 	public function validate_result_new_post( $result, &$slave_post_states, $site_ID, $client ) {
 
@@ -914,7 +912,6 @@ class Push_Syndication_Server {
 	 * if the result is false state transitions
 	 * edit-error   -> edit-error
 	 * success      -> edit-error
-	 *
 	 */
 	public function validate_result_edit_post( $result, $info, &$slave_post_states, $site_ID, $client ) {
 
