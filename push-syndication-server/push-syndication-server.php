@@ -54,8 +54,11 @@ class Push_Syndication {
 
 	    // firing a cron job
 	    add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content_cron') );
+
+	    // cron hooks
 	    add_action( 'syn_syndicate_content', array(&$this, 'syndicate_content') );
 	    add_action( 'syn_delete_content', array(&$this, 'delete_content') );
+	    add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
 
     }
 
@@ -344,12 +347,10 @@ class Push_Syndication {
 
 	public function display_site_options() {
 
-		$selected_sitegroups = $_POST['syn_selected_sitegroups'];
-		$selected_siteoptions = $_POST['syn_selected_siteoptions'];
-
-
 		update_option( 'syn_selected_siteoptions', $_POST['syn_selected_siteoptions'] );
 		update_option( 'syn_selected_sitegroups', $_POST['syn_selected_sitegroups'] );
+
+		$this->schedule_syndicate_options_cron();
 
 ?>
 	<div class="wrap" xmlns="http://www.w3.org/1999/html">
@@ -425,6 +426,31 @@ class Push_Syndication {
 <?php
 
 		}
+
+	}
+
+	/*******  SYNCING OPTIONS  *******/
+	public function schedule_syndicate_options_cron() {
+
+		// @TODO Refractor this with new custom capability
+		if ( !current_user_can( 'manage_options' ) )
+			return;
+
+		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
+
+		$sites = array();
+
+		wp_schedule_single_event(
+			time() - 1,
+			'syn_syndicate_options',
+			array( $sites )
+		);
+
+	}
+
+	public function syndicate_options( $sites ) {
+
+		require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
 
 	}
 
