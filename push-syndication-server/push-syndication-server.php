@@ -28,37 +28,37 @@ class Push_Syndication_Server {
 
     function __construct() {
 
-        // get plugin settings
-        $this->push_syndicate_settings = get_option( 'push_syndicate_settings' );
+		// get plugin settings
+		$this->push_syndicate_settings = get_option( 'push_syndicate_settings' );
 
-        // initialization
-        add_action( 'init', array( &$this, 'init' ) );
-        add_action( 'admin_init', array( &$this, 'admin_init' ) );
+		// initialization
+		add_action( 'init', array( &$this, 'init' ) );
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 
-	    // plugin settings submenus
-	    add_action( 'admin_menu', array( &$this, 'register_syndicate_settings' ) );
+		// plugin settings submenus
+		add_action( 'admin_menu', array( &$this, 'register_syndicate_settings' ) );
 
-	    // defining sites
-	    add_action( 'save_post', array( &$this, 'save_site_settings' ) );
+		// defining sites
+		add_action( 'save_post', array( &$this, 'save_site_settings' ) );
 
-	    // loading necessary styles and scripts
-	    add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts_and_styles' ) );
+		// loading necessary styles and scripts
+		add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts_and_styles' ) );
 
-	    // filter admin notices in custom post types
-	    add_filter( 'post_updated_messages', array( &$this, 'push_syndicate_admin_messages' ) );
+		// filter admin notices in custom post types
+		add_filter( 'post_updated_messages', array( &$this, 'push_syndicate_admin_messages' ) );
 
-        // syndicating content
-        add_action( 'add_meta_boxes', array( &$this, 'add_post_metaboxes' ) );
-        add_action( 'save_post', array( &$this, 'save_syndicate_settings' ) );
-        add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
+		// syndicating content
+		add_action( 'add_meta_boxes', array( &$this, 'add_post_metaboxes' ) );
+		add_action( 'save_post', array( &$this, 'save_syndicate_settings' ) );
+		add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
 
-	    // firing a cron job
-	    add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content_cron') );
+		// firing a cron job
+		add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content_cron') );
 
-	    // cron hooks
-	    add_action( 'syn_syndicate_content', array(&$this, 'syndicate_content') );
-	    add_action( 'syn_delete_content', array(&$this, 'delete_content') );
-	    add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
+		// cron hooks
+		add_action( 'syn_syndicate_content', array(&$this, 'syndicate_content') );
+		add_action( 'syn_delete_content', array(&$this, 'delete_content') );
+		add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
 
     }
 
