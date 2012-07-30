@@ -19,9 +19,12 @@ class Push_Syndication_XMLRPC_Client {
 		add_filter( 'xmlrpc_methods' , array( &$this, 'push_syndicate_methods' ) );
 	}
 
-	public function push_syndicate_methods() {
-
+	public function push_syndicate_methods( $methods ) {
+		$methods['pushSyndicateSetOption']          = 'push_syndicate_set_option';
+		return $methods;
 	}
+
+	public function push_syndicate_set_option() {}
 
 }
 
