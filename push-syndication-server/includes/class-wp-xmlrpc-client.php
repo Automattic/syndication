@@ -242,4 +242,16 @@ class wp_xmlrpc_client extends WP_HTTP_IXR_Client implements wp_client {
 
 	}
 
+	/**
+	 * Deletes an existing post in the slave site.
+	 *
+	 * @param   array  $options  Array of options to push to the slave site.
+	 * @param   int    $ext_ID   Slave post ID to push options.
+	 *
+	 * @return  boolean true on success false on failure.
+	 */
+	public function set_options($options, $ext_ID)
+	{
+		// TODO: Implement set_options() method.
+	}
 }

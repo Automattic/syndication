@@ -262,4 +262,8 @@ class wp_rest_client implements wp_client{
 
 	}
 
+	public function set_options($options, $ext_ID)
+	{
+		// TODO: Implement set_options() method.
+	}
 }
