@@ -39,6 +39,13 @@ class Push_Syndication_XMLRPC_Client {
 		if ( !current_user_can( 'manage_options' ) )
 			return new IXR_Error( 403, __( 'You are not allowed to update options.' ) );
 
+		foreach( $options as $key => $value ) {
+			// @TODO validation
+			// @TODO skip underscore values
+			// @TODO acc errors
+			update_option( $key, $value );
+		}
+
 	}
 
 }
