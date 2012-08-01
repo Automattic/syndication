@@ -416,6 +416,9 @@ class Push_Syndication_Server {
 
 		foreach( $site_options as $key => $value  ) {
 
+			if( $key[0] == '_' )
+				continue;
+
 ?>
 		<p>
 			<label>
@@ -439,18 +442,27 @@ class Push_Syndication_Server {
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 
 		$sites = array();
+		foreach( $selected_sitegroups as $selected_sitegroup ) {
+			array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
+		}
 
+		$this->syndicate_options( $sites );
+
+		/*
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_syndicate_options',
 			array( $sites )
 		);
+		*/
 
 	}
 
 	public function syndicate_options( $sites ) {
 
 		require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
+
+		$selected_siteoptions = get_option( 'syn_selected_siteoptions' );
 
 	}
 
