@@ -24,7 +24,22 @@ class Push_Syndication_XMLRPC_Client {
 		return $methods;
 	}
 
-	public function push_syndicate_set_option() {}
+	public function push_syndicate_set_option( $args ) {
+
+		$this->escape( $args );
+
+		$blog_id	= (int) $args[0];
+		$username	= $args[1];
+		$password	= $args[2];
+		$options	= (array) $args[3];
+
+		if ( !$user = $this->login($username, $password) )
+			return $this->error;
+
+		if ( !current_user_can( 'manage_options' ) )
+			return new IXR_Error( 403, __( 'You are not allowed to update options.' ) );
+
+	}
 
 }
 
