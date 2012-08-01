@@ -443,7 +443,7 @@ class Push_Syndication_Server {
 
 		$sites = array();
 		foreach( $selected_sitegroups as $selected_sitegroup ) {
-			array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
+			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
 		$this->syndicate_options( $sites );
