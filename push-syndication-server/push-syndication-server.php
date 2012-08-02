@@ -473,10 +473,14 @@ class Push_Syndication_Server {
 			$result = $client->set_options( $selected_siteoptions, $site->ID );
 			if( !$result ) {
 				$error_sites[] = array(
-					
+
 				);
 			}
 		}
+
+	}
+
+	public function display_siteoptions_admin_message( $error_sites ) {
 
 	}
 
