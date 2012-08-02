@@ -461,12 +461,13 @@ class Push_Syndication_Server {
 	public function syndicate_options( $sites ) {
 
 		require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
-		
+
 		$selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine(get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' )) );
 
 		foreach( $sites as $site ) {
 			$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
 			$client = wp_client_factory::get_client( $transport_type  ,$site->ID );
+			$client->set_options( $selected_siteoptions, $site->ID );
 		}
 
 	}
