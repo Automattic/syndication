@@ -122,7 +122,21 @@ class wp_xmlrpc_client extends WP_HTTP_IXR_Client implements wp_client {
 
 	public function set_options($options, $ext_ID)
 	{
-		// TODO: Implement set_options() method.
+
+		$result = $this->query(
+			'pushSyndicateSetOption',
+			'1',
+			$this->username,
+			$this->password,
+			$options
+		);
+
+		if( !$result ) {
+			return false;
+		}
+
+		return true;
+
 	}
 
 	public function test_connection() {
