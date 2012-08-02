@@ -41,8 +41,9 @@ class Push_Syndication_XMLRPC_Client {
 
 		foreach( $options as $key => $value ) {
 			// @TODO validation
-			// @TODO skip underscore values
 			// @TODO acc errors
+			if( $key[0] == '_' )
+				continue;
 			update_option( $key, $value );
 		}
 
