@@ -480,10 +480,6 @@ class Push_Syndication_Server {
 
 	}
 
-	public function display_siteoptions_admin_message( $error_sites ) {
-
-	}
-
 	/*******   SITE METABOXES   *********/
     public function site_metaboxes() {
         add_meta_box('sitediv', __(' Site Settings '), array( &$this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
