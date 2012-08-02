@@ -20,13 +20,14 @@ class Push_Syndication_XMLRPC_Client {
 	}
 
 	public function push_syndicate_methods( $methods ) {
-		$methods['pushSyndicateSetOption']          = 'push_syndicate_set_option';
+		$methods['pushSyndicateSetOption']          = array( &$this, 'push_syndicate_set_option' );
 		return $methods;
 	}
 
 	public function push_syndicate_set_option( $args ) {
 
-		$this->escape( $args );
+		global $wp_xmlrpc_server;
+		$wp_xmlrpc_server->escape($args);
 
 		$blog_id	= (int) $args[0];
 		$username	= $args[1];
