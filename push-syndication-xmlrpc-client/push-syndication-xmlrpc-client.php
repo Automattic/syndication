@@ -41,8 +41,6 @@ class Push_Syndication_XMLRPC_Client {
 			return new IXR_Error( 403, __( 'You are not allowed to update options.' ) );
 
 		foreach( $options as $key => $value ) {
-			// @TODO validation
-			// @TODO acc errors
 			if( $key[0] == '_' )
 				continue;
 			update_option( $key, $value );
