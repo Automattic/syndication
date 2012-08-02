@@ -48,6 +48,8 @@ class Push_Syndication_XMLRPC_Client {
 			update_option( $key, $value );
 		}
 
+		return true;
+
 	}
 
 }
