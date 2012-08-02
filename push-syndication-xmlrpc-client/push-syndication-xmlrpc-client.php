@@ -34,7 +34,7 @@ class Push_Syndication_XMLRPC_Client {
 		$password	= $args[2];
 		$options	= (array) $args[3];
 
-		if ( !$user = $this->login($username, $password) )
+		if ( !$user = $wp_xmlrpc_server->login($username, $password) )
 			return $this->error;
 
 		if ( !current_user_can( 'manage_options' ) )
