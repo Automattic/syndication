@@ -114,7 +114,7 @@ class wp_xmlrpc_client extends WP_HTTP_IXR_Client implements wp_client {
         );
 
         if( !$result ) {
-                return false;
+            return false;
         }
 
         return true;
