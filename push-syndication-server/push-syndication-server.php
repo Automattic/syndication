@@ -464,10 +464,18 @@ class Push_Syndication_Server {
 
 		$selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine(get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' )) );
 
+		// Holds the error sites with the error message
+		$error_sites = array();
+
 		foreach( $sites as $site ) {
 			$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
 			$client = wp_client_factory::get_client( $transport_type  ,$site->ID );
-			$client->set_options( $selected_siteoptions, $site->ID );
+			$result = $client->set_options( $selected_siteoptions, $site->ID );
+			if( !$result ) {
+				$error_sites[] = array(
+					
+				);
+			}
 		}
 
 	}
