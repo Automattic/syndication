@@ -60,6 +60,8 @@ class Push_Syndication_Server {
 		add_action( 'syn_delete_content', array(&$this, 'delete_content') );
 		add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
 
+	    add_action('admin_notices', array(&$this, 'syndicate_options'));
+
     }
 
     public function init() {
@@ -432,6 +434,10 @@ class Push_Syndication_Server {
 
 	}
 
+	public function display_siteoptions_admin_messages() {
+
+	}
+
 	/*******  SYNCING OPTIONS  *******/
 	public function schedule_syndicate_options_cron() {
 
@@ -468,6 +474,11 @@ class Push_Syndication_Server {
 		$error_sites = array();
 
 		foreach( $sites as $site ) {
+
+			$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true);
+			if( $site_enabled != 'on' )
+				continue;
+
 			$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
 			$client = wp_client_factory::get_client( $transport_type  ,$site->ID );
 			$result = $client->set_options( $selected_siteoptions, $site->ID );
