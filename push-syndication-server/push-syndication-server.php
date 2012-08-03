@@ -413,19 +413,19 @@ class Push_Syndication_Server {
 		$selected_siteoptions = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
 
 		$site_options = wp_load_alloptions();
-		$chunked_arrays = array_chunk( $site_options, 5, true );
 
 		echo '<table border="1">';
 		echo '<tbody>';
 
-		foreach( $chunked_arrays as $chunked_array ) {
+		$i = 0;
 
-			echo '<tr>';
-
-			foreach( $chunked_array as $key => $value ) {
+		foreach( $site_options as $key => $value ) {
 
 			if( $key[0] == '_' )
 				continue;
+
+			if ( $i == 5 )
+				echo '<tr>';
 
 ?>
 				<td>
@@ -436,13 +436,16 @@ class Push_Syndication_Server {
 				</td>
 <?php
 
-			}
+			$i++;
 
-			echo '</tr>';
+			if ( $i == 5 ) {
+				echo '<tr>';
+				$i = 0;
+			}
 
 		}
 
-		echo '</tbody';
+		echo '</tbody>';
 		echo '</table>';
 
 	}
