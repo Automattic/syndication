@@ -465,15 +465,11 @@ class Push_Syndication_Server {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
-		$this->syndicate_options( $sites );
-
-		/*
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_syndicate_options',
 			array( $sites )
 		);
-		*/
 
 	}
 
