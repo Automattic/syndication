@@ -413,22 +413,37 @@ class Push_Syndication_Server {
 		$selected_siteoptions = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
 
 		$site_options = wp_load_alloptions();
+		$chunked_arrays = array_chunk( $site_options, 5, true );
 
-		foreach( $site_options as $key => $value  ) {
+		echo '<table border="1">';
+		echo '<tbody>';
+
+		foreach( $chunked_arrays as $chunked_array ) {
+
+			echo '<tr>';
+
+			foreach( $chunked_array as $key => $value ) {
 
 			if( $key[0] == '_' )
 				continue;
 
 ?>
-		<p>
-			<label>
-				<input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
-				<?php echo esc_html( $key ); ?>
-			</label>
-		</p>
+				<td>
+					<label>
+						<input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
+						<?php echo esc_html( $key ); ?>
+					</label>
+				</td>
 <?php
 
+			}
+
+			echo '</tr>';
+
 		}
+
+		echo '</tbody';
+		echo '</table>';
 
 	}
 
