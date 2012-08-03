@@ -424,8 +424,9 @@ class Push_Syndication_Server {
 			if( $key[0] == '_' )
 				continue;
 
-			if ( $i == 5 )
+			if ( $i == 5 ) {
 				echo '<tr>';
+			}
 
 ?>
 				<td>
