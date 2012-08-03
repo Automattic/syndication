@@ -483,6 +483,8 @@ class Push_Syndication_Server {
 			}
 		}
 
+		update_option( 'syn_options_error_sites', $error_sites );
+
 	}
 
 	/*******   SITE METABOXES   *********/
