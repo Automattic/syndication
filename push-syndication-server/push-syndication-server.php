@@ -468,7 +468,7 @@ class Push_Syndication_Server {
 
 		require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
 
-		$selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine(get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' )) );
+		$selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine( get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' ) ) );
 
 		// Holds the error sites with the error message
 		$error_sites = array();
