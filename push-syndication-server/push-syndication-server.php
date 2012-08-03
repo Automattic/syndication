@@ -414,7 +414,7 @@ class Push_Syndication_Server {
 
 		$site_options = wp_load_alloptions();
 
-		echo '<table border="1">';
+		echo '<table>';
 		echo '<tbody>';
 
 		$i = 0;
@@ -424,7 +424,7 @@ class Push_Syndication_Server {
 			if( $key[0] == '_' )
 				continue;
 
-			if ( $i == 5 ) {
+			if ( $i == 6 ) {
 				echo '<tr>';
 			}
 
@@ -439,7 +439,7 @@ class Push_Syndication_Server {
 
 			$i++;
 
-			if ( $i == 5 ) {
+			if ( $i == 6 ) {
 				echo '<tr>';
 				$i = 0;
 			}
