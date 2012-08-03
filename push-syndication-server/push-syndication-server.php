@@ -60,8 +60,6 @@ class Push_Syndication_Server {
 		add_action( 'syn_delete_content', array(&$this, 'delete_content') );
 		add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
 
-	    add_action( 'admin_notices', array(&$this, 'display_siteoptions_admin_messages' ) );
-
     }
 
     public function init() {
@@ -431,10 +429,6 @@ class Push_Syndication_Server {
 <?php
 
 		}
-
-	}
-
-	public function display_siteoptions_admin_messages() {
 
 	}
 
