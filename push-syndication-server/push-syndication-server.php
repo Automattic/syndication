@@ -209,6 +209,8 @@ class Push_Syndication_Server {
 
 			<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
+			<?php do_settings_sections( 'push_syndicate_user_roles' ); ?>
+
 			<?php do_settings_sections( 'delete_pushed_posts' ); ?>
 
 			<?php do_settings_sections( 'api_token' ); ?>
