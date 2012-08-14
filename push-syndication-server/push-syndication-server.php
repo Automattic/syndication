@@ -260,7 +260,16 @@ class Push_Syndication_Server {
 	}
 
 	public function display_user_roles_selection() {
+		$user_roles = $this->get_user_roles();
+	}
 
+	public function get_user_roles() {
+		global $wp_roles;
+
+		if ( ! isset( $wp_roles ) )
+			$wp_roles = new WP_Roles();
+
+		return $wp_roles->get_names();
 	}
 
 	public function display_delete_pushed_posts_description() {
