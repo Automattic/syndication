@@ -186,6 +186,9 @@ class Push_Syndication_Server {
 		add_settings_section( 'push_syndicate_post_types', esc_html__(' Post Type Configuration '), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
 		add_settings_field( 'post_type_selection', esc_html__(' select post types '), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
+		add_settings_section( 'push_syndicate_user_roles', esc_html__(' User Roles Configuration '), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles');
+		add_settings_field( 'user_role_selection', esc_html__(' select user roles '), array( &$this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
+
 		add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts '), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts');
 		add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts '), array( &$this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
 
@@ -247,6 +250,14 @@ class Push_Syndication_Server {
 		}
 
 		echo '</ul>';
+
+	}
+
+	public function display_push_user_roles_description() {
+		echo '<p>Select the user roles to enable for pushing content</p>';
+	}
+
+	public function display_user_roles_selection() {
 
 	}
 
