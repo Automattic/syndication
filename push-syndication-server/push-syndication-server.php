@@ -277,9 +277,9 @@ class Push_Syndication_Server {
 		</li>
 <?php
 
-		echo '</ul>';
-
 		}
+
+		echo '</ul>';
 
 	}
 
