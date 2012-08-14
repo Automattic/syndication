@@ -260,7 +260,27 @@ class Push_Syndication_Server {
 	}
 
 	public function display_user_roles_selection() {
+
 		$user_roles = $this->get_user_roles();
+		$selected_user_roles = !empty( $this->push_syndicate_settings[ 'selected_user_roles' ] ) ? $this->push_syndicate_settings[ 'selected_user_roles' ] : array();
+
+		echo '<ul>';
+
+		foreach( $user_roles as $user_role ) {
+
+?>
+		<li>
+			<label>
+				<input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo $user_role; ?>" <?php echo $this->checked_array( $user_role, $selected_user_roles ); ?>/>
+				<?php echo $user_role; ?>
+			</label>
+		</li>
+<?php
+
+		echo '</ul>';
+
+		}
+
 	}
 
 	public function get_user_roles() {
