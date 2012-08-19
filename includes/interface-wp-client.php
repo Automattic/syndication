@@ -1,6 +1,6 @@
 <?php
 
-interface wp_client {
+interface WP_Client {
 
 	/**
 	 * Creates a new post in the slave site.

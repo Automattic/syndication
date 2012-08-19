@@ -1,9 +1,9 @@
 <?php
 
-include_once( dirname( __FILE__ ) . '/interface-wp-client.php' );
+include_once(dirname(__FILE__) . '/interface-wp-client.php');
 include_once( dirname( __FILE__ ) . '/push-syndicate-encryption.php' );
 
-class wp_rest_client implements wp_client{
+class WP_REST_Client implements WP_Client{
 
 	private $access_token;
 	private $blog_ID;

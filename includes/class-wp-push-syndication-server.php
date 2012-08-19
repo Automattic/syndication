@@ -116,11 +116,11 @@ class Push_Syndication_Server {
 
         // @TODO define more parameters
         $this->push_syndicate_tranports = array(
-            'wp_xmlrpc'    => array(
+            'WP_XMLRPC'    => array(
                 'name'  => 'WordPress XMLRPC',
                 'path'  => ''
             ),
-            'wp_rest'      => array(
+            'WP_REST'      => array(
                 'name'  => 'WordPress.com REST',
                 'path'  => ''
             ),
@@ -519,7 +519,7 @@ class Push_Syndication_Server {
                 continue;
 
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-            $client = wp_client_factory::get_client( $transport_type  ,$site->ID );
+            $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
             $result = $client->set_options( $selected_siteoptions, $site->ID );
             if( !$result ) {
                 $error_sites[] = array(
@@ -556,7 +556,7 @@ class Push_Syndication_Server {
 
         try {
             $class = $transport_type . '_client';
-            wp_client_factory::display_client_settings( $post, $class );
+            WP_Client_Factory::display_client_settings( $post, $class );
         } catch(Exception $e) {
             echo $e;
         }
@@ -611,10 +611,10 @@ class Push_Syndication_Server {
         $class = $_POST['transport_type'] . '_client';
 
         try {
-            $save = wp_client_factory::save_client_settings( $post->ID, $class );
+            $save = WP_Client_Factory::save_client_settings( $post->ID, $class );
             if( !$save )
                 return;
-            $client = wp_client_factory::get_client( $_POST['transport_type'], $post->ID );
+            $client = WP_Client_Factory::get_client( $_POST['transport_type'], $post->ID );
 
             if( $client->test_connection()  ) {
                 add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
@@ -802,7 +802,7 @@ class Push_Syndication_Server {
             foreach( $sites[ 'selected_sites' ] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-                $client = wp_client_factory::get_client( $transport_type  ,$site->ID );
+                $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
                 $info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
                 if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
@@ -822,7 +822,7 @@ class Push_Syndication_Server {
             foreach( $sites[ 'removed_sites' ] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-                $client = wp_client_factory::get_client( $transport_type  ,$site->ID );
+                $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
                 $info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
                 // if the post is not pushed we do not need to delete them
@@ -1042,7 +1042,7 @@ class Push_Syndication_Server {
             if( $site_enabled == 'on' ) {
 
                 $transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
-                $client = wp_client_factory::get_client( $transport_type , $site_ID );
+                $client = WP_Client_Factory::get_client( $transport_type , $site_ID );
 
                 if( $client->is_post_exists( $ext_ID ) ) {
 

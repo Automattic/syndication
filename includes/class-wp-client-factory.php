@@ -4,11 +4,11 @@
 include_once( dirname( __FILE__ ) . '/class-wp-xmlrpc-client.php' );
 include_once( dirname( __FILE__ ) . '/class-wp-rest-client.php' );
 
-class wp_client_factory {
+class WP_Client_Factory {
 
 	public static function get_client( $transport_type, $site_ID ) {
 
-		$class = $transport_type . '_client';
+		$class = $transport_type . '_Client';
 		if( class_exists($class) ) {
 			return new $class( $site_ID );
 		}
