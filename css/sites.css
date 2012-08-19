@@ -1,0 +1,7 @@
+.post-state {
+	visibility: hidden;
+}
+
+.row-actions .inline {
+	display: none;
+}
