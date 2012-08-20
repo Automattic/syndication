@@ -5,7 +5,7 @@
 Plugin Name:  Push Syndication
 Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
 Description:  Push content to multiple sites
-Version:      1.0
+Version:      2.0
 Author:       Automattic
 Author URI:   http://automattic.com/wordpress-plugins/
 License:      GPLv2 or later
