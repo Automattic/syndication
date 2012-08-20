@@ -266,7 +266,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_delete_pushed_posts_selection() {
-        // @TODO refractor
+        // @TODO refractor this
         echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
         echo checked( $this->push_syndicate_settings['delete_pushed_posts'], 'on' ) . ' />';
     }
