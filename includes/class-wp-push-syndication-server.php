@@ -369,7 +369,7 @@ class WP_Push_Syndication_Server {
 
                 <?php screen_icon(); // @TODO custom screen icon ?>
 
-                <h2><?php esc_html_e( 'Push Syndicate Site Options' ); ?></h2>
+                <h2><?php esc_html_e( 'Push Syndicate Site Options', 'push-syndication' ); ?></h2>
 
                 <form action="" method="post">
 
@@ -388,30 +388,30 @@ class WP_Push_Syndication_Server {
 
     public function display_sitegroups_selection() {
 
-        echo '<h3>Select Sitegroups</h3>';
+        echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
 
         $selected_sitegroups = get_option( 'syn_selected_sitegroups' );
         $selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
 
         // get all sitegroups
         $sitegroups = get_terms( 'syn_sitegroup', array(
-            'fields' => 'all',
-            'hide_empty' => false,
-            'orderby' => 'name'
+            'fields'        => 'all',
+            'hide_empty'    => false,
+            'orderby'       => 'name'
         ) );
 
         foreach( $sitegroups as $sitegroup ) {
+?>
 
-            ?>
-        <p>
-            <label>
-                <input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
-                <?php echo esc_html( $sitegroup->name ); ?>
-            </label>
-            <?php echo esc_html( $sitegroup->description ); ?>
-        </p>
-        <?php
+            <p>
+                <label>
+                    <input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
+                    <?php echo esc_html( $sitegroup->name ); ?>
+                </label>
+                <?php echo esc_html( $sitegroup->description ); ?>
+            </p>
 
+<?php
         }
 
 
