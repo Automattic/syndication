@@ -273,12 +273,11 @@ class WP_Push_Syndication_Server {
     }
 
     public function  display_apitoken_description() {
+
         // @TODO add client type
-        ?>
-    <p>To push content to WordPress.com you must <a href="https://developer.wordpress.com/apps/new/">create a new application</a></p>
-    <p>Enter the Redirect URI as follows</p>
-    <p><b><?php echo esc_html(menu_page_url( 'push-syndicate-settings', false ))?></b></p>
-    <?php
+        echo '<p>' . esc_html__( 'To push content to WordPress.com you must ', 'push-syndication' ). '<a href="https://developer.wordpress.com/apps/new/">' . esc_html__( 'create a new application', 'push-syndication' ) . '</a></p>';
+        echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
+        echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
 
     }
 
