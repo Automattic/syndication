@@ -9,7 +9,7 @@
 
 require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
 
-class Push_Syndication_Server {
+class WP_Push_Syndication_Server {
 
     private $push_syndicate_settings;
     private $push_syndicate_tranports;
