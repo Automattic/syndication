@@ -93,9 +93,8 @@ class WP_Push_Syndication_Server {
                 'rewrite'               => false,
         ));
 
-        // get plugin settings
         $this->push_syndicate_default_settings = array(
-
+            'selected_post_types' => array( 'post' )
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
@@ -114,18 +113,10 @@ class WP_Push_Syndication_Server {
             ),
         );
 
-        $this->push_syndicate_tranports = apply_filters( 'push_syndicate_transports', $this->push_syndicate_tranports );
-
         // register styles and scripts
         wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ) );
 
         register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( &$this, 'push_syndicate_settings_validate' ) );
-
-        // if no post types are selected set post by default
-        if( empty( $this->push_syndicate_settings['selected_post_types'] )  ) {
-            $this->push_syndicate_settings['selected_post_types'] = array( 'post' );
-            update_option( 'push_syndicate_settings', $this->push_syndicate_settings );
-        }
 
     }
 
