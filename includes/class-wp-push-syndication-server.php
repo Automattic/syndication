@@ -96,7 +96,8 @@ class WP_Push_Syndication_Server {
         ));
 
         $this->push_syndicate_default_settings = array(
-            'selected_post_types' => array( 'post' )
+            'selected_post_types' => array( 'post' ),
+            'delete_pushed_posts' => 'off'
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
@@ -265,11 +266,9 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_delete_pushed_posts_selection() {
-
-        // default value is off
-        $delete_pushed_posts =  isset( $this->push_syndicate_settings[ 'delete_pushed_posts' ] ) ? $this->push_syndicate_settings[ 'delete_pushed_posts' ] : 'off' ;
-        echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" '; echo checked( $delete_pushed_posts, 'on' ) . ' />';
-
+        // @TODO refractor
+        echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
+        echo checked( $this->push_syndicate_settings['delete_pushed_posts'], 'on' ) . ' />';
     }
 
     public function  display_apitoken_description() {
