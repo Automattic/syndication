@@ -7,12 +7,10 @@ require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 class WP_Push_Syndication_Server {
 
     private $push_syndicate_settings;
+    private $push_syndicate_default_settings;
     private $push_syndicate_tranports;
 
     function __construct() {
-
-        // get plugin settings
-        $this->push_syndicate_settings = get_option( 'push_syndicate_settings' );
 
         // initialization
         add_action( 'init', array( &$this, 'init' ) );
@@ -69,7 +67,6 @@ class WP_Push_Syndication_Server {
                 // @TODO we need a menu icon here
                 'hierarchical'          => false, // @TODO check this
                 'query_var'             => true,
-                // @TODO match capabilities with custom capabilities
                 'supports'              => array( 'title' ),
                 'can_export'            => true,
                 'register_meta_box_cb'  => array( &$this, 'site_metaboxes' ),
@@ -99,11 +96,16 @@ class WP_Push_Syndication_Server {
                 'show_tagcloud'         => false,
                 'show_in_nav_menus'     => false,
                 'hierarchical'          => true,
-                // @TODO match capabilities with custom capabilities
                 'rewrite'               => false,
             )
         );
 
+        // get plugin settings
+        $this->default_settings = array(
+
+        );
+
+        $this->settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
 
     }
 
@@ -113,11 +115,9 @@ class WP_Push_Syndication_Server {
         $this->push_syndicate_tranports = array(
             'WP_XMLRPC'    => array(
                 'name'  => 'WordPress XMLRPC',
-                'path'  => ''
             ),
             'WP_REST'      => array(
                 'name'  => 'WordPress.com REST',
-                'path'  => ''
             ),
         );
 
