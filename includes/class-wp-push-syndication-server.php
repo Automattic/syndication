@@ -745,7 +745,6 @@ class WP_Push_Syndication_Server {
     }
 
     // @TODO scheduling happens before saving?
-    /*******    SYNCING CONTENT   *******/
     public function schedule_syndicate_content_cron() {
 
         global $post;
