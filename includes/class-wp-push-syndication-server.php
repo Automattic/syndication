@@ -1,11 +1,6 @@
 <?php
 
-// @TODO define a new capability to push syndicate
-// @TODO check add add_settings_field args
 // @TODO add help using contextual_help
-// @TODO mark helper functions as private?
-// @TODO check sites are publicly queryable
-// @TODO add options to retry delete_error_sites
 
 require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
