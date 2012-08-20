@@ -98,7 +98,8 @@ class WP_Push_Syndication_Server {
         $this->push_syndicate_default_settings = array(
             'selected_post_types' => array( 'post' ),
             'delete_pushed_posts' => 'off',
-            'selected_post_types' => array()
+            'selected_post_types' => array(),
+            'selected_user_roles' => array( 'Administrator' )
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->default_settings );
@@ -212,7 +213,7 @@ class WP_Push_Syndication_Server {
 ?>
         <li>
             <label>
-                <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $selected_post_types ); ?>/>
+                <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
                 <?php echo $post_type; ?>
             </label>
         </li>
