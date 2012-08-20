@@ -297,10 +297,10 @@ class WP_Push_Syndication_Server {
         // if code is not found return or settings updated return
         if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
 
-            echo '<p>' . esc_html__( 'Click the authorize button to generate api token ', 'push-syndication' ) . '</p>';
+            echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 ?>
 
-        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_html( $authorization_endpoint ); ?>'" value=" Authorize  ">
+        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
 
 <?php
 
@@ -309,7 +309,6 @@ class WP_Push_Syndication_Server {
         }
 
         $response = wp_remote_post( 'https://public-api.wordpress.com/oauth2/token', array(
-            'method' => 'POST',
             'sslverify' => false,
             'body' => array (
                 'client_id'     => $this->push_syndicate_settings['client_id'],
@@ -324,34 +323,37 @@ class WP_Push_Syndication_Server {
 
         if( !empty( $result->error ) ) {
 
-            ?>
-        <p>Error retrieving API token <?php echo $result->error_description; ?> Please authorize again</p>
-        <input type=button class="button-primary" onClick="parent.location='<?php echo $authorization_endpoint; ?>'" value=" Authorize  ">
-        <?php
+            echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
+?>
+
+        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
+
+<?php
 
             return;
+
         }
+?>
 
+            <table class="form-table">
+                <tbody>
+                <tr valign="top">
+                    <th scope="row">Access token</th>
+                    <td><?php echo esc_html( $result->access_token ); ?></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Blog ID</th>
+                    <td><?php echo esc_html( $result->blog_id ); ?></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Blog URL</th>
+                    <td><?php echo esc_html( $result->blog_url ); ?></td>
+                </tr>
+                </tbody>
+            </table>
 
-        ?>
-    <table class="form-table">
-        <tbody>
-        <tr valign="top">
-            <th scope="row">Access token</th>
-            <td><?php echo esc_html( $result->access_token ); ?></td>
-        </tr>
-        <tr valign="top">
-            <th scope="row">Blog ID</th>
-            <td><?php echo esc_html( $result->blog_id ); ?></td>
-        </tr>
-        <tr valign="top">
-            <th scope="row">Blog URL</th>
-            <td><?php echo esc_html( $result->blog_url ); ?></td>
-        </tr>
-        </tbody>
-    </table>
-    <p>Enter the above details in relevant fields when registering a <a href="http://wordpress.com" target="_blank">WordPress.com</a> site</p>
-    <?php
+<?php
+        echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
 
     }
 
@@ -362,25 +364,25 @@ class WP_Push_Syndication_Server {
 
         $this->schedule_syndicate_options_cron();
 
-        ?>
-    <div class="wrap" xmlns="http://www.w3.org/1999/html">
+?>
+            <div class="wrap" xmlns="http://www.w3.org/1999/html">
 
-        <?php screen_icon(); // @TODO custom screen icon ?>
+                <?php screen_icon(); // @TODO custom screen icon ?>
 
-        <h2><?php esc_html_e( 'Push Syndicate Site Options' ); ?></h2>
+                <h2><?php esc_html_e( 'Push Syndicate Site Options' ); ?></h2>
 
-        <form action="" method="post">
+                <form action="" method="post">
 
-            <?php $this->display_sitegroups_selection(); ?>
+                    <?php $this->display_sitegroups_selection(); ?>
 
-            <?php $this->display_site_options_selections(); ?>
+                    <?php $this->display_site_options_selections(); ?>
 
-            <?php submit_button( '  Push Options  ' ); ?>
+                    <?php submit_button( '  Push Options  ' ); ?>
 
-        </form>
+                </form>
 
-    </div>
-    <?php
+            </div>
+<?php
 
     }
 
