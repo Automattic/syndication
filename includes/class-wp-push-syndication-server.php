@@ -165,33 +165,33 @@ class WP_Push_Syndication_Server {
         add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
         add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
 
-        ?>
-    <div class="wrap" xmlns="http://www.w3.org/1999/html">
+?>
+        <div class="wrap" xmlns="http://www.w3.org/1999/html">
 
-        <?php screen_icon(); // @TODO custom screen icon ?>
+            <?php screen_icon(); // @TODO custom screen icon ?>
 
-        <h2><?php esc_html_e( 'Push Syndicate Settings' ); ?></h2>
+            <h2><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h2>
 
-        <form action="options.php" method="post">
+            <form action="options.php" method="post">
 
-            <?php settings_fields( 'push_syndicate_settings' ); ?>
+                <?php settings_fields( 'push_syndicate_settings' ); ?>
 
-            <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
+                <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
-            <?php do_settings_sections( 'push_syndicate_user_roles' ); ?>
+                <?php do_settings_sections( 'push_syndicate_user_roles' ); ?>
 
-            <?php do_settings_sections( 'delete_pushed_posts' ); ?>
+                <?php do_settings_sections( 'delete_pushed_posts' ); ?>
 
-            <?php do_settings_sections( 'api_token' ); ?>
+                <?php do_settings_sections( 'api_token' ); ?>
 
-            <?php submit_button(); ?>
+                <?php submit_button(); ?>
 
-        </form>
+            </form>
 
-        <?php $this->get_api_token() ?>
+            <?php $this->get_api_token() ?>
 
-    </div>
-    <?php
+        </div>
+<?php
 
     }
 
