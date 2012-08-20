@@ -2,7 +2,7 @@
 
 **************************************************************************
 
-Plugin Name:  Push Syndication Server
+Plugin Name:  Push Syndication
 Plugin URI:   
 Description:  Push content to multiple sites
 Version:      1.0
