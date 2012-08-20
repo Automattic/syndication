@@ -167,7 +167,7 @@ class WP_Push_Syndication_Server {
         add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
         add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
 
-?>
+        ?>
 
         <div class="wrap" xmlns="http://www.w3.org/1999/html">
 
@@ -195,7 +195,7 @@ class WP_Push_Syndication_Server {
 
         </div>
 
-<?php
+        <?php
 
     }
 
@@ -212,7 +212,7 @@ class WP_Push_Syndication_Server {
 
         foreach( $post_types as $post_type  ) {
 
-?>
+            ?>
 
             <li>
                 <label>
@@ -221,7 +221,7 @@ class WP_Push_Syndication_Server {
                 </label>
             </li>
 
-<?php
+            <?php
 
         }
 
@@ -241,7 +241,7 @@ class WP_Push_Syndication_Server {
 
         foreach( $user_roles as $user_role ) {
 
-?>
+            ?>
 
             <li>
                 <label>
@@ -250,7 +250,7 @@ class WP_Push_Syndication_Server {
                 </label>
             </li>
 
-<?php
+            <?php
 
         }
 
@@ -304,11 +304,11 @@ class WP_Push_Syndication_Server {
 
             echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 
-?>
+            ?>
 
-        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
+            <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
 
-<?php
+            <?php
 
             return;
 
@@ -331,36 +331,36 @@ class WP_Push_Syndication_Server {
 
             echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
 
-?>
+            ?>
 
-        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
+            <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
 
-<?php
+            <?php
 
             return;
 
         }
 
-?>
+        ?>
 
-            <table class="form-table">
-                <tbody>
-                <tr valign="top">
-                    <th scope="row">Access token</th>
-                    <td><?php echo esc_html( $result->access_token ); ?></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Blog ID</th>
-                    <td><?php echo esc_html( $result->blog_id ); ?></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Blog URL</th>
-                    <td><?php echo esc_html( $result->blog_url ); ?></td>
-                </tr>
-                </tbody>
-            </table>
+        <table class="form-table">
+            <tbody>
+            <tr valign="top">
+                <th scope="row">Access token</th>
+                <td><?php echo esc_html( $result->access_token ); ?></td>
+            </tr>
+            <tr valign="top">
+                <th scope="row">Blog ID</th>
+                <td><?php echo esc_html( $result->blog_id ); ?></td>
+            </tr>
+            <tr valign="top">
+                <th scope="row">Blog URL</th>
+                <td><?php echo esc_html( $result->blog_url ); ?></td>
+            </tr>
+            </tbody>
+        </table>
 
-<?php
+        <?php
 
         echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
 
@@ -373,26 +373,27 @@ class WP_Push_Syndication_Server {
 
         $this->schedule_syndicate_options_cron();
 
-?>
-            <div class="wrap" xmlns="http://www.w3.org/1999/html">
+        ?>
 
-                <?php screen_icon(); // @TODO custom screen icon ?>
+        <div class="wrap" xmlns="http://www.w3.org/1999/html">
 
-                <h2><?php esc_html_e( 'Push Syndicate Site Options', 'push-syndication' ); ?></h2>
+            <?php screen_icon(); // @TODO custom screen icon ?>
 
-                <form action="" method="post">
+            <h2><?php esc_html_e( 'Push Syndicate Site Options', 'push-syndication' ); ?></h2>
 
-                    <?php $this->display_sitegroups_selection(); ?>
+            <form action="" method="post">
 
-                    <?php $this->display_site_options_selections(); ?>
+                <?php $this->display_sitegroups_selection(); ?>
 
-                    <?php submit_button( '  Push Options  ' ); ?>
+                <?php $this->display_site_options_selections(); ?>
 
-                </form>
+                <?php submit_button( '  Push Options  ' ); ?>
 
-            </div>
+            </form>
 
-<?php
+        </div>
+
+        <?php
 
     }
 
@@ -412,7 +413,7 @@ class WP_Push_Syndication_Server {
 
         foreach( $sitegroups as $sitegroup ) {
 
-?>
+            ?>
 
             <p>
                 <label>
@@ -422,7 +423,7 @@ class WP_Push_Syndication_Server {
                 <?php echo esc_html( $sitegroup->description ); ?>
             </p>
 
-<?php
+            <?php
 
         }
 
@@ -450,7 +451,7 @@ class WP_Push_Syndication_Server {
                 echo '<tr>';
             }
 
-?>
+            ?>
 
             <td>
                 <label>
@@ -459,7 +460,7 @@ class WP_Push_Syndication_Server {
                 </label>
             </td>
 
-<?php
+            <?php
 
             $i++;
 
@@ -554,15 +555,17 @@ class WP_Push_Syndication_Server {
         }
 
         ?>
-    <p>
-        <input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
-        <label> Enable </label>
-    </p>
-    <p class="submit">
-        <input type="submit" name="addsite" id="addsite" class="button-primary" value="  Add Site  "/>
-    </p>
-    <div class="clear"></div>
-    <?php
+        
+        <p>
+            <input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
+            <label> Enable </label>
+        </p>
+        <p class="submit">
+            <input type="submit" name="addsite" id="addsite" class="button-primary" value="  Add Site  "/>
+        </p>
+        <div class="clear"></div>
+
+        <?php
 
     }
 
