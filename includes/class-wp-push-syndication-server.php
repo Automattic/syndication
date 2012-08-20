@@ -97,7 +97,8 @@ class WP_Push_Syndication_Server {
 
         $this->push_syndicate_default_settings = array(
             'selected_post_types' => array( 'post' ),
-            'delete_pushed_posts' => 'off'
+            'delete_pushed_posts' => 'off',
+            'selected_post_types' => array()
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->default_settings );
@@ -201,22 +202,21 @@ class WP_Push_Syndication_Server {
 
     public function display_post_types_selection() {
 
-        // @TODO filter suitably
+        // @TODO add more suitable filters
         $post_types = get_post_types( array( 'public' => true ) );
-        $selected_post_types = !empty( $this->push_syndicate_settings[ 'selected_post_types' ] ) ? $this->push_syndicate_settings[ 'selected_post_types' ] : array();
 
         echo '<ul>';
 
         foreach( $post_types as $post_type  ) {
 
-            ?>
+?>
         <li>
             <label>
                 <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $selected_post_types ); ?>/>
                 <?php echo $post_type; ?>
             </label>
         </li>
-        <?php
+<?php
 
         }
 
