@@ -134,11 +134,11 @@ class WP_Push_Syndication_Server {
 
     public function push_syndicate_settings_validate( $raw_settings ) {
 
-        $settings = array();
-        $settings['client_id'] = sanitize_text_field( $raw_settings['client_id'] );
-        $settings['client_secret'] = sanitize_text_field( $raw_settings['client_secret'] );
-        $settings['selected_post_types'] = $raw_settings['selected_post_types'];
-        $settings['delete_pushed_posts'] = $raw_settings['delete_pushed_posts'];
+        $settings                           = array();
+        $settings['client_id']              = sanitize_text_field( $raw_settings['client_id'] );
+        $settings['client_secret']          = sanitize_text_field( $raw_settings['client_secret'] );
+        $settings['selected_post_types']    = $raw_settings['selected_post_types'];
+        $settings['delete_pushed_posts']    = $raw_settings['delete_pushed_posts'];
 
         return $raw_settings;
 
