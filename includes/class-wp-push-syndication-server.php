@@ -6,9 +6,9 @@ require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
 class WP_Push_Syndication_Server {
 
-    private $push_syndicate_settings;
-    private $push_syndicate_default_settings;
-    private $push_syndicate_tranports;
+    public  $push_syndicate_settings;
+    public  $push_syndicate_default_settings;
+    public  $push_syndicate_tranports;
 
     function __construct() {
 
@@ -101,11 +101,11 @@ class WP_Push_Syndication_Server {
         );
 
         // get plugin settings
-        $this->default_settings = array(
+        $this->push_syndicate_default_settings = array(
 
         );
 
-        $this->settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
+        $this->push_syndicate_settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
 
     }
 
