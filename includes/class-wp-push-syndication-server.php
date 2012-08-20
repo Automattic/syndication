@@ -145,8 +145,8 @@ class WP_Push_Syndication_Server {
     }
 
     public function register_syndicate_settings() {
-        add_submenu_page( 'options-general.php',esc_html__( 'Push Syndicate Settings', 'push-syndication' ), esc_html__( 'Push Syndicate Settings', 'push-syndication' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
-        add_submenu_page( 'edit.php?post_type=syn_site',esc_html__( 'Site Options', 'push-syndication' ), esc_html__( 'Site Options', 'push-syndication' ), 'manage_options', 'push-syndicate-site-options', array( &$this, 'display_site_options' ) );
+        add_submenu_page( 'options-general.php', esc_html__( 'Push Syndicate Settings', 'push-syndication' ), esc_html__( 'Push Syndicate Settings', 'push-syndication' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
+        add_submenu_page( 'edit.php?post_type=syn_site', esc_html__( 'Site Options', 'push-syndication' ), esc_html__( 'Site Options', 'push-syndication' ), 'manage_options', 'push-syndicate-site-options', array( &$this, 'display_site_options' ) );
     }
 
     public function display_syndicate_settings() {
