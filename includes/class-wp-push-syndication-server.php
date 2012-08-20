@@ -123,7 +123,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /*******     STYLES AND SCRIPTS   ********/
     public function load_scripts_and_styles( $hook ) {
 
         global $typenow;
@@ -133,7 +132,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /*******     PLUGIN SETTINGS       *******/
     public function push_syndicate_settings_validate( $raw_settings ) {
 
         $settings = array();
@@ -463,7 +461,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /*******  SYNCING OPTIONS  *******/
     public function schedule_syndicate_options_cron() {
 
         // @TODO Refractor this with new custom capability
@@ -514,7 +511,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /*******   SITE METABOXES   *********/
     public function site_metaboxes() {
         add_meta_box('sitediv', __(' Site Settings '), array( &$this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
         remove_meta_box('submitdiv', 'syn_site', 'side');
