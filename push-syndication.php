@@ -19,7 +19,7 @@ require_once ( dirname( __FILE__ ) . '/includes/class-wp-push-syndication-server
 if ( !defined( 'PUSH_SYNDICATION_ENVIRONMENT' ) )
     define( 'PUSH_SYNDICATION_ENVIRONMENT', 'WP' );
 
-$push_syndication_server_class = PUSH_SYNDICATION_ENVIRONMENT . 'Push_Syndication_Server';
+$push_syndication_server_class = PUSH_SYNDICATION_ENVIRONMENT . '_Push_Syndication_Server';
 $push_syndication_server = new $push_syndication_server_class();
 
 ?>
