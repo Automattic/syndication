@@ -2,7 +2,7 @@
 
 include_once( ABSPATH . 'wp-includes/class-IXR.php' );
 include_once( ABSPATH . 'wp-includes/class-wp-http-ixr-client.php' );
-include_once(dirname(__FILE__) . '/interface-wp-client.php');
+include_once( dirname(__FILE__) . '/interface-wp-client.php' );
 include_once( dirname( __FILE__ ) . '/push-syndicate-encryption.php' );
 
 class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
@@ -34,6 +34,9 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status'] = $post['post_status'];
         $args['post_type'] = $post['post_type'];
         $args['wp_password'] = $post['post_password'];
+
+        // @TODO add date arguement
+        // @TODO add featured image
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
