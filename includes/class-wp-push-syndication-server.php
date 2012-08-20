@@ -7,7 +7,7 @@
 // @TODO check sites are publicly queryable
 // @TODO add options to retry delete_error_sites
 
-require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
+require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
 class WP_Push_Syndication_Server {
 
