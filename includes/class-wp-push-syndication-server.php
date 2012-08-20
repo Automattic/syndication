@@ -216,7 +216,7 @@ class WP_Push_Syndication_Server {
 
             <li>
                 <label>
-                    <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
+                    <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
                     <?php echo $post_type; ?>
                 </label>
             </li>
@@ -245,7 +245,7 @@ class WP_Push_Syndication_Server {
 
             <li>
                 <label>
-                    <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo $user_role; ?>" <?php echo $this->checked_array( $user_role, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
+                    <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $user_role ); ?>" <?php echo $this->checked_array( $user_role, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
                     <?php echo $user_role; ?>
                 </label>
             </li>
