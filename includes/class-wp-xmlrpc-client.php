@@ -235,13 +235,13 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 			<label for="site_username">Enter Username</label>
 		</p>
 		<p>
-			<input type="text" name="site_username" id="site_username" size="100" value="<?php echo esc_html( $site_username ); ?>" />
+			<input type="text" name="site_username" id="site_username" size="100" value="<?php echo esc_attr( $site_username ); ?>" />
 		</p>
 		<p>
 			<label>Enter Password</label>
 		</p>
 		<p>
-			<input type="password" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_html( $site_password ); ?>" />
+			<input type="password" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
 		</p>
 <?php
 
