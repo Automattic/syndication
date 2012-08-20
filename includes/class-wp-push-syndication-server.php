@@ -45,38 +45,32 @@ class WP_Push_Syndication_Server {
 
     public function init() {
 
-        register_post_type(
-            'syn_site',
-            array(
-                'labels' => array(
-                    'name'              => __( 'Sites' ),
-                    'singular_name'     => __( 'Site' ),
-                    'add_new'           => __( 'Add Site' ),
-                    'add_new_item'      => __( 'Add New Site' ),
-                    'edit_item'         => __( 'Edit Site' ),
-                    'new_item'          => __( 'New Site' ),
-                    'view_item'         => __( 'View Site' ),
-                    'search_items'      => __( 'Search Sites' ),
-                ),
-                'description'           => __( 'Sites in the netowrk' ),
-                'public'                => false,
-                'show_ui'               => true,
-                'publicly_queryable'    => false,
-                'exclude_from_search'   => false,
-                'menu_position'         => 80,
-                // @TODO we need a menu icon here
-                'hierarchical'          => false, // @TODO check this
-                'query_var'             => true,
-                'supports'              => array( 'title' ),
-                'can_export'            => true,
-                'register_meta_box_cb'  => array( &$this, 'site_metaboxes' ),
-            )
-        );
+        register_post_type( 'syn_site', array(
+            'labels' => array(
+                'name'              => __( 'Sites' ),
+                'singular_name'     => __( 'Site' ),
+                'add_new'           => __( 'Add Site' ),
+                'add_new_item'      => __( 'Add New Site' ),
+                'edit_item'         => __( 'Edit Site' ),
+                'new_item'          => __( 'New Site' ),
+                'view_item'         => __( 'View Site' ),
+                'search_items'      => __( 'Search Sites' ),
+            ),
+            'description'           => __( 'Sites in the netowrk' ),
+            'public'                => false,
+            'show_ui'               => true,
+            'publicly_queryable'    => false,
+            'exclude_from_search'   => false,
+            'menu_position'         => 80,
+            // @TODO we need a menu icon here
+            'hierarchical'          => false, // @TODO check this
+            'query_var'             => true,
+            'supports'              => array( 'title' ),
+            'can_export'            => true,
+            'register_meta_box_cb'  => array( &$this, 'site_metaboxes' ),
+        ));
 
-        register_taxonomy(
-            'syn_sitegroup',
-            array( 'syn_site' ),
-            array(
+        register_taxonomy( 'syn_sitegroup', 'syn_site', array(
                 'labels' => array(
                     'name'              => __( 'Site Groups' ),
                     'singular_name'     => __( 'Site Group' ),
@@ -97,8 +91,7 @@ class WP_Push_Syndication_Server {
                 'show_in_nav_menus'     => false,
                 'hierarchical'          => true,
                 'rewrite'               => false,
-            )
-        );
+        ));
 
         // get plugin settings
         $this->push_syndicate_default_settings = array(
