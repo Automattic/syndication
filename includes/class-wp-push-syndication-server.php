@@ -555,7 +555,7 @@ class WP_Push_Syndication_Server {
         }
 
         ?>
-        
+
         <p>
             <input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
             <label> Enable </label>
@@ -696,14 +696,14 @@ class WP_Push_Syndication_Server {
         foreach( $sitegroups as $sitegroup  ) {
 
             ?>
-        <li>
-            <label>
-                <input type="checkbox" name="selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
-                <?php echo esc_html( $sitegroup->name ); ?>
-            </label>
-            <p> <?php echo esc_html( $sitegroup->description ); ?> </p>
-        </li>
-        <?php
+            <li>
+                <label>
+                    <input type="checkbox" name="selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
+                    <?php echo esc_html( $sitegroup->name ); ?>
+                </label>
+                <p> <?php echo esc_html( $sitegroup->description ); ?> </p>
+            </li>
+            <?php
 
         }
 
