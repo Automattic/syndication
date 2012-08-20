@@ -152,17 +152,17 @@ class WP_Push_Syndication_Server {
     public function display_syndicate_settings() {
 
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Type Configuration' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
-        add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication'), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
+        add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
         add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles Configuration', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles');
         add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( &$this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
 
-        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication'), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts');
-        add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication'), array( &$this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
+        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts');
+        add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
 
-        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication'), array( &$this, 'display_apitoken_description' ), 'api_token');
-        add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication'), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
-        add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication'), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
+        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( &$this, 'display_apitoken_description' ), 'api_token');
+        add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
+        add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
 
         ?>
     <div class="wrap" xmlns="http://www.w3.org/1999/html">
@@ -195,7 +195,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_push_post_types_description() {
-        echo '<p>Select the post types to add support for pushing content</p>';
+        echo esc_html__( 'Select the post types to add support for pushing content', 'push-syndication' );
     }
 
     public function display_post_types_selection() {
@@ -224,7 +224,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_push_user_roles_description() {
-        echo '<p>Select the user roles to enable for pushing content</p>';
+        echo esc_html__( 'Select the user roles to enable for pushing content', 'push-syndication' );
     }
 
     public function display_user_roles_selection() {
@@ -261,7 +261,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_delete_pushed_posts_description() {
-        echo '<p>Tick the box to delete all the pushed posts when the master post is deleted</p>';
+        echo esc_html__( 'Tick the box to delete all the pushed posts when the master post is deleted', 'push-syndication' );
     }
 
     public function display_delete_pushed_posts_selection() {
