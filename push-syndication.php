@@ -3,7 +3,7 @@
 **************************************************************************
 
 Plugin Name:  Push Syndication
-Plugin URI:   
+Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
 Description:  Push content to multiple sites
 Version:      1.0
 Author:       Automattic
