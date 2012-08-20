@@ -100,7 +100,7 @@ class WP_Push_Syndication_Server {
             'delete_pushed_posts' => 'off'
         );
 
-        $this->push_syndicate_settings = wp_parse_args( (array) get_option( $this->option_name ), $this->default_settings );
+        $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->default_settings );
 
     }
 
@@ -272,12 +272,10 @@ class WP_Push_Syndication_Server {
     }
 
     public function  display_apitoken_description() {
-
         // @TODO add client type information
         echo '<p>' . esc_html__( 'To push content to WordPress.com you must ', 'push-syndication' ). '<a href="https://developer.wordpress.com/apps/new/">' . esc_html__( 'create a new application', 'push-syndication' ) . '</a></p>';
         echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
         echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
-
     }
 
     public function display_client_id() {
@@ -293,7 +291,7 @@ class WP_Push_Syndication_Server {
         $redirect_uri = menu_page_url( 'push-syndicate-settings', false );
         $authorization_endpoint = 'https://public-api.wordpress.com/oauth2/authorize?client_id=' . $this->push_syndicate_settings['client_id'] . '&redirect_uri=' .  $redirect_uri . '&response_type=code';
 
-        echo '<h3>Authorization</h3>';
+        echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
 
         // if code is not found return
         if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
