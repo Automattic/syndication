@@ -10,6 +10,8 @@ class WP_Push_Syndication_Server {
     public  $push_syndicate_default_settings;
     public  $push_syndicate_tranports;
 
+    private $version = '2.0';
+
     function __construct() {
 
         // initialization
@@ -114,8 +116,9 @@ class WP_Push_Syndication_Server {
         );
 
         // register styles and scripts
-        wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ) );
+        wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version  );
 
+        // register settings
         register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( &$this, 'push_syndicate_settings_validate' ) );
 
     }
