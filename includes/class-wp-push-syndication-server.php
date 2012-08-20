@@ -168,6 +168,7 @@ class WP_Push_Syndication_Server {
         add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
 
 ?>
+
         <div class="wrap" xmlns="http://www.w3.org/1999/html">
 
             <?php screen_icon(); // @TODO custom screen icon ?>
@@ -210,16 +211,18 @@ class WP_Push_Syndication_Server {
         echo '<ul>';
 
         foreach( $post_types as $post_type  ) {
+
 ?>
 
-        <li>
-            <label>
-                <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
-                <?php echo $post_type; ?>
-            </label>
-        </li>
+            <li>
+                <label>
+                    <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
+                    <?php echo $post_type; ?>
+                </label>
+            </li>
 
 <?php
+
         }
 
         echo '</ul>';
@@ -237,6 +240,7 @@ class WP_Push_Syndication_Server {
         echo '<ul>';
 
         foreach( $user_roles as $user_role ) {
+
 ?>
 
             <li>
@@ -247,6 +251,7 @@ class WP_Push_Syndication_Server {
             </li>
 
 <?php
+
         }
 
         echo '</ul>';
@@ -298,6 +303,7 @@ class WP_Push_Syndication_Server {
         if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
 
             echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
+
 ?>
 
         <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
@@ -324,6 +330,7 @@ class WP_Push_Syndication_Server {
         if( !empty( $result->error ) ) {
 
             echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
+
 ?>
 
         <input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
@@ -333,6 +340,7 @@ class WP_Push_Syndication_Server {
             return;
 
         }
+
 ?>
 
             <table class="form-table">
@@ -353,6 +361,7 @@ class WP_Push_Syndication_Server {
             </table>
 
 <?php
+
         echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
 
     }
@@ -382,6 +391,7 @@ class WP_Push_Syndication_Server {
                 </form>
 
             </div>
+
 <?php
 
     }
@@ -401,6 +411,7 @@ class WP_Push_Syndication_Server {
         ) );
 
         foreach( $sitegroups as $sitegroup ) {
+
 ?>
 
             <p>
@@ -412,18 +423,17 @@ class WP_Push_Syndication_Server {
             </p>
 
 <?php
-        }
 
+        }
 
     }
 
     public function display_site_options_selections() {
 
-        echo '<h3>Select Site Options</h3>';
+        echo '<h3>' . esc_html__( 'Select Site Options', 'push-syndication' ) . '</h3>';
 
         $selected_siteoptions = get_option( 'syn_selected_siteoptions' );
         $selected_siteoptions = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
-
         $site_options = wp_load_alloptions();
 
         echo '<table>';
@@ -440,14 +450,16 @@ class WP_Push_Syndication_Server {
                 echo '<tr>';
             }
 
-            ?>
-        <td>
-            <label>
-                <input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
-                <?php echo esc_html( $key ); ?>
-            </label>
-        </td>
-        <?php
+?>
+
+            <td>
+                <label>
+                    <input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
+                    <?php echo esc_html( $key ); ?>
+                </label>
+            </td>
+
+<?php
 
             $i++;
 
@@ -465,7 +477,7 @@ class WP_Push_Syndication_Server {
 
     public function schedule_syndicate_options_cron() {
 
-        // @TODO Refractor this with new custom capability
+        // @TODO add cap check with selected roles
         if ( !current_user_can( 'manage_options' ) )
             return;
 
@@ -987,7 +999,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /*******  DELETING CONTENT   *******/
     public function delete_slave_posts( $post_ID ) {
 
         // if slave post deletion is not enabled return
