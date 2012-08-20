@@ -296,23 +296,25 @@ class WP_Push_Syndication_Server {
         // if code is not found return
         if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
 
-            ?>
-        <p>Click the authorize button to generate api token</p>
-        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_html($authorization_endpoint); ?>'" value=" Authorize  ">
-        <?php
+            echo '<p>' . esc_html__( 'Click the authorize button to generate api token ', 'push-syndication' ) . '</p>';
+
+?>
+        <input type=button class="button-primary" onClick="parent.location='<?php echo esc_html( $authorization_endpoint ); ?>'" value=" Authorize  ">
+<?php
 
             return;
+
         }
 
         $response = wp_remote_post( 'https://public-api.wordpress.com/oauth2/token', array(
             'method' => 'POST',
             'sslverify' => false,
             'body' => array (
-                'client_id' => $this->push_syndicate_settings['client_id'],
-                'redirect_uri' => $redirect_uri,
+                'client_id'     => $this->push_syndicate_settings['client_id'],
+                'redirect_uri'  => $redirect_uri,
                 'client_secret' => $this->push_syndicate_settings['client_secret'],
-                'code' => $_GET['code'],
-                'grant_type' => 'authorization_code'
+                'code'          => $_GET['code'],
+                'grant_type'    => 'authorization_code'
             ),
         ) );
 
