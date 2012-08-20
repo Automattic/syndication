@@ -193,6 +193,7 @@ class WP_Push_Syndication_Server {
             <?php $this->get_api_token() ?>
 
         </div>
+
 <?php
 
     }
@@ -209,16 +210,16 @@ class WP_Push_Syndication_Server {
         echo '<ul>';
 
         foreach( $post_types as $post_type  ) {
-
 ?>
+
         <li>
             <label>
                 <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo $post_type; ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
                 <?php echo $post_type; ?>
             </label>
         </li>
-<?php
 
+<?php
         }
 
         echo '</ul>';
@@ -236,16 +237,16 @@ class WP_Push_Syndication_Server {
         echo '<ul>';
 
         foreach( $user_roles as $user_role ) {
-
 ?>
+
             <li>
                 <label>
                     <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo $user_role; ?>" <?php echo $this->checked_array( $user_role, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
                     <?php echo $user_role; ?>
                 </label>
             </li>
-<?php
 
+<?php
         }
 
         echo '</ul>';
@@ -293,13 +294,14 @@ class WP_Push_Syndication_Server {
 
         echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
 
-        // if code is not found return
+        // if code is not found return or settings updated return
         if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
 
             echo '<p>' . esc_html__( 'Click the authorize button to generate api token ', 'push-syndication' ) . '</p>';
-
 ?>
+
         <input type=button class="button-primary" onClick="parent.location='<?php echo esc_html( $authorization_endpoint ); ?>'" value=" Authorize  ">
+
 <?php
 
             return;
