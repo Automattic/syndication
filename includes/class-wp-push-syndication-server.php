@@ -292,7 +292,7 @@ class WP_Push_Syndication_Server {
 
     public function get_api_token() {
 
-        $redirect_uri = menu_page_url( 'push-syndicate-settings', false );
+        $redirect_uri           = menu_page_url( 'push-syndicate-settings', false );
         $authorization_endpoint = 'https://public-api.wordpress.com/oauth2/authorize?client_id=' . $this->push_syndicate_settings['client_id'] . '&redirect_uri=' .  $redirect_uri . '&response_type=code';
 
         echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
@@ -314,7 +314,7 @@ class WP_Push_Syndication_Server {
 
         $response = wp_remote_post( 'https://public-api.wordpress.com/oauth2/token', array(
             'sslverify' => false,
-            'body' => array (
+            'body'      => array (
                 'client_id'     => $this->push_syndicate_settings['client_id'],
                 'redirect_uri'  => $redirect_uri,
                 'client_secret' => $this->push_syndicate_settings['client_secret'],
@@ -431,9 +431,9 @@ class WP_Push_Syndication_Server {
 
         echo '<h3>' . esc_html__( 'Select Site Options', 'push-syndication' ) . '</h3>';
 
-        $selected_siteoptions = get_option( 'syn_selected_siteoptions' );
-        $selected_siteoptions = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
-        $site_options = wp_load_alloptions();
+        $selected_siteoptions   = get_option( 'syn_selected_siteoptions' );
+        $selected_siteoptions   = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
+        $site_options           = wp_load_alloptions();
 
         echo '<table>';
         echo '<tbody>';
@@ -506,18 +506,20 @@ class WP_Push_Syndication_Server {
 
         foreach( $sites as $site ) {
 
+            // if site is not enabled return
             $site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true);
             if( $site_enabled != 'on' )
                 continue;
 
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-            $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
-            $result = $client->set_options( $selected_siteoptions, $site->ID );
+            $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+            $result         = $client->set_options( $selected_siteoptions, $site->ID );
             if( !$result ) {
                 $error_sites[] = array(
 
                 );
             }
+
         }
 
         update_option( 'syn_options_error_sites', $error_sites );
@@ -534,7 +536,7 @@ class WP_Push_Syndication_Server {
         global $post;
 
         $transport_type = get_post_meta( $post->ID, 'syn_transport_type', true);
-        $site_enabled = get_post_meta( $post->ID, 'syn_site_enabled', true);
+        $site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true);
 
         // default values
         $transport_type = !empty( $transport_type ) ? $transport_type : 'wp_xmlrpc' ;
@@ -548,7 +550,7 @@ class WP_Push_Syndication_Server {
         try {
             $class = $transport_type . '_client';
             WP_Client_Factory::display_client_settings( $post, $class );
-        } catch(Exception $e) {
+        } catch( Exception $e ) {
             echo $e;
         }
 
@@ -594,7 +596,6 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        // @TODO Refractor this with new custom capability
         if ( !current_user_can( 'manage_options' ) )
             return;
 
