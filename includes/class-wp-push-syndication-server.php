@@ -155,13 +155,13 @@ class WP_Push_Syndication_Server {
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Type Configuration' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
-        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles Configuration', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles');
+        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles Configuration', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
         add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( &$this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
 
-        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts');
+        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
         add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
 
-        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( &$this, 'display_apitoken_description' ), 'api_token');
+        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( &$this, 'display_apitoken_description' ), 'api_token' );
         add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
         add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
 
@@ -214,8 +214,8 @@ class WP_Push_Syndication_Server {
 
             <li>
                 <label>
-                    <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?>/>
-                    <?php echo $post_type; ?>
+                    <input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
+                    <?php echo esc_html( $post_type ); ?>
                 </label>
             </li>
 
@@ -244,7 +244,7 @@ class WP_Push_Syndication_Server {
             <li>
                 <label>
                     <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $user_role ); ?>" <?php echo $this->checked_array( $user_role, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
-                    <?php echo $user_role; ?>
+                    <?php echo esc_html( $user_role ); ?>
                 </label>
             </li>
 
@@ -641,7 +641,7 @@ class WP_Push_Syndication_Server {
         $messages['site'][301] = __( 'Invalid URL' );
 
         return $messages;
-        
+
     }
 
     /******* SYNDICATION METABOXES   *********/
@@ -710,9 +710,9 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function checked_array( $sitegroup, $selected_sitegroups ) {
-        if( !empty( $selected_sitegroups ) ) {
-            if( in_array( $sitegroup, $selected_sitegroups ) ) {
+    public function checked_array( $value, $group ) {
+        if( !empty( $group ) ) {
+            if( in_array( $value, $group ) ) {
                 echo 'checked="checked"';
             }
         }
@@ -743,7 +743,6 @@ class WP_Push_Syndication_Server {
         // @TODO retrieve syndication status and display
     }
 
-    // @TODO scheduling happens before saving?
     public function schedule_syndicate_content_cron() {
 
         global $post;
@@ -777,8 +776,8 @@ class WP_Push_Syndication_Server {
         if( get_transient( 'syn_syndicate_lock' ) == 'locked' )
             return
 
-                // set value as locked, valid for 5 mins
-                set_transient( 'syn_syndicate_lock', 'locked', 60*5 );
+        // set value as locked, valid for 5 mins
+        set_transient( 'syn_syndicate_lock', 'locked', 60*5 );
 
         /** start of critical section **/
 
