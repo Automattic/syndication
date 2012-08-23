@@ -596,9 +596,6 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        if ( !current_user_can( 'manage_options' ) )
-            return;
-
         update_post_meta( $post->ID, 'syn_transport_type', $_POST['transport_type'] );
 
         $site_enabled = isset( $_POST['site_enabled'] ) ? 'on' : 'off';
@@ -645,15 +642,13 @@ class WP_Push_Syndication_Server {
 
     }
 
-    /******* SYNDICATION METABOXES   *********/
     public function add_post_metaboxes() {
 
         // return if no post types supports push syndication
         if( empty( $this->push_syndicate_settings[ 'selected_post_types' ] ) )
             return;
 
-        if ( !current_user_can( 'manage_options' ) )
-            return;
+        // @TODO add cap check
 
         $selected_post_types = $this->push_syndicate_settings[ 'selected_post_types' ];
         foreach( $selected_post_types as $selected_post_type ) {
@@ -666,9 +661,6 @@ class WP_Push_Syndication_Server {
     public function add_syndicate_metabox( ) {
 
         global $post;
-
-        if ( !current_user_can( 'manage_options' ) )
-            return;
 
         // nonce for verification when saving
         wp_nonce_field( plugin_basename( __FILE__ ), 'syndicate_noncename' );
@@ -722,6 +714,8 @@ class WP_Push_Syndication_Server {
 
         global $post;
 
+        // @TODO add cap check
+
         // autosave verification
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
             return;
@@ -753,6 +747,8 @@ class WP_Push_Syndication_Server {
         // if our nonce isn't there, or we can't verify it return
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
             return;
+
+        // @TODO add cap check
 
         $sites = $this->get_sites_by_post_ID( $post->ID );
 
@@ -789,8 +785,8 @@ class WP_Push_Syndication_Server {
             foreach( $sites[ 'selected_sites' ] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-                $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
-                $info = $this->get_site_info( $site->ID, $slave_post_states, $client );
+                $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+                $info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
                 if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
                     $result = $client->new_post( $post_ID );
@@ -809,8 +805,8 @@ class WP_Push_Syndication_Server {
             foreach( $sites[ 'removed_sites' ] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-                $client = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
-                $info = $this->get_site_info( $site->ID, $slave_post_states, $client );
+                $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+                $info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
                 // if the post is not pushed we do not need to delete them
                 if( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
@@ -840,19 +836,17 @@ class WP_Push_Syndication_Server {
 
     public function get_sites_by_post_ID( $post_ID ) {
 
-        $selected_sitegroups = get_post_meta( $post_ID, '_syn_selected_sitegroups', true );
-        $selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
-
-        $old_sitegroups = get_post_meta( $post_ID, '_syn_old_sitegroups', true );
-        $old_sitegroups = !empty( $old_sitegroups ) ? $old_sitegroups : array() ;
-
-        $removed_sitegroups = array_diff( $old_sitegroups, $selected_sitegroups );
+        $selected_sitegroups    = get_post_meta( $post_ID, '_syn_selected_sitegroups', true );
+        $selected_sitegroups    = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
+        $old_sitegroups         = get_post_meta( $post_ID, '_syn_old_sitegroups', true );
+        $old_sitegroups         = !empty( $old_sitegroups ) ? $old_sitegroups : array() ;
+        $removed_sitegroups     = array_diff( $old_sitegroups, $selected_sitegroups );
 
         // initialization
         $data = array(
-            'post_ID' => $post_ID,
-            'selected_sites' => array(),
-            'removed_sites' => array(),
+            'post_ID'           => $post_ID,
+            'selected_sites'    => array(),
+            'removed_sites'     => array(),
         );
 
         if( !empty( $selected_sitegroups ) ) {
@@ -907,13 +901,13 @@ class WP_Push_Syndication_Server {
         // @TODO if sitegroup is deleted?
 
         $results = new WP_Query(array(
-            'post_type' => 'syn_site',
-            'posts_per_page' => -1, // retrieve all posts
-            'tax_query' => array(
+            'post_type'         => 'syn_site',
+            'posts_per_page'    => -1, // retrieve all posts
+            'tax_query'         => array(
                 array(
-                    'taxonomy' => 'syn_sitegroup',
-                    'field' => 'slug',
-                    'terms' => $sitegroup
+                    'taxonomy'  => 'syn_sitegroup',
+                    'field'     => 'slug',
+                    'terms'     => $sitegroup
                 )
             )
         ));
@@ -1001,6 +995,8 @@ class WP_Push_Syndication_Server {
         if( $delete_pushed_posts != 'on' )
             return;
 
+        // @TODO add cap check
+
         wp_schedule_single_event(
             time() - 1,
             'syn_delete_content',
@@ -1015,7 +1011,7 @@ class WP_Push_Syndication_Server {
 
         $delete_error_sites = get_option( 'syn_delete_error_sites' );
         $delete_error_sites = !empty( $delete_error_sites ) ? $delete_error_sites : array() ;
-        $slave_posts = $this->get_slave_posts( $post_ID );
+        $slave_posts        = $this->get_slave_posts( $post_ID );
 
         if( empty( $slave_posts ) )
             return;
@@ -1028,7 +1024,7 @@ class WP_Push_Syndication_Server {
             if( $site_enabled == 'on' ) {
 
                 $transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
-                $client = WP_Client_Factory::get_client( $transport_type , $site_ID );
+                $client         = WP_Client_Factory::get_client( $transport_type , $site_ID );
 
                 if( $client->is_post_exists( $ext_ID ) ) {
 
