@@ -29,7 +29,6 @@ class WP_Client_Factory {
 
 	public static function save_client_settings( $site_ID, $class ) {
 
-		$class = $_POST['transport_type'] . '_client';
 		if( class_exists($class) ) {
 			return call_user_func( array( $class, 'save_settings' ), $site_ID );
 		}
