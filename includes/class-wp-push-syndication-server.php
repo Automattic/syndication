@@ -1049,11 +1049,12 @@ class WP_Push_Syndication_Server {
 
         // array containing states of sites
         $slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
+        $slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
 
         // array containing slave posts as $site_ID => $ext_ID
         $slave_posts = array();
 
-        foreach( (array)$slave_post_states as $state ) {
+        foreach( $slave_post_states as $state ) {
             foreach( $state as $site_ID => $info ) {
                 if( !empty( $info[ 'ext_ID' ] ) ) {
                     $slave_posts[ $site_ID ] = $info[ 'ext_ID' ];
