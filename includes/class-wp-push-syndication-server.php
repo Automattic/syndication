@@ -539,7 +539,7 @@ class WP_Push_Syndication_Server {
         $site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true);
 
         // default values
-        $transport_type = !empty( $transport_type ) ? $transport_type : 'wp_xmlrpc' ;
+        $transport_type = !empty( $transport_type ) ? $transport_type : 'WP_XMLRPC' ;
         $site_enabled   = !empty( $site_enabled ) ? $site_enabled : 'off' ;
 
         // nonce for verification when saving
@@ -571,7 +571,7 @@ class WP_Push_Syndication_Server {
 
     public function display_transports( $transport_type ) {
 
-        echo '<p>Select a transport type</p>';
+        echo '<p>' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</p>';
         echo '<form action="">';
         echo '<select name="transport_type" onchange="this.form.submit()">';
 
@@ -627,19 +627,19 @@ class WP_Push_Syndication_Server {
     public function push_syndicate_admin_messages( $messages ) {
 
         // general error messages
-        $messages['syn_site'][250] = __( 'Transport class not found!' );
-        $messages['syn_site'][251] = __( 'Connection Successful!' );
+        $messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
+        $messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
 
         // xmlrpc error messages.
-        $messages['syn_site'][301] = __( 'Invalid URL.' );
-        $messages['syn_site'][302] = __( 'You do not have sufficient capability to perform this action.' );
-        $messages['syn_site'][303] = __( 'Bad login/pass combination.' );
-        $messages['syn_site'][304] = __( 'XML-RPC services are disabled on this site.' );
-        $messages['syn_site'][305] = __( 'Transport error. Invalid endpoint' );
-        $messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.' );
+        $messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
+        $messages['syn_site'][302] = __( 'You do not have sufficient capability to perform this action.', 'push-syndication' );
+        $messages['syn_site'][303] = __( 'Bad login/pass combination.', 'push-syndication' );
+        $messages['syn_site'][304] = __( 'XML-RPC services are disabled on this site.', 'push-syndication' );
+        $messages['syn_site'][305] = __( 'Transport error. Invalid endpoint', 'push-syndication' );
+        $messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.', 'push-syndication' );
 
         // WordPress.com REST error messages
-        $messages['site'][301] = __( 'Invalid URL' );
+        $messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
 
         return $messages;
 
@@ -667,7 +667,6 @@ class WP_Push_Syndication_Server {
 
         global $post;
 
-        // @TODO Refractor this with new custom capability
         if ( !current_user_can( 'manage_options' ) )
             return;
 
@@ -676,15 +675,15 @@ class WP_Push_Syndication_Server {
 
         // get all sitegroups
         $sitegroups = get_terms( 'syn_sitegroup', array(
-            'fields' => 'all',
-            'hide_empty' => false,
-            'orderby' => 'name'
+            'fields'        => 'all',
+            'hide_empty'    => false,
+            'orderby'       => 'name'
         ) );
 
         // if there are no sitegroups defined retrun
         if( empty( $sitegroups ) ) {
-            echo '<p>No sitegroups defined yet. You must group your sites into sitegroups to syndicate content</p>';
-            echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=sitegroups&post_type=site' ) . '" target="_blank" >Create new</a></p>';
+            echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+            echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=sitegroups&post_type=site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
             return;
         }
 
