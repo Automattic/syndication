@@ -34,7 +34,7 @@ class WP_Push_Syndication_Server {
         add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
 
         // firing a cron job
-        add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content_cron') );
+        add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content') );
 
         // cron hooks
         add_action( 'syn_syndicate_content', array(&$this, 'syndicate_content') );
@@ -742,7 +742,7 @@ class WP_Push_Syndication_Server {
         // @TODO retrieve syndication status and display
     }
 
-    public function schedule_syndicate_content_cron() {
+    public function schedule_syndicate_content() {
 
         global $post;
 
