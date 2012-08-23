@@ -1,7 +1,5 @@
 <?php
 
-// @TODO add help using contextual_help
-
 require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
 class WP_Push_Syndication_Server {
