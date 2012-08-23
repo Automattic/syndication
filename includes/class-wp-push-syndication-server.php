@@ -1049,7 +1049,8 @@ class WP_Push_Syndication_Server {
 
         // array containing states of sites
         $slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
-        $slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
+        if ( empty( $slave_post_states ) )
+            return;
 
         // array containing slave posts as $site_ID => $ext_ID
         $slave_posts = array();
