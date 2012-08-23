@@ -16,7 +16,7 @@ class WP_Push_Syndication_Server {
         add_action( 'init', array( &$this, 'init' ) );
         add_action( 'admin_init', array( &$this, 'admin_init' ) );
 
-        // plugin settings submenus
+        // submenus
         add_action( 'admin_menu', array( &$this, 'register_syndicate_settings' ) );
 
         // defining sites
@@ -641,6 +641,7 @@ class WP_Push_Syndication_Server {
         $messages['site'][301] = __( 'Invalid URL' );
 
         return $messages;
+        
     }
 
     /******* SYNDICATION METABOXES   *********/
