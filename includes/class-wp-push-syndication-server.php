@@ -933,7 +933,9 @@ class WP_Push_Syndication_Server {
         foreach( $slave_post_states as $state => $sites  ) {
             if(   array_key_exists( $site_ID, $sites )   &&   !empty( $sites[ $site_ID ]['ext_ID'] )   ) {
                 if( $client->is_post_exists( $sites[ $site_ID ]['ext_ID'] ) ) {
-                    $info = array( 'state' => $state, 'ext_ID' => $sites[ $site_ID ]['ext_ID'] );
+                    $info = array(
+                        'state'     => $state,
+                        'ext_ID'    => $sites[ $site_ID ]['ext_ID'] );
                     unset( $slave_post_states[ $state ] [$site_ID] );
                     return $info;
                 } else {
