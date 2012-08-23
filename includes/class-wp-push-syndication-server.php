@@ -6,7 +6,7 @@ class WP_Push_Syndication_Server {
 
     public  $push_syndicate_settings;
     public  $push_syndicate_default_settings;
-    public  $push_syndicate_tranports;
+    public  $push_syndicate_transports;
 
     private $version = '2.0';
 
@@ -107,7 +107,7 @@ class WP_Push_Syndication_Server {
     public function admin_init() {
 
         // @TODO define more parameters
-        $this->push_syndicate_tranports = array(
+        $this->push_syndicate_transports = array(
             'WP_XMLRPC'    => array(
                 'name'  => 'WordPress XMLRPC',
             ),
@@ -573,7 +573,7 @@ class WP_Push_Syndication_Server {
         echo '<form action="">';
         echo '<select name="transport_type" onchange="this.form.submit()">';
 
-        foreach( $this->push_syndicate_tranports as $key => $value ) {
+        foreach( $this->push_syndicate_transports as $key => $value ) {
             echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . esc_html( $value['name'] ) . '</option>';
         }
 
