@@ -730,7 +730,6 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        // @TODO Refractor this with new custom capability
         if ( !current_user_can( 'manage_options' ) )
             return;
 
@@ -753,10 +752,6 @@ class WP_Push_Syndication_Server {
 
         // if our nonce isn't there, or we can't verify it return
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
-            return;
-
-        // @TODO Refractor this with new custom capability
-        if ( !current_user_can( 'manage_options' ) )
             return;
 
         $sites = $this->get_sites_by_post_ID( $post->ID );
