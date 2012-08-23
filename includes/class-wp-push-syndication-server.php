@@ -369,7 +369,7 @@ class WP_Push_Syndication_Server {
         update_option( 'syn_selected_siteoptions', $_POST['syn_selected_siteoptions'] );
         update_option( 'syn_selected_sitegroups', $_POST['syn_selected_sitegroups'] );
 
-        $this->schedule_syndicate_options_cron();
+        $this->schedule_syndicate_options();
 
         ?>
 
@@ -474,7 +474,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_syndicate_options_cron() {
+    public function schedule_syndicate_options() {
 
         // @TODO add cap check with selected roles
         if ( !current_user_can( 'manage_options' ) )
