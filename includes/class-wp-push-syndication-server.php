@@ -366,8 +366,11 @@ class WP_Push_Syndication_Server {
 
     public function display_site_options() {
 
-        update_option( 'syn_selected_siteoptions', $_POST['syn_selected_siteoptions'] );
-        update_option( 'syn_selected_sitegroups', $_POST['syn_selected_sitegroups'] );
+        $selected_siteoptions    = !empty( $_POST['syn_selected_siteoptions'] ) ? $_POST['syn_selected_siteoptions'] : array() ;
+        $selected_sitegroups   = !empty( $_POST['syn_selected_sitegroups'] ) ? $_POST['syn_selected_sitegroups'] : array() ;
+
+        update_option( 'syn_selected_siteoptions', $selected_siteoptions );
+        update_option( 'syn_selected_sitegroups', $selected_sitegroups);
 
         $this->schedule_syndicate_options();
 
