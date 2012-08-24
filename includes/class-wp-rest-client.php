@@ -44,6 +44,7 @@ class WP_REST_Client implements WP_Client{
 				'excerpt'       => $post['post_excerpt'],
 				'status'        => $post['post_status'],
 				'password'      => $post['post_password'],
+                'date'          => $post['post_date_gmt'],
 				'categories'    => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 				'tags'          => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 			),
@@ -84,6 +85,7 @@ class WP_REST_Client implements WP_Client{
 				'excerpt'       => $post['post_excerpt'],
 				'status'        => $post['post_status'],
 				'password'      => $post['post_password'],
+                'date'          => $post['post_date_gmt'],
 				'categories'    => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 				'tags'          => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 			),
