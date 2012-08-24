@@ -73,12 +73,12 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         // rearranging arguments
         $args = array();
-        $args['post_title'] = $post['post_title'];
-        $args['post_content'] = $post['post_content'];
-        $args['post_excerpt'] = $post['post_excerpt'];
-        $args['post_status'] = $post['post_status'];
-        $args['post_type'] = $post['post_type'];
-        $args['wp_password'] = $post['post_password'];
+        $args['post_title']     = $post['post_title'];
+        $args['post_content']   = $post['post_content'];
+        $args['post_excerpt']   = $post['post_excerpt'];
+        $args['post_status']    = $post['post_status'];
+        $args['post_type']      = $post['post_type'];
+        $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $post['post_date_gmt'];
 
 	    // @TODO extend this to custom taxonomies
