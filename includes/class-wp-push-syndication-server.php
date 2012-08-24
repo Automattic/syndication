@@ -409,6 +409,13 @@ class WP_Push_Syndication_Server {
             'orderby'       => 'name'
         ) );
 
+        // if there are no sitegroups defined return
+        if( empty( $sitegroups ) ) {
+            echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+            echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=sitegroups&post_type=site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+            return;
+        }
+
         foreach( $sitegroups as $sitegroup ) {
 
             ?>
@@ -476,9 +483,12 @@ class WP_Push_Syndication_Server {
 
     public function schedule_syndicate_options() {
 
-        // @TODO add cap check
+        if ( !current_user_can( 'manage_options' ) )
+            return;
 
         $selected_sitegroups = get_option( 'syn_selected_sitegroups' );
+        if( empty( $selected_sitegroups ) )
+            return;
 
         $sites = array();
         foreach( $selected_sitegroups as $selected_sitegroup ) {
@@ -671,7 +681,7 @@ class WP_Push_Syndication_Server {
             'orderby'       => 'name'
         ) );
 
-        // if there are no sitegroups defined retrun
+        // if there are no sitegroups defined return
         if( empty( $sitegroups ) ) {
             echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
             echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=sitegroups&post_type=site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
