@@ -13,7 +13,7 @@ class WP_Client_Factory {
 			return new $class( $site_ID );
 		}
 
-		throw new Exception('transport class not found');
+		throw new Exception(' transport class not found' );
 
 	}
 
@@ -23,7 +23,7 @@ class WP_Client_Factory {
 			return call_user_func( array( $class, 'display_settings' ), $site );
 		}
 
-		throw new Exception('transport class not found');
+		throw new Exception( 'transport class not found' );
 
 	}
 
@@ -33,7 +33,7 @@ class WP_Client_Factory {
 			return call_user_func( array( $class, 'save_settings' ), $site_ID );
 		}
 
-		throw new Exception('transport class not found');
+		throw new Exception( 'transport class not found' );
 
 	}
 

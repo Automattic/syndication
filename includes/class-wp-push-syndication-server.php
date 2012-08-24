@@ -787,7 +787,7 @@ class WP_Push_Syndication_Server {
 
         require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
-        $post_ID = $sites[ 'post_ID' ];
+        $post_ID = $sites['post_ID'];
 
         // an array containing states of sites
         $slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
