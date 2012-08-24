@@ -780,9 +780,9 @@ class WP_Push_Syndication_Server {
         $slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
         $slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
 
-        if( !empty( $sites[ 'selected_sites' ] ) ) {
+        if( !empty( $sites['selected_sites'] ) ) {
 
-            foreach( $sites[ 'selected_sites' ] as $site ) {
+            foreach( $sites['selected_sites'] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
                 $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
@@ -800,9 +800,9 @@ class WP_Push_Syndication_Server {
 
         }
 
-        if( !empty( $sites[ 'removed_sites' ]) ) {
+        if( !empty( $sites['removed_sites'] ) ) {
 
-            foreach( $sites[ 'removed_sites' ] as $site ) {
+            foreach( $sites['removed_sites'] as $site ) {
 
                 $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
                 $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
