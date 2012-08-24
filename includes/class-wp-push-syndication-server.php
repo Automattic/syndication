@@ -643,10 +643,11 @@ class WP_Push_Syndication_Server {
     public function add_post_metaboxes() {
 
         // return if no post types supports push syndication
-        if( empty( $this->push_syndicate_settings[ 'selected_post_types' ] ) )
+        if( empty( $this->push_syndicate_settings['selected_post_types'] ) )
             return;
 
-        // @TODO add cap check
+        if( $this->current_user_can_syndicate() )
+            return;
 
         $selected_post_types = $this->push_syndicate_settings[ 'selected_post_types' ];
         foreach( $selected_post_types as $selected_post_type ) {
@@ -746,7 +747,8 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        // @TODO add cap check
+        if( $this->current_user_can_syndicate() )
+            return;
 
         $sites = $this->get_sites_by_post_ID( $post->ID );
 
