@@ -237,14 +237,14 @@ class WP_Push_Syndication_Server {
 
         echo '<ul>';
 
-        foreach( $user_roles as $user_role ) {
+        foreach( $user_roles as $key => $value ) {
 
             ?>
 
             <li>
                 <label>
-                    <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $user_role ); ?>" <?php echo $this->checked_array( $user_role, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
-                    <?php echo esc_html( $user_role ); ?>
+                    <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $key ); ?>" <?php echo $this->checked_array( $key, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
+                    <?php echo esc_html( $value ); ?>
                 </label>
             </li>
 
