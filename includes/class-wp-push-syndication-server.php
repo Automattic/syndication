@@ -152,10 +152,10 @@ class WP_Push_Syndication_Server {
 
     public function display_syndicate_settings() {
 
-        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Type Configuration' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
+        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
-        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles Configuration', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
+        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
         add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( &$this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
 
         add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
