@@ -34,7 +34,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status']    = $post['post_status'];
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $post['post_date_gmt'];
+        $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 
 	    // @TODO extend this to custom taxonomies
@@ -79,7 +79,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status']    = $post['post_status'];
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $post['post_date_gmt'];
+        $args['post_date_gmt']  = $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
@@ -208,6 +208,20 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         return true;
 
+    }
+
+    protected function _convert_date_gmt( $date_gmt, $date ) {
+        if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
+            return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
+        }
+        return $this->_convert_date( $date_gmt );
+    }
+
+    protected function _convert_date( $date ) {
+        if ( $date === '0000-00-00 00:00:00' ) {
+            return new IXR_Date( '00000000T00:00:00Z' );
+        }
+        return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
     }
 
 	public function get_response() {
