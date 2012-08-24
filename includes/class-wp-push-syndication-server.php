@@ -476,9 +476,7 @@ class WP_Push_Syndication_Server {
 
     public function schedule_syndicate_options() {
 
-        // @TODO add cap check with selected roles
-        if ( !current_user_can( 'manage_options' ) )
-            return;
+        // @TODO add cap check
 
         $selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 
@@ -1066,6 +1064,11 @@ class WP_Push_Syndication_Server {
         }
 
         return $slave_posts;
+
+    }
+
+    // checking user capability
+    public function current_user_can_syndicate() {
 
     }
 
