@@ -100,7 +100,7 @@ class WP_Push_Syndication_Server {
             'selected_user_roles' => array( 'Administrator' )
         );
 
-        $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->default_settings );
+        $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
 
     }
 
