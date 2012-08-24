@@ -13,12 +13,12 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     function __construct( $site_ID ) {
 
 	    // @TODO check port, timeout etc
-		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
-		$server = esc_url_raw( $server . '/xmlrpc.php' );
-
-	    parent::__construct( $server );
+		$server         = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
+		$server         = esc_url_raw( $server . '/xmlrpc.php' );
         $this->username = get_post_meta( $site_ID, 'syn_site_username', true);
         $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
+
+        parent::__construct( $server );
 
     }
 
@@ -28,15 +28,14 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         // rearranging arguments
         $args = array();
-        $args['post_title'] = $post['post_title'];
-        $args['post_content'] = $post['post_content'];
-        $args['post_excerpt'] = $post['post_excerpt'];
-        $args['post_status'] = $post['post_status'];
-        $args['post_type'] = $post['post_type'];
-        $args['wp_password'] = $post['post_password'];
+        $args['post_title']     = $post['post_title'];
+        $args['post_content']   = $post['post_content'];
+        $args['post_excerpt']   = $post['post_excerpt'];
+        $args['post_status']    = $post['post_status'];
+        $args['post_type']      = $post['post_type'];
+        $args['wp_password']    = $post['post_password'];
+        $args['post_date_gmt']  = $post['post_date_gmt'];
 
-        // @TODO add date arguement
-        // @TODO add featured image
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
@@ -45,9 +44,12 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 	    );
 
 	    // post meta
-	    $custom_fields= array();
-	    $custom_fields[] = array( 'key' => 'masterpost_url', 'value' =>  $post['guid'] );
-	    $args['custom_fields'] = $custom_fields;
+        $args['custom_fields'] = array(
+            array(
+                'key'   => 'masterpost_url',
+                'value' =>  $post['guid']
+            )
+        );
 
         $result = $this->query(
             'wp.newPost',
@@ -77,6 +79,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status'] = $post['post_status'];
         $args['post_type'] = $post['post_type'];
         $args['wp_password'] = $post['post_password'];
+        $args['post_date_gmt']  = $post['post_date_gmt'];
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
@@ -85,9 +88,12 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 	    );
 
 	    // post meta
-	    $custom_fields= array();
-	    $custom_fields[] = array( 'key' => 'masterpost_url', 'value' =>  $post['guid'] );
-	    $args['custom_fields'] = $custom_fields;
+	    $args['custom_fields'] = array(
+            array(
+                'key'   => 'masterpost_url',
+                'value' =>  $post['guid']
+            )
+        );
 
         $result = $this->query(
             'wp.editPost',
