@@ -495,7 +495,7 @@ class WP_Push_Syndication_Server {
 
     public function syndicate_options( $sites ) {
 
-        require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
+        require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
         $selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine( get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' ) ) );
 
@@ -772,7 +772,7 @@ class WP_Push_Syndication_Server {
 
         /** start of critical section **/
 
-        require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
+        require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
         $post_ID = $sites[ 'post_ID' ];
 
@@ -1009,7 +1009,7 @@ class WP_Push_Syndication_Server {
 
     public function delete_content( $post_ID ) {
 
-        require_once( dirname( __FILE__ ) . '/includes/class-wp-client-factory.php' );
+        require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
         $delete_error_sites = get_option( 'syn_delete_error_sites' );
         $delete_error_sites = !empty( $delete_error_sites ) ? $delete_error_sites : array() ;
