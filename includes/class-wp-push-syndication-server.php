@@ -646,7 +646,7 @@ class WP_Push_Syndication_Server {
         if( empty( $this->push_syndicate_settings['selected_post_types'] ) )
             return;
 
-        if( $this->current_user_can_syndicate() )
+        if( !$this->current_user_can_syndicate() )
             return;
 
         $selected_post_types = $this->push_syndicate_settings[ 'selected_post_types' ];
@@ -747,7 +747,7 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        if( $this->current_user_can_syndicate() )
+        if( !$this->current_user_can_syndicate() )
             return;
 
         $sites = $this->get_sites_by_post_ID( $post->ID );
