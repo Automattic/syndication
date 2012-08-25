@@ -265,9 +265,13 @@ class WP_Push_Syndication_Server {
 
     public function display_default_post_type_selection() {
 
+        $post_types = get_post_types();
+
     }
 
     public function display_default_taxonomy_selection() {
+
+        $taxonomies = get_taxonomies();
 
     }
 
