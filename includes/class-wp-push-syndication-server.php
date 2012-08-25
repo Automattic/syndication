@@ -253,11 +253,11 @@ class WP_Push_Syndication_Server {
     }
 
     public  function display_pull_options_description() {
-
+        echo esc_html__( 'Configure options for pulling content', 'push-syndication' );
     }
 
     public function display_time_interval_selection() {
-
+        echo '<input type="text" size=10 name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
     }
 
     public function display_default_author_selection() {
@@ -354,11 +354,11 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_client_id() {
-        echo '<input type="text" size=100 name="push_syndicate_settings[client_id]" value="' . esc_html( $this->push_syndicate_settings['client_id'] ) . '"/>';
+        echo '<input type="text" size=100 name="push_syndicate_settings[client_id]" value="' . esc_attr( $this->push_syndicate_settings['client_id'] ) . '"/>';
     }
 
     public function display_client_secret() {
-        echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_html( $this->push_syndicate_settings['client_secret'] ) . '"/>';
+        echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_attr( $this->push_syndicate_settings['client_secret'] ) . '"/>';
     }
 
     public function get_api_token() {
