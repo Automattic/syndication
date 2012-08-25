@@ -261,6 +261,10 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_default_author_selection() {
+        wp_dropdown_users();
+    }
+
+    public function display_default_post_type_selection() {
 
     }
 
