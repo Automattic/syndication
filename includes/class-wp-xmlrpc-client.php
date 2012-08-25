@@ -242,23 +242,21 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		$site_username = get_post_meta( $site->ID, 'syn_site_username', true);
 		$site_password = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_password', true) );
 
-		// @TODO refresh UI
-
 ?>
 		<p>
-			<label for=site_url>Enter a valid site URL</label>
+			<label for=site_url><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
 		</p>
 		<p>
-			<label for="site_username">Enter Username</label>
+			<label for="site_username"><?php echo esc_html__( 'Enter Username', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="site_username" id="site_username" size="100" value="<?php echo esc_attr( $site_username ); ?>" />
 		</p>
 		<p>
-			<label>Enter Password</label>
+			<label><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="password" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
