@@ -114,6 +114,9 @@ class WP_Push_Syndication_Server {
             'WP_REST'      => array(
                 'name'  => 'WordPress.com REST',
             ),
+            'WP_RSS'      => array(
+                'name'  => 'WordPress RSS',
+            ),
         );
 
         // register styles and scripts
