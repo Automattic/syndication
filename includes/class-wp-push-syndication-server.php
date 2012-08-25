@@ -37,9 +37,9 @@ class WP_Push_Syndication_Server {
         add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content') );
 
         // cron hooks
-        add_action( 'syn_syndicate_content', array(&$this, 'syndicate_content') );
+        add_action( 'syn_push_content', array(&$this, 'push_content') );
         add_action( 'syn_delete_content', array(&$this, 'delete_content') );
-        add_action( 'syn_syndicate_options', array(&$this, 'syndicate_options') );
+        add_action( 'syn_push_options', array(&$this, 'push_options') );
 
     }
 
@@ -466,7 +466,7 @@ class WP_Push_Syndication_Server {
         update_option( 'syn_selected_siteoptions', $selected_siteoptions );
         update_option( 'syn_selected_sitegroups', $selected_sitegroups);
 
-        $this->schedule_syndicate_options();
+        $this->schedule_push_options();
 
         ?>
 
@@ -578,7 +578,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_syndicate_options() {
+    public function schedule_push_options() {
 
         if ( !current_user_can( 'manage_options' ) )
             return;
@@ -594,13 +594,13 @@ class WP_Push_Syndication_Server {
 
         wp_schedule_single_event(
             time() - 1,
-            'syn_syndicate_options',
+            'syn_push_options',
             array( $sites )
         );
 
     }
 
-    public function syndicate_options( $sites ) {
+    public function push_options( $sites ) {
 
         require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
@@ -842,7 +842,7 @@ class WP_Push_Syndication_Server {
         // @TODO retrieve syndication status and display
     }
 
-    public function schedule_syndicate_content() {
+    public function schedule_push_content() {
 
         global $post;
 
@@ -861,14 +861,14 @@ class WP_Push_Syndication_Server {
 
         wp_schedule_single_event(
             time() - 1,
-            'syn_syndicate_content',
+            'syn_push_content',
             array( $sites )
         );
 
     }
 
     // cron job function to syndicate content
-    public function syndicate_content( $sites ) {
+    public function push_content( $sites ) {
 
         // if another process running on it return
         if( get_transient( 'syn_syndicate_lock' ) == 'locked' )
@@ -1097,7 +1097,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function delete_slave_posts( $post_ID ) {
+    public function schedule_delete_slave_posts( $post_ID ) {
 
         // if slave post deletion is not enabled return
         $delete_pushed_posts =  !empty( $this->push_syndicate_settings[ 'delete_pushed_posts' ] ) ? $this->push_syndicate_settings[ 'delete_pushed_posts' ] : 'off' ;
@@ -1184,6 +1184,14 @@ class WP_Push_Syndication_Server {
         $match = array_intersect( $current_user_roles, $selected_user_roles );
 
         return !empty( $match );
+
+    }
+
+    public function schedule_pull_content() {
+
+    }
+
+    public function pull_content() {
 
     }
 
