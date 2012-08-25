@@ -259,7 +259,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function display_time_interval_selection() {
-        echo '<input type="text" size=10 name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
+        echo '<input type="text" size="10" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
     }
 
     public function display_default_author_selection() {
@@ -270,7 +270,7 @@ class WP_Push_Syndication_Server {
 
         $post_types = get_post_types();
 
-        echo '<select name="push_syndicate_settings[pull_default_post_type]">';
+        echo '<select name="push_syndicate_settings[pull_default_post_type]" >';
 
         foreach( $post_types as $post_type ) {
             echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $this->push_syndicate_settings['pull_default_post_type'] ) . '>' . esc_html( $post_type )  . '</option>';
@@ -284,7 +284,7 @@ class WP_Push_Syndication_Server {
 
         $taxonomies = get_taxonomies();
 
-        echo '<select name="push_syndicate_settings[pull_default_taxonomy]">';
+        echo '<select name="push_syndicate_settings[pull_default_taxonomy]" >';
 
         foreach( $taxonomies as $taxonomy ) {
             echo '<option value="' . esc_attr( $taxonomy ) . '"' . selected( $taxonomy, $this->push_syndicate_settings['pull_default_taxonomy'] ) . '>' . esc_html( $taxonomy )  . '</option>';
