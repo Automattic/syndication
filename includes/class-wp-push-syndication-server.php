@@ -144,7 +144,7 @@ class WP_Push_Syndication_Server {
         $settings['selected_post_types']    = $raw_settings['selected_post_types'];
         $settings['delete_pushed_posts']    = $raw_settings['delete_pushed_posts'];
 
-        return $raw_settings;
+        return $settings;
 
     }
 
