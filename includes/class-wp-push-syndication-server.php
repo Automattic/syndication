@@ -1191,7 +1191,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function pull_content() {
+    public function pull_content( $sites ) {
 
     }
 
