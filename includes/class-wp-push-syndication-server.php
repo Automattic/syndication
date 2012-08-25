@@ -152,8 +152,8 @@ class WP_Push_Syndication_Server {
 
     public function display_syndicate_settings() {
 
-        add_settings_section( 'push_syndicate_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( &$this, 'display_pull_sitegroups_description' ), 'push_syndicate_sitegroups' );
-        add_settings_field( 'sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( &$this, 'display_pull_sitegroups_selection' ), 'push_syndicate_sitegroups', 'push_syndicate_sitegroups' );
+        add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( &$this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
+        add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( &$this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
@@ -179,6 +179,8 @@ class WP_Push_Syndication_Server {
             <form action="options.php" method="post">
 
                 <?php settings_fields( 'push_syndicate_settings' ); ?>
+
+                <?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
 
                 <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
