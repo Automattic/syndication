@@ -146,6 +146,7 @@ class WP_Push_Syndication_Server {
         $settings['pull_time_interval']         = intval( $raw_settings['pull_time_interval'] );
         $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
 
+        $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
         return $settings;
 
@@ -1190,7 +1191,18 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_pull_content() {
+    public function schedule_pull_content( $selected_sitegroups ) {
+
+        if ( !current_user_can( 'manage_options' ) )
+            return;
+
+        if( empty( $selected_sitegroups ) )
+            return;
+
+        $sites = array();
+        foreach( $selected_sitegroups as $selected_sitegroup ) {
+            $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
+        }
 
     }
 
