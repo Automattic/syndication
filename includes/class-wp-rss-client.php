@@ -79,7 +79,7 @@ class WP_RSS_Client implements WP_Client{
 
     public static function save_settings($site_ID)
     {
-        // TODO: Implement save_settings() method.
+        update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
     }
 
     public function get_post( $ext_ID )
