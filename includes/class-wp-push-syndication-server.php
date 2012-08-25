@@ -270,7 +270,7 @@ class WP_Push_Syndication_Server {
         echo '<select>';
 
         foreach( $post_types as $post_type ) {
-
+            echo '<option value=""></option>';
         }
 
         echo '</select>';
@@ -284,7 +284,7 @@ class WP_Push_Syndication_Server {
         echo '<select>';
 
         foreach( $taxonomies as $taxonomy ) {
-
+            echo '<option value=""></option>';
         }
 
         echo '</select>';
