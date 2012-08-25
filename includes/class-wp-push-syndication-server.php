@@ -273,7 +273,7 @@ class WP_Push_Syndication_Server {
         echo '<select name="push_syndicate_settings[pull_default_post_type]">';
 
         foreach( $post_types as $post_type ) {
-            echo '<option value="' . esc_attr( $post_type ) . '">' . esc_html( $post_type )  . '</option>';
+            echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $this->push_syndicate_settings['pull_default_post_type'] ) . '>' . esc_html( $post_type )  . '</option>';
         }
 
         echo '</select>';
@@ -287,7 +287,7 @@ class WP_Push_Syndication_Server {
         echo '<select name="push_syndicate_settings[pull_default_taxonomy]">';
 
         foreach( $taxonomies as $taxonomy ) {
-            echo '<option value="' . esc_attr( $taxonomy ) . '">' . esc_html( $taxonomy )  . '</option>';
+            echo '<option value="' . esc_attr( $taxonomy ) . '"' . selected( $taxonomy, $this->push_syndicate_settings['pull_default_taxonomy'] ) . '>' . esc_html( $taxonomy )  . '</option>';
         }
 
         echo '</select>';
