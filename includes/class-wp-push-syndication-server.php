@@ -267,11 +267,27 @@ class WP_Push_Syndication_Server {
 
         $post_types = get_post_types();
 
+        echo '<select>';
+
+        foreach( $post_types as $post_type ) {
+
+        }
+
+        echo '</select>';
+
     }
 
     public function display_default_taxonomy_selection() {
 
         $taxonomies = get_taxonomies();
+
+        echo '<select>';
+
+        foreach( $taxonomies as $taxonomy ) {
+
+        }
+
+        echo '</select>';
 
     }
 
