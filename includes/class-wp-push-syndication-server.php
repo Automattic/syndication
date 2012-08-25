@@ -1208,6 +1208,22 @@ class WP_Push_Syndication_Server {
 
     public function pull_content( $sites ) {
 
+        foreach( $sites as $site ) {
+
+            $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
+            $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+            $posts          = $client->get_posts();
+
+            foreach( $posts as $post ) {
+
+                $result = wp_insert_post( array(
+                    
+                ) );
+
+            }
+
+        }
+
     }
 
 }
