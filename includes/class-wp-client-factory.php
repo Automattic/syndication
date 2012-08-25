@@ -1,8 +1,8 @@
 <?php
 
-// @TODO load all the classes dynamically
 include_once( dirname( __FILE__ ) . '/class-wp-xmlrpc-client.php' );
 include_once( dirname( __FILE__ ) . '/class-wp-rest-client.php' );
+include_once( dirname( __FILE__ ) . '/class-wp-rss-client.php' );
 
 class WP_Client_Factory {
 
