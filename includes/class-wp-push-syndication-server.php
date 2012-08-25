@@ -152,7 +152,10 @@ class WP_Push_Syndication_Server {
 
     public function display_syndicate_settings() {
 
-        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types');
+        add_settings_section( 'push_syndicate_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( &$this, 'display_pull_sitegroups_description' ), 'push_syndicate_sitegroups' );
+        add_settings_field( 'sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( &$this, 'display_pull_sitegroups_selection' ), 'push_syndicate_sitegroups', 'push_syndicate_sitegroups' );
+
+        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
         add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
@@ -194,6 +197,45 @@ class WP_Push_Syndication_Server {
         </div>
 
         <?php
+
+    }
+
+    public function display_pull_sitegroups_description() {
+        echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+    }
+
+    public function display_pull_sitegroups_selection() {
+
+
+        // get all sitegroups
+        $sitegroups = get_terms( 'syn_sitegroup', array(
+            'fields'        => 'all',
+            'hide_empty'    => false,
+            'orderby'       => 'name'
+        ) );
+
+        // if there are no sitegroups defined return
+        if( empty( $sitegroups ) ) {
+            echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+            echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=sitegroups&post_type=site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+            return;
+        }
+
+        foreach( $sitegroups as $sitegroup ) {
+
+            ?>
+
+            <p>
+                <label>
+                    <input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $this->push_syndicate_settings['selected_pull_sitegroups'] ) ?> />
+                    <?php echo esc_html( $sitegroup->name ); ?>
+                </label>
+                <?php echo esc_html( $sitegroup->description ); ?>
+            </p>
+
+            <?php
+
+        }
 
     }
 
@@ -386,7 +428,7 @@ class WP_Push_Syndication_Server {
 
                 <?php $this->display_sitegroups_selection(); ?>
 
-                <?php $this->display_site_options_selections(); ?>
+                <?php $this->display_site_options_selection(); ?>
 
                 <?php submit_button( '  Push Options  ' ); ?>
 
@@ -437,7 +479,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function display_site_options_selections() {
+    public function display_site_options_selection() {
 
         echo '<h3>' . esc_html__( 'Select Site Options', 'push-syndication' ) . '</h3>';
 
