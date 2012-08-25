@@ -1,8 +1,9 @@
 <?php
 
+include_once( ABSPATH . 'wp-includes/class-simplepie.php' );
 include_once( dirname(__FILE__) . '/interface-wp-client.php' );
 
-class WP_RSS_Client implements WP_Client{
+class WP_RSS_Client extends SimplePie implements WP_Client{
 
     private $response;
     private $error_message;
