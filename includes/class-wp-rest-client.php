@@ -225,22 +225,23 @@ class WP_REST_Client implements WP_Client{
     ?>
 
 	<p>
-		To generate the following information automatically please visit the <a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank">settings page</a>
+        <?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
+        <a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php echo esc_html__( 'settings page', 'push-syndication' ); ?></a>
 	</p>
 	<p>
-		<label for=site_token>Enter API Token</label>
+		<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
 	</p>
 	<p>
 		<input type="text" name="site_token" id="site_token" size="100" value="<?php echo esc_html( $site_token ); ?>" />
 	</p>
 	<p>
-		<label for=site_id>Enter Blog ID</label>
+		<label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
 	</p>
 	<p>
 		<input type="text" name="site_id" id="site_id" size="100" value="<?php echo esc_html( $site_id ); ?>" />
 	</p>
 	<p>
-		<label for=site_url>Enter a valid Blog URL</label>
+		<label for=site_url><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
 	</p>
 	<p>
 		<input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
@@ -265,22 +266,12 @@ class WP_REST_Client implements WP_Client{
 		// TODO: Implement set_options() method.
 	}
 
-    /**
-     * Retrieves a single post from a slave site.
-     *
-     * @return  boolean true on success false on failure.
-     */
-    public function get_post()
+    public function get_post( $ext_ID )
     {
         // TODO: Implement get_post() method.
     }
 
-    /**
-     * Retrieves a list of posts from a slave site.
-     *
-     * @return  boolean true on success false on failure.
-     */
-    public function get_posts()
+    public function get_posts( $args )
     {
         // TODO: Implement get_posts() method.
     }
