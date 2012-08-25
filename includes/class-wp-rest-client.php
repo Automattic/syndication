@@ -264,4 +264,24 @@ class WP_REST_Client implements WP_Client{
 	{
 		// TODO: Implement set_options() method.
 	}
+
+    /**
+     * Retrieves a single post from a slave site.
+     *
+     * @return  boolean true on success false on failure.
+     */
+    public function get_post()
+    {
+        // TODO: Implement get_post() method.
+    }
+
+    /**
+     * Retrieves a list of posts from a slave site.
+     *
+     * @return  boolean true on success false on failure.
+     */
+    public function get_posts()
+    {
+        // TODO: Implement get_posts() method.
+    }
 }

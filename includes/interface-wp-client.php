@@ -30,6 +30,20 @@ interface WP_Client {
 	 */
 	public function delete_post( $ext_ID );
 
+    /**
+     * Retrieves a single post from a slave site.
+     *
+     * @return  boolean true on success false on failure.
+     */
+    public function get_post();
+
+    /**
+     * Retrieves a list of posts from a slave site.
+     *
+     * @return  boolean true on success false on failure.
+     */
+    public function get_posts();
+
 	/**
 	 * Deletes an existing post in the slave site.
 	 *

@@ -284,4 +284,13 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
 	}
 
+    public function get_post()
+    {
+        // TODO: Implement get_post() method.
+    }
+
+    public function get_posts()
+    {
+        // TODO: Implement get_posts() method.
+    }
 }
