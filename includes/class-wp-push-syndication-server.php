@@ -155,6 +155,12 @@ class WP_Push_Syndication_Server {
         add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( &$this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
         add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( &$this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
+        add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( &$this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
+        add_settings_field( 'pull_time_interval', esc_html__( 'specify time interval in milliseconds', 'push-syndication' ), array( &$this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_field( 'pull_default_author', esc_html__( 'specify default author', 'push-syndication' ), array( &$this, 'display_default_author_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_field( 'pull_default_post_type', esc_html__( 'specify default post type', 'push-syndication' ), array( &$this, 'display_default_post_type_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_field( 'pull_default_taxonomy', esc_html__( 'specify default taxonomy', 'push-syndication' ), array( &$this, 'display_default_taxonomy_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
@@ -181,6 +187,8 @@ class WP_Push_Syndication_Server {
                 <?php settings_fields( 'push_syndicate_settings' ); ?>
 
                 <?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
+
+                <?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
 
                 <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
@@ -238,6 +246,22 @@ class WP_Push_Syndication_Server {
             <?php
 
         }
+
+    }
+
+    public  function display_pull_options_description() {
+
+    }
+
+    public function display_time_interval_selection() {
+
+    }
+
+    public function display_default_author_selection() {
+
+    }
+
+    public function display_default_taxonomy_selection() {
 
     }
 
