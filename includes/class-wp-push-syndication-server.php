@@ -137,11 +137,15 @@ class WP_Push_Syndication_Server {
 
     public function push_syndicate_settings_validate( $raw_settings ) {
 
-        $settings                           = array();
-        $settings['client_id']              = sanitize_text_field( $raw_settings['client_id'] );
-        $settings['client_secret']          = sanitize_text_field( $raw_settings['client_secret'] );
-        $settings['selected_post_types']    = $raw_settings['selected_post_types'];
-        $settings['delete_pushed_posts']    = $raw_settings['delete_pushed_posts'];
+        $settings                               = array();
+        $settings['client_id']                  = sanitize_text_field( $raw_settings['client_id'] );
+        $settings['client_secret']              = sanitize_text_field( $raw_settings['client_secret'] );
+        $settings['selected_post_types']        = $raw_settings['selected_post_types'];
+        $settings['delete_pushed_posts']        = $raw_settings['delete_pushed_posts'];
+        $settings['selected_pull_sitegroups']   = $raw_settings['selected_pull_sitegroups'];
+        $settings['pull_time_interval']         = intval( $raw_settings['pull_time_interval'] );
+        $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
+
 
         return $settings;
 
@@ -218,7 +222,6 @@ class WP_Push_Syndication_Server {
 
     public function display_pull_sitegroups_selection() {
 
-
         // get all sitegroups
         $sitegroups = get_terms( 'syn_sitegroup', array(
             'fields'        => 'all',
@@ -267,7 +270,7 @@ class WP_Push_Syndication_Server {
 
         $post_types = get_post_types();
 
-        echo '<select>';
+        echo '<select name="push_syndicate_settings[pull_default_post_type]">';
 
         foreach( $post_types as $post_type ) {
             echo '<option value="' . esc_attr( $post_type ) . '">' . esc_html( $post_type )  . '</option>';
@@ -281,7 +284,7 @@ class WP_Push_Syndication_Server {
 
         $taxonomies = get_taxonomies();
 
-        echo '<select>';
+        echo '<select name="push_syndicate_settings[pull_default_taxonomy]">';
 
         foreach( $taxonomies as $taxonomy ) {
             echo '<option value="' . esc_attr( $taxonomy ) . '">' . esc_html( $taxonomy )  . '</option>';
