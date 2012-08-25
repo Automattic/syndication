@@ -61,7 +61,20 @@ class WP_RSS_Client implements WP_Client{
 
     public static function display_settings($site)
     {
-        // TODO: Implement display_settings() method.
+
+        $feed_url   = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_feed_url', true) );
+
+        ?>
+
+        <p>
+            <label for=feed_url><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <input type="text" name="site_token" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
+        </p>
+
+        <?php
+
     }
 
     public static function save_settings($site_ID)

@@ -214,40 +214,40 @@ class WP_REST_Client implements WP_Client{
 		return $this->error_message;
 	}
 
-	public static function display_settings( $post ) {
+	public static function display_settings( $site ) {
 
-		$site_token = push_syndicate_decrypt( get_post_meta( $post->ID, 'syn_site_token', true) );
-		$site_id    = get_post_meta( $post->ID, 'syn_site_id', true);
-		$site_url   = get_post_meta( $post->ID, 'syn_site_url', true);
+		$site_token = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_token', true) );
+		$site_id    = get_post_meta( $site->ID, 'syn_site_id', true);
+		$site_url   = get_post_meta( $site->ID, 'syn_site_url', true);
 
 		// @TODO refresh UI
 
-    ?>
+        ?>
 
-	<p>
-        <?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
-        <a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php echo esc_html__( 'settings page', 'push-syndication' ); ?></a>
-	</p>
-	<p>
-		<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
-	</p>
-	<p>
-		<input type="text" name="site_token" id="site_token" size="100" value="<?php echo esc_html( $site_token ); ?>" />
-	</p>
-	<p>
-		<label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
-	</p>
-	<p>
-		<input type="text" name="site_id" id="site_id" size="100" value="<?php echo esc_html( $site_id ); ?>" />
-	</p>
-	<p>
-		<label for=site_url><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
-	</p>
-	<p>
-		<input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
-	</p>
+        <p>
+            <?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
+            <a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php echo esc_html__( 'settings page', 'push-syndication' ); ?></a>
+        </p>
+        <p>
+            <label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <input type="text" name="site_token" id="site_token" size="100" value="<?php echo esc_attr( $site_token ); ?>" />
+        </p>
+        <p>
+            <label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <input type="text" name="site_id" id="site_id" size="100" value="<?php echo esc_attr( $site_id ); ?>" />
+        </p>
+        <p>
+            <label for=site_url><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_attr( $site_url ); ?>" />
+        </p>
 
-    <?php
+        <?php
 
 	}
 
