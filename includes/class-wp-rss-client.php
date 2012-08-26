@@ -151,6 +151,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             );
         }
 
+        return $posts;
+
     }
 
 }
