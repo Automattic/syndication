@@ -10,6 +10,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
     private $error_code;
 
     function __construct( $site_ID ) {
+        parent::SimplePie();
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
     }
 
@@ -92,7 +93,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     public function get_posts( $args )
     {
-        // TODO: Implement get_posts() method.
+        $this->init();
+        $this->handle_content_type();
     }
 
 }
