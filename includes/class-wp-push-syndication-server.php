@@ -94,9 +94,12 @@ class WP_Push_Syndication_Server {
         ));
 
         $this->push_syndicate_default_settings = array(
-            'selected_post_types' => array( 'post' ),
-            'delete_pushed_posts' => 'off',
-            'selected_user_roles' => array( 'administrator' )
+            'selected_post_types'       => array( 'post' ),
+            'delete_pushed_posts'       => 'off',
+            'selected_user_roles'       => array( 'administrator' ),
+            'pull_default_post_type'    => 'post',
+            'pull_default_taxonomy'     => 'category',
+            'pull_time_interval'        => 3600
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
@@ -145,6 +148,8 @@ class WP_Push_Syndication_Server {
         $settings['selected_pull_sitegroups']   = $raw_settings['selected_pull_sitegroups'];
         $settings['pull_time_interval']         = intval( $raw_settings['pull_time_interval'] );
         $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
+        $settings['pull_default_post_type']     = $raw_settings['pull_default_post_type'];
+        $settings['pull_default_taxonomy']      = $raw_settings['pull_default_taxonomy'];
 
         $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
