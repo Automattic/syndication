@@ -42,11 +42,11 @@ interface WP_Client {
     /**
      * Retrieves a list of posts from a slave site.
      *
-     * @param   int  $args  Arguments when retrieving posts.
+     * @param   array   $args  Arguments when retrieving posts.
      *
      * @return  boolean true on success false on failure.
      */
-    public function get_posts( $args );
+    public function get_posts( $args = array() );
 
 	/**
 	 * Deletes an existing post in the slave site.

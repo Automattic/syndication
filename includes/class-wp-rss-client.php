@@ -133,7 +133,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         // TODO: Implement get_post() method.
     }
 
-    public function get_posts( $args ) {
+    public function get_posts( $args = array() ) {
 
         $this->init();
         $this->handle_content_type();
