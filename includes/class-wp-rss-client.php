@@ -5,13 +5,22 @@ include_once( dirname(__FILE__) . '/interface-wp-client.php' );
 
 class WP_RSS_Client extends SimplePie implements WP_Client{
 
+    private $default_post_type;
+    private $default_post_status;
+
     private $response;
     private $error_message;
     private $error_code;
 
     function __construct( $site_ID ) {
+
         parent::SimplePie();
+
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
+
+        $this->default_post_type    = get_post_meta( $site_ID, 'syn_default_post_type', true );
+        $this->default_post_status  = get_post_meta( $site_ID, 'syn_default_post_status', true );
+
     }
 
     public function new_post($post_ID) {
@@ -59,8 +68,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
     public static function display_settings($site) {
 
         $feed_url               = get_post_meta( $site->ID, 'syn_feed_url', true );
-        $selected_post_type     = get_post_meta( $site->ID, 'syn_selected_post_type', true );
-        $selected_post_status   = get_post_meta( $site->ID, 'syn_selected_post_status', true );
+        $selected_post_type     = get_post_meta( $site->ID, 'syn_default_post_type', true );
+        $selected_post_status   = get_post_meta( $site->ID, 'syn_default_post_status', true );
 
         ?>
 
@@ -71,10 +80,10 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             <input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
         </p>
         <p>
-            <label for="selected_post_type"><?php echo esc_html__( 'Select post type', 'push-syndication' ); ?></label>
+            <label for="default_post_type"><?php echo esc_html__( 'Select post type', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <select name="selected_post_type" id="selected_post_type" />
+            <select name="default_post_type" id="default_post_type" />
 
             <?php
 
@@ -89,10 +98,10 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             </select>
         </p>
         <p>
-            <label for="selected_post_status"><?php echo esc_html__( 'Select post status', 'push-syndication' ); ?></label>
+            <label for="default_post_status"><?php echo esc_html__( 'Select post status', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <select name="selected_post_status" id="selected_post_status" />
+            <select name="default_post_status" id="default_post_status" />
 
             <?php
 
@@ -114,8 +123,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
     public static function save_settings( $site_ID ) {
 
         update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-        update_post_meta( $site_ID, 'syn_selected_post_type', $_POST['selected_post_type'] );
-        update_post_meta( $site_ID, 'syn_selected_post_status', $_POST['selected_post_status'] );
+        update_post_meta( $site_ID, 'syn_default_post_type', $_POST['default_post_type'] );
+        update_post_meta( $site_ID, 'syn_default_post_status', $_POST['default_post_status'] );
         return true;
 
     }
@@ -136,6 +145,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             $posts[] = array(
                 'post_title'    => $item->get_title(),
                 'post_content'  => $item->get_description(),
+                'post_type'     => $this->default_post_type,
+                'post_status'   => $this->default_post_status,
                 'post_date'     => $item->get_date()
             );
         }
