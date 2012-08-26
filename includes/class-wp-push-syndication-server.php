@@ -169,9 +169,6 @@ class WP_Push_Syndication_Server {
 
         add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( &$this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
         add_settings_field( 'pull_time_interval', esc_html__( 'specify time interval in milliseconds', 'push-syndication' ), array( &$this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-        add_settings_field( 'pull_default_author', esc_html__( 'specify default author', 'push-syndication' ), array( &$this, 'display_default_author_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-        add_settings_field( 'pull_default_post_type', esc_html__( 'specify default post type', 'push-syndication' ), array( &$this, 'display_default_post_type_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-        add_settings_field( 'pull_default_taxonomy', esc_html__( 'specify default taxonomy', 'push-syndication' ), array( &$this, 'display_default_taxonomy_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
@@ -266,38 +263,6 @@ class WP_Push_Syndication_Server {
 
     public function display_time_interval_selection() {
         echo '<input type="text" size="10" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
-    }
-
-    public function display_default_author_selection() {
-        wp_dropdown_users();
-    }
-
-    public function display_default_post_type_selection() {
-
-        $post_types = get_post_types();
-
-        echo '<select name="push_syndicate_settings[pull_default_post_type]" >';
-
-        foreach( $post_types as $post_type ) {
-            echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $this->push_syndicate_settings['pull_default_post_type'] ) . '>' . esc_html( $post_type )  . '</option>';
-        }
-
-        echo '</select>';
-
-    }
-
-    public function display_default_taxonomy_selection() {
-
-        $taxonomies = get_taxonomies();
-
-        echo '<select name="push_syndicate_settings[pull_default_taxonomy]" >';
-
-        foreach( $taxonomies as $taxonomy ) {
-            echo '<option value="' . esc_attr( $taxonomy ) . '"' . selected( $taxonomy, $this->push_syndicate_settings['pull_default_taxonomy'] ) . '>' . esc_html( $taxonomy )  . '</option>';
-        }
-
-        echo '</select>';
-
     }
 
     public function display_push_post_types_description() {
