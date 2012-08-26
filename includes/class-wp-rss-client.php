@@ -14,38 +14,32 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
     }
 
-    public function new_post($post_ID)
-    {
+    public function new_post($post_ID) {
         // Not supported
         return false;
     }
 
-    public function edit_post($post_ID, $ext_ID)
-    {
+    public function edit_post($post_ID, $ext_ID) {
         // Not supported
         return false;
     }
 
-    public function delete_post($ext_ID)
-    {
+    public function delete_post($ext_ID) {
         // Not supported
         return false;
     }
 
-    public function set_options($options, $ext_ID)
-    {
+    public function set_options($options, $ext_ID) {
         // Not supported
         return false;
     }
 
-    public function test_connection()
-    {
+    public function test_connection() {
         // TODO: Implement test_connection() method.
         return true;
     }
 
-    public function is_post_exists($ext_ID)
-    {
+    public function is_post_exists($ext_ID) {
         // Not supported
         return false;
     }
@@ -62,8 +56,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         return $this->error_message;
     }
 
-    public static function display_settings($site)
-    {
+    public static function display_settings($site) {
 
         $feed_url   = get_post_meta( $site->ID, 'syn_feed_url', true );
 
@@ -80,21 +73,27 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     }
 
-    public static function save_settings( $site_ID )
-    {
+    public static function save_settings( $site_ID ) {
         update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
         return true;
     }
 
-    public function get_post( $ext_ID )
-    {
+    public function get_post( $ext_ID ) {
         // TODO: Implement get_post() method.
     }
 
-    public function get_posts( $args )
-    {
+    public function get_posts( $args ) {
+        
         $this->init();
         $this->handle_content_type();
+
+        // hold all the posts
+        $posts = array();
+
+        foreach( $this->get_items() as $item ) {
+
+        }
+
     }
 
 }
