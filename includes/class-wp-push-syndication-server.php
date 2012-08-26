@@ -1223,7 +1223,7 @@ class WP_Push_Syndication_Server {
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
             $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
             $posts          = $client->get_posts();
-var_dump($transport_type);exit;
+
             foreach( $posts as $post ) {
 
                 $result = wp_insert_post( array(
