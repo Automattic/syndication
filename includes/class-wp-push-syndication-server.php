@@ -713,7 +713,7 @@ class WP_Push_Syndication_Server {
         update_post_meta( $post->ID, 'syn_transport_type', $_POST['transport_type'] );
 
         $site_enabled = isset( $_POST['site_enabled'] ) ? 'on' : 'off';
-        $class = $_POST['transport_type'] . '_client';
+        $class = $_POST['transport_type'] . '_Client';
 
         try {
             $save = WP_Client_Factory::save_client_settings( $post->ID, $class );
@@ -751,6 +751,8 @@ class WP_Push_Syndication_Server {
 
         // WordPress.com REST error messages
         $messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
+
+        // RSS error messages
 
         return $messages;
 
@@ -1221,7 +1223,7 @@ class WP_Push_Syndication_Server {
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
             $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
             $posts          = $client->get_posts();
-
+var_dump($transport_type);exit;
             foreach( $posts as $post ) {
 
                 $result = wp_insert_post( array(

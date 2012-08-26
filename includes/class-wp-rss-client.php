@@ -44,6 +44,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
     public function test_connection()
     {
         // TODO: Implement test_connection() method.
+        return true;
     }
 
     public function is_post_exists($ext_ID)
@@ -75,16 +76,17 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             <label for=feed_url><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <input type="text" name="site_token" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
+            <input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
         </p>
 
         <?php
 
     }
 
-    public static function save_settings($site_ID)
+    public static function save_settings( $site_ID )
     {
         update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
+        return true;
     }
 
     public function get_post( $ext_ID )
