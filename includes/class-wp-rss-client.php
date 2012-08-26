@@ -99,7 +99,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             $post_statuses  = get_post_statuses();
 
             foreach( $post_statuses as $post_status ) {
-                echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_status, $selected_post_status ) . '>' . esc_html( $post_status )  . '</option>';
+                echo '<option value="' . esc_attr( $post_status ) . '"' . selected( $post_status, $selected_post_status ) . '>' . esc_html( $post_status )  . '</option>';
             }
 
             ?>
