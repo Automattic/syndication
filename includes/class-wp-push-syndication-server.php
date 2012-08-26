@@ -1191,9 +1191,7 @@ class WP_Push_Syndication_Server {
 
             foreach( $posts as $post ) {
 
-                $result = wp_insert_post( array(
-
-                ) );
+                $result = wp_insert_post( array( $post ) );
 
             }
 
