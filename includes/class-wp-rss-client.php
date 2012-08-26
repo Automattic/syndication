@@ -58,10 +58,9 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     public static function display_settings($site) {
 
-        // @TODO default settings for post author, post type, tax
-
-        $feed_url           = get_post_meta( $site->ID, 'syn_feed_url', true );
-        $selected_post_type = get_post_meta( $site->ID, 'syn_selected_post_type', true );
+        $feed_url               = get_post_meta( $site->ID, 'syn_feed_url', true );
+        $selected_post_type     = get_post_meta( $site->ID, 'syn_selected_post_type', true );
+        $selected_post_status   = get_post_meta( $site->ID, 'syn_selected_post_status', true );
 
         ?>
 
@@ -72,7 +71,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             <input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
         </p>
         <p>
-            <label for="post_type"><?php echo esc_html__( 'Select default post type', 'push-syndication' ); ?></label>
+            <label for="post_type"><?php echo esc_html__( 'Select post type', 'push-syndication' ); ?></label>
         </p>
         <p>
             <select name="post_type" id="post_type" />
@@ -83,6 +82,24 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
             foreach( $post_types as $post_type ) {
                 echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $selected_post_type ) . '>' . esc_html( $post_type )  . '</option>';
+            }
+
+            ?>
+
+            </select>
+        </p>
+        <p>
+            <label for="post_status"><?php echo esc_html__( 'Select post status', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <select name="post_status" id="post_status" />
+
+            <?php
+
+            $post_statuses  = get_post_statuses();
+
+            foreach( $post_statuses as $post_status ) {
+                echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_status, $selected_post_status ) . '>' . esc_html( $post_status )  . '</option>';
             }
 
             ?>
