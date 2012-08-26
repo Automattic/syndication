@@ -1209,6 +1209,9 @@ class WP_Push_Syndication_Server {
             $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
         }
 
+        // @TODO change this to a cron job
+        $this->pull_content( $sites );
+
     }
 
     public function pull_content( $sites ) {
