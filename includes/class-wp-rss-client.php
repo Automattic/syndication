@@ -60,15 +60,34 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
         // @TODO default settings for post author, post type, tax
 
-        $feed_url   = get_post_meta( $site->ID, 'syn_feed_url', true );
+        $feed_url           = get_post_meta( $site->ID, 'syn_feed_url', true );
+        $selected_post_type = get_post_meta( $site->ID, 'syn_selected_post_type', true );
 
         ?>
 
-        <p>
-            <label for=feed_url><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
+        <p xmlns="http://www.w3.org/1999/html">
+            <label for="feed_url"><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
         </p>
         <p>
             <input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
+        </p>
+        <p>
+            <label for="post_type"><?php echo esc_html__( 'Select default post type', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <select name="post_type" id="post_type" />
+
+            <?php
+
+            $post_types = get_post_types();
+
+            foreach( $post_types as $post_type ) {
+                echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $selected_post_type ) . '>' . esc_html( $post_type )  . '</option>';
+            }
+
+            ?>
+
+            </select>
         </p>
 
         <?php
