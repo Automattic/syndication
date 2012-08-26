@@ -271,7 +271,7 @@ class WP_REST_Client implements WP_Client{
         // TODO: Implement get_post() method.
     }
 
-    public function get_posts( $args )
+    public function get_posts( $args = array() )
     {
         // TODO: Implement get_posts() method.
     }
