@@ -64,7 +64,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
         ?>
 
-        <p xmlns="http://www.w3.org/1999/html">
+        <p>
             <label for="feed_url"><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
         </p>
         <p>
