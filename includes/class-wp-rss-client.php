@@ -113,6 +113,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     public static function save_settings( $site_ID ) {
         update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
+        update_post_meta( $site_ID, 'syn_selected_post_type', esc_url_raw( $_POST['feed_url'] ) );
+        update_post_meta( $site_ID, 'syn_selected_post_status', esc_url_raw( $_POST['feed_url'] ) );
         return true;
     }
 
