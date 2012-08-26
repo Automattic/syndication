@@ -58,6 +58,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     public static function display_settings($site) {
 
+        // @TODO default settings for post author, post type, tax
+
         $feed_url   = get_post_meta( $site->ID, 'syn_feed_url', true );
 
         ?>
@@ -83,7 +85,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
     }
 
     public function get_posts( $args ) {
-        
+
         $this->init();
         $this->handle_content_type();
 
@@ -91,7 +93,11 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         $posts = array();
 
         foreach( $this->get_items() as $item ) {
-
+            $posts[] = array(
+                'post_title'    => $item->get_title(),
+                'post_content'  => $item->get_description(),
+                'post_date'     => $item->get_date()
+            );
         }
 
     }
