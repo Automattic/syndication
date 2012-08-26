@@ -1155,9 +1155,9 @@ class WP_Push_Syndication_Server {
     // checking user capability
     public function current_user_can_syndicate() {
 
-        $current_user_roles = wp_get_current_user()->roles;
-        $selected_user_roles = $this->push_syndicate_settings['selected_user_roles'];
-        $match = array_intersect( $current_user_roles, $selected_user_roles );
+        $current_user_roles     = wp_get_current_user()->roles;
+        $selected_user_roles    = $this->push_syndicate_settings['selected_user_roles'];
+        $match                  = array_intersect( $current_user_roles, $selected_user_roles );
 
         return !empty( $match );
 
