@@ -145,6 +145,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
         update_post_meta( $site_ID, 'syn_default_post_type', $_POST['default_post_type'] );
         update_post_meta( $site_ID, 'syn_default_post_status', $_POST['default_post_status'] );
+        update_post_meta( $site_ID, 'syn_default_comment_status', $_POST['default_comment_status'] );
+        update_post_meta( $site_ID, 'syn_default_ping_status', $_POST['default_ping_status'] );
         return true;
 
     }
