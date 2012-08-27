@@ -7,6 +7,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     private $default_post_type;
     private $default_post_status;
+    private $default_comment_status;
+    private $default_ping_status;
 
     private $response;
     private $error_message;
@@ -18,8 +20,10 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
-        $this->default_post_type    = get_post_meta( $site_ID, 'syn_default_post_type', true );
-        $this->default_post_status  = get_post_meta( $site_ID, 'syn_default_post_status', true );
+        $this->default_post_type        = get_post_meta( $site_ID, 'syn_default_post_type', true );
+        $this->default_post_status      = get_post_meta( $site_ID, 'syn_default_post_status', true );
+        $this->default_comment_status   = get_post_meta( $site_ID, 'syn_default_comment_status', true );
+        $this->default_ping_status      = get_post_meta( $site_ID, 'syn_default_ping_status', true );
 
     }
 
@@ -165,11 +169,13 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
         foreach( $this->get_items() as $item ) {
             $posts[] = array(
-                'post_title'    => $item->get_title(),
-                'post_content'  => $item->get_description(),
-                'post_type'     => $this->default_post_type,
-                'post_status'   => $this->default_post_status,
-                'post_date'     => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) )
+                'post_title'        => $item->get_title(),
+                'post_content'      => $item->get_description(),
+                'post_type'         => $this->default_post_type,
+                'post_status'       => $this->default_post_status,
+                'post_date'         => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
+                'comment_status'    => $this->default_comment_status,
+                'ping_status'       => $this->default_ping_status
             );
         }
 
