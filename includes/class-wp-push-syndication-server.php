@@ -1196,6 +1196,7 @@ class WP_Push_Syndication_Server {
             foreach( $posts as $post ) {
 
                 if( in_array( $post['post_guid'], $inserted_posts ) ) {
+                    $post['ID'] = array_search( $post['post_guid'], $inserted_posts );
                     wp_update_post( $post, true );
                 } else {
                     $result = wp_insert_post( $post, true );
