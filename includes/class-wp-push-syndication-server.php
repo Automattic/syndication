@@ -1189,6 +1189,9 @@ class WP_Push_Syndication_Server {
             $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
             $posts          = $client->get_posts();
 
+            if( empty( $posts ) )
+                continue;
+
             foreach( $posts as $post ) {
 
                 //$result = wp_insert_post( $post );
