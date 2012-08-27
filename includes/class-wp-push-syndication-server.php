@@ -33,13 +33,17 @@ class WP_Push_Syndication_Server {
         add_action( 'save_post', array( &$this, 'save_syndicate_settings' ) );
         add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
 
+        // adding custom time interval
+        add_filter( 'cron_schedules', array( &$this, 'cron_add_cron_add_pull_time_interval' ) );
+
         // firing a cron job
-        add_action( 'transition_post_status', array(&$this, 'schedule_syndicate_content') );
+        add_action( 'transition_post_status', array( &$this, 'schedule_syndicate_content' ) );
 
         // cron hooks
-        add_action( 'syn_push_content', array(&$this, 'push_content') );
-        add_action( 'syn_delete_content', array(&$this, 'delete_content') );
-        add_action( 'syn_push_options', array(&$this, 'push_options') );
+        add_action( 'syn_push_content', array( &$this, 'push_content' ) );
+        add_action( 'syn_delete_content', array( &$this, 'delete_content' ) );
+        add_action( 'syn_push_options', array( &$this, 'push_options' ) );
+        add_action( 'syn_pull_content', array( &$this, 'pull_content' ) );
 
     }
 
@@ -1163,6 +1167,15 @@ class WP_Push_Syndication_Server {
 
     }
 
+    public function cron_add_pull_time_interval( $schedules ) {
+        // Adds the custom time interval to the existing schedules.
+        $schedules['pull_time_interval'] = array(
+            'interval' => $this->push_syndicate_settings['pull_time_interval'],
+            'display' => __( 'Pull Time Interval', 'push-syndication' )
+        );
+        return $schedules;
+    }
+
     public function schedule_pull_content( $selected_sitegroups ) {
 
         if ( !current_user_can( 'manage_options' ) )
@@ -1176,8 +1189,12 @@ class WP_Push_Syndication_Server {
             $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
         }
 
-        // @TODO change this to a cron job
-        $this->pull_content( $sites );
+        wp_schedule_event(
+            time() - 1,
+            'pull_time_interval',
+            'syn_pull_content',
+            array( $sites )
+        );
 
     }
 
