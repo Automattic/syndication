@@ -1200,7 +1200,7 @@ class WP_Push_Syndication_Server {
                 } else {
                     $result = wp_insert_post( $post, true );
                     if( !is_wp_error( $result ) )
-                        $inserted_posts[] = array( $result => $post['guid'] );
+                        $inserted_posts[] = $post['guid'];
                 }
 
             }
