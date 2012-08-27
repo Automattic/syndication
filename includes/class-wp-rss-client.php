@@ -170,7 +170,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
         foreach( $this->get_items() as $item ) {
             $posts[] = array(
                 'post_title'        => $item->get_title(),
-                'post_content'      => $item->get_description(),
+                'post_content'      => $item->get_content(),
+                'post_excerpt'      => $item->get_description(),
                 'post_type'         => $this->default_post_type,
                 'post_status'       => $this->default_post_status,
                 'post_date'         => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
