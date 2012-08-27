@@ -67,9 +67,11 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
 
     public static function display_settings($site) {
 
-        $feed_url               = get_post_meta( $site->ID, 'syn_feed_url', true );
-        $selected_post_type     = get_post_meta( $site->ID, 'syn_default_post_type', true );
-        $selected_post_status   = get_post_meta( $site->ID, 'syn_default_post_status', true );
+        $feed_url                   = get_post_meta( $site->ID, 'syn_feed_url', true );
+        $default_post_type          = get_post_meta( $site->ID, 'syn_default_post_type', true );
+        $default_post_status        = get_post_meta( $site->ID, 'syn_default_post_status', true );
+        $default_comment_status     = get_post_meta( $site->ID, 'syn_default_comment_status', true );
+        $default_ping_status        = get_post_meta( $site->ID, 'syn_default_ping_status', true );
 
         ?>
 
@@ -90,7 +92,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             $post_types = get_post_types();
 
             foreach( $post_types as $post_type ) {
-                echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $selected_post_type ) . '>' . esc_html( $post_type )  . '</option>';
+                echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $default_post_type ) . '>' . esc_html( $post_type )  . '</option>';
             }
 
             ?>
@@ -108,11 +110,29 @@ class WP_RSS_Client extends SimplePie implements WP_Client{
             $post_statuses  = get_post_statuses();
 
             foreach( $post_statuses as $key => $value ) {
-                echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $selected_post_status ) . '>' . esc_html( $key )  . '</option>';
+                echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $default_post_status ) . '>' . esc_html( $key )  . '</option>';
             }
 
             ?>
 
+            </select>
+        </p>
+        <p>
+            <label for="default_comment_status"><?php echo esc_html__( 'Select comment status', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <select name="default_comment_status" id="default_comment_status" />
+                <option value="open" <?php selected( 'open', $default_comment_status )  ?> >open</option>
+                <option value="closed" <?php selected( 'closed', $default_comment_status )  ?> >closed</option>
+            </select>
+        </p>
+        <p>
+            <label for="default_ping_status"><?php echo esc_html__( 'Select ping status', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <select name="default_ping_status" id="default_ping_status" />
+            <option value="open" <?php selected( 'open', $default_ping_status )  ?> >open</option>
+            <option value="closed" <?php selected( 'closed', $default_ping_status )  ?> >closed</option>
             </select>
         </p>
 
