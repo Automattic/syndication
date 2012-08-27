@@ -1185,6 +1185,7 @@ class WP_Push_Syndication_Server {
 
         foreach( $sites as $site ) {
 
+            $inserted_posts = get_post_meta( $site->ID, 'syn_inserted_posts' );
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
             $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
             $posts          = $client->get_posts();
@@ -1194,9 +1195,17 @@ class WP_Push_Syndication_Server {
 
             foreach( $posts as $post ) {
 
-                //$result = wp_insert_post( $post );
+                if( in_array( $post['guid'], $inserted_posts ) ) {
+                    wp_update_post( $post, true );
+                } else {
+                    $result = wp_insert_post( $post, true );
+                    if( !is_wp_error( $result ) )
+                        $inserted_posts[] = array( $result => $post['guid'] );
+                }
 
             }
+
+            update_post_meta( $site->ID, 'syn_inserted_posts', $inserted_posts );
 
         }
 

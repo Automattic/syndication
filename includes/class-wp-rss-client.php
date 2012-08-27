@@ -176,7 +176,8 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
                 'post_status'       => $this->default_post_status,
                 'post_date'         => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
                 'comment_status'    => $this->default_comment_status,
-                'ping_status'       => $this->default_ping_status
+                'ping_status'       => $this->default_ping_status,
+                'guid'              => $item->get_id()
             );
         }
 
