@@ -1195,12 +1195,12 @@ class WP_Push_Syndication_Server {
 
             foreach( $posts as $post ) {
 
-                if( in_array( $post['guid'], $inserted_posts ) ) {
+                if( in_array( $post['post_guid'], $inserted_posts ) ) {
                     wp_update_post( $post, true );
                 } else {
                     $result = wp_insert_post( $post, true );
                     if( !is_wp_error( $result ) )
-                        $inserted_posts[ $result ] = $post['guid'];
+                        $inserted_posts[ $result ] = $post['post_guid'];
                 }
 
             }
