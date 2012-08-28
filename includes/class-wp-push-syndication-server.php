@@ -204,6 +204,8 @@ class WP_Push_Syndication_Server {
 
                 <?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
 
+                <?php submit_button( '  Pull Now ' ); ?>
+
                 <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
                 <?php do_settings_sections( 'push_syndicate_user_roles' ); ?>
