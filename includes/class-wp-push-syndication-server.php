@@ -173,6 +173,7 @@ class WP_Push_Syndication_Server {
 
         add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( &$this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
         add_settings_field( 'pull_time_interval', esc_html__( 'specify time interval in milliseconds', 'push-syndication' ), array( &$this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( &$this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
@@ -267,6 +268,12 @@ class WP_Push_Syndication_Server {
 
     public function display_time_interval_selection() {
         echo '<input type="text" size="10" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
+    }
+
+    public function display_update_pulled_posts_selection() {
+        // @TODO refractor this
+        echo '<input type="checkbox" name="push_syndicate_settings[update_pulled_posts]" value="on" ';
+        echo checked( $this->push_syndicate_settings['update_pulled_posts'], 'on' ) . ' />';
     }
 
     public function display_push_post_types_description() {
@@ -1217,12 +1224,20 @@ class WP_Push_Syndication_Server {
             foreach( $posts as $post ) {
 
                 if( in_array( $post['post_guid'], $inserted_posts ) ) {
+
+                    // if updation is disabled continue
+                    if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' )
+                        continue;
+
                     $post['ID'] = array_search( $post['post_guid'], $inserted_posts );
                     wp_update_post( $post, true );
+
                 } else {
+
                     $result = wp_insert_post( $post, true );
                     if( !is_wp_error( $result ) )
                         $inserted_posts[ $result ] = $post['post_guid'];
+
                 }
 
             }
