@@ -1215,6 +1215,10 @@ class WP_Push_Syndication_Server {
 
         foreach( $sites as $site ) {
 
+            $site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
+            if( $site_enabled != 'on' )
+                continue;
+
             $inserted_posts = get_post_meta( $site->ID, 'syn_inserted_posts', true);
             $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
             $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
