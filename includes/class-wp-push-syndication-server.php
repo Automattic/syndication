@@ -325,7 +325,7 @@ class WP_Push_Syndication_Server {
             <li>
                 <label>
                     <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $key ); ?>" <?php echo $this->checked_array( $key, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
-                    <?php echo esc_html( $value ); ?>
+                    <?php echo esc_html( $key ); ?>
                 </label>
             </li>
 
