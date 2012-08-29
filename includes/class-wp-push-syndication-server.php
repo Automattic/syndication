@@ -104,7 +104,7 @@ class WP_Push_Syndication_Server {
             'pull_time_interval'        => '3600',
             'update_pulled_posts'       => 'off'
         );
-var_dump((array) get_option( 'push_syndicate_settings' ));
+
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
 
     }
