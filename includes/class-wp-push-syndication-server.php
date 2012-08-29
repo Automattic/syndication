@@ -1006,7 +1006,7 @@ class WP_Push_Syndication_Server {
             )
         ));
 
-        return $results->posts;
+        return (array())$results->posts;
 
     }
 
