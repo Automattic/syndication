@@ -104,7 +104,7 @@ class WP_Push_Syndication_Server {
             'pull_time_interval'        => '3600',
             'update_pulled_posts'       => 'off'
         );
-
+var_dump((array) get_option( 'push_syndicate_settings' ));
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
 
     }
@@ -146,9 +146,9 @@ class WP_Push_Syndication_Server {
         $settings                               = array();
         $settings['client_id']                  = sanitize_text_field( $raw_settings['client_id'] );
         $settings['client_secret']              = sanitize_text_field( $raw_settings['client_secret'] );
-        $settings['selected_post_types']        = $raw_settings['selected_post_types'];
-        $settings['delete_pushed_posts']        = $raw_settings['delete_pushed_posts'];
-        $settings['selected_pull_sitegroups']   = $raw_settings['selected_pull_sitegroups'];
+        $settings['selected_post_types']        = !empty( $raw_settings['selected_post_types'] ) ? $raw_settings['selected_post_types'] : array() ;
+        $settings['delete_pushed_posts']        = !empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off' ;
+        $settings['selected_pull_sitegroups']   = !empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
         $settings['pull_time_interval']         = !empty( $raw_settings['pull_time_interval'] ) ? $raw_settings['pull_time_interval'] : '3600' ;
         $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
         $settings['update_pulled_posts']        = $raw_settings['update_pulled_posts'];
