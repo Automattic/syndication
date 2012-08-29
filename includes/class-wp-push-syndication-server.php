@@ -1177,12 +1177,15 @@ class WP_Push_Syndication_Server {
     }
 
     public function cron_add_pull_time_interval( $schedules ) {
+
         // Adds the custom time interval to the existing schedules.
         $schedules['pull_time_interval'] = array(
             'interval' => $this->push_syndicate_settings['pull_time_interval'],
             'display' => __( 'Pull Time Interval', 'push-syndication' )
         );
+
         return $schedules;
+
     }
 
     public function schedule_pull_content( $selected_sitegroups ) {
