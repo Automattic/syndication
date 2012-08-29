@@ -138,6 +138,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_content']   = $post['post_content'];
         $args['post_excerpt']   = $post['post_excerpt'];
         $args['post_type']      = 'attachment';
+        $args['guid']           = $post['guid'];
 
         $result = $this->query(
             'wp.newPost',
