@@ -103,7 +103,7 @@ class WP_Push_Syndication_Server {
             'selected_user_roles'       => array( 'administrator' ),
             'pull_default_post_type'    => 'post',
             'pull_default_taxonomy'     => 'category',
-            'pull_time_interval'        => 3600,
+            'pull_time_interval'        => '3600',
             'update_pulled_posts'       => 'off'
         );
 
@@ -151,7 +151,7 @@ class WP_Push_Syndication_Server {
         $settings['selected_post_types']        = $raw_settings['selected_post_types'];
         $settings['delete_pushed_posts']        = $raw_settings['delete_pushed_posts'];
         $settings['selected_pull_sitegroups']   = $raw_settings['selected_pull_sitegroups'];
-        $settings['pull_time_interval']         = intval( $raw_settings['pull_time_interval'] );
+        $settings['pull_time_interval']         = !empty( $raw_settings['pull_time_interval'] ) ? $raw_settings['pull_time_interval'] : '3600' ;
         $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
 
         $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
@@ -1179,7 +1179,7 @@ class WP_Push_Syndication_Server {
 
         // Adds the custom time interval to the existing schedules.
         $schedules['pull_time_interval'] = array(
-            'interval' => $this->push_syndicate_settings['pull_time_interval'],
+            'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
             'display' => __( 'Pull Time Interval', 'push-syndication' )
         );
 
