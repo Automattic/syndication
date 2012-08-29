@@ -35,6 +35,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+        $args['post_thumbnail'] = $this->insert_thumbnail();
 
 
 	    // @TODO extend this to custom taxonomies
@@ -59,9 +60,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
             $args
         );
 
-        if( !$result ) {
+        if( !$result )
             return false;
-        }
 
         return true;
 
@@ -104,9 +104,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
             $args
         );
 
-        if( !$result ) {
+        if( !$result )
             return false;
-        }
 
         return true;
 
@@ -122,11 +121,31 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
                 $ext_ID
         );
 
-        if( !$result ) {
+        if( !$result )
             return false;
-        }
 
         return true;
+
+    }
+
+    public function insert_thumbnail() {
+
+        // rearranging arguments
+        $args = array();
+
+        $result = $this->query(
+            'wp.newPost',
+            '1',
+            $this->username,
+            $this->password,
+            $args
+        );
+
+        if( !$result )
+            return false;
+
+        return intval( $this->get_response() );
+
     }
 
 	public function set_options($options, $ext_ID)
@@ -140,9 +159,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 			$options
 		);
 
-		if( !$result ) {
-			return false;
-		}
+		if( !$result )
+            return false;
 
 		return true;
 
@@ -184,6 +202,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		}
 
 		return true;
+
 	}
 
     public function is_post_exists( $ext_ID ) {
@@ -196,15 +215,13 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
             $ext_ID
         );
 
-        if( !$result ) {
+        if( !$result )
             return false;
-        }
 
         $post = $this->getResponse();
 
-        if( $ext_ID != $post['post_id'] ) {
+        if( $ext_ID != $post['post_id'] )
             return false;
-        }
 
         return true;
 
