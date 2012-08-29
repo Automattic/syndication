@@ -1191,6 +1191,10 @@ class WP_Push_Syndication_Server {
         if ( !current_user_can( 'manage_options' ) )
             return;
 
+        // first unschedule previosly scheduled cron jobs
+        // @TODO wp unschedule event or wp clear scheduled hook??
+        wp_clear_scheduled_hook( 'syn_pull_content' );
+
         if( empty( $selected_sitegroups ) )
             return;
 
@@ -1198,10 +1202,6 @@ class WP_Push_Syndication_Server {
         foreach( $selected_sitegroups as $selected_sitegroup ) {
             $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
         }
-
-        // first unschedule previosly scheduled cron jobs
-        // @TODO wp unschedule event or wp clear scheduled hook??
-        wp_clear_scheduled_hook( 'syn_pull_content' );
 
         wp_schedule_event(
             time() - 1,
