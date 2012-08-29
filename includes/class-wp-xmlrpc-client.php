@@ -35,7 +35,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
-        $args['post_thumbnail'] = $this->insert_thumbnail();
+        $args['post_thumbnail'] = $this->insert_thumbnail( get_post_meta( $post_ID, '_thumbnail_id', true ));
 
 
 	    // @TODO extend this to custom taxonomies
@@ -128,10 +128,16 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
-    public function insert_thumbnail() {
+    public function insert_thumbnail( $post_ID ) {
+
+        $post = (array)get_post( $post_ID );
 
         // rearranging arguments
         $args = array();
+        $args['post_title']     = $post['post_title'];
+        $args['post_content']   = $post['post_content'];
+        $args['post_excerpt']   = $post['post_excerpt'];
+        $args['post_type']      = 'attachment';
 
         $result = $this->query(
             'wp.newPost',
