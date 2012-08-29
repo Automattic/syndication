@@ -37,7 +37,7 @@ class WP_Push_Syndication_Server {
         add_filter( 'cron_schedules', array( &$this, 'cron_add_pull_time_interval' ) );
 
         // firing a cron job
-        add_action( 'transition_post_status', array( &$this, 'schedule_syndicate_content' ) );
+        add_action( 'transition_post_status', array( &$this, 'push_content' ) );
 
         // cron hooks
         add_action( 'syn_push_content', array( &$this, 'push_content' ) );
