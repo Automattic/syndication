@@ -152,8 +152,6 @@ class WP_Push_Syndication_Server {
         $settings['selected_pull_sitegroups']   = $raw_settings['selected_pull_sitegroups'];
         $settings['pull_time_interval']         = intval( $raw_settings['pull_time_interval'] );
         $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
-        $settings['pull_default_post_type']     = $raw_settings['pull_default_post_type'];
-        $settings['pull_default_taxonomy']      = $raw_settings['pull_default_taxonomy'];
 
         $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
