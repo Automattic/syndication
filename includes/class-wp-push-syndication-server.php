@@ -1085,7 +1085,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_delete_slave_posts( $post_ID ) {
+    public function schedule_delete_content( $post_ID ) {
 
         // if slave post deletion is not enabled return
         $delete_pushed_posts =  !empty( $this->push_syndicate_settings[ 'delete_pushed_posts' ] ) ? $this->push_syndicate_settings[ 'delete_pushed_posts' ] : 'off' ;
