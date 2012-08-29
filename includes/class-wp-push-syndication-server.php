@@ -34,7 +34,7 @@ class WP_Push_Syndication_Server {
         add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
 
         // adding custom time interval
-        add_filter( 'cron_schedules', array( &$this, 'cron_add_cron_add_pull_time_interval' ) );
+        add_filter( 'cron_schedules', array( &$this, 'cron_add_pull_time_interval' ) );
 
         // firing a cron job
         add_action( 'transition_post_status', array( &$this, 'schedule_syndicate_content' ) );
