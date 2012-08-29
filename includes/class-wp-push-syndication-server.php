@@ -31,7 +31,7 @@ class WP_Push_Syndication_Server {
         // syndicating content
         add_action( 'add_meta_boxes', array( &$this, 'add_post_metaboxes' ) );
         add_action( 'save_post', array( &$this, 'save_syndicate_settings' ) );
-        add_action( 'wp_trash_post', array( &$this, 'delete_slave_posts' ) );
+        add_action( 'wp_trash_post', array( &$this, 'delete_content' ) );
 
         // adding custom time interval
         add_filter( 'cron_schedules', array( &$this, 'cron_add_pull_time_interval' ) );
