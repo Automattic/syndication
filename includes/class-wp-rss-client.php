@@ -16,7 +16,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
 
     function __construct( $site_ID ) {
 
-        parent::SimplePie();
+        parent::__construct();
 
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 

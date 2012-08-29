@@ -103,7 +103,8 @@ class WP_Push_Syndication_Server {
             'selected_user_roles'       => array( 'administrator' ),
             'pull_default_post_type'    => 'post',
             'pull_default_taxonomy'     => 'category',
-            'pull_time_interval'        => 3600
+            'pull_time_interval'        => 3600,
+            'update_pulled_posts'       => 'off'
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
