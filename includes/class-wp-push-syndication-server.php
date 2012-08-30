@@ -1191,9 +1191,15 @@ class WP_Push_Syndication_Server {
         if ( !current_user_can( 'manage_options' ) )
             return;
 
-        // first unschedule previosly scheduled cron jobs
-        // @TODO wp unschedule event or wp clear scheduled hook??
-        wp_clear_scheduled_hook( 'syn_pull_content' );
+        // to unschedule a cron we need the original arguements passed to schedule the cron
+        // we are saving it as a siteoption
+        $old_pull_sites = get_option( 'syn_old_pull_sites' );
+
+        if( !empty( $old_pull_sites ) ) {
+            $timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
+            if( $timestamp )
+                wp_unschedule_event($timestamp, 'syn_pull_content', array( $old_pull_sites ) );
+        }
 
         if( empty( $selected_sitegroups ) )
             return;
@@ -1209,6 +1215,8 @@ class WP_Push_Syndication_Server {
             'syn_pull_content',
             array( $sites )
         );
+
+        update_option( 'syn_old_pull_sites', $sites );
 
     }
 
