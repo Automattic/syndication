@@ -127,34 +127,6 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
-    public function insert_thumbnail( $post_ID ) {
-
-        if( empty( $post_ID ) )
-            return;
-
-        $post = (array)get_post( $post_ID );
-
-        $data = array(
-            'name'  => $post['post_title'],
-            //'type'  => 'image',
-            'bits'  => new IXR_Base64( $post['guid'] )
-        );
-
-        $result = $this->query(
-            'metaWeblog.newMediaObject',
-            '1',
-            $this->username,
-            $this->password,
-            $data
-        );
-
-        if( !$result )
-            return false;
-
-        return intval( $this->get_response() );
-
-    }
-
 	public function set_options($options, $ext_ID)
 	{
 
