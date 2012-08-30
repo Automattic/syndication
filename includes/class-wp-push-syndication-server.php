@@ -1091,7 +1091,8 @@ class WP_Push_Syndication_Server {
         if( $delete_pushed_posts != 'on' )
             return;
 
-        // @TODO add cap check
+        if( !$this->current_user_can_syndicate() )
+            return;
 
         wp_schedule_single_event(
             time() - 1,

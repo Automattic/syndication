@@ -13,7 +13,8 @@ License:      GPLv2 or later
 **************************************************************************/
 
 require_once ( dirname( __FILE__ ) . '/includes/class-wp-push-syndication-server.php' );
-require_once ( dirname( __FILE__ ) . '/includes/class-wpcom-push-syndication-server.php' );
+if( file_exists( dirname( __FILE__ ) . '/includes/class-wpcom-push-syndication-server.php' ) );
+    require_once ( dirname( __FILE__ ) . '/includes/class-wpcom-push-syndication-server.php' );
 
 if ( !defined( 'PUSH_SYNDICATION_ENVIRONMENT' ) )
     define( 'PUSH_SYNDICATION_ENVIRONMENT', 'WP' );
