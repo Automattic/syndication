@@ -35,7 +35,6 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
-        $args['post_thumbnail'] = $this->insert_thumbnail( get_post_thumbnail_id( $post_ID ) );
 
 
 	    // @TODO extend this to custom taxonomies
