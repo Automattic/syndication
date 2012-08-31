@@ -10,7 +10,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     private $username;
     private $password;
 
-    private $post_thumbnail_ids;
+    private $ext_thumbnail_ids;
+    private $site_ID
 
     function __construct( $site_ID ) {
 
@@ -19,17 +20,18 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		$server         = esc_url_raw( $server . '/xmlrpc.php' );
         $this->username = get_post_meta( $site_ID, 'syn_site_username', true);
         $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
+        $this->site_ID  = $site_ID;
 
         // get the thumbnail ids
-        $this->post_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
-        $this->post_thumbnail_ids = !empty( $this->post_thumbnail_ids ) ? $this->post_thumbnail_ids : array() ;
+        $this->ext_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
+        $this->ext_thumbnail_ids = !empty( $this->ext_thumbnail_ids ) ? $this->ext_thumbnail_ids : array() ;
 
         parent::__construct( $server );
 
     }
 
     function __destruct() {
-        update_option( 'syn_post_thumbnail_ids', $this->post_thumbnail_ids );
+        update_option( 'syn_post_thumbnail_ids', $this->ext_thumbnail_ids );
     }
 
     public function new_post( $post_ID ) {
@@ -139,6 +141,14 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     }
 
     public function manage_thumbnails( $post_ID, $ext_ID = '' ) {
+
+        $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
+        if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ] ) ) {
+            if( array_key_exists( $post_thumbnail_id, $this->ext_thumbnail_ids[ $this->site_ID ] ) )
+                return $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ];
+        }
+
+        return $this->insert_post_thumbnail( $post_thumbnail_id );
 
     }
 
