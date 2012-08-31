@@ -9,6 +9,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     private $username;
     private $password;
+    private $meta_data;
 
     function __construct( $site_ID ) {
 
@@ -331,4 +332,9 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     {
         // TODO: Implement get_posts() method.
     }
+
+    public function get_meta_data() {
+        return $this->meta_data;
+    }
+
 }
