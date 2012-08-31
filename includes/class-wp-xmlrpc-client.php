@@ -20,12 +20,15 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $this->username = get_post_meta( $site_ID, 'syn_site_username', true);
         $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
 
+        // get the thumbnail ids
+        $this->post_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
+
         parent::__construct( $server );
 
     }
 
     function __destruct() {
-
+        update_option( 'syn_post_thumbnail_ids', $this->post_thumbnail_ids );
     }
 
     public function new_post( $post_ID ) {
