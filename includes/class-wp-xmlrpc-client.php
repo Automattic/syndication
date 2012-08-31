@@ -22,6 +22,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         // get the thumbnail ids
         $this->post_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
+        $this->post_thumbnail_ids = !empty( $this->post_thumbnail_ids ) ? $this->post_thumbnail_ids : array() ;
 
         parent::__construct( $server );
 
