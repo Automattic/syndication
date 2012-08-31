@@ -44,8 +44,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status']    = $post['post_status'];
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
-
+        $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+        $args['post_thumbnail'] = $this->manage_thumbnails( $post_ID );
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
@@ -88,7 +88,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_status']    = $post['post_status'];
         $args['post_type']      = $post['post_type'];
         $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $args['post_date_gmt']  = $this->_convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+        $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+        $args['post_thumbnail'] = $this->manage_thumbnails( $post_ID );
 
 	    // @TODO extend this to custom taxonomies
 	    $args['terms_names'] = array(
@@ -134,6 +135,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
             return false;
 
         return true;
+
+    }
+
+    public function manage_thumbnails() {
 
     }
 
@@ -258,14 +263,14 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
-    protected function _convert_date_gmt( $date_gmt, $date ) {
+    protected function convert_date_gmt( $date_gmt, $date ) {
         if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
             return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
         }
-        return $this->_convert_date( $date_gmt );
+        return $this->convert_date( $date_gmt );
     }
 
-    protected function _convert_date( $date ) {
+    protected function convert_date( $date ) {
         if ( $date === '0000-00-00 00:00:00' ) {
             return new IXR_Date( '00000000T00:00:00Z' );
         }
