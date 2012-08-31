@@ -143,6 +143,9 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     public function manage_thumbnails( $post_ID, $ext_ID = '' ) {
 
         $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
+        if( empty( $post_thumbnail_id ) )
+            return '';
+
         if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ] ) ) {
             if( array_key_exists( $post_thumbnail_id, $this->ext_thumbnail_ids[ $this->site_ID ] ) )
                 return $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ];
