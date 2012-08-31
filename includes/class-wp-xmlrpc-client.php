@@ -138,7 +138,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
-    public function manage_thumbnails() {
+    public function manage_thumbnails( $post_ID, $ext_ID = '' ) {
 
     }
 
