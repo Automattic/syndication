@@ -58,7 +58,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 	    // post meta
         $args['custom_fields'] = array(
             array(
-                'key'   => 'masterpost_url',
+                'key'   => '_masterpost_url',
                 'value' =>  $post['guid']
             )
         );
@@ -102,7 +102,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 	    // post meta
 	    $args['custom_fields'] = array(
             array(
-                'key'   => 'masterpost_url',
+                'key'   => '_masterpost_url',
                 'value' =>  $post['guid']
             )
         );
