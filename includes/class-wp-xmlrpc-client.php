@@ -129,9 +129,43 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     public function insert_post_thumbnail( $post_ID ) {
 
+        $post = (array)get_post( $post_ID );
+
+        // rearranging arguments
+        $args = array();
+        $args['post_title']     = $post['post_title'];
+        $args['post_content']   = $post['post_content'];
+        $args['guid']           = $post['guid'];
+
+        $result = $this->query(
+            'pushSyndicateInsertThumbnail',
+            '1',
+            $this->username,
+            $this->password,
+            $args
+        );
+
+        if( !$result )
+            return false;
+
+        return true;
+
     }
 
     public function remove_post_thumbnail( $post_ID ) {
+
+        $result = $this->query(
+            'pushSyndicateInsertThumbnail',
+            '1',
+            $this->username,
+            $this->password,
+            $post_ID
+        );
+
+        if( !$result )
+            return false;
+
+        return true;
 
     }
 
