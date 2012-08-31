@@ -127,6 +127,14 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
+    public function insert_post_thumbnail( $post_ID ) {
+
+    }
+
+    public function remove_post_thumbnail( $post_ID ) {
+
+    }
+
 	public function set_options($options, $ext_ID)
 	{
 
