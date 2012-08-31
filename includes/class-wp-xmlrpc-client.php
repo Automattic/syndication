@@ -10,6 +10,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     private $username;
     private $password;
 
+    private $post_thumbnail_ids;
+
     function __construct( $site_ID ) {
 
 	    // @TODO check port, timeout etc
@@ -19,6 +21,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
 
         parent::__construct( $server );
+
+    }
+
+    function __destruct() {
 
     }
 
