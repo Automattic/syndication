@@ -140,7 +140,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
-    public function manage_thumbnails( $post_ID, $ext_ID = '' ) {
+    public function manage_thumbnails( $post_ID ) {
 
         $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
         if( empty( $post_thumbnail_id ) )
@@ -151,8 +151,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
                 return $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ];
         }
 
-        if( $this->insert_post_thumbnail( $post_thumbnail_id ) )
+        if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
+            $this->ext_thumbnail_ids[ $this->site_ID ] = $this->get_response();
             return $this->get_response();
+        }
 
         return '';
 
