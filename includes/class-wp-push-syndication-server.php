@@ -153,8 +153,8 @@ class WP_Push_Syndication_Server {
         $settings['delete_pushed_posts']        = !empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off' ;
         $settings['selected_pull_sitegroups']   = !empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
         $settings['pull_time_interval']         = !empty( $raw_settings['pull_time_interval'] ) ? $raw_settings['pull_time_interval'] : '3600' ;
-        $settings['selected_user_roles']        = $raw_settings['selected_user_roles'];
-        $settings['update_pulled_posts']        = $raw_settings['update_pulled_posts'];
+        $settings['selected_user_roles']        = !empty( $raw_settings['selected_user_roles'] ) ? $raw_settings['selected_user_roles'] : array() ;
+        $settings['update_pulled_posts']        = !empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
 
         $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
