@@ -152,7 +152,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         }
 
         if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
-            $this->ext_thumbnail_ids[ $this->site_ID ] = $this->get_response();
+            $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = $this->get_response();
             return $this->get_response();
         }
 
