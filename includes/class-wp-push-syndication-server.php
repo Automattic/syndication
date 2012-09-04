@@ -103,7 +103,9 @@ class WP_Push_Syndication_Server {
             'delete_pushed_posts'       => 'off',
             'selected_user_roles'       => array( 'administrator' ),
             'pull_time_interval'        => '3600',
-            'update_pulled_posts'       => 'off'
+            'update_pulled_posts'       => 'off',
+            'client_id'                 => '',
+            'client_secret'             => ''
         );
 
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
