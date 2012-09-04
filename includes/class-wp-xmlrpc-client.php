@@ -184,6 +184,23 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
     }
 
+    public function remove_post_thumbnail( $post_ID ) {
+
+        $result = $this->query(
+            'pushSyndicateRemoveThumbnail',
+            '1',
+            $this->username,
+            $this->password,
+            $post_ID
+        );
+
+        if( !$result )
+            return false;
+
+        return true;
+
+    }
+
 	public function set_options($options, $ext_ID)
 	{
 
