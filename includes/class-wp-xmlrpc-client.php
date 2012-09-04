@@ -74,6 +74,8 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         if( !$result )
             return false;
 
+        $this->manage_thumbnails( $post_ID );
+
         return true;
 
     }
@@ -118,6 +120,9 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         if( !$result )
             return false;
 
+
+        $this->manage_thumbnails( $post_ID );
+
         return true;
 
     }
@@ -143,19 +148,17 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
         if( empty( $post_thumbnail_id ) )
-            return '';
+            return $this->remove_post_thumbnail( $post_ID );
 
-        if( is_array( $this->ext_thumbnail_ids[ $this->site_ID ] ) ) {
-            if( array_key_exists( $post_thumbnail_id, $this->ext_thumbnail_ids[ $this->site_ID ] ) )
-                return $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ];
-        }
+        if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] ) )
+            return true;
 
         if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
-            $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = $this->get_response();
-            return $this->get_response();
+            $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = (int)$this->get_response();
+            return true;
         }
 
-        return '';
+        return false;
 
     }
 
