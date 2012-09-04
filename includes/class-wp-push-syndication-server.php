@@ -98,6 +98,7 @@ class WP_Push_Syndication_Server {
         ));
 
         $this->push_syndicate_default_settings = array(
+            'selected_pull_sitegroups'  => array(),
             'selected_post_types'       => array( 'post' ),
             'delete_pushed_posts'       => 'off',
             'selected_user_roles'       => array( 'administrator' ),
