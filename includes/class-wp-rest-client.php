@@ -26,6 +26,10 @@ class WP_REST_Client implements WP_Client{
 
 	}
 
+	public static function get_client_data() {
+		return array( 'id' => 'WP_REST', 'modes' => array( 'push' ), 'name' => 'WordPress.com REST' );
+	}
+	
 	public function new_post( $post_ID ) {
 
 		$post = (array)get_post( $post_ID );

@@ -3,6 +3,12 @@
 interface WP_Client {
 
 	/**
+	 * Return Client Data
+	 * @return array array( 'id' => (string) $transport_name, 'modes' => array( 'push', 'pull' ), 'name' => (string) $name );
+	 */
+	public static function get_client_data();
+	 
+	/**
 	 * Creates a new post in the slave site.
 	 *
 	 * @param   int  $post_ID  The post ID to push.

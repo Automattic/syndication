@@ -16,6 +16,10 @@ class WP_Push_Syndication_Server {
         add_action( 'init', array( &$this, 'init' ) );
         add_action( 'admin_init', array( &$this, 'admin_init' ) );
 
+		// custom columns
+		add_filter( 'manage_edit-syn_site_columns', array( &$this, 'add_new_columns' ) );
+		add_action( 'manage_syn_site_posts_custom_column', array( &$this, 'manage_columns' ), 10, 2);
+ 
         // submenus
         add_action( 'admin_menu', array( &$this, 'register_syndicate_settings' ) );
 
@@ -112,22 +116,54 @@ class WP_Push_Syndication_Server {
 
     }
 
+	public function add_new_columns( $columns ) {
+		$new_columns = array();
+		$new_columns['cb'] = '<input type="checkbox" />';
+		$new_columns['title'] = _x( 'Site Name', 'column name' );
+		$new_columns['mode'] = _x( 'Mode', 'column name' );
+		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
+		$new_columns['date'] = _x('Date', 'column name');
+		return $new_columns;
+	}
+
+	public function manage_columns( $column_name, $id ) {
+		global $wpdb;
+		switch ( $column_name ) {
+			case 'mode':
+				$transport_mode = get_post_meta( $id, 'syn_transport_mode', true);
+				echo esc_html( $transport_mode );
+				break;
+			case 'syn_sitegroup':
+				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
+				break;
+			default:
+				break;
+		}
+	}
+	
     public function admin_init() {
 
         // @TODO define more parameters
-        $this->push_syndicate_transports = array(
-            'WP_XMLRPC'    => array(
-                'name'  => 'WordPress XMLRPC',
-            ),
-            'WP_REST'      => array(
-                'name'  => 'WordPress.com REST',
-            ),
-            'WP_RSS'      => array(
-                'name'  => 'WordPress RSS',
-            ),
-        );
+		$name_match = '#class-wp-(.+)-client\.php#';
+		
+		$full_path = __DIR__ . '/';
+		if ( $handle = opendir( $full_path ) ) {
+			while ( false !== ( $entry = readdir( $handle ) ) ) {
+				if ( !preg_match( $name_match, $entry, $matches ) )
+					continue;
+				require_once( $full_path . $entry );
+				$class_name = 'WP_' . strtoupper( $matches[1] ) . '_Client';
+				if ( !class_exists( $class_name ) )
+					continue;
+				$class = new $class_name;
+				$client_data = $class::get_client_data();
+				if ( is_array( $client_data ) && !empty( $client_data ) ) {
+					$this->push_syndicate_transports[$client_data['id']] = array( 'name' => $client_data['name'], 'modes' => $client_data['modes'] ); 
+					}
+			}
+		}
 
-        // register styles and scripts
+		// register styles and scripts
         wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version  );
 
         // register settings
@@ -629,16 +665,18 @@ class WP_Push_Syndication_Server {
         global $post;
 
         $transport_type = get_post_meta( $post->ID, 'syn_transport_type', true);
+		$transport_mode = get_post_meta( $post->ID, 'syn_transport_mode', true);
         $site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true);
 
         // default values
-        $transport_type = !empty( $transport_type ) ? $transport_type : 'WP_XMLRPC' ;
-        $site_enabled   = !empty( $site_enabled ) ? $site_enabled : 'off' ;
+        $transport_type = !empty( $transport_type ) ? $transport_type : 'WP_XMLRPC';
+        $transport_mode = !empty( $transport_mode ) ? $transport_mode : 'pull' ;
+        $site_enabled   = !empty( $site_enabled ) ? $site_enabled : 'off';
 
         // nonce for verification when saving
         wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
 
-        $this->display_transports( $transport_type );
+        $this->display_transports( $transport_type, $transport_mode );
 
         try {
             $class = $transport_type . '_client';
@@ -662,17 +700,27 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function display_transports( $transport_type ) {
+    public function display_transports( $transport_type, $mode ) {
 
         echo '<p>' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</p>';
         echo '<form action="">';
+		// TODO: add direction
         echo '<select name="transport_type" onchange="this.form.submit()">';
 
+		$values = array();
+		$max_len = 0;
         foreach( $this->push_syndicate_transports as $key => $value ) {
-            echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . esc_html( $value['name'] ) . '</option>';
-        }
+			if ( $key == $transport_type )
+				$modes = $value['modes'];
+			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . esc_html( $value['name'] ) . '</option>';
+		}
 
         echo '</select>';
+		echo '<select name="transport_mode" onchange="this.form.submit()">';
+		foreach( $modes as $supported_mode ) {
+			echo '<option value="' . esc_html( $supported_mode ) . '"' . selected( $supported_mode, $mode ) . '>' . esc_html( $supported_mode ) . '</option>';
+		}
+		echo '</select>';
         echo '</form>';
 
     }
@@ -690,7 +738,8 @@ class WP_Push_Syndication_Server {
             return;
 
         update_post_meta( $post->ID, 'syn_transport_type', $_POST['transport_type'] );
-
+		update_post_meta( $post->ID, 'syn_transport_mode', $_POST['transport_mode'] );
+		
         $site_enabled = isset( $_POST['site_enabled'] ) ? 'on' : 'off';
         $class = $_POST['transport_type'] . '_Client';
 

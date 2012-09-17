@@ -35,6 +35,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         update_option( 'syn_post_thumbnail_ids', $this->ext_thumbnail_ids );
     }
 
+	public static function get_client_data() {
+		return array( 'id' => 'WP_XMLRPC', 'modes' => array( 'push' ), 'name' => 'WordPress XMLRPC' );
+	}
+	
     public function new_post( $post_ID ) {
 
         $post = (array)get_post( $post_ID );
