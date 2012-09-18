@@ -59,10 +59,13 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 	    // @TODO extend this to custom taxonomies
-	    $args['terms_names'] = array(
-		    'category' => wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ),
-		    'post_tag' => wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') )
-	    );
+		$args['terms_names'] = array();
+
+		if ( is_object_in_taxonomy( $post['post_type'], 'category' ) )
+			$args['terms_names']['category'] = wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') );
+
+		if ( is_object_in_taxonomy( $post['post_type'], 'post_tag' )  )
+			$args['terms_names']['post_tag'] = wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') );
 
 	    // post meta
         $args['custom_fields'] = array(
