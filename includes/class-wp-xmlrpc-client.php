@@ -17,7 +17,11 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
 	    // @TODO check port, timeout etc
 		$server         = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
-		$server         = esc_url_raw( $server . '/xmlrpc.php' );
+		if ( false === strpos( $server, 'xmlrpc.php' ) )
+			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
+		else
+			$server = esc_url_raw( $server );
+
         $this->username = get_post_meta( $site_ID, 'syn_site_username', true);
         $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
         $this->site_ID  = $site_ID;
