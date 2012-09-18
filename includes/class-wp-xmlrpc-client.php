@@ -361,7 +361,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
 	public static function save_settings( $site_ID ) {
 
-		str_replace( '/xmlrpc.php', '', $_POST['site_url'] );
+		$_POST['site_url'] = str_replace( '/xmlrpc.php', '', $_POST['site_url'] );
 
 		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $_POST['site_url'] ) );
 		update_post_meta( $site_ID, 'syn_site_username', sanitize_text_field( $_POST['site_username'] ) );
