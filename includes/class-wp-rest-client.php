@@ -34,6 +34,11 @@ class WP_REST_Client implements WP_Client{
 
 		$post = (array)get_post( $post_ID );
 
+		// This filter can be used to exclude or alter posts during a content push
+		$post = apply_filters( 'syn_rest_push_filter_new_post', $post, $post_ID );
+		if ( false === $post )
+			return true;
+		
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/', array(
 			'timeout'       => $this->timeout,
 			'user-agent'    => $this->useragent,
@@ -75,6 +80,11 @@ class WP_REST_Client implements WP_Client{
 
 		$post = (array)get_post( $post_ID );
 
+		// This filter can be used to exclude or alter posts during a content push
+		$post = apply_filters( 'syn_rest_push_filter_edit_post', $post, $post_ID );
+		if ( false === $post )
+			return true;
+		
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(
 			'timeout'       => $this->timeout,
 			'user-agent'    => $this->useragent,

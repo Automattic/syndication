@@ -43,6 +43,11 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         $post = (array)get_post( $post_ID );
 
+		// This filter can be used to exclude or alter posts during a content push
+		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
+		if ( false === $post )
+			return true;
+		
         // rearranging arguments
         $args = array();
         $args['post_title']     = $post['post_title'];
@@ -88,6 +93,11 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         $post = (array)get_post( $post_ID );
 
+		// This filter can be used to exclude or alter posts during a content push
+		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
+		if ( false === $post )
+			return true;
+		
         // rearranging arguments
         $args = array();
         $args['post_title']     = $post['post_title'];
@@ -170,6 +180,11 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         $post = (array)get_post( $post_ID );
 
+		// This filter can be used to exclude or alter posts during a content push
+		$post = apply_filters( 'syn_xmlrpc_push_filter_insert_thumbnail', $post, $post_ID );
+		if ( false === $post )
+			return true;
+		
         // rearranging arguments
         $args = array();
         $args['post_title']     = $post['post_title'];

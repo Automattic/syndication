@@ -935,10 +935,25 @@ class WP_Push_Syndication_Server {
                 $info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
                 if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
+
+					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					if ( true === $push_new_shortcircuit )
+						continue;
+					
                     $result = $client->new_post( $post_ID );
+
+					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
+					
                     $this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
                 } else { // states 'success', 'edit-error' and 'remove-error'
+					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					if ( true === $push_edit_shortcircuit )
+						continue;
+					
                     $result = $client->edit_post( $post_ID, $info['ext_ID'] );
+
+					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
+
                     $this->validate_result_edit_post( $result, $info, $slave_post_states, $site->ID, $client );
                 }
 
@@ -1176,8 +1191,14 @@ class WP_Push_Syndication_Server {
                 $client         = WP_Client_Factory::get_client( $transport_type , $site_ID );
 
                 if( $client->is_post_exists( $ext_ID ) ) {
-
+					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
+					if ( true === $push_delete_shortcircuit )
+						continue;
+					
                     $result = $client->delete_post( $ext_ID );
+
+					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
+					
                     if( !$result ) {
                         $delete_error_sites[ $site_ID ] = array( $ext_ID );
                     }
@@ -1290,20 +1311,30 @@ class WP_Push_Syndication_Server {
                 continue;
 
             foreach( $posts as $post ) {
-
                 if( in_array( $post['post_guid'], $inserted_posts ) ) {
-
+					$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
+					if ( true === $pull_edit_shortcircuit )
+						continue;
+				
                     // if updation is disabled continue
                     if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' )
                         continue;
 
                     $post['ID'] = array_search( $post['post_guid'], $inserted_posts );
-                    wp_update_post( $post, true );
+                    $result = wp_update_post( $post, true );
 
+					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
+					
                 } else {
-
+					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
+					if ( true === $pull_new_shortcircuit )
+						continue;
+				
                     $result = wp_insert_post( $post, true );
-                    if( !is_wp_error( $result ) )
+
+					do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
+					
+					if( !is_wp_error( $result ) )
                         $inserted_posts[ $result ] = $post['post_guid'];
 
                 }

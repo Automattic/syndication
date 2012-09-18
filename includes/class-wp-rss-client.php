@@ -184,7 +184,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
         $posts = array();
 
         foreach( $this->get_items() as $item ) {
-            $posts[] = array(
+            $post = array(
                 'post_title'        => $item->get_title(),
                 'post_content'      => $item->get_content(),
                 'post_excerpt'      => $item->get_description(),
@@ -195,6 +195,11 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
                 'ping_status'       => $this->default_ping_status,
                 'post_guid'         => $item->get_id()
             );
+			// This filter can be used to exclude or alter posts during a pull import
+			$post = apply_filters( 'syn_rss_pull_filter_post', $post, $args );
+			if ( false === $post )
+				continue;
+			$posts[] = $post;
         }
 
         return $posts;
