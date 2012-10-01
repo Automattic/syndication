@@ -47,7 +47,6 @@ class WP_Push_Syndication_Server {
         // cron hooks
         add_action( 'syn_push_content', array( &$this, 'push_content' ) );
         add_action( 'syn_delete_content', array( &$this, 'delete_content' ) );
-        add_action( 'syn_push_options', array( &$this, 'push_options' ) );
         add_action( 'syn_pull_content', array( &$this, 'pull_content' ) );
 
     }
@@ -201,7 +200,6 @@ class WP_Push_Syndication_Server {
 
     public function register_syndicate_settings() {
         add_submenu_page( 'options-general.php', esc_html__( 'Push Syndication Settings', 'push-syndication' ), esc_html__( 'Push Syndication', 'push-syndication' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
-        add_submenu_page( 'edit.php?post_type=syn_site', esc_html__( 'Site Options', 'push-syndication' ), esc_html__( 'Site Options', 'push-syndication' ), 'manage_options', 'push-syndicate-site-options', array( &$this, 'display_site_options' ) );
     }
 
     public function display_syndicate_settings() {
@@ -483,40 +481,6 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function display_site_options() {
-
-        $selected_siteoptions    = !empty( $_POST['syn_selected_siteoptions'] ) ? $_POST['syn_selected_siteoptions'] : array() ;
-        $selected_sitegroups   = !empty( $_POST['syn_selected_sitegroups'] ) ? $_POST['syn_selected_sitegroups'] : array() ;
-
-        update_option( 'syn_selected_siteoptions', $selected_siteoptions );
-        update_option( 'syn_selected_sitegroups', $selected_sitegroups);
-
-        $this->schedule_push_options();
-
-        ?>
-
-        <div class="wrap" xmlns="http://www.w3.org/1999/html">
-
-            <?php screen_icon(); // @TODO custom screen icon ?>
-
-            <h2><?php esc_html_e( 'Push Syndicate Site Options', 'push-syndication' ); ?></h2>
-
-            <form action="" method="post">
-
-                <?php $this->display_sitegroups_selection(); ?>
-
-                <?php $this->display_site_options_selection(); ?>
-
-                <?php submit_button( '  Push Options  ' ); ?>
-
-            </form>
-
-        </div>
-
-        <?php
-
-    }
-
     public function display_sitegroups_selection() {
 
         echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
@@ -553,106 +517,6 @@ class WP_Push_Syndication_Server {
             <?php
 
         }
-
-    }
-
-    public function display_site_options_selection() {
-
-        echo '<h3>' . esc_html__( 'Select Site Options', 'push-syndication' ) . '</h3>';
-
-        $selected_siteoptions   = get_option( 'syn_selected_siteoptions' );
-        $selected_siteoptions   = !empty( $selected_siteoptions ) ? $selected_siteoptions : array() ;
-        $site_options           = wp_load_alloptions();
-
-        echo '<table>';
-        echo '<tbody>';
-
-        $i = 0;
-
-        foreach( $site_options as $key => $value ) {
-
-            if( $key[0] == '_' )
-                continue;
-
-            if ( $i == 6 ) {
-                echo '<tr>';
-            }
-
-            ?>
-
-            <td>
-                <label>
-                    <input type="checkbox" name="syn_selected_siteoptions[]" value="<?php echo esc_html( $key ); ?>" <?php $this->checked_array( $key, $selected_siteoptions ) ?> />
-                    <?php echo esc_html( $key ); ?>
-                </label>
-            </td>
-
-            <?php
-
-            $i++;
-
-            if ( $i == 6 ) {
-                echo '<tr>';
-                $i = 0;
-            }
-
-        }
-
-        echo '</tbody>';
-        echo '</table>';
-
-    }
-
-    public function schedule_push_options() {
-
-        if ( !current_user_can( 'manage_options' ) )
-            return;
-
-        $selected_sitegroups = get_option( 'syn_selected_sitegroups' );
-        if( empty( $selected_sitegroups ) )
-            return;
-
-        $sites = array();
-        foreach( $selected_sitegroups as $selected_sitegroup ) {
-            $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
-        }
-
-        wp_schedule_single_event(
-            time() - 1,
-            'syn_push_options',
-            array( $sites )
-        );
-
-    }
-
-    public function push_options( $sites ) {
-
-        require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
-
-        $selected_siteoptions = array_intersect_key( wp_load_alloptions(), array_combine( get_option( 'syn_selected_siteoptions' ), get_option( 'syn_selected_siteoptions' ) ) );
-
-        // Holds the error sites with the error message
-        $error_sites = array();
-
-        foreach( $sites as $site ) {
-
-            // if site is not enabled return
-            $site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true);
-            if( $site_enabled != 'on' )
-                continue;
-
-            $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-            $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
-            $result         = $client->set_options( $selected_siteoptions, $site->ID );
-            if( !$result ) {
-                $error_sites[] = array(
-
-                );
-            }
-
-        }
-
-        update_option( 'syn_options_error_sites', $error_sites );
 
     }
 
