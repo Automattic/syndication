@@ -555,8 +555,10 @@ class WP_Push_Syndication_Server {
         ?>
 
         <p>
-            <input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
-            <label> Enable </label>
+			<label>
+				<input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
+				<?php _e( 'Enable' ); ?>
+			</label>
         </p>
         <p class="submit">
             <input type="submit" name="addsite" id="addsite" class="button-primary" value="  Add Site  "/>
