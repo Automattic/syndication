@@ -158,8 +158,7 @@ class WP_Push_Syndication_Server {
 				$class_name = 'WP_' . strtoupper( $matches[1] ) . '_Client';
 				if ( !class_exists( $class_name ) )
 					continue;
-				$class = new $class_name;
-				$client_data = $class::get_client_data();
+				$client_data = call_user_func( array( $class_name, 'get_client_data' ) );
 				if ( is_array( $client_data ) && !empty( $client_data ) ) {
 					$this->push_syndicate_transports[$client_data['id']] = array( 'name' => $client_data['name'], 'modes' => $client_data['modes'] ); 
 					}
