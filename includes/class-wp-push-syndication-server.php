@@ -44,10 +44,7 @@ class WP_Push_Syndication_Server {
         add_action( 'transition_post_status', array( &$this, 'pre_schedule_push_content' ) );
 		add_action( 'delete_post', array( &$this, 'schedule_delete_content' ) );
 
-        // cron hooks
-        add_action( 'syn_push_content', array( &$this, 'push_content' ) );
-        add_action( 'syn_delete_content', array( &$this, 'delete_content' ) );
-        add_action( 'syn_pull_content', array( &$this, 'pull_content' ) );
+		$this->register_syndicate_actions();
 
     }
 
@@ -115,6 +112,12 @@ class WP_Push_Syndication_Server {
         $this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
 
     }
+
+	public function register_syndicate_actions() {
+		add_action( 'syn_push_content', array( &$this, 'push_content' ) );
+        add_action( 'syn_delete_content', array( &$this, 'delete_content' ) );
+        add_action( 'syn_pull_content', array( &$this, 'pull_content' ) );
+	}
 
 	public function add_new_columns( $columns ) {
 		$new_columns = array();
@@ -192,7 +195,7 @@ class WP_Push_Syndication_Server {
         $settings['selected_user_roles']        = !empty( $raw_settings['selected_user_roles'] ) ? $raw_settings['selected_user_roles'] : array() ;
         $settings['update_pulled_posts']        = !empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
 
-        $this->schedule_pull_content( $settings['selected_pull_sitegroups'] );
+        $this->pre_schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
         return $settings;
 
@@ -1133,20 +1136,10 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_pull_content( $selected_sitegroups ) {
+    public function pre_schedule_pull_content( $selected_sitegroups ) {
 
         if ( !current_user_can( 'manage_options' ) )
             return;
-
-        // to unschedule a cron we need the original arguements passed to schedule the cron
-        // we are saving it as a siteoption
-        $old_pull_sites = get_option( 'syn_old_pull_sites' );
-
-        if( !empty( $old_pull_sites ) ) {
-            $timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
-            if( $timestamp )
-                wp_unschedule_event($timestamp, 'syn_pull_content', array( $old_pull_sites ) );
-        }
 
         if( empty( $selected_sitegroups ) )
             return;
@@ -1156,7 +1149,23 @@ class WP_Push_Syndication_Server {
             $sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
         }
 
-        wp_schedule_event(
+		
+		$this->schedule_pull_content( $sites );
+
+    }
+
+	public function schedule_pull_content( $sites ) {
+		// to unschedule a cron we need the original arguements passed to schedule the cron
+        // we are saving it as a siteoption
+        $old_pull_sites = get_option( 'syn_old_pull_sites' );
+
+        if( !empty( $old_pull_sites ) ) {
+            $timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
+            if( $timestamp )
+                wp_unschedule_event( $timestamp, 'syn_pull_content', array( $old_pull_sites ) );
+        }
+
+		wp_schedule_event(
             time() - 1,
             'pull_time_interval',
             'syn_pull_content',
@@ -1164,8 +1173,7 @@ class WP_Push_Syndication_Server {
         );
 
         update_option( 'syn_old_pull_sites', $sites );
-
-    }
+	}
 
     public function pull_content( $sites ) {
 
