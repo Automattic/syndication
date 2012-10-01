@@ -41,7 +41,8 @@ class WP_Push_Syndication_Server {
         add_filter( 'cron_schedules', array( &$this, 'cron_add_pull_time_interval' ) );
 
         // firing a cron job
-        add_action( 'transition_post_status', array( &$this, 'schedule_push_content' ) );
+        add_action( 'transition_post_status', array( &$this, 'pre_schedule_push_content' ) );
+		add_action( 'delete_post', array( &$this, 'schedule_delete_content' ) );
 
         // cron hooks
         add_action( 'syn_push_content', array( &$this, 'push_content' ) );
@@ -881,7 +882,7 @@ class WP_Push_Syndication_Server {
         // @TODO retrieve syndication status and display
     }
 
-    public function schedule_push_content() {
+    public function pre_schedule_push_content() {
 
         global $post;
 
@@ -898,13 +899,17 @@ class WP_Push_Syndication_Server {
 
         $sites = $this->get_sites_by_post_ID( $post->ID );
 
-        wp_schedule_single_event(
+        $this->schedule_push_content( $sites );
+
+    }
+
+	function schedule_push_content( $sites ) {
+		wp_schedule_single_event(
             time() - 1,
             'syn_push_content',
             array( $sites )
         );
-
-    }
+	}
 
     // cron job function to syndicate content
     public function push_content( $sites ) {
@@ -1151,7 +1156,7 @@ class WP_Push_Syndication_Server {
 
     }
 
-    public function schedule_delete_content( $post_ID ) {
+    public function pre_schedule_delete_content( $post_id ) {
 
         // if slave post deletion is not enabled return
         $delete_pushed_posts =  !empty( $this->push_syndicate_settings[ 'delete_pushed_posts' ] ) ? $this->push_syndicate_settings[ 'delete_pushed_posts' ] : 'off' ;
@@ -1161,13 +1166,17 @@ class WP_Push_Syndication_Server {
         if( !$this->current_user_can_syndicate() )
             return;
 
-        wp_schedule_single_event(
+        $this->schedule_delete_content( $post_id );
+
+    }
+
+	public function schedule_delete_content( $post_id ) {
+		wp_schedule_single_event(
             time() - 1,
             'syn_delete_content',
             array( $post_ID )
         );
-
-    }
+	}
 
     public function delete_content( $post_ID ) {
 
