@@ -13,36 +13,36 @@ class WP_Push_Syndication_Server {
     function __construct() {
 
         // initialization
-        add_action( 'init', array( &$this, 'init' ) );
-        add_action( 'admin_init', array( &$this, 'admin_init' ) );
+        add_action( 'init', array( $this, 'init' ) );
+        add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 		// custom columns
-		add_filter( 'manage_edit-syn_site_columns', array( &$this, 'add_new_columns' ) );
-		add_action( 'manage_syn_site_posts_custom_column', array( &$this, 'manage_columns' ), 10, 2);
+		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
+		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
  
         // submenus
-        add_action( 'admin_menu', array( &$this, 'register_syndicate_settings' ) );
+        add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
 
         // defining sites
-        add_action( 'save_post', array( &$this, 'save_site_settings' ) );
+        add_action( 'save_post', array( $this, 'save_site_settings' ) );
 
         // loading necessary styles and scripts
-        add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts_and_styles' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts_and_styles' ) );
 
         // filter admin notices in custom post types
-        add_filter( 'post_updated_messages', array( &$this, 'push_syndicate_admin_messages' ) );
+        add_filter( 'post_updated_messages', array( $this, 'push_syndicate_admin_messages' ) );
 
         // syndicating content
-        add_action( 'add_meta_boxes', array( &$this, 'add_post_metaboxes' ) );
-        add_action( 'transition_post_status', array( &$this, 'save_syndicate_settings' ) ); // use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load
-        add_action( 'wp_trash_post', array( &$this, 'delete_content' ) );
+        add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
+        add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load
+        add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 
         // adding custom time interval
-        add_filter( 'cron_schedules', array( &$this, 'cron_add_pull_time_interval' ) );
+        add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
 
         // firing a cron job
-        add_action( 'transition_post_status', array( &$this, 'pre_schedule_push_content' ) );
-		add_action( 'delete_post', array( &$this, 'schedule_delete_content' ) );
+        add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ) );
+		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
 
 		$this->register_syndicate_actions();
 
@@ -72,7 +72,7 @@ class WP_Push_Syndication_Server {
             'query_var'             => true,
             'supports'              => array( 'title' ),
             'can_export'            => true,
-            'register_meta_box_cb'  => array( &$this, 'site_metaboxes' ),
+            'register_meta_box_cb'  => array( $this, 'site_metaboxes' ),
         ));
 
         register_taxonomy( 'syn_sitegroup', 'syn_site', array(
@@ -114,9 +114,9 @@ class WP_Push_Syndication_Server {
     }
 
 	public function register_syndicate_actions() {
-		add_action( 'syn_push_content', array( &$this, 'push_content' ) );
-        add_action( 'syn_delete_content', array( &$this, 'delete_content' ) );
-        add_action( 'syn_pull_content', array( &$this, 'pull_content' ) );
+		add_action( 'syn_push_content', array( $this, 'push_content' ) );
+		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
+		add_action( 'syn_pull_content', array( $this, 'pull_content' ) );
 	}
 
 	public function add_new_columns( $columns ) {
@@ -170,7 +170,7 @@ class WP_Push_Syndication_Server {
         wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version  );
 
         // register settings
-        register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( &$this, 'push_syndicate_settings_validate' ) );
+        register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 
     }
 
@@ -202,30 +202,30 @@ class WP_Push_Syndication_Server {
     }
 
     public function register_syndicate_settings() {
-        add_submenu_page( 'options-general.php', esc_html__( 'Push Syndication Settings', 'push-syndication' ), esc_html__( 'Push Syndication', 'push-syndication' ), 'manage_options', 'push-syndicate-settings', array( &$this, 'display_syndicate_settings' ) );
+        add_submenu_page( 'options-general.php', esc_html__( 'Push Syndication Settings', 'push-syndication' ), esc_html__( 'Push Syndication', 'push-syndication' ), 'manage_options', 'push-syndicate-settings', array( $this, 'display_syndicate_settings' ) );
     }
 
     public function display_syndicate_settings() {
 
-        add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( &$this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-        add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( &$this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+        add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
+        add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
-        add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( &$this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
-        add_settings_field( 'pull_time_interval', esc_html__( 'specify time interval in milliseconds', 'push-syndication' ), array( &$this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-        add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( &$this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
+        add_settings_field( 'pull_time_interval', esc_html__( 'specify time interval in milliseconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+        add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 
-        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( &$this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
-        add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( &$this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
+        add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
+        add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
-        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles', 'push-syndication' ), array( &$this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
-        add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( &$this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
+        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles', 'push-syndication' ), array( $this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
+        add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( $this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
 
-        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
-        add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication' ), array( &$this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
+        add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
+        add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
 
-        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( &$this, 'display_apitoken_description' ), 'api_token' );
-        add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( &$this, 'display_client_id' ), 'api_token', 'api_token' );
-        add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( &$this, 'display_client_secret' ), 'api_token', 'api_token' );
+        add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( $this, 'display_apitoken_description' ), 'api_token' );
+        add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( $this, 'display_client_id' ), 'api_token', 'api_token' );
+        add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( $this, 'display_client_secret' ), 'api_token', 'api_token' );
 
         ?>
 
@@ -524,7 +524,7 @@ class WP_Push_Syndication_Server {
     }
 
     public function site_metaboxes() {
-        add_meta_box('sitediv', __(' Site Settings '), array( &$this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
+        add_meta_box('sitediv', __(' Site Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
         remove_meta_box('submitdiv', 'syn_site', 'side');
     }
 
@@ -665,8 +665,8 @@ class WP_Push_Syndication_Server {
 
         $selected_post_types = $this->push_syndicate_settings[ 'selected_post_types' ];
         foreach( $selected_post_types as $selected_post_type ) {
-            add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( &$this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
-            //add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( &$this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );
+            add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
+            //add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );
         }
 
     }
