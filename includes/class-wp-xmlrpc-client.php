@@ -16,7 +16,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     function __construct( $site_ID ) {
 
 	    // @TODO check port, timeout etc
-		$server         = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
+		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
 		if ( false === strpos( $server, 'xmlrpc.php' ) )
 			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
 		else
@@ -71,13 +71,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		if ( is_object_in_taxonomy( $post['post_type'], 'post_tag' )  )
 			$args['terms_names']['post_tag'] = wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') );
 
-	    // post meta
-        $args['custom_fields'] = array(
-            array(
-                'key'   => '_masterpost_url',
-                'value' =>  $post['guid']
-            )
-        );
+		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
         $result = $this->query(
             'wp.newPost',
@@ -92,7 +86,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
         $this->manage_thumbnails( $post_ID );
 
-        return true;
+        return $result;
 
     }
 
@@ -116,18 +110,13 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 	    // @TODO extend this to custom taxonomies
+		// TODO: fix this with the same fix as new_post
 	    $args['terms_names'] = array(
 		    'category' => wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ),
 		    'post_tag' => wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') )
 	    );
 
-	    // post meta
-	    $args['custom_fields'] = array(
-            array(
-                'key'   => '_masterpost_url',
-                'value' =>  $post['guid']
-            )
-        );
+		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
         $result = $this->query(
             'wp.editPost',
@@ -166,6 +155,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     }
 
     public function manage_thumbnails( $post_ID ) {
+		// TODO: check if post thumbnails are supported
 
         $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
         if( empty( $post_thumbnail_id ) )
@@ -198,6 +188,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['post_content']   = $post['post_content'];
         $args['guid']           = $post['guid'];
 
+		// TODO: check that method is supported
         $result = $this->query(
             'pushSyndicateInsertThumbnail',
             '1',
@@ -229,6 +220,33 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         return true;
 
     }
+
+	private function _get_custom_fields( $post_id ) {
+		$custom_fields = array();
+		$all_post_meta = get_post_custom( $post_id );
+
+		$blacklisted_meta = apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', /** TODO: add more **/ ) );
+		foreach ( (array) $all_post_meta as $post_meta_key => $post_meta_value ) {
+			if ( in_array( $post_meta_key, $blacklisted_meta ) || preg_match( '/^_?syn/i', $post_meta_key ) )
+				continue;
+
+			// TODO: for single, string values, don't send as an array
+			if ( 1 == count( $post_meta_value ) )
+				$post_meta_value == array_pop( $post_meta_value );
+
+			$custom_fields[] = array(
+				'key' => $post_meta_key,
+				'value' => $post_meta_value,
+			);
+		}
+
+		$custom_fields[] = array(
+			'key' => '_masterpost_url',
+			'value' => $post['guid']
+		);
+
+		return $custom_fields;
+	}
 
 	public function set_options($options, $ext_ID)
 	{
