@@ -239,10 +239,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
 		$post = get_post( $post_id );
 
-		if ( is_object_in_taxonomy( $post['post_type'], 'category' ) )
+		if ( is_object_in_taxonomy( $post->post_type, 'category' ) )
 			$terms_names['category'] = wp_get_object_terms( $post_id, 'category', array( 'fields' => 'names' ) );
 
-		if ( is_object_in_taxonomy( $post['post_type'], 'post_tag' )  )
+		if ( is_object_in_taxonomy( $post->post_type, 'post_tag' )  )
 			$terms_names['post_tag'] = wp_get_object_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) );
 
 		// TODO: custom taxonomy
