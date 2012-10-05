@@ -58,11 +58,6 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
         return false;
     }
 
-    public function set_options($options, $ext_ID) {
-        // Not supported
-        return false;
-    }
-
     public function test_connection() {
         // TODO: Implement test_connection() method.
         return true;

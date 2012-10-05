@@ -55,16 +55,6 @@ interface WP_Client {
     public function get_posts( $args = array() );
 
 	/**
-	 * Deletes an existing post in the slave site.
-	 *
-	 * @param   array  $options  Array of options to push to the slave site.
-	 * @param   int    $ext_ID   Slave post ID to push options.
-	 *
-	 * @return  boolean true on success false on failure.
-	 */
-	public function set_options( $options, $ext_ID );
-
-	/**
 	 * Test the connection with the slave site.
 	 *
 	 * @return  boolean  true on success false on failure.

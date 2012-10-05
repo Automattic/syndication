@@ -250,24 +250,6 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		return $terms_names;
 	}
 
-	public function set_options($options, $ext_ID)
-	{
-
-		$result = $this->query(
-			'pushSyndicateSetOption',
-			'1',
-			$this->username,
-			$this->password,
-			$options
-		);
-
-		if( !$result )
-            return false;
-
-		return true;
-
-	}
-
 	public function test_connection() {
 
 		$result = $this->query(

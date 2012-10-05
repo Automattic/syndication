@@ -275,11 +275,6 @@ class WP_REST_Client implements WP_Client{
 
 	}
 
-	public function set_options($options, $ext_ID)
-	{
-		// TODO: Implement set_options() method.
-	}
-
     public function get_post( $ext_ID )
     {
         // TODO: Implement get_post() method.
