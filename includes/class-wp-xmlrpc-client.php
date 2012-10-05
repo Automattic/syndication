@@ -62,14 +62,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
-	    // @TODO extend this to custom taxonomies
-		$args['terms_names'] = array();
-
-		if ( is_object_in_taxonomy( $post['post_type'], 'category' ) )
-			$args['terms_names']['category'] = wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') );
-
-		if ( is_object_in_taxonomy( $post['post_type'], 'post_tag' )  )
-			$args['terms_names']['post_tag'] = wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') );
+		$args['terms_names'] = $this->_get_post_terms( $post_ID );
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
@@ -109,12 +102,7 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         $args['wp_password']    = $post['post_password'];
         $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
-	    // @TODO extend this to custom taxonomies
-		// TODO: fix this with the same fix as new_post
-	    $args['terms_names'] = array(
-		    'category' => wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ),
-		    'post_tag' => wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') )
-	    );
+	    $args['terms_names'] = $this->_get_post_terms( $post_ID );
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
@@ -130,11 +118,9 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
         if( !$result )
             return false;
 
-
         $this->manage_thumbnails( $post_ID );
 
         return true;
-
     }
 
     public function delete_post( $ext_ID ) {
@@ -246,6 +232,22 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		);
 
 		return $custom_fields;
+	}
+
+	private function _get_post_terms( $post_id ) {
+		$terms_names = array();
+
+		$post = get_post( $post_id );
+
+		if ( is_object_in_taxonomy( $post['post_type'], 'category' ) )
+			$terms_names['category'] = wp_get_object_terms( $post_id, 'category', array( 'fields' => 'names' ) );
+
+		if ( is_object_in_taxonomy( $post['post_type'], 'post_tag' )  )
+			$terms_names['post_tag'] = wp_get_object_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) );
+
+		// TODO: custom taxonomy
+
+		return $terms_names;
 	}
 
 	public function set_options($options, $ext_ID)
