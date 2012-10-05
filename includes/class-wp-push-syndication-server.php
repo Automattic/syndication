@@ -606,8 +606,9 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        update_post_meta( $post->ID, 'syn_transport_type', $_POST['transport_type'] );
-		update_post_meta( $post->ID, 'syn_transport_mode', $_POST['transport_mode'] );
+		// @TODO validate that type and mode are valid
+        update_post_meta( $post->ID, 'syn_transport_type', sanitize_text_field( $_POST['transport_type'] ) );
+		update_post_meta( $post->ID, 'syn_transport_mode', sanitize_text_field( $_POST['transport_mode'] ) );
 		
         $site_enabled = isset( $_POST['site_enabled'] ) ? 'on' : 'off';
         $class = $_POST['transport_type'] . '_Client';
