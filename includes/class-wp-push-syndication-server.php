@@ -102,7 +102,6 @@ class WP_Push_Syndication_Server {
             'selected_pull_sitegroups'  => array(),
             'selected_post_types'       => array( 'post' ),
             'delete_pushed_posts'       => 'off',
-            'selected_user_roles'       => array( 'administrator' ),
             'pull_time_interval'        => '3600',
             'update_pulled_posts'       => 'off',
             'client_id'                 => '',
@@ -191,7 +190,6 @@ class WP_Push_Syndication_Server {
         $settings['delete_pushed_posts']        = !empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off' ;
         $settings['selected_pull_sitegroups']   = !empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
         $settings['pull_time_interval']         = !empty( $raw_settings['pull_time_interval'] ) ? $raw_settings['pull_time_interval'] : '3600' ;
-        $settings['selected_user_roles']        = !empty( $raw_settings['selected_user_roles'] ) ? $raw_settings['selected_user_roles'] : array() ;
         $settings['update_pulled_posts']        = !empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
 
         $this->pre_schedule_pull_content( $settings['selected_pull_sitegroups'] );
@@ -215,9 +213,6 @@ class WP_Push_Syndication_Server {
 
         add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
         add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
-
-        add_settings_section( 'push_syndicate_user_roles', esc_html__( 'User Roles', 'push-syndication' ), array( $this, 'display_push_user_roles_description' ), 'push_syndicate_user_roles' );
-        add_settings_field( 'user_role_selection', esc_html__( 'select user roles', 'push-syndication' ), array( $this, 'display_user_roles_selection' ), 'push_syndicate_user_roles', 'push_syndicate_user_roles' );
 
         add_settings_section( 'delete_pushed_posts', esc_html__(' Delete Pushed Posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
         add_settings_field( 'delete_post_check', esc_html__(' delete pushed posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
@@ -245,8 +240,6 @@ class WP_Push_Syndication_Server {
                 <?php submit_button( '  Pull Now ' ); ?>
 
                 <?php do_settings_sections( 'push_syndicate_post_types' ); ?>
-
-                <?php do_settings_sections( 'push_syndicate_user_roles' ); ?>
 
                 <?php do_settings_sections( 'delete_pushed_posts' ); ?>
 
@@ -344,44 +337,6 @@ class WP_Push_Syndication_Server {
 
         echo '</ul>';
 
-    }
-
-    public function display_push_user_roles_description() {
-        echo esc_html__( 'Select the user roles to enable for pushing content', 'push-syndication' );
-    }
-
-    public function display_user_roles_selection() {
-
-        $user_roles = $this->get_user_roles();
-
-        echo '<ul>';
-
-        foreach( $user_roles as $key => $value ) {
-
-            ?>
-
-            <li>
-                <label>
-                    <input type="checkbox" name="push_syndicate_settings[selected_user_roles][]" value="<?php echo esc_attr( $key ); ?>" <?php echo $this->checked_array( $key, $this->push_syndicate_settings['selected_user_roles'] ); ?>/>
-                    <?php echo esc_html( $key ); ?>
-                </label>
-            </li>
-
-            <?php
-
-        }
-
-        echo '</ul>';
-
-    }
-
-    public function get_user_roles() {
-        global $wp_roles;
-
-        if ( ! isset( $wp_roles ) )
-            $wp_roles = new WP_Roles();
-
-        return $wp_roles->get_names();
     }
 
     public function display_delete_pushed_posts_description() {
@@ -739,7 +694,7 @@ class WP_Push_Syndication_Server {
         if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
             return;
 
-        if ( !current_user_can( 'manage_options' ) )
+        if ( ! $this->current_user_can_syndicate() )
             return;
 
         $selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? $_POST['selected_sitegroups'] : '' ;
@@ -1117,13 +1072,8 @@ class WP_Push_Syndication_Server {
 
     // checking user capability
     public function current_user_can_syndicate() {
-
-        $current_user_roles     = wp_get_current_user()->roles;
-        $selected_user_roles    = $this->push_syndicate_settings['selected_user_roles'];
-        $match                  = array_intersect( $current_user_roles, $selected_user_roles );
-
-        return !empty( $match );
-
+		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
+		return current_user_can( $syndicate_cap );
     }
 
     public function cron_add_pull_time_interval( $schedules ) {
@@ -1140,7 +1090,7 @@ class WP_Push_Syndication_Server {
 
     public function pre_schedule_pull_content( $selected_sitegroups ) {
 
-        if ( !current_user_can( 'manage_options' ) )
+        if ( ! $this->current_user_can_syndicate() )
             return;
 
         if( empty( $selected_sitegroups ) )
