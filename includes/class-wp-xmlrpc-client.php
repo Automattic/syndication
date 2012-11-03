@@ -115,8 +115,10 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
             $args
         );
 
-        if( !$result )
+        if( ! $result ) {
             return false;
+        }
+
 
         $this->manage_thumbnails( $post_ID );
 
@@ -208,17 +210,19 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
     }
 
 	private function _get_custom_fields( $post_id ) {
+		$post = get_post( $post_id );
+
 		$custom_fields = array();
 		$all_post_meta = get_post_custom( $post_id );
 
-		$blacklisted_meta = apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', /** TODO: add more **/ ) );
+		$blacklisted_meta = $this->_get_meta_blacklist();
 		foreach ( (array) $all_post_meta as $post_meta_key => $post_meta_value ) {
 			if ( in_array( $post_meta_key, $blacklisted_meta ) || preg_match( '/^_?syn/i', $post_meta_key ) )
 				continue;
 
 			// TODO: for single, string values, don't send as an array
-			if ( 1 == count( $post_meta_value ) )
-				$post_meta_value == array_pop( $post_meta_value );
+			if ( is_array( $post_meta_value ) && 1 == count( $post_meta_value ) )
+				$post_meta_value = array_shift( $post_meta_value );
 
 			$custom_fields[] = array(
 				'key' => $post_meta_key,
@@ -228,10 +232,14 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 
 		$custom_fields[] = array(
 			'key' => '_masterpost_url',
-			'value' => $post['guid']
+			'value' => $post->guid,
 		);
 
 		return $custom_fields;
+	}
+
+	private function _get_meta_blacklist() {
+		return apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', /** TODO: add more **/ ) );
 	}
 
 	private function _get_post_terms( $post_id ) {
