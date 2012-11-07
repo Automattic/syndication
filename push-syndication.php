@@ -13,7 +13,7 @@ License:      GPLv2 or later
 **************************************************************************/
 
 if ( ! defined( 'PUSH_SYNDICATE_KEY' ) )
-	define( 'PUSH_SYNDICATE_KEY', '' );
+	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
 
 require_once ( dirname( __FILE__ ) . '/includes/class-wp-push-syndication-server.php' );
 if( apply_filters( 'syn_use_async_jobs', false ) )
