@@ -216,25 +216,25 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 		$all_post_meta = get_post_custom( $post_id );
 
 		$blacklisted_meta = $this->_get_meta_blacklist();
-		foreach ( (array) $all_post_meta as $post_meta_key => $post_meta_value ) {
+		foreach ( (array) $all_post_meta as $post_meta_key => $post_meta_values ) {
+
 			if ( in_array( $post_meta_key, $blacklisted_meta ) || preg_match( '/^_?syn/i', $post_meta_key ) )
 				continue;
 
-			// TODO: for single, string values, don't send as an array
-			if ( is_array( $post_meta_value ) && 1 == count( $post_meta_value ) )
-				$post_meta_value = array_shift( $post_meta_value );
+			foreach ( $post_meta_values as $post_meta_value ) {
+				$post_meta_value = maybe_unserialize( $post_meta_value ); // get_post_custom returns serialized data
 
-			$custom_fields[] = array(
-				'key' => $post_meta_key,
-				'value' => $post_meta_value,
-			);
+				$custom_fields[] = array(
+					'key' => $post_meta_key,
+					'value' => $post_meta_value,
+				);
+			}
 		}
 
 		$custom_fields[] = array(
 			'key' => '_masterpost_url',
 			'value' => $post->guid,
 		);
-
 		return $custom_fields;
 	}
 
