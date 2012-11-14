@@ -94,7 +94,7 @@ class WP_RSS_Client extends SimplePie implements WP_Client {
             <label for="feed_url"><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
+            <input type="text" class="widefat" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
         </p>
         <p>
             <label for="default_post_type"><?php echo esc_html__( 'Select post type', 'push-syndication' ); ?></label>

@@ -144,7 +144,6 @@ class WP_Push_Syndication_Server {
 	}
 	
     public function admin_init() {
-
         // @TODO define more parameters
 		$name_match = '#class-wp-(.+)-client\.php#';
 		
@@ -163,7 +162,7 @@ class WP_Push_Syndication_Server {
 					}
 			}
 		}
-
+        $this->push_syndicate_transports = apply_filters( 'syn_transports', $this->push_syndicate_transports );
 		// register styles and scripts
         wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version  );
 
@@ -1135,9 +1134,9 @@ class WP_Push_Syndication_Server {
             if( $site_enabled != 'on' )
                 continue;
 
-            $inserted_posts = get_post_meta( $site->ID, 'syn_inserted_posts', true);
-            $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-            $client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+            $inserted_posts = get_post_meta( $site->ID, 'syn_inserted_posts', true );
+            $transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
+            $client         = WP_Client_Factory::get_client( $transport_type, $site->ID );
             $posts          = $client->get_posts();
 
             if( empty( $posts ) )

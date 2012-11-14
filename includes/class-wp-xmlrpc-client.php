@@ -357,19 +357,19 @@ class WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements WP_Client {
 			<label for=site_url><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
+			<input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
 		</p>
 		<p>
 			<label for="site_username"><?php echo esc_html__( 'Enter Username', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="site_username" id="site_username" size="100" value="<?php echo esc_attr( $site_username ); ?>" />
+			<input type="text" class="widefat" name="site_username" id="site_username" size="100" value="<?php echo esc_attr( $site_username ); ?>" />
 		</p>
 		<p>
 			<label><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="password" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
+			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
 		</p>
 
         <?php
