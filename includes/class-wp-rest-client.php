@@ -246,19 +246,19 @@ class WP_REST_Client implements WP_Client{
             <label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <input type="text" name="site_token" id="site_token" size="100" value="<?php echo esc_attr( $site_token ); ?>" />
+            <input type="text" class="widefat" name="site_token" id="site_token" size="100" value="<?php echo esc_attr( $site_token ); ?>" />
         </p>
         <p>
             <label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <input type="text" name="site_id" id="site_id" size="100" value="<?php echo esc_attr( $site_id ); ?>" />
+            <input type="text" class="widefat" name="site_id" id="site_id" size="100" value="<?php echo esc_attr( $site_id ); ?>" />
         </p>
         <p>
             <label for=site_url><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
         </p>
         <p>
-            <input type="text" name="site_url" id="site_url" size="100" value="<?php echo esc_attr( $site_url ); ?>" />
+            <input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_attr( $site_url ); ?>" />
         </p>
 
         <?php
