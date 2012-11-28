@@ -500,7 +500,72 @@ class WP_Push_Syndication_Server {
     public function site_metaboxes() {
         add_meta_box('sitediv', __(' Site Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
         remove_meta_box('submitdiv', 'syn_site', 'side');
+        add_meta_box( 'submitdiv', __(' Site Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
     }
+
+	public function add_site_status_metabox( $site ) {
+		$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
+		?>
+		<div class="submitbox" id="submitpost">
+			<div id="minor-publishing">
+				<div id="misc-publishing-actions">
+					<div class="misc-pub-section">
+						<label for="post_status"><?php _e( 'Status:', 'push-syndication' ) ?></label>
+						<span id="post-status-display">
+						<?php
+						switch( $site_enabled ) {
+							case 'on':
+								_e( 'Enabled', 'push-syndication' );
+								break;
+							case 'off':
+							default:
+								_e( 'Disabled', 'push-syndication' );
+								break;
+						}
+						?>
+						</span>
+
+						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php _e( 'Edit', 'push-syndication' ) ?></a>
+
+						<div id="post-status-select" class="hide-if-js">
+							<select name='site_enabled' id='post_status' tabindex='4'>
+								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php _e('Enabled', 'push-syndication' ) ?></option>
+								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php _e('Disabled', 'push-syndication' ) ?></option>
+							</select>
+							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php _e( 'OK', 'push-syndication' ); ?></a>
+						</div>
+
+					</div>
+
+					<div id="timestampdiv" class="hide-if-js"><?php touch_time(0, 1, 4); ?></div>
+				</div>
+				<div class="clear"></div>
+			</div>
+
+			<div id="major-publishing-actions">
+
+				<div id="delete-action">
+					<a class="submitdelete deletion" href="<?php echo get_delete_post_link($site->ID); ?>"><?php echo __( 'Move to Trash', 'push-syndication' ); ?></a>
+				</div>
+
+				<div id="publishing-action">
+					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
+					<?php
+					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
+						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
+					<?php } else { ?>
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
+						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
+					<?php } ?>
+				</div>
+
+				<div class="clear"></div>
+			</div>
+		</div>
+
+		<?php
+	}
 
     public function add_site_settings_metabox( $post ) {
 
@@ -529,15 +594,6 @@ class WP_Push_Syndication_Server {
 
         ?>
 
-        <p>
-			<label>
-				<input type="checkbox" name="site_enabled" <?php echo checked( $site_enabled, 'on' ); ?>/>
-				<?php _e( 'Enable' ); ?>
-			</label>
-        </p>
-        <p class="submit">
-            <input type="submit" name="addsite" id="addsite" class="button-primary" value="  Add Site  "/>
-        </p>
         <div class="clear"></div>
 
         <?php
@@ -585,7 +641,7 @@ class WP_Push_Syndication_Server {
         update_post_meta( $post->ID, 'syn_transport_type', sanitize_text_field( $_POST['transport_type'] ) );
 		update_post_meta( $post->ID, 'syn_transport_mode', sanitize_text_field( $_POST['transport_mode'] ) );
 		
-        $site_enabled = isset( $_POST['site_enabled'] ) ? 'on' : 'off';
+        $site_enabled = sanitize_text_field( $_POST['site_enabled'] );
         $class = $_POST['transport_type'] . '_Client';
 
         try {
