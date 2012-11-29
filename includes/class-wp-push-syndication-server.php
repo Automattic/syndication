@@ -1070,7 +1070,7 @@ class WP_Push_Syndication_Server {
 
 	}
 
-	public function schedule_delete_content( $post_id ) {
+	public function schedule_delete_content( $post_ID ) {
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_delete_content',
