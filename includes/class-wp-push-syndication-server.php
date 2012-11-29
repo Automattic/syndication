@@ -528,6 +528,7 @@ class WP_Push_Syndication_Server {
 						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php _e( 'Edit', 'push-syndication' ) ?></a>
 
 						<div id="post-status-select" class="hide-if-js">
+							<input type="hidden" name="post_status" value="publish" />
 							<select name='site_enabled' id='post_status' tabindex='4'>
 								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php _e('Enabled', 'push-syndication' ) ?></option>
 								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php _e('Disabled', 'push-syndication' ) ?></option>
