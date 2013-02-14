@@ -84,13 +84,14 @@ class WP_Push_Syndication_Server {
 			'public'                => false,
 			'show_ui'               => true,
 			'publicly_queryable'    => false,
-			'exclude_from_search'   => false,
+			'exclude_from_search'   => true,
 			'menu_position'         => 80,
 			// @TODO we need a menu icon here
 			'hierarchical'          => false, // @TODO check this
-			'query_var'             => true,
+			'query_var'             => false,
+			'rewrite'               => false,
 			'supports'              => array( 'title' ),
-			'can_export'            => true,
+			'can_export'            => false,
 			'register_meta_box_cb'  => array( $this, 'site_metaboxes' ),
 			'capabilities'          => $post_type_capabilities,
 		));
