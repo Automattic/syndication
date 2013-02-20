@@ -1,6 +1,6 @@
 <?php
 
-include_once(dirname(__FILE__) . '/interface-wp-client.php');
+include_once(dirname(__FILE__) . '/interface-syndication-client.php');
 include_once( dirname( __FILE__ ) . '/push-syndicate-encryption.php' );
 
 class Syndication_WP_REST_Client implements Syndication_Client {

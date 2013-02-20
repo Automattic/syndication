@@ -1,7 +1,7 @@
 <?php
 
 include_once( ABSPATH . 'wp-includes/class-simplepie.php' );
-include_once( dirname(__FILE__) . '/interface-wp-client.php' );
+include_once( dirname(__FILE__) . '/interface-syndication-client.php' );
 
 class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client {
 

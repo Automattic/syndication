@@ -1,8 +1,8 @@
 <?php
 
-include_once( dirname( __FILE__ ) . '/class-wp-xmlrpc-client.php' );
-include_once( dirname( __FILE__ ) . '/class-wp-rest-client.php' );
-include_once( dirname( __FILE__ ) . '/class-wp-rss-client.php' );
+include_once( dirname( __FILE__ ) . '/class-syndication-wp-xmlrpc-client.php' );
+include_once( dirname( __FILE__ ) . '/class-syndication-wp-rest-client.php' );
+include_once( dirname( __FILE__ ) . '/class-syndication-wp-rss-client.php' );
 
 class Syndication_Client_Factory {
 

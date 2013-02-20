@@ -1,6 +1,6 @@
 <?php
 
-require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
+require_once( dirname( __FILE__ ) . '/class-syndication-client-factory.php' );
 
 class WP_Push_Syndication_Server {
 
@@ -167,7 +167,7 @@ class WP_Push_Syndication_Server {
 	
 	public function admin_init() {
 		// @TODO define more parameters
-		$name_match = '#class-wp-(.+)-client\.php#';
+		$name_match = '#class-syndication-(.+)-client\.php#';
 		
 		$full_path = __DIR__ . '/';
 		if ( $handle = opendir( $full_path ) ) {
@@ -175,7 +175,8 @@ class WP_Push_Syndication_Server {
 				if ( !preg_match( $name_match, $entry, $matches ) )
 					continue;
 				require_once( $full_path . $entry );
-				$class_name = 'Syndication_WP_' . strtoupper( $matches[1] ) . '_Client';
+				$class_name = 'Syndication_' . strtoupper( str_replace( '-', '_', $matches[1] ) ) . '_Client';
+
 				if ( !class_exists( $class_name ) )
 					continue;
 				$client_data = call_user_func( array( $class_name, 'get_client_data' ) );
