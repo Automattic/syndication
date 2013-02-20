@@ -175,7 +175,7 @@ class WP_Push_Syndication_Server {
 				if ( !preg_match( $name_match, $entry, $matches ) )
 					continue;
 				require_once( $full_path . $entry );
-				$class_name = 'WP_' . strtoupper( $matches[1] ) . '_Client';
+				$class_name = 'Syndication_WP_' . strtoupper( $matches[1] ) . '_Client';
 				if ( !class_exists( $class_name ) )
 					continue;
 				$client_data = call_user_func( array( $class_name, 'get_client_data' ) );
@@ -588,8 +588,7 @@ class WP_Push_Syndication_Server {
 		$this->display_transports( $transport_type, $transport_mode );
 
 		try {
-			$class = $transport_type . '_client';
-			WP_Client_Factory::display_client_settings( $post, $class );
+			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
 		} catch( Exception $e ) {
 			echo $e;
 		}
@@ -639,18 +638,19 @@ class WP_Push_Syndication_Server {
 		if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
 			return;
 
+		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists
+
 		// @TODO validate that type and mode are valid
-		update_post_meta( $post->ID, 'syn_transport_type', sanitize_text_field( $_POST['transport_type'] ) );
+		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 		update_post_meta( $post->ID, 'syn_transport_mode', sanitize_text_field( $_POST['transport_mode'] ) );
 		
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
-		$class = $_POST['transport_type'] . '_Client';
 
 		try {
-			$save = WP_Client_Factory::save_client_settings( $post->ID, $class );
+			$save = Syndication_Client_Factory::save_client_settings( $post->ID, $transport_type );
 			if( !$save )
 				return;
-			$client = WP_Client_Factory::get_client( $_POST['transport_type'], $post->ID );
+			$client = Syndication_Client_Factory::get_client( $transport_type, $post->ID );
 
 			if( $client->test_connection()  ) {
 				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
@@ -838,7 +838,7 @@ class WP_Push_Syndication_Server {
 			foreach( $sites['selected_sites'] as $site ) {
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-				$client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
@@ -873,7 +873,7 @@ class WP_Push_Syndication_Server {
 			foreach( $sites['removed_sites'] as $site ) {
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
-				$client         = WP_Client_Factory::get_client( $transport_type  ,$site->ID );
+				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them
@@ -1099,7 +1099,7 @@ class WP_Push_Syndication_Server {
 			if( $site_enabled == 'on' ) {
 
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
-				$client         = WP_Client_Factory::get_client( $transport_type , $site_ID );
+				$client         = Syndication_Client_Factory::get_client( $transport_type , $site_ID );
 
 				if( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
@@ -1215,7 +1215,7 @@ class WP_Push_Syndication_Server {
 
 			$inserted_posts = get_post_meta( $site->ID, 'syn_inserted_posts', true );
 			$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-			$client         = WP_Client_Factory::get_client( $transport_type, $site->ID );
+			$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 			$posts          = $client->get_posts();
 
 			if( empty( $posts ) )

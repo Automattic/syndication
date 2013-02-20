@@ -3,7 +3,7 @@
 include_once( ABSPATH . 'wp-includes/class-simplepie.php' );
 include_once( dirname(__FILE__) . '/interface-wp-client.php' );
 
-class WP_RSS_Client extends SimplePie implements Syndication_Client {
+class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client {
 
     private $default_post_type;
     private $default_post_status;

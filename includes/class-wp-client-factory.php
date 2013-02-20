@@ -4,11 +4,11 @@ include_once( dirname( __FILE__ ) . '/class-wp-xmlrpc-client.php' );
 include_once( dirname( __FILE__ ) . '/class-wp-rest-client.php' );
 include_once( dirname( __FILE__ ) . '/class-wp-rss-client.php' );
 
-class WP_Client_Factory {
+class Syndication_Client_Factory {
 
 	public static function get_client( $transport_type, $site_ID ) {
 
-		$class = $transport_type . '_Client';
+		$class = self::get_transport_type_class( $transport_type );
 		if( class_exists( $class ) ) {
 			return new $class( $site_ID );
 		}
@@ -17,24 +17,30 @@ class WP_Client_Factory {
 
 	}
 
-	public static function display_client_settings( $site, $class ) {
+	public static function display_client_settings( $site, $transport_type ) {
 
+		$class = self::get_transport_type_class( $transport_type );
 		if( class_exists( $class ) ) {
 			return call_user_func( array( $class, 'display_settings' ), $site );
 		}
 
-		throw new Exception( 'transport class not found' );
+		throw new Exception( 'transport class not found: '. $class );
 
 	}
 
-	public static function save_client_settings( $site_ID, $class ) {
+	public static function save_client_settings( $site_ID, $transport_type ) {
 
+		$class = self::get_transport_type_class( $transport_type );
 		if( class_exists( $class ) ) {
 			return call_user_func( array( $class, 'save_settings' ), $site_ID );
 		}
 
 		throw new Exception( 'transport class not found' );
 
+	}
+
+	public static function get_transport_type_class( $transport_type ) {
+		return 'Syndication_' . $transport_type . '_Client';
 	}
 
 }
