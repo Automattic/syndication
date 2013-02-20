@@ -1,6 +1,6 @@
 <?php
 
-interface WP_Client {
+interface Syndication_Client {
 
 	/**
 	 * Return Client Data
