@@ -134,6 +134,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		// TODO: kill feed client if too many failures
+		// TODO: abstract the fetching into a separate method
 		$request = wp_remote_get( $this->feed_url );
 
 		// catch attempts to pull content from a file which doesn't exist.
