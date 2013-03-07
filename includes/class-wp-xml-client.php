@@ -137,7 +137,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$request = wp_remote_get( $this->feed_url );
 
 		// catch attempts to pull content from a file which doesn't exist.
-		if ( is_wp_error( $request ) || 200 != wp_remote_retrieve_response_message( $request ) ) {
+		if ( is_wp_error( $request ) || 200 != wp_remote_retrieve_response_code( $request ) ) {
 			self::log_post( 'n/a', null, get_post($this->site_ID), "could not reach feed at url: " . $this->feed_url ); // TODO: log error
 			return;
 		}
