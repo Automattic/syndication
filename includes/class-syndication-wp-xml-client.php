@@ -1,6 +1,6 @@
 <?php
 
-include_once( dirname(__FILE__) . '/interface-wp-client.php' );
+include_once( dirname(__FILE__) . '/interface-syndication-client.php' );
 
 class Syndication_WP_XML_Client implements Syndication_Client {
 
