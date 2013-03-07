@@ -440,16 +440,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				width: 100%;
 				position: relative;
 				left: -35px;
-   			}
+			}
 		</style>
 		<p>
-			<label for="feed_url"><?php echo esc_html__( 'Enter feed URL', 'push-syndication' ); ?></label>
+			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
 		</p>
 		<p>
-			<label for="default_post_type"><?php echo esc_html__( 'Select post type', 'push-syndication' ); ?></label>
+			<label for="default_post_type"><?php esc_html_e( 'Select post type', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<select name="default_post_type" id="default_post_type" />
@@ -467,7 +467,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			</select>
 		</p>
 		<p>
-			<label for="default_post_status"><?php echo esc_html__( 'Select post status', 'push-syndication' ); ?></label>
+			<label for="default_post_status"><?php esc_html_e( 'Select post status', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<select name="default_post_status" id="default_post_status" />
@@ -485,7 +485,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			</select>
 		</p>
 		<p>
-			<label for="default_comment_status"><?php echo esc_html__( 'Select comment status', 'push-syndication' ); ?></label>
+			<label for="default_comment_status"><?php esc_html_e( 'Select comment status', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<select name="default_comment_status" id="default_comment_status" />
@@ -494,7 +494,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			</select>
 		</p>
 		<p>
-			<label for="default_ping_status"><?php echo esc_html__( 'Select ping status', 'push-syndication' ); ?></label>
+			<label for="default_ping_status"><?php esc_html_e( 'Select ping status', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<select name="default_ping_status" id="default_ping_status" />
@@ -504,49 +504,49 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 
 		<p>
-			<label for="namespace"><?php echo esc_html__( 'Enter XML namespace', 'push-syndication' ); ?></label>
+			<label for="namespace"><?php esc_html_e( 'Enter XML namespace', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" size=75 name="namespace" id="namespace" value="<?php echo esc_attr($namespace);?>" />
 		</p>
 
 		<p>
-			<label for="post_root"><?php echo esc_html__( 'Enter xpath to post root', 'push-syndication' ); ?></label>
+			<label for="post_root"><?php esc_html_e( 'Enter xpath to post root', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="post_root" id="post_root" value="<?php echo esc_attr($post_root); ?>" />
 		</p>
 		
 		<p>
-			<label for="id_node"><?php echo esc_html__( 'Enter postmeta key for unique post identifier', 'push-syndication' ); ?></label>
+			<label for="id_node"><?php esc_html_e( 'Enter postmeta key for unique post identifier', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="id_field" id="id_field" value="<?php echo esc_attr($id_field); ?>" />
 		</p>
 
 		<p>
-			<label for="enc_parent"><?php echo esc_html__( 'Enter parent element for enclosures', 'push-syndication' ); ?></label>
+			<label for="enc_parent"><?php esc_html_e( 'Enter parent element for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="enc_parent" id="enc_parent" value="<?php echo esc_attr($enc_parent); ?>" />
 		</p>
 
 		<p>
-			<label for="enc_field"><?php echo esc_html__( 'Enter meta name for enclosures', 'push-syndication' ); ?></label>
+			<label for="enc_field"><?php esc_html_e( 'Enter meta name for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" name="enc_field" id="enc_field" value="<?php echo esc_attr($enc_field); ?>" />
 		</p>
 		
 		<p>
-			<label for="enc_is_photo"><?php echo esc_html__( 'Is enclosure an image file', 'push-syndication' ); ?></label>
+			<label for="enc_is_photo"><?php esc_html_e( 'Is enclosure an image file', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="checkbox" name="enc_is_photo" id="enc_is_photo" value="1" <?php if ( $enc_is_photo ) { ?>checked="checked" <?php } ?> />
 		</p>
 		
 		<p>
-			<label for="categories"><?php echo esc_html__( 'Select category/categories', 'push-syndication' ); ?></label>
+			<label for="categories"><?php esc_html_e( 'Select category/categories', 'push-syndication' ); ?></label>
 
 		</p>
 		<p>
@@ -568,22 +568,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		
 		<ul class='feed_mgr_head'>
 			<li>
-				<label for="xpath"><?php echo esc_html__( 'Xpath Expression', 'push-syndication' )?></label>
+				<label for="xpath"><?php esc_html_e( 'Xpath Expression', 'push-syndication' )?></label>
 			</li>
 			<li>
-				<label for="item_node"><?php echo esc_html__( 'Item', 'push-syndication' )?></label>
+				<label for="item_node"><?php esc_html_e( 'Item', 'push-syndication' )?></label>
 			</li>
 			<li>
-				<label for="photo_node"><?php echo esc_html__( 'Enc.', 'push-syndication' )?></label>
+				<label for="photo_node"><?php esc_html_e( 'Enc.', 'push-syndication' )?></label>
 			</li>
 			<li>
-				<label for="meta_node"><?php echo esc_html__( 'Meta', 'push-syndication' )?></label>
+				<label for="meta_node"><?php esc_html_e( 'Meta', 'push-syndication' )?></label>
 			</li>
 			<li>
-				<label for="tax_node"><?php echo esc_html__( 'Tax', 'push-syndication' )?></label>
+				<label for="tax_node"><?php esc_html_e( 'Tax', 'push-syndication' )?></label>
 			</li>
 			<li>
-				<label for="item_field"><?php echo esc_html__( 'Field in post', 'push-syndication' )?></label>
+				<label for="item_field"><?php esc_html_e( 'Field in post', 'push-syndication' )?></label>
 			</li>
 		</ul>
 			
@@ -641,51 +641,49 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				</ul>
 		<p class="subtitle"><em><?php _e( 'Last Update', 'push-syndication' ); ?></em></p>
 		<?php 
-			$syn_log = get_post_meta($site->ID, 'syn_log', true);
-			if ( empty( $syn_log ) ) {
-				return;
-			}
-		?>
+		$syn_log = get_post_meta($site->ID, 'syn_log', true);
+		if ( ! empty( $syn_log ) ) : ?>
 			<ul class='feed_log_head'>
 				<li>
-					<label for="post_id"><?php echo esc_html__( 'Post ID', 'push-syndication' )?></label>
+					<label for="post_id"><?php esc_html_e( 'Post ID', 'push-syndication' )?></label>
 				</li>
 				<li>
-					<label for="status"><?php echo esc_html__( 'Status', 'push-syndication' )?></label>
+					<label for="status"><?php esc_html_e( 'Status', 'push-syndication' )?></label>
 				</li>
 				<li class="wide">
-					<label for="date_time"><?php echo esc_html__( 'Date/Time', 'push-syndication' )?></label>
+					<label for="date_time"><?php esc_html_e( 'Date/Time', 'push-syndication' )?></label>
 				</li>
 				<li>
-					<label for="view"><?php echo esc_html__( 'VIEW', 'push-syndication' )?></label>
+					<label for="view"><?php esc_html_e( 'VIEW', 'push-syndication' )?></label>
 				</li>
 			</ul>
-		<?php
-			foreach($syn_log as $log_row) { 
+			<?php
+			foreach($syn_log as $log_row) :
 				$view_link = get_permalink($log_row['post_id']);
-		?>
-			<ul class='feed_log'>
-				<li>
-					<?php 
-					if ( gettype($log_row['post_id']) == 'integer' ) {
-						edit_post_link( $log_row['post_id'], null, null, $log_row['post_id'] ); 
-					} else {
-						echo "ERROR";
-					}
-					?>
-				</li>
-				<li>
-					<?php echo $log_row['status']?>
-				</li>
-				<li class="wide">
-					<?php echo $log_row['time']?>
-				</li>
-				<li>
-					<a href="<?php echo $view_link?>"><?php _e( 'View', 'push-syndication' ); ?></a>
-				</li>
-			</ul>			
-	<?php 
-			}
+				?>
+				<ul class='feed_log'>
+					<li>
+						<?php 
+						if ( gettype($log_row['post_id']) == 'integer' ) {
+							edit_post_link( $log_row['post_id'], null, null, $log_row['post_id'] ); 
+						} else {
+							echo "ERROR";
+						}
+						?>
+					</li>
+					<li>
+						<?php echo esc_html( $log_row['status'] ); ?>
+					</li>
+					<li class="wide">
+						<?php echo esc_html( $log_row['time'] ); ?>
+					</li>
+					<li>
+						<a href="<?php echo esc_url( $view_link ); ?>"><?php _e( 'View', 'push-syndication' ); ?></a>
+					</li>
+				</ul>
+			<?php 
+			endforeach;
+		endif;
 	}
 
 	/**
@@ -748,7 +746,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		self::log_post( $result, $post, $site, __( 'new', 'push-syndication' ) );
 	}
 
-	public static function log_update ($result, $post, $site, $transport_type, $client) {
+	public static function log_update( $result, $post, $site, $transport_type, $client ) {
 		self::log_post( $result, $post, $site, __( 'update', 'push-syndication' ) );
 	}
 
