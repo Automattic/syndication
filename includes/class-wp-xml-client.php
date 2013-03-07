@@ -138,7 +138,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		// catch attempts to pull content from a file which doesn't exist.
 		if ( is_wp_error( $request ) || 200 != wp_remote_retrieve_response_code( $request ) ) {
-			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'could not reach feed at url: %s', 'push-syndication' ), $this->feed_url ) ); // TODO: log error
+			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'Could not reach feed at: %s', 'push-syndication' ), $this->feed_url ) ); // TODO: log error
 			return;
 		}
 
@@ -146,7 +146,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$xml = simplexml_load_string( $xml_string, false, 0, $namespace, false );
 		
 		if ( ! $xml ) {
-			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
+			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
 			return;
 		}
 
@@ -174,6 +174,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				return true;
 			}
 		}
+
 		$post_position = 0;
 		foreach ($xml->xpath($post_root) as $item) {
 			$item_fields = array();
@@ -193,7 +194,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					if ('string(' == substr( $save_location['xpath'], 0, 7 ) ) {
 						$value_array[0] = substr( $save_location['xpath'], 7, strlen($save_location['xpath'])-8 );
 					} else {
- 		   				$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
+						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
 					}
 					if (isset($save_location['is_meta']) && $save_location['is_meta']) {
 						$meta_data[$save_location['field']] = (string)$value_array[0];
@@ -870,6 +871,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 		}
 	}
+
 	public function get_guid( $post ) {
 		global $wpdb;
 
