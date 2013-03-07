@@ -143,7 +143,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		$xml_string = wp_remote_retrieve_body( $request );
-		$xml = new SimpleXmlElement( $xml_string, 0, false, $namespace, false );
+		$xml = simplexml_load_string( $xml_string, false, 0, $namespace, false );
+		
+		if ( ! $xml ) {
+			self::log_post( 'n/a', null, get_post( $this->site_ID ), "Failed to parse feed at: " . $this->feed_url );
+			return;
+		}
 
 		$abs_post_fields['enclosures_as_strings'] = $enclosures_as_strings;
 
