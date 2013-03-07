@@ -133,16 +133,18 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 		}
 
-		// TODO: use HTTP API
 		// TODO: kill feed client if too many failures
-		$xmlStr = file_get_contents($this->feed_url);
-		
+		$request = wp_remote_get( $this->feed_url );
+
 		// catch attempts to pull content from a file which doesn't exist.
-		if ( empty( $xmlStr ) ) {
-			self::log_post( 'n/a', null, get_post($this->site_ID), "could not reach feed at url: " . $this->feed_url );
+		if ( is_wp_error( $request ) || 200 != wp_remote_retrieve_response_message( $request ) ) {
+			self::log_post( 'n/a', null, get_post($this->site_ID), "could not reach feed at url: " . $this->feed_url ); // TODO: log error
 			return;
 		}
-		$xml = new SimpleXmlElement($xmlStr, 0, false, $namespace, false);
+
+		$xml_string = wp_remote_retrieve_body( $request );
+		$xml = new SimpleXmlElement( $xml_string, 0, false, $namespace, false );
+
 		$abs_post_fields['enclosures_as_strings'] = $enclosures_as_strings;
 
 		// TODO: handle constant strings in XML
