@@ -40,7 +40,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     }
 
 	public static function get_client_data() {
-		return array( 'id' => 'WP_RSS', 'modes' => array( 'pull' ), 'name' => 'WordPress RSS' );
+		return array( 'id' => 'WP_RSS', 'modes' => array( 'pull' ), 'name' => 'RSS' );
 	}
 		
     public function new_post($post_ID) {

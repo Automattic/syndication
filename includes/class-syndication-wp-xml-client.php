@@ -58,7 +58,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 
 	public static function get_client_data() {
-		return array( 'id' => 'WP_XML', 'modes' => array( 'pull' ), 'name' => 'WordPress XML' );
+		return array( 'id' => 'WP_XML', 'modes' => array( 'pull' ), 'name' => 'XML' );
 	}
 
 	public function new_post( $post_ID ) {
