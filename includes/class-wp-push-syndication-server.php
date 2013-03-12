@@ -826,8 +826,6 @@ class WP_Push_Syndication_Server {
 
 		/** start of critical section **/
 
-		require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
-
 		$post_ID = $sites['post_ID'];
 
 		// an array containing states of sites
@@ -1082,8 +1080,6 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function delete_content( $post_ID ) {
-
-		require_once( dirname( __FILE__ ) . '/class-wp-client-factory.php' );
 
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
 		$delete_error_sites = !empty( $delete_error_sites ) ? $delete_error_sites : array() ;
