@@ -1,6 +1,7 @@
 <?php
 
 include_once( dirname( __FILE__ ) . '/class-syndication-wp-xmlrpc-client.php' );
+include_once( dirname( __FILE__ ) . '/class-syndication-wp-xml-client.php' );
 include_once( dirname( __FILE__ ) . '/class-syndication-wp-rest-client.php' );
 include_once( dirname( __FILE__ ) . '/class-syndication-wp-rss-client.php' );
 
