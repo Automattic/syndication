@@ -760,8 +760,6 @@ class WP_Push_Syndication_Server {
 
 		global $post;
 
-		// @TODO add cap check
-
 		// autosave verification
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 			return;
@@ -773,7 +771,7 @@ class WP_Push_Syndication_Server {
 		if ( ! $this->current_user_can_syndicate() )
 			return;
 
-		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? $_POST['selected_sitegroups'] : '' ;
+		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '' ;
 		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
 
 	}
