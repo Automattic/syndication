@@ -278,8 +278,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return  boolean  true on success false on failure.
 	*/
 	public function test_connection() {
-		// TODO: Implement test_connection() method.
-		return true;
+		return ! is_wp_error( $this->fetch_feed() );
 	}
 
 	/**
