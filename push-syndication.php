@@ -9,6 +9,8 @@
  * License:      GPLv2 or later
  */
 
+define( 'SYNDICATION_VERSION', 2.0 );
+
 if ( ! defined( 'PUSH_SYNDICATE_KEY' ) )
 	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
 
