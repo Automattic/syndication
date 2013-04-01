@@ -612,15 +612,8 @@ class WP_Push_Syndication_Server {
 		$values = array();
 		$max_len = 0;
 		foreach( $this->push_syndicate_transports as $key => $value ) {
-			if ( $key == $transport_type )
-				$modes = $value['modes'];
-			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . esc_html( $value['name'] ) . '</option>';
-		}
-
-		echo '</select>';
-		echo '<select name="transport_mode" onchange="this.form.submit()">';
-		foreach( $modes as $supported_mode ) {
-			echo '<option value="' . esc_html( $supported_mode ) . '"' . selected( $supported_mode, $mode ) . '>' . esc_html( $supported_mode ) . '</option>';
+			$mode = array_shift( $value['modes'] );
+			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>';
 		}
 		echo '</select>';
 		echo '</form>';
