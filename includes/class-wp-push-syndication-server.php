@@ -146,7 +146,7 @@ class WP_Push_Syndication_Server {
 		$new_columns = array();
 		$new_columns['cb'] = '<input type="checkbox" />';
 		$new_columns['title'] = _x( 'Site Name', 'column name' );
-		$new_columns['mode'] = _x( 'Mode', 'column name' );
+		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
 		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
 		$new_columns['date'] = _x('Date', 'column name');
 		return $new_columns;
@@ -155,9 +155,11 @@ class WP_Push_Syndication_Server {
 	public function manage_columns( $column_name, $id ) {
 		global $wpdb;
 		switch ( $column_name ) {
-			case 'mode':
-				$transport_mode = get_post_meta( $id, 'syn_transport_mode', true);
-				echo esc_html( $transport_mode );
+			case 'client-type':
+				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
+				$client = Syndication_Client_Factory::get_client( $transport_type, $id );
+				$client_data = $client->get_client_data();
+				echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				break;
 			case 'syn_sitegroup':
 				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
@@ -579,7 +581,6 @@ class WP_Push_Syndication_Server {
 		global $post;
 
 		$transport_type = get_post_meta( $post->ID, 'syn_transport_type', true);
-		$transport_mode = get_post_meta( $post->ID, 'syn_transport_mode', true);
 		$site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true);
 
 		// default values
@@ -640,7 +641,6 @@ class WP_Push_Syndication_Server {
 
 		// @TODO validate that type and mode are valid
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
-		update_post_meta( $post->ID, 'syn_transport_mode', sanitize_text_field( $_POST['transport_mode'] ) );
 		
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
 
