@@ -734,8 +734,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			foreach( $enclosures as $enclosure ) {
 				if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
 					$enclosure = implode("\n", $enclosure);
-				} else {
-					$enclosure = serialize($enclosure);
 				}
 				add_post_meta($result, $enc_field, $enclosure, false);
 			}
