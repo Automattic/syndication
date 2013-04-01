@@ -22,7 +22,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	private $feed_url;
 
 	function __construct( $site_ID ) {
-
 		$this->site_ID = $site_ID;
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
@@ -39,9 +38,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+		add_action ( 'syn_post_pull_new_post', array(__CLASS__ , 'publish_pulled_post' ), 10, 5 );
+
+		// Debugging
 		add_action ( 'syn_post_pull_new_post', array(__CLASS__, 'log_new' ), 10, 5 );
 		add_action ( 'syn_post_pull_edit_post', array(__CLASS__, 'log_update' ), 10, 5 );
-		add_action ( 'syn_post_pull_new_post', array(__CLASS__ , 'publish_pulled_post' ), 10, 5 );
 	}
 
 	/**
@@ -132,18 +133,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 		}
 
-		// TODO: kill feed client if too many failures
-		// TODO: abstract the fetching into a separate method
-		$request = wp_remote_get( $this->feed_url );
+		$feed = $this->fetch_feed();
 
-		// catch attempts to pull content from a file which doesn't exist.
-		if ( is_wp_error( $request ) || 200 != wp_remote_retrieve_response_code( $request ) ) {
-			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'Could not reach feed at: %s', 'push-syndication' ), $this->feed_url ) ); // TODO: log error
+		// Catch attempts to pull content from a file which doesn't exist.
+		// TODO: kill feed client if too many failures
+		if ( is_wp_error( $feed ) ) {
+			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ) );
 			return;
 		}
 
-		$xml_string = wp_remote_retrieve_body( $request );
-		$xml = simplexml_load_string( $xml_string, false, 0, $namespace, false );
+		$xml = simplexml_load_string( $feed, false, 0, $namespace, false );
 		
 		if ( ! $xml ) {
 			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
@@ -750,13 +749,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		self::log_post( $result, $post, $site, __( 'update', 'push-syndication' ) );
 	}
 
-	public static function log_post( $post_id, $post, $site, $status ) {
+	private static function log_post( $post_id, $post, $site, $status ) {
 		// TODO: need to limit how many log entries can be added
 		$log_entry = array();
 		$log_entry['post_id'] = $post_id;
 		$log_entry['status'] = $status;
 		if ( !empty( $post ) ) {
-		$log_entry['time'] = $post['postmeta']['is_update'];
+			$log_entry['time'] = $post['postmeta']['is_update'];
 		} else {
 			$log_entry['time'] = current_time('mysql');
 		}
@@ -868,6 +867,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				wp_set_object_terms($result, (string)$tax_value, $tax_name, true);
 			}
 		}
+	}
+
+	public function fetch_feed() {
+		$request = wp_remote_get( $this->feed_url );
+		if ( is_wp_error( $request ) ) {
+			return $request;
+		} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
+			return new WP_Error( 'syndication-fetch-failure', 'Failed to fetch XML Feed; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
+		}
+		return wp_remote_retrieve_body( $request );
 	}
 
 	public function get_guid( $post ) {
