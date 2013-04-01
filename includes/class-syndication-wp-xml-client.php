@@ -515,16 +515,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'] ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'], 'true' ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'], 'true' ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'], 'true' ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'], 'true' ); ?> value="true" />
 						</li>
 						<li class="text">
 							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
@@ -799,7 +799,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$metas = $post['postmeta'];
 		$post_guid = $metas[$this->id_field];
 
-		$query_string = $wpdb->prepare(
+		// A direct query here is way more efficient than WP_Query, because we don't have to do all the extra processing, filters, and JOIN.
+		$existing_posts = $wpdb->get_results( $wpdb->prepare(
 			"SELECT $wpdb->postmeta.post_id
 			FROM $wpdb->postmeta
 			WHERE $wpdb->postmeta.meta_key = %s
@@ -807,8 +808,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			LIMIT 10",
 			$this->id_field,
 			$post_guid
-		);
-		$existing_posts = $wpdb->get_results( $query_string, OBJECT );
+		) );
 
 		// TODO: no catch here for more than one post with the same guid
 		if ( 0 < count( $existing_posts ) ) {
