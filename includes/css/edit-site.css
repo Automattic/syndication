@@ -1,78 +1,30 @@
-.syn-xml-client-xpath-head {
-	clear: all;
-	width: 100%;
-}
-.syn-xml-client-xpath-head li {
-	float: left;
-	left: 200px;
-	padding-right: 20px;
-	top: 0;
-	width: 50px;
-}
-.syn-xml-client-xpath-head li:FIRST-CHILD {
-	width: 180px;
-}
-.syn-xml-client-xpath-head li:LAST-CHILD {
-	width: 300px;
-}
-.syn-xml-client-xpath-form li:FIRST-CHILD {
-	clear:left;
-	width: 180px;
-}
-.syn-xml-client-xpath-form li:LAST-CHILD {
-	width: 300px;
-}
-.syn-xml-client-xpath-form li {
-	float: left;
-	left: 200px;
-	padding-right: 20px;
-	top: 0;
-	width: 50px; 
-}
-.syn-xml-client-xpath-form {
-	
-}
 .syn-xml-client-xpath-new {
 	clear: left;
 }
-.syn-xml-client-xpath-log-head {
+.syn-xml-client-list-head {
 	font-weight: bold;
-	margin-top: 10px;
-	width: 100%;
 }
-.syn-xml-client-xpath-log-head li {
+.syn-xml-client-list {
+}
+.syn-xml-client-list li,
+.syn-xml-client-list-head li {
 	float: left;
-	left: 200px;
-	padding-right: 20px;
 	width: 50px;
+	text-align: center;
 }
-.syn-xml-client-xpath-log-head li.wide {
+.syn-xml-client-list li.text,
+.syn-xml-client-list-head li.text {
+	width: 200px;
+	text-align: left;
+}
+.syn-xml-client-list li.wide,
+.syn-xml-client-list-head li.wide {
 	width: 150px;
 }
-.syn-xml-client-xpath-log-head li:LAST-CHILD {
-	margin-right: 200px;
-	}
-.syn-xml-client-xpath-log {
-	margin-top: 50px;
-}
-.syn-xml-client-xpath-log li {
-	float: left;
-	left: 200px;
-	padding-right: 20px;
-	width: 50px;
-}
-.syn-xml-client-xpath-log li:FIRST-CHILD {
-	clear:left;
-}
-.syn-xml-client-xpath-log li.wide {
-	width: 150px;
-}
+
 .syn-xml-client-last-update {
 	font-family: sans-serif;
 	font-size: 12px;
 	line-height: 1.4em;
 	margin-top: 80px;
-	width: 100%;
-	position: relative;
-	left: -35px;
 }

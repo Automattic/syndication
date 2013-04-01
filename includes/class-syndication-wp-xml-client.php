@@ -484,8 +484,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p><?php printf( __( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s required. To include a static string, enclose the string as "%s(your_string_here)" -- no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ); ?></p>
 		
-		<ul class='syn-xml-client-xpath-head'>
-			<li>
+		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
+			<li class="text">
 				<label for="xpath"><?php esc_html_e( 'Xpath Expression', 'push-syndication' )?></label>
 			</li>
 			<li>
@@ -500,7 +500,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<li>
 				<label for="tax_node"><?php esc_html_e( 'Tax', 'push-syndication' )?></label>
 			</li>
-			<li>
+			<li class="text">
 				<label for="item_field"><?php esc_html_e( 'Field in post', 'push-syndication' )?></label>
 			</li>
 		</ul>
@@ -510,9 +510,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( !empty( $node_config ) ) {
 			foreach ($node_config as $key => $storage_locations) {
 				foreach ($storage_locations as $storage_location) { ?>
-					<ul class='feed_mgr'>
-						<li>
-							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" size="30" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
+					<ul class='syn-xml-client-xpath-list syn-xml-client-list'>
+						<li class="text">
+							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
 						</li>
 						<li>
 							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'] ); ?> value="true" />
@@ -526,8 +526,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						<li>
 							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
 						</li>
-						<li>
-							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" size="30" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
+						<li class="text">
+							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
 						</li>
 			<?php } ?>
 					</ul>
@@ -537,9 +537,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		?>
 			<div class='syn-xml-client-xpath-new'><?php _e( 'Add new element:', 'push-syndication' ); ?></div> 
-				<ul class='syn-xml-client-xpath-form'>
-					<li>
-						<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" size="30" />
+				<ul class='syn-xml-client-xpath-form syn-xml-client-list'>
+					<li class="text">
+						<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" />
 					</li>
 					<li>
 						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" />
@@ -553,15 +553,15 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					<li>
 						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" />
 					</li>
-					<li>
-						<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" size="30" />
+					<li class="text">
+						<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" />
 					</li>
 				</ul>
 		<p class="syn-xml-client-last-update"><em><?php _e( 'Last Update', 'push-syndication' ); ?></em></p>
 		<?php 
 		$syn_log = get_post_meta($site->ID, 'syn_log', true);
 		if ( ! empty( $syn_log ) ) : ?>
-			<ul class='syn-xml-client-xpath-log-head'>
+			<ul class='syn-xml-client-xpath-log-head syn-xml-client-list-head'>
 				<li>
 					<label for="post_id"><?php esc_html_e( 'Post ID', 'push-syndication' )?></label>
 				</li>
@@ -579,7 +579,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			foreach($syn_log as $log_row) :
 				$view_link = get_permalink($log_row['post_id']);
 				?>
-				<ul class='syn-xml-client-xpath-log'>
+				<ul class='syn-xml-client-log syn-xml-client-list'>
 					<li>
 						<?php 
 						if ( gettype($log_row['post_id']) == 'integer' ) {
