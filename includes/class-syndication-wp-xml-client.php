@@ -224,12 +224,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				$item_fields['tax'] = $tax_data;
 			}
 			$item_fields['post_category'] = $categories;
-			if ( !empty( $meta_data[$this->id_field] ) ) {
-				$post_guid = $this->get_guid( $item_fields ); 
-				if (!empty( $post_guid ) ) { 
-					$item_fields['post_guid'] = $post_guid;
-				}
+
+			if ( ! empty( $meta_data[$this->id_field] ) ) {
+				$post_guid = $meta_data[$this->id_field];
 			}
+
 			$posts[] = $item_fields;
 			$post_position++;
 		} 	
@@ -799,29 +798,4 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		return wp_remote_retrieve_body( $request );
 	}
 
-	public function get_guid( $post ) {
-		global $wpdb;
-
-		$metas = $post['postmeta'];
-		$post_guid = $metas[$this->id_field];
-
-		// A direct query here is way more efficient than WP_Query, because we don't have to do all the extra processing, filters, and JOIN.
-		$existing_posts = $wpdb->get_results( $wpdb->prepare(
-			"SELECT $wpdb->postmeta.post_id
-			FROM $wpdb->postmeta
-			WHERE $wpdb->postmeta.meta_key = %s
-			AND $wpdb->postmeta.meta_value = %s
-			LIMIT 10",
-			$this->id_field,
-			$post_guid
-		) );
-
-		// TODO: no catch here for more than one post with the same guid
-		if ( 0 < count( $existing_posts ) ) {
-			$existing_post = $existing_posts[0];
-			return $existing_post->post_id;
-		} else {
-			return null;
-		}
-	}
 }
