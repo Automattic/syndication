@@ -457,12 +457,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		
 		<p>
-			<label for="enc_is_photo"><?php esc_html_e( 'Is enclosure an image file', 'push-syndication' ); ?></label>
+			<label for="enc_is_photo">
+				<input type="checkbox" name="enc_is_photo" id="enc_is_photo" value="1" <?php checked( $enc_is_photo ); ?> />
+				<?php esc_html_e( 'Enclosure is an image file', 'push-syndication' ); ?>
+			</label>
 		</p>
-		<p>
-			<input type="checkbox" name="enc_is_photo" id="enc_is_photo" value="1" <?php if ( $enc_is_photo ) { ?>checked="checked" <?php } ?> />
-		</p>
-		
+
 		<p>
 			<label for="categories"><?php esc_html_e( 'Select category/categories', 'push-syndication' ); ?></label>
 
@@ -515,16 +515,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" size="30" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php echo $storage_location['is_item'] ? 'checked="checked"': null ; ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php echo $storage_location['is_photo'] ? 'checked="checked"': null ; ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php echo $storage_location['is_meta'] ? 'checked="checked"': null ; ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php echo $storage_location['is_tax'] ? 'checked="checked"': null ; ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
 						</li>
 						<li>
 							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" size="30" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
