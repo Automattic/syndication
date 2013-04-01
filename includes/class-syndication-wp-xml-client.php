@@ -360,86 +360,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		unset( $node_config['categories'] );
 
 		?>
-		<style type="text/css">
-			ul.feed_mgr_head {
-				clear: all;
-				width: 100%;
-			}
-			ul.feed_mgr_head li {
-				float: left;
-				left: 200px;
-				padding-right: 20px;
-				top: 0;
-				width: 50px;
-			}
-			ul.feed_mgr_head li:FIRST-CHILD {
-				width: 180px;
-			}
-			ul.feed_mgr_head li:LAST-CHILD {
-				width: 300px;
-			}
-			ul.feed_mgr li:FIRST-CHILD {
-				clear:left;
-				width: 180px;
-			}
-			ul.feed_mgr li:LAST-CHILD {
-				width: 300px;
-			}
-			ul.feed_mgr li {
-				float: left;
-				left: 200px;
-				padding-right: 20px;
-				top: 0;
-				width: 50px; 
-			}
-			ul.feed_mgr {
-				
-			}
-			.feed_mgr_new_element {
-				clear: left;
-			}
-			ul.feed_log_head {
-				font-weight: bold;
-				margin-top: 10px;
-				width: 100%;
-			}
-			ul.feed_log_head li {
-				float: left;
-				left: 200px;
-				padding-right: 20px;
-				width: 50px;
-			}
-			ul.feed_log_head li.wide {
-				width: 150px;
-			}
-			ul.feed_log_head li:LAST-CHILD {
-				margin-right: 200px;
-				}
-			ul.feed_log {
-				margin-top: 50px;
-			}
-			ul.feed_log li {
-				float: left;
-				left: 200px;
-				padding-right: 20px;
-				width: 50px;
-			}
-			ul.feed_log li:FIRST-CHILD {
-				clear:left;
-			}
-			ul.feed_log li.wide {
-				width: 150px;
-			}
-			.subtitle {
-				font-family: sans-serif;
-				font-size: 12px;
-				line-height: 1.4em;
-				margin-top: 80px;
-				width: 100%;
-				position: relative;
-				left: -35px;
-			}
-		</style>
 		<p>
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
@@ -564,7 +484,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p><?php printf( __( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s required. To include a static string, enclose the string as "%s(your_string_here)" -- no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ); ?></p>
 		
-		<ul class='feed_mgr_head'>
+		<ul class='syn-xml-client-xpath-head'>
 			<li>
 				<label for="xpath"><?php esc_html_e( 'Xpath Expression', 'push-syndication' )?></label>
 			</li>
@@ -616,8 +536,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 		}
 		?>
-			<div class='feed_mgr_new_element'><?php _e( 'Add new element:', 'push-syndication' ); ?></div> 
-				<ul class='feed_mgr'>
+			<div class='syn-xml-client-xpath-new'><?php _e( 'Add new element:', 'push-syndication' ); ?></div> 
+				<ul class='syn-xml-client-xpath-form'>
 					<li>
 						<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" size="30" />
 					</li>
@@ -637,11 +557,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" size="30" />
 					</li>
 				</ul>
-		<p class="subtitle"><em><?php _e( 'Last Update', 'push-syndication' ); ?></em></p>
+		<p class="syn-xml-client-last-update"><em><?php _e( 'Last Update', 'push-syndication' ); ?></em></p>
 		<?php 
 		$syn_log = get_post_meta($site->ID, 'syn_log', true);
 		if ( ! empty( $syn_log ) ) : ?>
-			<ul class='feed_log_head'>
+			<ul class='syn-xml-client-xpath-log-head'>
 				<li>
 					<label for="post_id"><?php esc_html_e( 'Post ID', 'push-syndication' )?></label>
 				</li>
@@ -659,7 +579,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			foreach($syn_log as $log_row) :
 				$view_link = get_permalink($log_row['post_id']);
 				?>
-				<ul class='feed_log'>
+				<ul class='syn-xml-client-xpath-log'>
 					<li>
 						<?php 
 						if ( gettype($log_row['post_id']) == 'integer' ) {

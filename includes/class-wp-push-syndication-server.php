@@ -186,8 +186,6 @@ class WP_Push_Syndication_Server {
 			}
 		}
 		$this->push_syndicate_transports = apply_filters( 'syn_transports', $this->push_syndicate_transports );
-		// register styles and scripts
-		wp_register_style( 'syn_sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version  );
 
 		// register settings
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
@@ -195,12 +193,14 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function load_scripts_and_styles( $hook ) {
-
 		global $typenow;
-		if( $hook == 'edit.php' && $typenow == 'syn_site') {
-			wp_enqueue_style( 'syn_sites' );
+		if ( 'syn_site' == $typenow ) {
+			if( $hook == 'edit.php' ) {
+				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version );
+			} elseif ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
+				wp_enqueue_style( 'syn-edit-site', plugins_url( 'css/edit-site.css', __FILE__ ), array(), $this->version );
+			}
 		}
-
 	}
 
 	public function push_syndicate_settings_validate( $raw_settings ) {
