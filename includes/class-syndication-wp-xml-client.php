@@ -359,6 +359,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		unset( $node_config['categories'] );
 
+		$custom_nodes = $node_config['nodes'];
+
 		?>
 		<p>
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
@@ -507,24 +509,24 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			
 		<?php 
 		$rowcount = 0; 
-		if ( !empty( $node_config ) ) {
-			foreach ($node_config as $key => $storage_locations) {
+		if ( !empty( $custom_nodes ) ) {
+			foreach ($custom_nodes as $key => $storage_locations) {
 				foreach ($storage_locations as $storage_location) { ?>
 					<ul class='syn-xml-client-xpath-list syn-xml-client-list'>
 						<li class="text">
 							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'], 'true' ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'], 'true' ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'], 'true' ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
 						</li>
 						<li>
-							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'], 'true' ); ?> value="true" />
+							<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
 						</li>
 						<li class="text">
 							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
@@ -624,25 +626,28 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		update_post_meta( $site_ID, 'syn_enc_field', sanitize_text_field( $_POST['enc_field'] ) );
 		update_post_meta( $site_ID, 'syn_enc_is_photo', isset( $_POST['enc_is_photo'] ) ? sanitize_text_field( $_POST['enc_is_photo'] ) : null );
 
-		// TODO: sanitize node values
+		
 		$node_changes = $_POST['node'];
 		$node_config = array();
+		$custom_nodes = array();
 		if (isset($node_changes)) {
 			foreach($node_changes as $row) {
+				$row_data = array();
+
 				//if no new has been added to the empty row at the end, ignore it 
-				if (isset($row['xpath']) && strlen($row['xpath'])>0) {
-					$base_array =array(
-						'is_item' => false,
-						'is_meta' => false,
-						'is_tax'  => false,
-						'is_photo'=> false);
+				if ( ! empty( $row['xpath'] ) ) {
+					foreach ( array( 'is_item', 'is_meta', 'is_tax', 'is_photo' ) as $field ) {
+						$row_data[$field] = isset( $row[$field] ) && in_array( $row[$field], array( 'true', 'on' ) ) ? 1 : 0;
+					}
 					$xpath = html_entity_decode( $row['xpath'] );
 					unset($row['xpath']);
-					if ( isset( $node_config[$xpath] ) ) {
-						$node_config[$xpath][] = array_merge( $base_array, $row ); 
-					} else {
-						$node_config[$xpath][0] = array_merge($base_array, $row);
-					} 
+
+					$row_data['field'] = sanitize_key( $row['field'] );
+
+					if ( ! isset( $custom_nodes[$xpath] ) )
+						$custom_nodes[$xpath] = array();
+
+					$custom_nodes[$xpath][] = $row_data;
 				}
 			}
 		}
@@ -651,6 +656,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$node_config['post_root'] = sanitize_text_field( $_POST['post_root'] );
 		$node_config['enc_parent'] = sanitize_text_field( $_POST['enc_parent'] );
 		$node_config['categories'] = sanitize_text_field( $_POST['categories'] );
+		$node_config['nodes'] = $custom_nodes;
 		update_post_meta( $site_ID, 'syn_node_config', $node_config);
 		
 		return true;
