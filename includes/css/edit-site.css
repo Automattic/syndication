@@ -5,6 +5,7 @@
 	font-weight: bold;
 }
 .syn-xml-client-list {
+	clear: both;
 }
 .syn-xml-client-list li,
 .syn-xml-client-list-head li {
