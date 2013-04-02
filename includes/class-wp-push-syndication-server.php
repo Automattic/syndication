@@ -1233,6 +1233,9 @@ class WP_Push_Syndication_Server {
 						continue;
 
 					$post['ID'] = $post_id;
+
+					$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
+
 					$result = wp_update_post( $post, true );
 
 					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
@@ -1241,6 +1244,8 @@ class WP_Push_Syndication_Server {
 					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
 					if ( true === $pull_new_shortcircuit )
 						continue;
+
+					$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
 
 					$result = wp_insert_post( $post, true );
 
