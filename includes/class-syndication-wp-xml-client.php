@@ -103,22 +103,28 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$abs_meta_data = array();
 		$abs_tax_data = array();
 		$posts = array();
+
 		$nodes = $this->nodes_to_post[0];
 		$post_root = $nodes['post_root'];
 		unset($nodes['post_root']);
+
 		$namespace = isset($nodes['namespace']) ? $nodes['namespace'] : null;
 		unset($nodes['namespace']);
+
 		$enc_parent = $nodes['enc_parent'];
 		unset($nodes['enc_parent']);
+
 		$enc_field = isset( $this->enc_field ) ? $this->enc_field : null;
+
 		$categories = (array) $nodes['categories'];
 		unset($nodes['categories']);
+
 		$enclosures_as_strings = isset($nodes['enclosures_as_strings']) ? true : false;
 		unset($nodes['enclosures_as_strings']);
 
 		//TODO: add checkbox on feed config to allow enclosures to be saved as strings as SI does
 		//TODO: add tags here and in feed set up UI
-		foreach( $nodes as $key => $storage_locations) {
+		foreach( $nodes['nodes'] as $key => $storage_locations) {
 			foreach ($storage_locations as $storage_location) {
 				$storage_location['xpath'] = $key;
 				if ($storage_location['is_item']) {
