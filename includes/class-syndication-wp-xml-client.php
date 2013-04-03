@@ -150,7 +150,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
 		
-		if ( ! $xml ) {
+		if ( false === $xml ) {
 			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
 			return array();
 		}
