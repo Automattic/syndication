@@ -1149,7 +1149,7 @@ class WP_Push_Syndication_Server {
 	public function cron_add_pull_time_interval( $schedules ) {
 
 		// Adds the custom time interval to the existing schedules.
-		$schedules['pull_time_interval'] = array(
+		$schedules['syn_pull_time_interval'] = array(
 			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
 			'display' => __( 'Pull Time Interval', 'push-syndication' )
 		);
@@ -1181,23 +1181,37 @@ class WP_Push_Syndication_Server {
 		// we are saving it as a siteoption
 		$old_pull_sites = get_option( 'syn_old_pull_sites' );
 
-		if( !empty( $old_pull_sites ) ) {
+		if( ! empty( $old_pull_sites ) ) {
 			$timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
 			if( $timestamp )
-				wp_unschedule_event( $timestamp, 'syn_pull_content', array( $old_pull_sites ) );
+				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
+
+			wp_clear_scheduled_hook( 'syn_pull_content' );
 		}
 
 		wp_schedule_event(
 			time() - 1,
-			'pull_time_interval',
+			'syn_pull_time_interval',
 			'syn_pull_content',
-			array( $sites )
+			array()
 		);
 
 		update_option( 'syn_old_pull_sites', $sites );
 	}
 
-	public function pull_content( $sites ) {
+	function pull_get_selected_sites() {
+		$selected_sitegroups = $this->push_syndicate_settings['selected_pull_sitegroups'];
+
+		$sites = array();
+		foreach( $selected_sitegroups as $selected_sitegroup ) {
+			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
+		}
+
+		return $sites;
+	}
+
+	public function pull_content() {
+		$sites = $this->pull_get_selected_sites();
 
 		foreach( $sites as $site ) {
 			$site_id = $site->ID;
@@ -1223,7 +1237,8 @@ class WP_Push_Syndication_Server {
 				}
 
 				$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
-				if( $post_id ) {
+
+				if ( $post_id ) {
 					$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
 					if ( true === $pull_edit_shortcircuit )
 						continue;
@@ -1265,7 +1280,6 @@ class WP_Push_Syndication_Server {
 
 			update_post_meta( $site_id, 'syn_last_pull_time', current_time( 'timestamp', 1 ) );
 		}
-
 	}
 
 	function find_post_by_guid( $guid, $post, $site ) {
@@ -1276,7 +1290,7 @@ class WP_Push_Syndication_Server {
 			return $post_id;
 
 		// A direct query here is way more efficient than WP_Query, because we don't have to do all the extra processing, filters, and JOIN.
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_post_guid' LIMIT 1", $guid ) );
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_post_guid' AND meta_value = %s LIMIT 1", $guid ) );
 
 		if ( $post_id )
 			return $post_id;
