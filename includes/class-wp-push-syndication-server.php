@@ -1314,8 +1314,6 @@ class WP_Push_Syndication_Server {
 					update_post_meta( $inserted_post_id, 'syn_post_guid', $inserted_post_guid );
 					update_post_meta( $inserted_post_id, 'syn_source_site_id', $site_id );
 				}
-
-				delete_post_meta( $site_id, 'syn_inserted_posts' );
 			}
 
 			update_option( 'syn_version', '2.1' );
