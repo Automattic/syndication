@@ -964,7 +964,7 @@ class WP_Push_Syndication_Server {
 
 		$results = new WP_Query(array(
 			'post_type'         => 'syn_site',
-			'posts_per_page'    => -1, // retrieve all posts
+			'posts_per_page'    => 100,
 			'tax_query'         => array(
 				array(
 					'taxonomy'  => 'syn_sitegroup',
@@ -1199,7 +1199,7 @@ class WP_Push_Syndication_Server {
 		update_option( 'syn_old_pull_sites', $sites );
 	}
 
-	function pull_get_selected_sites() {
+	public function pull_get_selected_sites() {
 		$selected_sitegroups = $this->push_syndicate_settings['selected_pull_sitegroups'];
 
 		$sites = array();
@@ -1207,7 +1207,20 @@ class WP_Push_Syndication_Server {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
+		// Order by last update date
+		usort( $sites, 'sort_sites_by_last_pull_date' );
+
 		return $sites;
+	}
+
+	private function sort_sites_by_last_pull_date( $site_a, $site_b ) {
+		$site_a_pull_date = (int) get_post_meta( $site_a->ID, 'syn_last_pull_time', true );
+		$site_b_pull_date = (int) get_post_meta( $site_b->ID, 'syn_last_pull_time', true );
+
+		if ( $site_a_pull_date == $site_b_pull_date )
+			return 0;
+
+    return ( $site_a_pull_date < $site_b_pull_date ) ? -1 : 1;
 	}
 
 	public function pull_content( $sites ) {
