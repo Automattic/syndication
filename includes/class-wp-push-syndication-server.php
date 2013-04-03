@@ -1220,7 +1220,7 @@ class WP_Push_Syndication_Server {
 		if ( $site_a_pull_date == $site_b_pull_date )
 			return 0;
 
-    return ( $site_a_pull_date < $site_b_pull_date ) ? -1 : 1;
+		return ( $site_a_pull_date < $site_b_pull_date ) ? -1 : 1;
 	}
 
 	public function pull_content( $sites ) {
