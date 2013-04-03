@@ -139,14 +139,14 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures
 		if ( is_wp_error( $feed ) ) {
 			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ) );
-			return;
+			return array();
 		}
 
 		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
 		
 		if ( ! $xml ) {
 			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
-			return;
+			return array();
 		}
 
 		$abs_post_fields['enclosures_as_strings'] = $enclosures_as_strings;
@@ -170,7 +170,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			} catch (Exception $e) {
 				//TODO: catch value not found here and alert for error
 				//TODO: catch multiple values returned here and alert for error
-				return true;
+				return array();
 			}
 		}
 
@@ -208,7 +208,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				} catch (Exception $e) {
 					// TODO: catch value not found here and alert for error
 					// TODO: catch multiple values returned here and alert for error
-					return true;
+					return array();
 				}
 			}
 			$meta_data = array_merge($meta_data, $abs_meta_data);
