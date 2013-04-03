@@ -4,6 +4,8 @@ require_once( dirname( __FILE__ ) . '/class-syndication-client-factory.php' );
 
 class WP_Push_Syndication_Server {
 
+	const CUSTOM_USER_AGENT = 'WordPress/Syndication Plugin';
+
 	public  $push_syndicate_settings;
 	public  $push_syndicate_default_settings;
 	public  $push_syndicate_transports;
@@ -1224,6 +1226,8 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function pull_content( $sites ) {
+		add_filter( 'http_headers_useragent', array( $this, 'syndication_user_agent' ) );
+	
 		if ( empty( $sites ) )
 			$sites = $this->pull_get_selected_sites();
 
@@ -1294,6 +1298,12 @@ class WP_Push_Syndication_Server {
 
 			update_post_meta( $site_id, 'syn_last_pull_time', current_time( 'timestamp', 1 ) );
 		}
+
+		remove_filter( 'http_headers_useragent', array( $this, 'syndication_user_agent' ) );
+	}
+
+	public function syndication_user_agent( $user_agent ) {
+		return apply_filters( 'syn_pull_user_agent', self::CUSTOM_USER_AGENT );
 	}
 
 	function find_post_by_guid( $guid, $post, $site ) {
