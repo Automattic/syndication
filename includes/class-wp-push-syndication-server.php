@@ -1237,6 +1237,9 @@ class WP_Push_Syndication_Server {
 					$post_types_processed[] = $post->post_type;
 				}
 
+				if ( empty( $post['post_guid'] ) )
+					continue;
+
 				$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
 
 				if ( $post_id ) {
