@@ -1210,8 +1210,9 @@ class WP_Push_Syndication_Server {
 		return $sites;
 	}
 
-	public function pull_content() {
-		$sites = $this->pull_get_selected_sites();
+	public function pull_content( $sites ) {
+		if ( empty( $sites ) )
+			$sites = $this->pull_get_selected_sites();
 
 		foreach( $sites as $site ) {
 			$site_id = $site->ID;
