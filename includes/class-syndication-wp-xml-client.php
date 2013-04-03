@@ -142,7 +142,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			return;
 		}
 
-		$xml = simplexml_load_string( $feed, false, 0, $namespace, false );
+		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
 		
 		if ( ! $xml ) {
 			self::log_post( 'n/a', null, get_post( $this->site_ID ), sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ) );
@@ -324,7 +324,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @param   object  $site  The site object to display settings.
 	*/
 	public static function display_settings( $site ) {
-		//TODO: MOVE STYLES to appropriate CSS
 		//TODO: JS if is_meta show text box, if is_photo show photo select with numbers as values, else show select of post fields
 		//TODO: JS Validation
 		//TODO: deal with ability to select, i.e. media:group/media:thumbnail[@width="75"]/@url (can't be unserialized as is with quotes around 75)
@@ -507,7 +506,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</ul>
 			
 		<?php 
-		$rowcount = 0; 
+		$rowcount = 0;
 		if ( !empty( $custom_nodes ) ) {
 			foreach ($custom_nodes as $key => $storage_locations) {
 				foreach ($storage_locations as $storage_location) { ?>
@@ -635,10 +634,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 				//if no new has been added to the empty row at the end, ignore it 
 				if ( ! empty( $row['xpath'] ) ) {
+
 					foreach ( array( 'is_item', 'is_meta', 'is_tax', 'is_photo' ) as $field ) {
 						$row_data[$field] = isset( $row[$field] ) && in_array( $row[$field], array( 'true', 'on' ) ) ? 1 : 0;
 					}
 					$xpath = html_entity_decode( $row['xpath'] );
+
 					unset($row['xpath']);
 
 					$row_data['field'] = sanitize_key( $row['field'] );
