@@ -1238,9 +1238,6 @@ class WP_Push_Syndication_Server {
 			$client         = Syndication_Client_Factory::get_client( $transport_type, $site_id );
 			$posts          = apply_filters( 'syn_pre_pull_posts', $client->get_posts(), $site, $client );
 
-			if( empty( $posts ) )
-				continue;
-
 			$post_types_processed = array();
 
 			foreach( $posts as $post ) {
