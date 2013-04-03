@@ -232,7 +232,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$item_fields['post_category'] = $categories;
 
 			if ( ! empty( $meta_data[$this->id_field] ) ) {
-				$post_guid = $meta_data[$this->id_field];
+				$item_fields['post_guid'] = $meta_data[$this->id_field];
 			}
 
 			$posts[] = $item_fields;
