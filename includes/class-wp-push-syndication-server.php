@@ -1208,7 +1208,7 @@ class WP_Push_Syndication_Server {
 		}
 
 		// Order by last update date
-		usort( $sites, 'sort_sites_by_last_pull_date' );
+		usort( $sites, array( $this, 'sort_sites_by_last_pull_date' ) );
 
 		return $sites;
 	}
