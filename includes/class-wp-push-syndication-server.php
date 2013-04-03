@@ -1262,6 +1262,8 @@ class WP_Push_Syndication_Server {
 			foreach ( $post_types_processed as $post_type ) {
 				add_post_type_support( $post_type, 'revisions' );
 			}
+
+			update_post_meta( $site_id, 'syn_last_pull_time', current_time( 'timestamp', 1 ) );
 		}
 
 	}
