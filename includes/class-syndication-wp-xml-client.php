@@ -196,6 +196,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$tax_data = array();
 			$value_array = array();
 
+			$item_fields['post_type'] = $this->default_post_type;
+
 			//save photos as enclosures in meta
 			if ((isset($enc_parent) && strlen($enc_parent)) && ! empty( $enc_nodes )) :
 				$meta_data['enclosures'] = $this->get_encs($item->xpath($enc_parent), $enc_nodes);
