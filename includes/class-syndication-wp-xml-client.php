@@ -181,7 +181,14 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		$post_position = 0;
-		foreach ($xml->xpath($post_root) as $item) {
+		$items = $xml->xpath( $post_root );
+
+		if ( empty( $items ) ) {
+			self::log_post( 'n/a', null, get_post($this->site_ID), sprintf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ) );
+			return array();
+		}
+
+		foreach ( $items as $item ) {
 			$item_fields = array();
 			$enclosures = array();
 			$meta_data = array();
