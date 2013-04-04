@@ -1247,8 +1247,8 @@ class WP_Push_Syndication_Server {
 			foreach( $posts as $post ) {
 
 				if ( ! in_array( $post->post_type, $post_types_processed ) ) {
-					remove_post_type_support( $post->post_type, 'revisions' );
-					$post_types_processed[] = $post->post_type;
+					remove_post_type_support( $post['post_type'], 'revisions' );
+					$post_types_processed[] = $post['post_type'];
 				}
 
 				if ( empty( $post['post_guid'] ) )
