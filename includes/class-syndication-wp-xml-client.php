@@ -709,7 +709,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 	
 	public static function save_meta ($result, $post, $site, $transport_type, $client) {
-		if ( ! isset( $result ) OR ! isset( $post['postmeta'] ) ) {
+		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
 		$categories = $post['post_category'];
@@ -718,7 +718,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			
 		//handle enclosures separately first
 		$enc_field = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
-		$enclosures = isset( $metas[$enc_field] ) ? $metas[$enc_field] : null;
+		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset ( $enc_field ) ) {
 			// first remove all enclosures for the post (for updates) if any
 			delete_post_meta( $result, $enc_field);
@@ -739,7 +739,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 	
 	public static function update_meta ($result, $post, $site, $transport_type, $client) {
-		if ( !isset($result) OR !isset($post['postmeta']) ) {
+		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
 		$categories = $post['post_category'];
@@ -748,7 +748,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			
 		// handle enclosures separately first
 		$enc_field = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
-		$enclosures = isset( $metas[$enc_field] ) ? $metas[$enc_field] : null;
+		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// first remove all enclosures for the post (for updates)
 			delete_post_meta( $result, $enc_field);
@@ -769,7 +769,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 	
 	public static function save_tax ($result, $post, $site, $transport_type, $client) { 
-		if ( !isset($result ) OR !isset( $post['tax'] ) ) {
+		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
 		$taxonomies = $post['tax'];
@@ -783,7 +783,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 	
 	public static function update_tax ($result, $post, $site, $transport_type, $client) {
-		if ( !isset($result ) OR ! isset( $post['tax'] ) ) {
+		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
 		$taxonomies = $post['tax'];
