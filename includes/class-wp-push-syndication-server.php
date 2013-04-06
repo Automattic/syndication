@@ -159,9 +159,13 @@ class WP_Push_Syndication_Server {
 		switch ( $column_name ) {
 			case 'client-type':
 				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
-				$client = Syndication_Client_Factory::get_client( $transport_type, $id );
-				$client_data = $client->get_client_data();
-				echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
+				try {
+					$client = Syndication_Client_Factory::get_client( $transport_type, $id );
+					$client_data = $client->get_client_data();
+					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
+				} catch ( Exception $e ) {
+					printf( __( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
+				}
 				break;
 			case 'syn_sitegroup':
 				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
@@ -1246,7 +1250,7 @@ class WP_Push_Syndication_Server {
 
 			foreach( $posts as $post ) {
 
-				if ( ! in_array( $post->post_type, $post_types_processed ) ) {
+				if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
 					remove_post_type_support( $post['post_type'], 'revisions' );
 					$post_types_processed[] = $post['post_type'];
 				}
