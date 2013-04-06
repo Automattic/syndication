@@ -41,7 +41,7 @@ var_dump( $site_id, $site );
 		$server->pull_content( $sites );
 	}
 
-	function _make_em_talk_pull() {
+	private function _make_em_talk_pull() {
 		// output when a post is new or updated
 		add_filter( 'syn_pre_pull_posts', function( $posts, $site, $client ) {
 			WP_CLI::line( sprintf( 'Processing feed %s (%d)', $site->post_title, $site->ID ) );
@@ -59,7 +59,7 @@ var_dump( $site_id, $site );
 		}, 10, 5 );
 	}
 
-	function _get_syndication_server() {
+	private function _get_syndication_server() {
 		global $push_syndication_server;
 		return $push_syndication_server;
 	}
