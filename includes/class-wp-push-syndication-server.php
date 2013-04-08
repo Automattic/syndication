@@ -177,7 +177,7 @@ class WP_Push_Syndication_Server {
 	
 	public function admin_init() {
 		// @TODO define more parameters
-		$name_match = '#class-syndication-(.+)-client\.php#';
+		$name_match = '#class-syndication-(.+)-client\.php$#';
 		
 		$full_path = __DIR__ . '/';
 		if ( $handle = opendir( $full_path ) ) {
