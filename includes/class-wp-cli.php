@@ -3,6 +3,7 @@
 WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 
 class Syndication_CLI_Command extends WP_CLI_Command {
+	var $enabled_verbosity = false;
 
 	function pull_site( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
@@ -42,6 +43,11 @@ var_dump( $site_id, $site );
 	}
 
 	private function _make_em_talk_pull() {
+		if ( $this->enabled_verbosity )
+			return;
+
+		$this->enabled_verbosity = true;
+
 		// output when a post is new or updated
 		add_filter( 'syn_pre_pull_posts', function( $posts, $site, $client ) {
 			WP_CLI::line( sprintf( 'Processing feed %s (%d)', $site->post_title, $site->ID ) );
