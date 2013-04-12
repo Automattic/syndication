@@ -12,7 +12,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		$site_id = intval( $assoc_args['site_id'] );
 		$site = get_post( $site_id );
-var_dump( $site_id, $site );
+
 		if ( ! $site || 'syn_site' !== $site->post_type )
 			WP_CLI::error( "Please select a valid site." );
 
