@@ -593,7 +593,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$( '.syn-pull-xpath-add-new' ).on( 'click', function( e ) {
 				e.preventDefault();
 
-				var $last_form = $( '.syn-xml-client-xpath-form:first' ),
+				var $last_form = $( '.syn-xml-client-xpath-form:last' ),
 					$new_form = $last_form.clone(),
 					original_row_count = parseInt( $last_form.attr( 'data-row-count' ) );
 
