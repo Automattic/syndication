@@ -352,6 +352,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$enc_field					= get_post_meta( $site->ID, 'syn_enc_field', true );
 		$enc_is_photo				= get_post_meta( $site->ID, 'syn_enc_is_photo', true);
 
+		$last_update_time           = get_post_meta( $site->ID, 'syn_last_pull_time', true);
+
 		if ( isset( $node_config['namespace'] )) {
 			$namespace = $node_config['namespace'];
 		}
@@ -497,6 +499,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		?>
 			</select>
 		</p>
+
+		<h2><?php _e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
+
 		<p><?php printf( __( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s required. To include a static string, enclose the string as "%s(your_string_here)" -- no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ); ?></p>
 		
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
@@ -522,10 +527,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			
 		<?php 
 		$rowcount = 0;
-		if ( !empty( $custom_nodes ) ) {
-			foreach ($custom_nodes as $key => $storage_locations) {
-				foreach ($storage_locations as $storage_location) { ?>
-					<ul class='syn-xml-client-xpath-list syn-xml-client-list'>
+		if ( !empty( $custom_nodes ) ) :
+			foreach ($custom_nodes as $key => $storage_locations) :
+				foreach ($storage_locations as $storage_location) : ?>
+					<ul class='syn-xml-client-xpath-form syn-xml-client-xpath-list syn-xml-client-list' data-row-count="<?php echo esc_attr( $rowcount ); ?>">
 						<li class="text">
 							<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" value="<?php echo htmlspecialchars(stripslashes($key)) ; ?>" />
 						</li>
@@ -544,35 +549,83 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						<li class="text">
 							<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
 						</li>
-			<?php } ?>
+					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php _e( 'Delete', 'push-syndication' ); ?></a>
+				<?php endforeach; ?>
 					</ul>
 				<?php
 				++$rowcount;
-			}
-		}
+			endforeach;
+		endif;
 		?>
-			<div class='syn-xml-client-xpath-new'><?php _e( 'Add new element:', 'push-syndication' ); ?></div> 
-				<ul class='syn-xml-client-xpath-form syn-xml-client-list'>
-					<li class="text">
-						<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" />
-					</li>
-					<li class="text">
-						<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" />
-					</li>
-				</ul>
-		<p class="syn-xml-client-last-update"><em><?php _e( 'Last Update', 'push-syndication' ); ?></em></p>
+
+		<ul class='syn-xml-client-xpath-form syn-xml-xpath-list syn-xml-client-list' data-row-count="<?php echo esc_attr( $rowcount ); ?>">
+			<li class="text">
+				<input type="text" name="node[<?php echo $rowcount; ?>][xpath]" id="node-<?php echo $rowcount; ?>-xpath" />
+			</li>
+			<li>
+				<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_item]" id="node-<?php echo $rowcount; ?>-is_item" />
+			</li>
+			<li>
+				<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_photo]" id="node-<?php echo $rowcount; ?>-is_photo" />
+			</li>
+			<li>
+				<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_meta]" id="node-<?php echo $rowcount; ?>-is_meta" />
+			</li>
+			<li>
+				<input type="checkbox" name="node[<?php echo $rowcount; ?>][is_tax]" id="node-<?php echo $rowcount; ?>-is_tax" />
+			</li>
+			<li class="text">
+				<input type="text" name="node[<?php echo $rowcount; ?>][field]" id="node-<?php echo $rowcount; ?>-field" />
+			</li>
+			<a href="#" class="syn-delete syn-pull-xpath-delete"><?php _e( 'Delete', 'push-syndication' ); ?></a>
+		</ul>
+
+		<a href="#" class="syn-pull-xpath-add-new button"><?php _e( 'Add new', 'push-syndication' ); ?></a>
+
+		<script>
+		jQuery( document ).ready( function( $ ) {
+			$( '.syn-pull-xpath-delete' ).on( 'click', function( e ) {
+				e.preventDefault();
+
+				$( this ).closest( '.syn-xml-client-xpath-form' ).remove();
+			} );
+
+			$( '.syn-pull-xpath-add-new' ).on( 'click', function( e ) {
+				e.preventDefault();
+
+				var $last_form = $( '.syn-xml-client-xpath-form:first' ),
+					$new_form = $last_form.clone(),
+					original_row_count = parseInt( $last_form.attr( 'data-row-count' ) );
+
+				new_row_count = original_row_count + 1;
+
+				$new_form.attr( 'data-row-count', new_row_count );
+
+				$new_form.find( 'input' ).each( function() {
+					var $this = $( this ),
+						name = $this.attr( 'name' ),
+						type = $this.attr( 'type' );
+
+					if ( type == 'radio' || type == 'checkbox' )
+						$this.attr( 'checked', false );
+					else if ( type == 'select' )
+						$this.attr( 'selected', false );
+					else
+						$this.val( '' );
+
+					name = name.replace( '[' + ( original_row_count ) + ']', '[' + new_row_count + ']' );
+					$this.attr( 'name', name ); // hack hack hack!!!
+				} );
+
+				$new_form.insertAfter( $last_form );
+			} );
+		} );
+		</script>
+
+		<h2><?php _e( 'Log', 'push-syndication' ); ?></h2>
+		
+		<p class="syn-xml-client-last-update"><em><?php printf( __( 'Last Update: %s', 'push-syndication' ), ( $last_update_time ? date( 'c', $last_update_time ) : __( 'n/a', 'push-syndication' ) ) ); ?></em></p>
+		
 		<?php 
 		$syn_log = get_post_meta($site->ID, 'syn_log', true);
 		if ( ! empty( $syn_log ) ) : ?>
