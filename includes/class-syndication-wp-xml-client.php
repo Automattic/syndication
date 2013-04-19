@@ -211,7 +211,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
 					}
 					if (isset($save_location['is_meta']) && $save_location['is_meta']) {
-						$meta_data[$save_location['field']] = (string)$value_array[0];
+						$value_array = array_map( 'strval', $value_array );
+						$meta_data[$save_location['field']] = $value_array;
 					} else if ( isset($save_location['is_tax']) && $save_location['is_tax'] ) {
 						//for some taxonomies, multiple values may be supplied in the field
 						foreach ( $value_array as $value ) {
