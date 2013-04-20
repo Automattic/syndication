@@ -211,8 +211,15 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
 					}
 					if (isset($save_location['is_meta']) && $save_location['is_meta']) {
-						$value_array = array_map( 'strval', $value_array );
-						$meta_data[$save_location['field']] = $value_array;
+						//SimpleXMLElement::xpath returns either an array or false if an element isn't returned
+						//checking $value_array first avoids the warning we get if the field isn't found
+						if( $value_array && ( count( $value_array ) > 1 ) ) {
+							$value_array = array_map( 'strval', $value_array );
+							$meta_data[$save_location['field']] = $value_array;
+						} else if ( $value_array ) {
+							//return a string if $value_array contains only a single element
+							$meta_data[$save_location['field']] = (string) $value_array[0];
+						}
 					} else if ( isset($save_location['is_tax']) && $save_location['is_tax'] ) {
 						//for some taxonomies, multiple values may be supplied in the field
 						foreach ( $value_array as $value ) {
