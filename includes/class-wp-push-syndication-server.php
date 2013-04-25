@@ -93,7 +93,7 @@ class WP_Push_Syndication_Server {
 			'query_var'             => false,
 			'rewrite'               => false,
 			'supports'              => array( 'title' ),
-			'can_export'            => false,
+			'can_export'            => true,
 			'register_meta_box_cb'  => array( $this, 'site_metaboxes' ),
 			'capabilities'          => $post_type_capabilities,
 		));
