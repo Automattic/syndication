@@ -718,7 +718,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 					unset($row['xpath']);
 
-					$row_data['field'] = sanitize_key( $row['field'] );
+					$row_data['field'] = sanitize_text_field( $row['field'] );
 
 					if ( ! isset( $custom_nodes[$xpath] ) )
 						$custom_nodes[$xpath] = array();
