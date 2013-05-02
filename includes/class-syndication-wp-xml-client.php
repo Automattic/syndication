@@ -223,7 +223,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					} else if ( isset($save_location['is_tax']) && $save_location['is_tax'] ) {
 						//for some taxonomies, multiple values may be supplied in the field
 						foreach ( $value_array as $value ) {
-							$tax_data[] = array( 'tax_name' => $save_location['field'], 'tax_value'=> ( string ) $value );
+							$tax_data[$save_location['field']] = ( string ) $value;
 						}
 					} else {
 						$item_fields[$save_location['field']] = (string)$value_array[0];
