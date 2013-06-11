@@ -77,8 +77,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
         if( !$result )
             return false;
 
-        $this->manage_thumbnails( $post_ID );
-
         return $result;
 
     }
@@ -118,9 +116,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
         if( ! $result ) {
             return false;
         }
-
-
-        $this->manage_thumbnails( $post_ID );
 
         return true;
     }

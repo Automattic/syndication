@@ -864,6 +864,8 @@ class WP_Push_Syndication_Server {
 					$this->validate_result_edit_post( $result, $info, $slave_post_states, $site->ID, $client );
 				}
 
+				// TODO: manage thumbnails
+
 			}
 
 		}
