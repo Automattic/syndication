@@ -7,202 +7,202 @@ include_once( dirname( __FILE__ ) . '/push-syndicate-encryption.php' );
 
 class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndication_Client {
 
-    private $username;
-    private $password;
+	private $username;
+	private $password;
 
-    private $ext_thumbnail_ids;
-    private $site_ID;
+	private $ext_thumbnail_ids;
+	private $site_ID;
 
-    function __construct( $site_ID ) {
+	function __construct( $site_ID ) {
 
-	    // @TODO check port, timeout etc
+		// @TODO check port, timeout etc
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
 		if ( false === strpos( $server, 'xmlrpc.php' ) )
 			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
 		else
 			$server = esc_url_raw( $server );
 
-        $this->username = get_post_meta( $site_ID, 'syn_site_username', true);
-        $this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
-        $this->site_ID  = $site_ID;
+		$this->username = get_post_meta( $site_ID, 'syn_site_username', true);
+		$this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
+		$this->site_ID  = $site_ID;
 
-        // get the thumbnail ids
-        $this->ext_thumbnail_ids                    = get_option( 'syn_post_thumbnail_ids' );
-        $this->ext_thumbnail_ids                    = !empty( $this->ext_thumbnail_ids ) ? $this->ext_thumbnail_ids : array() ;
-        $this->ext_thumbnail_ids[ $this->site_ID ]  = !empty( $this->ext_thumbnail_ids[ $this->site_ID ] ) ? $this->ext_thumbnail_ids[ $this->site_ID ] : array() ;
+		// get the thumbnail ids
+		$this->ext_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
+		$this->ext_thumbnail_ids = !empty( $this->ext_thumbnail_ids ) ? $this->ext_thumbnail_ids : array() ;
+		$this->ext_thumbnail_ids[ $this->site_ID ]  = !empty( $this->ext_thumbnail_ids[ $this->site_ID ] ) ? $this->ext_thumbnail_ids[ $this->site_ID ] : array() ;
 
-        parent::__construct( $server );
+		parent::__construct( $server );
 
-    }
+	}
 
-    function __destruct() {
-        update_option( 'syn_post_thumbnail_ids', $this->ext_thumbnail_ids );
-    }
+	function __destruct() {
+		update_option( 'syn_post_thumbnail_ids', $this->ext_thumbnail_ids );
+	}
 
 	public static function get_client_data() {
 		return array( 'id' => 'WP_XMLRPC', 'modes' => array( 'push' ), 'name' => 'WordPress XMLRPC' );
 	}
 	
-    public function new_post( $post_ID ) {
+	public function new_post( $post_ID ) {
 
-        $post = (array)get_post( $post_ID );
+		$post = (array)get_post( $post_ID );
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
 		
-        // rearranging arguments
-        $args = array();
-        $args['post_title']     = $post['post_title'];
-        $args['post_content']   = $post['post_content'];
-        $args['post_excerpt']   = $post['post_excerpt'];
-        $args['post_status']    = $post['post_status'];
-        $args['post_type']      = $post['post_type'];
-        $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+		// rearranging arguments
+		$args = array();
+		$args['post_title']	 = $post['post_title'];
+		$args['post_content']   = $post['post_content'];
+		$args['post_excerpt']   = $post['post_excerpt'];
+		$args['post_status']	= $post['post_status'];
+		$args['post_type']	  = $post['post_type'];
+		$args['wp_password']	= $post['post_password'];
+		$args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
-        $result = $this->query(
-            'wp.newPost',
-            '1',
-            $this->username,
-            $this->password,
-            $args
-        );
+		$result = $this->query(
+			'wp.newPost',
+			'1',
+			$this->username,
+			$this->password,
+			$args
+		);
 
-        if( !$result )
-            return false;
+		if( !$result )
+			return false;
 
-        return $result;
+		return $result;
 
-    }
+	}
 
-    public function edit_post( $post_ID, $ext_ID ) {
+	public function edit_post( $post_ID, $ext_ID ) {
 
-        $post = (array)get_post( $post_ID );
+		$post = (array)get_post( $post_ID );
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
 		
-        // rearranging arguments
-        $args = array();
-        $args['post_title']     = $post['post_title'];
-        $args['post_content']   = $post['post_content'];
-        $args['post_excerpt']   = $post['post_excerpt'];
-        $args['post_status']    = $post['post_status'];
-        $args['post_type']      = $post['post_type'];
-        $args['wp_password']    = $post['post_password'];
-        $args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+		// rearranging arguments
+		$args = array();
+		$args['post_title']	 = $post['post_title'];
+		$args['post_content']   = $post['post_content'];
+		$args['post_excerpt']   = $post['post_excerpt'];
+		$args['post_status']	= $post['post_status'];
+		$args['post_type']	  = $post['post_type'];
+		$args['wp_password']	= $post['post_password'];
+		$args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
-	    $args['terms_names'] = $this->_get_post_terms( $post_ID );
+		$args['terms_names'] = $this->_get_post_terms( $post_ID );
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
-        $result = $this->query(
-            'wp.editPost',
-            '1',
-            $this->username,
-            $this->password,
-            $ext_ID,
-            $args
-        );
+		$result = $this->query(
+			'wp.editPost',
+			'1',
+			$this->username,
+			$this->password,
+			$ext_ID,
+			$args
+		);
 
-        if( ! $result ) {
-            return false;
-        }
+		if( ! $result ) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public function delete_post( $ext_ID ) {
+	public function delete_post( $ext_ID ) {
 
-        $result = $this->query(
-                'wp.deletePost',
-                '1',
-                $this->username,
-                $this->password,
-                $ext_ID
-        );
+		$result = $this->query(
+				'wp.deletePost',
+				'1',
+				$this->username,
+				$this->password,
+				$ext_ID
+		);
 
-        if( !$result )
-            return false;
+		if( !$result )
+			return false;
 
-        return true;
+		return true;
 
-    }
+	}
 
-    public function manage_thumbnails( $post_ID ) {
+	public function manage_thumbnails( $post_ID ) {
 		// TODO: check if post thumbnails are supported
 
-        $post_thumbnail_id = get_post_thumbnail_id( $post_ID );
-        if( empty( $post_thumbnail_id ) )
-            return $this->remove_post_thumbnail( $post_ID );
+		$post_thumbnail_id = get_post_thumbnail_id( $post_ID );
+		if( empty( $post_thumbnail_id ) )
+			return $this->remove_post_thumbnail( $post_ID );
 
-        if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] ) )
-            return true;
+		if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] ) )
+			return true;
 
-        if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
-            $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = (int)$this->get_response();
-            return true;
-        }
+		if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
+			$this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = (int)$this->get_response();
+			return true;
+		}
 
-        return false;
+		return false;
 
-    }
+	}
 
-    public function insert_post_thumbnail( $post_ID ) {
+	public function insert_post_thumbnail( $post_ID ) {
 
-        $post = (array)get_post( $post_ID );
+		$post = (array)get_post( $post_ID );
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_insert_thumbnail', $post, $post_ID );
 		if ( false === $post )
 			return true;
 		
-        // rearranging arguments
-        $args = array();
-        $args['post_title']     = $post['post_title'];
-        $args['post_content']   = $post['post_content'];
-        $args['guid']           = $post['guid'];
+		// rearranging arguments
+		$args = array();
+		$args['post_title']	 = $post['post_title'];
+		$args['post_content']   = $post['post_content'];
+		$args['guid']		   = $post['guid'];
 
 		// TODO: check that method is supported
-        $result = $this->query(
-            'pushSyndicateInsertThumbnail',
-            '1',
-            $this->username,
-            $this->password,
-            $args
-        );
+		$result = $this->query(
+			'pushSyndicateInsertThumbnail',
+			'1',
+			$this->username,
+			$this->password,
+			$args
+		);
 
-        if( !$result )
-            return false;
+		if( !$result )
+			return false;
 
-        return true;
+		return true;
 
-    }
+	}
 
-    public function remove_post_thumbnail( $post_ID ) {
+	public function remove_post_thumbnail( $post_ID ) {
 
-        $result = $this->query(
-            'pushSyndicateRemoveThumbnail',
-            '1',
-            $this->username,
-            $this->password,
-            $post_ID
-        );
+		$result = $this->query(
+			'pushSyndicateRemoveThumbnail',
+			'1',
+			$this->username,
+			$this->password,
+			$post_ID
+		);
 
-        if( !$result )
-            return false;
+		if( !$result )
+			return false;
 
-        return true;
+		return true;
 
-    }
+	}
 
 	private function _get_custom_fields( $post_id ) {
 		$post = get_post( $post_id );
@@ -292,41 +292,41 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	}
 
-    public function is_post_exists( $ext_ID ) {
+	public function is_post_exists( $ext_ID ) {
 
-        $result = $this->query(
-            'wp.getPost',
-            '1',
-            $this->username,
-            $this->password,
-            $ext_ID
-        );
+		$result = $this->query(
+			'wp.getPost',
+			'1',
+			$this->username,
+			$this->password,
+			$ext_ID
+		);
 
-        if( !$result )
-            return false;
+		if( !$result )
+			return false;
 
-        $post = $this->getResponse();
+		$post = $this->getResponse();
 
-        if( $ext_ID != $post['post_id'] )
-            return false;
+		if( $ext_ID != $post['post_id'] )
+			return false;
 
-        return true;
+		return true;
 
-    }
+	}
 
-    protected function convert_date_gmt( $date_gmt, $date ) {
-        if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
-            return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
-        }
-        return $this->convert_date( $date_gmt );
-    }
+	protected function convert_date_gmt( $date_gmt, $date ) {
+		if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
+			return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
+		}
+		return $this->convert_date( $date_gmt );
+	}
 
-    protected function convert_date( $date ) {
-        if ( $date === '0000-00-00 00:00:00' ) {
-            return new IXR_Date( '00000000T00:00:00Z' );
-        }
-        return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
-    }
+	protected function convert_date( $date ) {
+		if ( $date === '0000-00-00 00:00:00' ) {
+			return new IXR_Date( '00000000T00:00:00Z' );
+		}
+		return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
+	}
 
 	public function get_response() {
 		return parent::getResponse();
@@ -346,7 +346,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$site_username = get_post_meta( $site->ID, 'syn_site_username', true);
 		$site_password = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_password', true) );
 
-        ?>
+		?>
 
 		<p>
 			<label for=site_url><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
@@ -367,7 +367,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
 		</p>
 
-        <?php
+		<?php
 
 	}
 
@@ -388,14 +388,14 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	}
 
-    public function get_post( $ext_ID )
-    {
-        // TODO: Implement get_post() method.
-    }
+	public function get_post( $ext_ID )
+	{
+		// TODO: Implement get_post() method.
+	}
 
-    public function get_posts( $args = array() )
-    {
-        // TODO: Implement get_posts() method.
-    }
+	public function get_posts( $args = array() )
+	{
+		// TODO: Implement get_posts() method.
+	}
 
 }
