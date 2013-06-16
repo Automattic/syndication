@@ -50,6 +50,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return array array( 'id' => (string) $transport_name, 'modes' => array( 'push', 'pull' ), 'name' => (string) $name );
 	 */
 	private function set_feed_url($url) {
+
+		$url = apply_filters( 'syn_feed_url', $url );
+
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
