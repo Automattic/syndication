@@ -66,6 +66,8 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
+		$args = apply_filters( 'syn_xmlrpc_push_new_post_args', $args, $post );
+
 		$result = $this->query(
 			'wp.newPost',
 			'1',
@@ -103,6 +105,8 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
 
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
+
+		$args = apply_filters( 'syn_xmlrpc_push_edit_post_args', $args, $post );
 
 		$result = $this->query(
 			'wp.editPost',
