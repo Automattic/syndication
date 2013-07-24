@@ -71,27 +71,6 @@ interface Syndication_Client {
 	public function is_post_exists( $ext_ID );
 
 	/**
-	 * Get the response message sent from the slave site.
-	 *
-	 * @return  string  response message.
-	 */
-	public function get_response();
-
-	/**
-	 * Get the error code.
-	 *
-	 * @return  int  error code.
-	 */
-	public function get_error_code();
-
-	/**
-	 * Get the error message sent from the slave site.
-	 *
-	 * @return string error message.
-	 */
-	public function get_error_message();
-
-	/**
 	 * Display the client settings for the slave site.
 	 *
 	 * @param   object  $site  The site object to display settings.

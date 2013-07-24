@@ -8,10 +8,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	private $access_token;
 	private $blog_ID;
 
-	private $response;
-	private $error_message;
-	private $error_code;
-
 	private $port;
 	private $useragent;
 	private $timeout;
@@ -60,18 +56,15 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		) );
 
 		if ( is_wp_error( $response ) ) {
-			$this->error_message = 'HTTP  connection error!!';
-			return false;
+			return $response;
 		}
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty($response->error) ) {
-			$this->response = $response->ID;
-			return true;
+		if( empty( $response->error ) ) {
+			return $response->ID;
 		} else {
-			$this->error_message = $response->message;
-			return false;
+			return new WP_Error( 'rest-push-new-fail', $response->message );
 		}
 
 	}
@@ -106,17 +99,15 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		) );
 
 		if ( is_wp_error( $response ) ) {
-			$this->error_message = 'HTTP  connection error!!';
-			return false;
+			return $response;
 		}
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty($response->error) ) {
-			return true;
+		if( empty( $response->error ) ) {
+			return $post_ID;
 		} else {
-			$this->error_message = $response->message;
-			return false;
+			return new WP_Error( 'rest-push-edit-fail', $response->message );
 		}
 
 	}
@@ -146,17 +137,15 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		) );
 
 		if ( is_wp_error( $response ) ) {
-			$this->error_message = 'HTTP  connection error!!';
-			return false;
+			return $response;
 		}
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty($response->error) ) {
+		if( empty( $response->error ) ) {
 			return true;
 		} else {
-			$this->error_message = $response->message;
-			return false;
+			return new WP_Error( 'rest-push-delete-fail', $response->message );
 		}
 
 	}
@@ -172,9 +161,8 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			),
 		) );
 
+		// TODO: return WP_Error
 		if ( is_wp_error( $response ) ) {
-			$this->error_message = 'HTTP  connection error!!';
-			// @TODO error validation and error messages
 			return false;
 		}
 
@@ -183,7 +171,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		if( empty( $response->error ) ) {
 			return true;
 		} else {
-			$this->error_message = $response->message;
 			return false;
 		}
 
@@ -201,7 +188,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		) );
 
 		if ( is_wp_error( $response ) ) {
-			$this->error_message = 'HTTP  connection error!!';
 			return false;
 		}
 
@@ -210,22 +196,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		if( empty($response->error) ) {
 			return true;
 		} else {
-			$this->error_message = $response->message;
 			return false;
 		}
 
-	}
-
-	public function get_response() {
-		return $this->response;
-	}
-
-	public function get_error_code() {
-		return $this->error_code;
-	}
-
-	public function get_error_message() {
-		return $this->error_message;
 	}
 
 	public static function display_settings( $site ) {

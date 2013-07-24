@@ -15,10 +15,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	private $enc_field;
 	private $enc_is_photo;
 
-	private $response;
-	private $error_message;
-	private $error_code;
-
 	private $feed_url;
 
 	function __construct( $site_ID ) {
@@ -56,7 +52,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
-			$this->error_code = 0;
 			$this->error_message = sprintf( __( 'Feed url not set for this feed: %s', 'push-syndication' ), $site_ID );
 		}
 	}
@@ -315,33 +310,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	*/
 	public function is_post_exists( $ext_ID ) {
 		return false; // Not supported
-	}
-
-	/**
-	 * Get the response message sent from the slave site.
-	 *
-	 * @return  string  response message.
-	*/
-	public function get_response() {
-		return $this->response;
-	}
-
-	/**
-	 * Get the error code.
-	 *
-	 * @return  int  error code.
-	*/
-	public function get_error_code() {
-		return $this->error_code;
-	}
-
-	/**
-	 * Get the error message sent from the slave site.
-	 *
-	 * @return string error message.
-	*/
-	public function get_error_message() {
-		return $this->error_message;
 	}
 
 	/**

@@ -10,10 +10,6 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     private $default_comment_status;
     private $default_ping_status;
 
-    private $response;
-    private $error_message;
-    private $error_code;
-
     function __construct( $site_ID ) {
 
         switch( SIMPLEPIE_VERSION ) {
@@ -66,18 +62,6 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     public function is_post_exists($ext_ID) {
         // Not supported
         return false;
-    }
-
-    public function get_response() {
-        return $this->response;
-    }
-
-    public function get_error_code() {
-        return $this->error_code;
-    }
-
-    public function get_error_message() {
-        return $this->error_message;
     }
 
     public static function display_settings($site) {

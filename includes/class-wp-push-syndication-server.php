@@ -656,7 +656,7 @@ class WP_Push_Syndication_Server {
 				return;
 			$client = Syndication_Client_Factory::get_client( $transport_type, $post->ID );
 
-			if( $client->test_connection()  ) {
+			if ( $client->test_connection()  ) {
 				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
 			} else {
 				$site_enabled = 'off';
@@ -849,9 +849,10 @@ class WP_Push_Syndication_Server {
 					
 					$result = $client->new_post( $post_ID );
 
+					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
+
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
 					
-					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
 				} else { // states 'success', 'edit-error' and 'remove-error'
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit )
@@ -859,13 +860,10 @@ class WP_Push_Syndication_Server {
 					
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
+					$this->validate_result_edit_post( $result, $slave_post_states, $site->ID, $client );
+
 					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
-
-					$this->validate_result_edit_post( $result, $info, $slave_post_states, $site->ID, $client );
 				}
-
-				// TODO: manage thumbnails
-
 			}
 
 		}
@@ -882,11 +880,8 @@ class WP_Push_Syndication_Server {
 				if( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
 
 					$result = $client->delete_post( $info['ext_ID'] );
-					if( !$result ) {
-						$slave_post_states[ 'remove-error' ][ $site->ID ] = array(
-							'error_code'    => $client->get_error_code(),
-							'error_message' => $client->get_error_message()
-						);
+					if ( is_wp_error( $result ) ) {
+						$slave_post_states[ 'remove-error' ][ $site->ID ] = $result;
 					}
 
 				}
@@ -1026,17 +1021,15 @@ class WP_Push_Syndication_Server {
 	 */
 	public function validate_result_new_post( $result, &$slave_post_states, $site_ID, $client ) {
 
-		if( $result ) {
-			$slave_post_states[ 'success' ][ $site_ID ] = array(
-				'ext_ID'        => (int)$client->get_response()
-			);
+		if ( is_wp_error( $result ) ) {
+			$slave_post_states[ 'new-error' ][ $site_ID ] = $result;
 		} else {
-			$slave_post_states[ 'new-error' ][ $site_ID ] = array(
-				'error_code'    => $client->get_error_code(),
-				'error_message' => $client->get_error_message()
+			$slave_post_states[ 'success' ][ $site_ID ] = array(
+				'ext_ID'        => (int) $result
 			);
 		}
 
+		return $result;
 	}
 
 	/**
@@ -1044,20 +1037,16 @@ class WP_Push_Syndication_Server {
 	 * edit-error   -> edit-error
 	 * success      -> edit-error
 	 */
-	public function validate_result_edit_post( $result, $info, &$slave_post_states, $site_ID, $client ) {
-
-		if( $result ) {
-			$slave_post_states[ 'success' ][ $site_ID ] = array(
-				'ext_ID'       => $info[ 'ext_ID' ]
-			);
+	public function validate_result_edit_post( $result, &$slave_post_states, $site_ID, $client ) {
+		if ( is_wp_error( $result ) ) {
+			$slave_post_states[ 'edit-error' ][ $site_ID ] = $result;
 		} else {
-			$slave_post_states[ 'edit-error' ][ $site_ID ] = array(
-				'ext_ID'        => $info[ 'ext_ID' ],
-				'error_code'    => $client->get_error_code(),
-				'error_message' => $client->get_error_message()
+			$slave_post_states[ 'success' ][ $site_ID ] = array(
+				'ext_ID'        => (int) $result
 			);
 		}
 
+		return $result;
 	}
 
 	public function pre_schedule_delete_content( $post_id ) {
@@ -1351,5 +1340,7 @@ class WP_Push_Syndication_Server {
 
 		update_option( 'syn_version', SYNDICATION_VERSION );
 	}
+
+	
 
 }

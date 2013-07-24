@@ -10,7 +10,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	private $username;
 	private $password;
 
-	private $ext_thumbnail_ids;
 	private $site_ID;
 
 	function __construct( $site_ID ) {
@@ -26,17 +25,52 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$this->password = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
 		$this->site_ID  = $site_ID;
 
-		// get the thumbnail ids
-		$this->ext_thumbnail_ids = get_option( 'syn_post_thumbnail_ids' );
-		$this->ext_thumbnail_ids = !empty( $this->ext_thumbnail_ids ) ? $this->ext_thumbnail_ids : array() ;
-		$this->ext_thumbnail_ids[ $this->site_ID ]  = !empty( $this->ext_thumbnail_ids[ $this->site_ID ] ) ? $this->ext_thumbnail_ids[ $this->site_ID ] : array() ;
-
 		parent::__construct( $server );
 
+		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
+			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
+			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
+			// TODO: on delete post, delete thumbnail
+		}
 	}
 
-	function __destruct() {
-		update_option( 'syn_post_thumbnail_ids', $this->ext_thumbnail_ids );
+	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
+		$thumbnail_id = get_post_thumbnail_id( $post_id );
+		$syndicated_thumbnail_id = get_post_meta( $post_id, '_syn_push_syndicated_thumbnail', true );
+
+		if ( ! $thumbnail_id ) {
+			if ( $syndicated_thumbnail_id ) {
+				$result = $this->query(
+					'syndication.deleteThumbnail',
+					'1',
+					$this->username,
+					$this->password,
+					$remote_post_id
+				);
+
+				delete_post_meta( $post_id, '_syn_push_syndicated_thumbnail' );
+
+			}
+			return;
+		}
+
+		if ( $syndicated_thumbnail_id == $thumbnail_id )
+			return;
+
+		list( $thumbnail_url ) = wp_get_attachment_image_src( $thumbnail_id, 'thumbnail' );
+
+		$result = $this->query(
+			'syndication.addThumbnail',
+			'1',
+			$this->username,
+			$this->password,
+			$remote_post_id,
+			$thumbnail_url
+		);
+
+		if ( $result ) {
+			update_post_meta( $post_id, '_syn_push_syndicated_thumbnail', $thumbnail_id );
+		}
 	}
 
 	public static function get_client_data() {
@@ -76,14 +110,19 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			$args
 		);
 
-		if( !$result )
-			return false;
+		if ( ! $result ) {
+			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+		}
 
-		return $result;
+		$remote_post_id = (int) $this->get_response();
+
+		do_action( 'syn_xmlrpc_push_new_post_success', $remote_post_id, $post_ID );
+
+		return $remote_post_id;
 
 	}
 
-	public function edit_post( $post_ID, $ext_ID ) {
+	public function edit_post( $post_ID, $remote_post_id ) {
 
 		$post = (array)get_post( $post_ID );
 
@@ -113,99 +152,34 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			'1',
 			$this->username,
 			$this->password,
-			$ext_ID,
+			$remote_post_id,
 			$args
 		);
 
-		if( ! $result ) {
-			return false;
+		if ( ! $result ) {
+			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
-		return true;
+		do_action( 'syn_xmlrpc_push_edit_post_success', $remote_post_id, $post_ID );
+
+		return $remote_post_id;
 	}
 
-	public function delete_post( $ext_ID ) {
+	public function delete_post( $remote_post_id ) {
 
 		$result = $this->query(
 				'wp.deletePost',
 				'1',
 				$this->username,
 				$this->password,
-				$ext_ID
+				$remote_post_id
 		);
 
-		if( !$result )
-			return false;
-
-		return true;
-
-	}
-
-	public function manage_thumbnails( $post_ID ) {
-		// TODO: check if post thumbnails are supported
-
-		$post_thumbnail_id = get_post_thumbnail_id( $post_ID );
-		if( empty( $post_thumbnail_id ) )
-			return $this->remove_post_thumbnail( $post_ID );
-
-		if( !empty( $this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] ) )
-			return true;
-
-		if( $this->insert_post_thumbnail( $post_thumbnail_id ) ) {
-			$this->ext_thumbnail_ids[ $this->site_ID ][ $post_thumbnail_id ] = (int)$this->get_response();
-			return true;
+		if ( ! $result ) {
+			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
-		return false;
-
-	}
-
-	public function insert_post_thumbnail( $post_ID ) {
-
-		$post = (array)get_post( $post_ID );
-
-		// This filter can be used to exclude or alter posts during a content push
-		$post = apply_filters( 'syn_xmlrpc_push_filter_insert_thumbnail', $post, $post_ID );
-		if ( false === $post )
-			return true;
-		
-		// rearranging arguments
-		$args = array();
-		$args['post_title']	 = $post['post_title'];
-		$args['post_content']   = $post['post_content'];
-		$args['guid']		   = $post['guid'];
-
-		// TODO: check that method is supported
-		$result = $this->query(
-			'pushSyndicateInsertThumbnail',
-			'1',
-			$this->username,
-			$this->password,
-			$args
-		);
-
-		if( !$result )
-			return false;
-
 		return true;
-
-	}
-
-	public function remove_post_thumbnail( $post_ID ) {
-
-		$result = $this->query(
-			'pushSyndicateRemoveThumbnail',
-			'1',
-			$this->username,
-			$this->password,
-			$post_ID
-		);
-
-		if( !$result )
-			return false;
-
-		return true;
-
 	}
 
 	private function _get_custom_fields( $post_id ) {
@@ -268,7 +242,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		if( !$result ) {
 
-			$error_code = absint($this->get_error_code());
+			$error_code = absint($this->getErrorCode());
 
 			switch( $error_code ) {
 				case 32301:
@@ -330,18 +304,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return new IXR_Date( '00000000T00:00:00Z' );
 		}
 		return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
-	}
-
-	public function get_response() {
-		return parent::getResponse();
-	}
-
-	public function get_error_code() {
-		return parent::getErrorCode();
-	}
-
-	public function get_error_message() {
-		return parent::getErrorMessage();
 	}
 
 	public static function display_settings( $site ) {
@@ -408,56 +370,59 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 	public static function init() {
 		add_filter( 'xmlrpc_methods' , array( __CLASS__, 'push_syndicate_methods' ) );
-		add_filter( 'wp_get_attachment_url' , array( __CLASS__, 'push_syndicate_attachment_url' ), 10, 2 );
 	}
 
 	public static function push_syndicate_methods( $methods ) {
-        $methods['syndication.AddThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
-        $methods['syndication.DeleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
+        $methods['syndication.addThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
+        $methods['syndication.deleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
 		return $methods;
 	}
 
 	public static function xmlrpc_add_thumbnail( $args ) {
-		global $wp_xmlrpc_server;
+		global $wp_xmlrpc_server, $wpdb;
+
 		$wp_xmlrpc_server->escape( $args );
 
 		$blog_id	    = (int) $args[0];
 		$username	    = $args[1];
 		$password	    = $args[2];
 		$post_ID            = (int)$args[3];
-		$content_struct     = $args[4];
+		$thumbnail_url     = esc_url_raw( $args[4] );
 
-		if ( !$user = $wp_xmlrpc_server->login( $username, $password ) )
-			return $wp_xmlrpc_server->error;
+		if ( ! $post_ID )
+			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'syndication' ) );
 
-		if ( ! current_user_can( 'edit_posts' ) )
-			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.' ) );
+		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
+		if ( ! $thumbnail_raw )
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
 
-		if ( isset( $content_struct['post_title'] ) )
-			$data['post_title'] = $content_struct['post_title'];
+		$thumbnail_filename = basename( $thumbnail_url );
+		$thumbnail_type = wp_check_filetype( $thumbnail_filename );
 
-		if ( isset( $content_struct['post_content'] ) )
-			$data['post_content'] = $content_struct['post_content'];
+		$args = array(
+			$blog_id,
+			$username,
+			$password,
+			array(
+				'name'  => $thumbnail_filename,
+				'type'  => $thumbnail_type['type'],
+				'bits'  => $thumbnail_raw,
+				'overwrite' => false,
+			),
+		);
 
-		$data['post_type'] = 'attachment';
+		// Note: Leting mw_newMediaObject handle our auth and cap checks
+		$image = $wp_xmlrpc_server->mw_newMediaObject( $args );
 
-		if ( empty( $content_struct['guid'] ) )
-			return new IXR_Error( 403, __( 'Please provide a thumbnail URL.' ) );
+		if ( ! is_array( $image ) || empty( $image['url'] ) )
+			return $image;
 
-		$data['guid'] = $content_struct['guid'];
+		$thumbnail_id = (int) $image['id'];
+		if( empty( $thumbnail_id ) )
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
 
-		$wp_filetype = wp_check_filetype( $content_struct['guid'], null );
-		if ( empty( $wp_filetype['type'] ) )
-			return new IXR_Error( 403, __( 'Invalid thumbnail URL.' ) );
-
-		$data['post_mime_type'] = $wp_filetype['type'];
-
-		$thumbnail_id = wp_insert_attachment( $data, $content_struct['guid'], $post_ID );
-		$attachment_meta_data = wp_generate_attachment_metadata( $thumbnail_id, $content_struct['guid'] );
-		$attachment_meta_data['push_syndicate_featured_image'] = 'yes';
-		wp_update_attachment_metadata( $thumbnail_id, $attachment_meta_data );
-
-		if ( set_post_thumbnail( $post_ID, $thumbnail_id ) )
+		$thumbnail_set = set_post_thumbnail( $post_ID, $thumbnail_id );
+		if ( ! $thumbnail_set )
 			return new IXR_Error( 403, __( 'Could not attach post thumbnail.' ) );
 
 		return $thumbnail_id;
@@ -479,7 +444,8 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		if ( ! current_user_can( 'edit_post', $post_ID ) )
 			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.' ) );
 
-		if ( ! delete_post_thumbnail( $post_ID ) )
+		$result = delete_post_thumbnail( $post_ID );
+		if ( ! $result )
 			return new IXR_Error( 403, __( 'Could not remove post thumbnail.' ) );
 
 		return true;
