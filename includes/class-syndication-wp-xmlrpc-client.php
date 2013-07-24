@@ -418,50 +418,49 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 	}
 
 	public static function xmlrpc_add_thumbnail( $args ) {
-	        global $wp_xmlrpc_server;
-	        $wp_xmlrpc_server->escape( $args );
+		global $wp_xmlrpc_server;
+		$wp_xmlrpc_server->escape( $args );
 
-	        $blog_id	    = (int) $args[0];
-	        $username	    = $args[1];
-	        $password	    = $args[2];
-	        $post_ID            = (int)$args[3];
-	        $content_struct     = $args[4];
+		$blog_id	    = (int) $args[0];
+		$username	    = $args[1];
+		$password	    = $args[2];
+		$post_ID            = (int)$args[3];
+		$content_struct     = $args[4];
 
-	        if ( !$user = $wp_xmlrpc_server->login( $username, $password ) )
-	            return $wp_xmlrpc_server->error;
+		if ( !$user = $wp_xmlrpc_server->login( $username, $password ) )
+			return $wp_xmlrpc_server->error;
 
-	        if ( ! current_user_can( 'edit_posts' ) )
-	            return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.' ) );
+		if ( ! current_user_can( 'edit_posts' ) )
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.' ) );
 
-	        if ( isset( $content_struct['post_title'] ) )
-	            $data['post_title'] = $content_struct['post_title'];
+		if ( isset( $content_struct['post_title'] ) )
+			$data['post_title'] = $content_struct['post_title'];
 
-	        if ( isset( $content_struct['post_content'] ) )
-	            $data['post_content'] = $content_struct['post_content'];
+		if ( isset( $content_struct['post_content'] ) )
+			$data['post_content'] = $content_struct['post_content'];
 
-	        $data['post_type'] = 'attachment';
+		$data['post_type'] = 'attachment';
 
-	        if ( empty( $content_struct['guid'] ) )
+		if ( empty( $content_struct['guid'] ) )
 			return new IXR_Error( 403, __( 'Please provide a thumbnail URL.' ) );
 
 		$data['guid'] = $content_struct['guid'];
 
 		$wp_filetype = wp_check_filetype( $content_struct['guid'], null );
-	        if ( empty( $wp_filetype['type'] ) )
+		if ( empty( $wp_filetype['type'] ) )
 			return new IXR_Error( 403, __( 'Invalid thumbnail URL.' ) );
 
 		$data['post_mime_type'] = $wp_filetype['type'];
 
-	        $thumbnail_id = wp_insert_attachment( $data, $content_struct['guid'], $post_ID );
-	        $attachment_meta_data = wp_generate_attachment_metadata( $thumbnail_id, $content_struct['guid'] );
-	        $attachment_meta_data['push_syndicate_featured_image'] = 'yes';
-	        wp_update_attachment_metadata( $thumbnail_id, $attachment_meta_data );
+		$thumbnail_id = wp_insert_attachment( $data, $content_struct['guid'], $post_ID );
+		$attachment_meta_data = wp_generate_attachment_metadata( $thumbnail_id, $content_struct['guid'] );
+		$attachment_meta_data['push_syndicate_featured_image'] = 'yes';
+		wp_update_attachment_metadata( $thumbnail_id, $attachment_meta_data );
 
-	        if ( set_post_thumbnail( $post_ID, $thumbnail_id ) )
+		if ( set_post_thumbnail( $post_ID, $thumbnail_id ) )
 			return new IXR_Error( 403, __( 'Could not attach post thumbnail.' ) );
 
 		return $thumbnail_id;
-
 	}
 
 	public static function xmlrpc_delete_thumbnail( $args ) {
