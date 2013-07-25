@@ -114,7 +114,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
-		$remote_post_id = (int) $this->get_response();
+		$remote_post_id = (int) $this->getResponse();
 
 		do_action( 'syn_xmlrpc_push_new_post_success', $remote_post_id, $post_ID );
 
