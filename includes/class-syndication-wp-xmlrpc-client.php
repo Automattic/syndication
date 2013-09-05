@@ -221,7 +221,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	}
 
 	private function _get_meta_blacklist() {
-		return apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', /** TODO: add more **/ ) );
+		return apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', '_thumbnail_id' /** TODO: add more **/ ) );
 	}
 
 	private function _get_post_terms( $post_id ) {
