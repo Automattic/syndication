@@ -34,10 +34,13 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		}
 	}
 
-	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
-
+	private function get_thumbnail_meta_keys( $post_id ) {
 		// Support for non-core images, like from the Multiple Post Thumbnail plugin
-		$thumbnail_meta_keys = apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
+		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
+	}
+
+	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
+		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id ); 
 
 		foreach ( $thumbnail_meta_keys as $thumbnail_meta ) {
 			$thumbnail_id = get_post_meta( $post_id, $thumbnail_meta, true );
@@ -197,7 +200,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$custom_fields = array();
 		$all_post_meta = get_post_custom( $post_id );
 
-		$blacklisted_meta = $this->_get_meta_blacklist();
+		$blacklisted_meta = $this->_get_meta_blacklist( $post_id );
 		foreach ( (array) $all_post_meta as $post_meta_key => $post_meta_values ) {
 
 			if ( in_array( $post_meta_key, $blacklisted_meta ) || preg_match( '/^_?syn/i', $post_meta_key ) )
@@ -220,8 +223,12 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return $custom_fields;
 	}
 
-	private function _get_meta_blacklist() {
-		return apply_filters( 'syn_ignored_meta_fields', array( '_edit_last', '_edit_lock', '_thumbnail_id' /** TODO: add more **/ ) );
+	private function _get_meta_blacklist( $post_id ) {
+		$blacklist = array( '_edit_last', '_edit_lock' /** TODO: add more **/ );
+		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id );
+
+		$blacklist = array_merge( $blacklist, $thumbnail_meta_keys );
+		return apply_filters( 'syn_ignored_meta_fields', $blacklist, $post_id );
 	}
 
 	private function _get_post_terms( $post_id ) {
