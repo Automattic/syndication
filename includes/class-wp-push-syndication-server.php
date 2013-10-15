@@ -1051,7 +1051,7 @@ class WP_Push_Syndication_Server {
 		return $result;
 	}
 
-	private update_slave_post_states( $post_id, $slave_post_states ) {
+	private function update_slave_post_states( $post_id, $slave_post_states ) {
 		update_post_meta( $post_id, '_syn_slave_post_states', $slave_post_states );
 	}
 
