@@ -5,6 +5,27 @@ WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
+	function push_post( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'post_id' => 0,
+		) );
+
+		$post_id = intval( $assoc_args[ 'post_id' ] );
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			WP_CLI::error( __( 'Invalid post_id', 'push-syndication' ) );
+		}
+
+		$server = $this->_get_syndication_server();
+		$sites = $server->get_sites_by_post_ID( $post_id );
+
+		if ( empty( $sites ) ) {
+			WP_CLI::error( __( 'Post has no selected sitegroups / sites', 'push-syndication' ) );
+		}
+
+		$server->push_content( $sites );
+	}
+
 	function pull_site( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'site_id' => 0,
