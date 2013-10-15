@@ -820,7 +820,7 @@ class WP_Push_Syndication_Server {
 
 		// if another process running on it return
 		if( get_transient( 'syn_syndicate_lock' ) == 'locked' )
-			return
+			return;
 
 		// set value as locked, valid for 5 mins
 		set_transient( 'syn_syndicate_lock', 'locked', 60*5 );
@@ -850,6 +850,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->new_post( $post_ID );
 
 					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
+					$this->update_slave_post_states( $post_id, $slave_post_states );
 
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
 					
@@ -861,6 +862,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
 					$this->validate_result_edit_post( $result, $slave_post_states, $site->ID, $client );
+					$this->update_slave_post_states( $post_id, $slave_post_states );
 
 					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 				}
@@ -882,6 +884,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->delete_post( $info['ext_ID'] );
 					if ( is_wp_error( $result ) ) {
 						$slave_post_states[ 'remove-error' ][ $site->ID ] = $result;
+						$this->update_slave_post_states( $post_id, $slave_post_states );
 					}
 
 				}
@@ -890,7 +893,6 @@ class WP_Push_Syndication_Server {
 
 		}
 
-		update_post_meta( $post_ID, '_syn_slave_post_states', $slave_post_states );
 
 		/** end of critical section **/
 
@@ -1047,6 +1049,10 @@ class WP_Push_Syndication_Server {
 		}
 
 		return $result;
+	}
+
+	private update_slave_post_states( $post_id, $slave_post_states ) {
+		update_post_meta( $post_id, '_syn_slave_post_states', $slave_post_states );
 	}
 
 	public function pre_schedule_delete_content( $post_id ) {
