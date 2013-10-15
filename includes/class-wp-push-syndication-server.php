@@ -861,7 +861,7 @@ class WP_Push_Syndication_Server {
 					
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
-					$this->validate_result_edit_post( $result, $slave_post_states, $site->ID, $client );
+					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site->ID, $client );
 					$this->update_slave_post_states( $post_id, $slave_post_states );
 
 					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
@@ -1039,12 +1039,15 @@ class WP_Push_Syndication_Server {
 	 * edit-error   -> edit-error
 	 * success      -> edit-error
 	 */
-	public function validate_result_edit_post( $result, &$slave_post_states, $site_ID, $client ) {
+	public function validate_result_edit_post( $result, $ext_ID, &$slave_post_states, $site_ID, $client ) {
 		if ( is_wp_error( $result ) ) {
-			$slave_post_states[ 'edit-error' ][ $site_ID ] = $result;
+			$slave_post_states[ 'edit-error' ][ $site_ID ] = array(
+				'error' => $result,
+				'ext_ID' => (int) $ext_ID,
+			);
 		} else {
 			$slave_post_states[ 'success' ][ $site_ID ] = array(
-				'ext_ID'        => (int) $result
+				'ext_ID'        => (int) $ext_ID
 			);
 		}
 
