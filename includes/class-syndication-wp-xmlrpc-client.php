@@ -224,7 +224,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		}
 
 		$custom_fields[] = array(
-			'key' => '_masterpost_url',
+			'key' => 'syn_source_url',
 			'value' => $post->guid,
 		);
 		return $custom_fields;
