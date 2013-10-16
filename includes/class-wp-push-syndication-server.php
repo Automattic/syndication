@@ -854,7 +854,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->new_post( $post_ID );
 
 					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
-					$this->update_slave_post_states( $post_id, $slave_post_states );
+					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
 					
@@ -866,7 +866,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
 					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site->ID, $client );
-					$this->update_slave_post_states( $post_id, $slave_post_states );
+					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
 					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 				}
@@ -888,7 +888,7 @@ class WP_Push_Syndication_Server {
 					$result = $client->delete_post( $info['ext_ID'] );
 					if ( is_wp_error( $result ) ) {
 						$slave_post_states[ 'remove-error' ][ $site->ID ] = $result;
-						$this->update_slave_post_states( $post_id, $slave_post_states );
+						$this->update_slave_post_states( $post_ID, $slave_post_states );
 					}
 
 				}
