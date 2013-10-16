@@ -835,6 +835,8 @@ class WP_Push_Syndication_Server {
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
 		$slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
 
+		$sites = apply_filters( 'syn_pre_push_post_sites', $sites, $post_ID, $slave_post_states );
+
 		if( !empty( $sites['selected_sites'] ) ) {
 
 			foreach( $sites['selected_sites'] as $site ) {

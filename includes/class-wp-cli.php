@@ -16,6 +16,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( __( 'Invalid post_id', 'push-syndication' ) );
 		}
 
+		$this->_make_em_talk_push();
+
 		$server = $this->_get_syndication_server();
 		$sites = $server->get_sites_by_post_ID( $post_id );
 
@@ -84,6 +86,29 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action( 'syn_post_pull_edit_post', function( $result, $post, $site, $transport_type, $client ) {
 			WP_CLI::line( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
 		}, 10, 5 );
+	}
+
+	private function _make_em_talk_push() {
+		if ( $this->enabled_verbosity )
+			return;
+
+		$this->enabled_verbosity = true;
+		
+		add_filter( 'syn_pre_push_post_sites', function( $sites, $post_id, $slave_states ) {
+			WP_CLI::line( sprintf( "Processing post_id #%d (%s)", $post_id, get_the_title( $post_id ) ) );
+			WP_CLI::line( sprintf( "-- pushing to %s sites and deleting from %s sites", number_format( count( $sites['selected_sites'] ) ), number_format( count( $sites['removed_sites'] ) ) ) );
+
+			return $sites;
+		}, 10, 3 );
+
+		add_action( 'syn_post_push_new_post', function( $result, $post_ID, $site, $transport_type, $client, $info ) {
+			WP_CLI::line( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
+		}, 10, 6 );
+
+		add_action( 'syn_post_push_edit_post', function( $result, $post_ID, $site, $transport_type, $client, $info ) {
+			WP_CLI::line( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
+		}, 10, 6 );
+
 	}
 
 	private function _get_syndication_server() {
