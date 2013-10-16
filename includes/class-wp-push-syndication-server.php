@@ -139,6 +139,9 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function register_syndicate_actions() {
+		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ) );
+		add_action( 'syn_schedule_delete_content', array( $this, 'schedule_delete_content' ) );
+
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
 		add_action( 'syn_pull_content', array( $this, 'pull_content' ) );
@@ -801,13 +804,12 @@ class WP_Push_Syndication_Server {
 		if( !$this->current_user_can_syndicate() )
 			return;
 
-		$sites = $this->get_sites_by_post_ID( $post->ID );
-
-		$this->schedule_push_content( $sites );
-
+		do_action( 'syn_schedule_push_content', $post->ID );
 	}
 
-	function schedule_push_content( $sites ) {
+	function schedule_push_content( $post_id ) {
+		$sites = $this->get_sites_by_post_ID( $post_id );
+
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_push_content',
@@ -1068,8 +1070,7 @@ class WP_Push_Syndication_Server {
 		if( !$this->current_user_can_syndicate() )
 			return;
 
-		$this->schedule_delete_content( $post_id );
-
+		do_action( 'syn_schedule_delete_content', $post_id );
 	}
 
 	public function schedule_delete_content( $post_ID ) {
