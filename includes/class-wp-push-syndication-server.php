@@ -48,6 +48,7 @@ class WP_Push_Syndication_Server {
 
 		$this->register_syndicate_actions();
 
+		do_action( 'syn_after_setup_server' );
 	}
 
 	public function init() {
@@ -136,6 +137,7 @@ class WP_Push_Syndication_Server {
 
 		$this->version = get_option( 'syn_version' );
 
+		do_action( 'syn_after_init_server' );
 	}
 
 	public function register_syndicate_actions() {
