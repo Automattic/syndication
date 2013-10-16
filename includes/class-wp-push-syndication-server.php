@@ -43,7 +43,7 @@ class WP_Push_Syndication_Server {
 		add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
 
 		// firing a cron job
-		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ) );
+		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
 		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
 
 		$this->register_syndicate_actions();
@@ -141,7 +141,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function register_syndicate_actions() {
-		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ) );
+		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ), 10, 2 );
 		add_action( 'syn_schedule_delete_content', array( $this, 'schedule_delete_content' ) );
 
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
@@ -791,9 +791,7 @@ class WP_Push_Syndication_Server {
 		// @TODO retrieve syndication status and display
 	}
 
-	public function pre_schedule_push_content() {
-
-		global $post;
+	public function pre_schedule_push_content( $new_status, $old_status, $post ) {
 
 		// autosave verification
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
@@ -806,12 +804,16 @@ class WP_Push_Syndication_Server {
 		if( !$this->current_user_can_syndicate() )
 			return;
 
-		do_action( 'syn_schedule_push_content', $post->ID );
+		$sites = $this->get_sites_by_post_ID( $post->ID );
+
+		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
+			return;
+		}
+
+		do_action( 'syn_schedule_push_content', $post->ID, $sites );
 	}
 
-	function schedule_push_content( $post_id ) {
-		$sites = $this->get_sites_by_post_ID( $post_id );
-
+	function schedule_push_content( $post_id, $sites ) {
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_push_content',
