@@ -143,15 +143,28 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	public function edit_post( $post_ID, $remote_post_id ) {
 
+		$args = array();
+
 		$post = (array)get_post( $post_ID );
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
+
+		$remote_post = $this->get_remote_post( $remote_post_id );
+
+		if ( ! $remote_post ) {
+			return new WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'syndication' ) );
+		}
+
+		// Delete existing metadata to avoid duplicates
+		$args['custom_fields'] = array();
+		foreach ( $remote_post['custom_fields'] as $custom_field ) {
+			$args['custom_fields'][] = array( 'id' => $custom_field['id'] );
+		}
 		
 		// rearranging arguments
-		$args = array();
 		$args['post_title']	 = $post['post_title'];
 		$args['post_content']   = $post['post_content'];
 		$args['post_excerpt']   = $post['post_excerpt'];
@@ -162,7 +175,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
 
-		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
+		$args['custom_fields'] = array_merge( $args['custom_fields'], $this->_get_custom_fields( $post_ID ) );
 
 		$args = apply_filters( 'syn_xmlrpc_push_edit_post_args', $args, $post );
 
@@ -293,23 +306,28 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	}
 
-	public function is_post_exists( $ext_ID ) {
+	function get_remote_post( $remote_post_id ) {
 
 		$result = $this->query(
 			'wp.getPost',
 			'1',
 			$this->username,
 			$this->password,
-			$ext_ID
+			$remote_post_id
 		);
 
 		if( !$result )
 			return false;
 
-		$post = $this->getResponse();
+		return $this->getResponse();
+	}
 
-		if( $ext_ID != $post['post_id'] )
+	public function is_post_exists( $remote_post_id ) {
+		$remote_post = $this->get_remote_post( $remote_post_id );
+
+		if( ! $remote_post || $remote_post_id != $remote_post['post_id'] ) {
 			return false;
+		}
 
 		return true;
 
