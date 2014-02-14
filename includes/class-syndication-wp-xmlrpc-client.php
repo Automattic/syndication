@@ -40,6 +40,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	}
 
 	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
+
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id ); 
 
 		foreach ( $thumbnail_meta_keys as $thumbnail_meta ) {
@@ -74,7 +75,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				continue;
 
 			list( $thumbnail_url ) = wp_get_attachment_image_src( $thumbnail_id, 'full' );
-
+			//pass thumbnail data and meta into the addThumnail to sync caption, description and alt-text
+			//has to be this way since 
+			$thumbnail_post_data = get_post($thumbnail_id);
+			$thumbnail_alt_text = trim(strip_tags(get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true)));
+			
 			$result = $this->query(
 				'syndication.addThumbnail',
 				'1',
@@ -82,7 +87,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				$this->password,
 				$remote_post_id,
 				$thumbnail_url,
-				$thumbnail_meta
+				$thumbnail_meta,
+				$thumbnail_post_data,
+				$thumbnail_alt_text
 			);
 
 			if ( $result ) {
@@ -415,6 +422,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 	public static function push_syndicate_methods( $methods ) {
         $methods['syndication.addThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
+        $methods['syndication.addThumbnailData']    = array( __CLASS__, 'xmlrpc_add_thumbnail_data' );
         $methods['syndication.deleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
 		return $methods;
 	}
@@ -430,6 +438,8 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		$post_ID            = (int)$args[3];
 		$thumbnail_url     = esc_url_raw( $args[4] );
 		$meta_key = ! empty( $args[5] ) ? sanitize_text_field( $args[5] ) : '_thumbnail_id';
+		$thumbnail_post_data = $args[6];
+		$thumbnail_alt_text = $args[7];
 
 		if ( ! $post_ID )
 			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'syndication' ) );
@@ -470,6 +480,26 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		if ( ! $thumbnail_set )
 			return new IXR_Error( 403, __( 'Could not attach post thumbnail.' ) );
+		
+		$args = array(
+			$blog_id,
+			$username,
+			$password,
+			$thumbnail_id,
+			array(
+				'post_title' => $thumbnail_post_data['post_title'],
+				'post_content' => $thumbnail_post_data['post_content'],
+				'post_excerpt' => $thumbnail_post_data['post_excerpt'],
+			),
+		);
+		//update caption and description of the image
+		$result = $wp_xmlrpc_server->wp_editPost($args);
+		if ($result !== true) {
+			//failed to update atatchment post details
+			//handle it th way you want it (log it, message it)
+		}
+		//update alt text of the image
+		update_post_meta($thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text);
 
 		return $thumbnail_id;
 	}
