@@ -48,8 +48,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			$syn_local_meta_key = '_syn_push_thumb_' . $thumbnail_meta;
 			$syndicated_thumbnails_by_site = get_post_meta( $post_id, $syn_local_meta_key, true );
 
-			if ( ! is_array( $syndicated_thumbnails_by_site ) )
+			if ( ! is_array( $syndicated_thumbnails_by_site ) ) {
 				$syndicated_thumbnails_by_site = array();
+			}
 
 			$syndicated_thumbnail_id = isset( $syndicated_thumbnails_by_site[ $this->site_ID ] ) ? $syndicated_thumbnails_by_site[ $this->site_ID ] : false;
 
@@ -71,14 +72,15 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				continue;
 			}
 
-			if ( $syndicated_thumbnail_id == $thumbnail_id )
+			if ( $syndicated_thumbnail_id == $thumbnail_id ) {
 				continue;
+			}
 
 			list( $thumbnail_url ) = wp_get_attachment_image_src( $thumbnail_id, 'full' );
 			//pass thumbnail data and meta into the addThumnail to sync caption, description and alt-text
-			//has to be this way since 
-			$thumbnail_post_data = get_post($thumbnail_id);
-			$thumbnail_alt_text = trim(strip_tags(get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true)));
+			//has to be this way since mw_newMediaObject doesn't allow to pass description and caption along
+			$thumbnail_post_data = get_post( $thumbnail_id );
+			$thumbnail_alt_text = get_post_meta( $thumbnail_id, '_wp_attachment_image_alt', true );
 			
 			$result = $this->query(
 				'syndication.addThumbnail',
@@ -422,7 +424,6 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 	public static function push_syndicate_methods( $methods ) {
         $methods['syndication.addThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
-        $methods['syndication.addThumbnailData']    = array( __CLASS__, 'xmlrpc_add_thumbnail_data' );
         $methods['syndication.deleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
 		return $methods;
 	}
@@ -432,14 +433,14 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$wp_xmlrpc_server->escape( $args );
 
-		$blog_id	    = (int) $args[0];
-		$username	    = $args[1];
-		$password	    = $args[2];
-		$post_ID            = (int)$args[3];
-		$thumbnail_url     = esc_url_raw( $args[4] );
-		$meta_key = ! empty( $args[5] ) ? sanitize_text_field( $args[5] ) : '_thumbnail_id';
+		$blog_id             = (int) $args[0];
+		$username            = $args[1];
+		$password            = $args[2];
+		$post_ID             = (int) $args[3];
+		$thumbnail_url       = esc_url_raw( $args[4] );
+		$meta_key            = ! empty( $args[5] ) ? sanitize_text_field( $args[5] ) : '_thumbnail_id';
 		$thumbnail_post_data = $args[6];
-		$thumbnail_alt_text = $args[7];
+		$thumbnail_alt_text  = $args[7];
 
 		if ( ! $post_ID )
 			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'syndication' ) );
@@ -456,9 +457,9 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			$username,
 			$password,
 			array(
-				'name'  => $thumbnail_filename,
-				'type'  => $thumbnail_type['type'],
-				'bits'  => $thumbnail_raw,
+				'name' => $thumbnail_filename,
+				'type' => $thumbnail_type['type'],
+				'bits' => $thumbnail_raw,
 				'overwrite' => false,
 			),
 		);
@@ -493,8 +494,8 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			),
 		);
 		//update caption and description of the image
-		$result = $wp_xmlrpc_server->wp_editPost($args);
-		if ($result !== true) {
+		$result = $wp_xmlrpc_server->wp_editPost( $args );
+		if ( $result !== true ) {
 			//failed to update atatchment post details
 			//handle it th way you want it (log it, message it)
 		}
@@ -512,7 +513,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		$blog_id	    = (int) $args[0];
 		$username	    = $args[1];
 		$password	    = $args[2];
-		$post_ID            = (int)$args[3];
+		$post_ID            = (int) $args[3];
 		$meta_key = ! empty( $args[4] ) ? sanitize_text_field( $args[4] ) : '_thumbnail_id';
 
 		if ( !$user = $wp_xmlrpc_server->login( $username, $password ) )
