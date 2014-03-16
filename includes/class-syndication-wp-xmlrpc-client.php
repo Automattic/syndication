@@ -179,7 +179,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				'id' => $custom_field['id'],
 				'meta_key_lookup' => $custom_field['key'],
 			);
-
 		}
 
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_ID );
