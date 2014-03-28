@@ -33,6 +33,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         $this->default_comment_status   = get_post_meta( $site_ID, 'syn_default_comment_status', true );
         $this->default_ping_status      = get_post_meta( $site_ID, 'syn_default_ping_status', true );
 
+        add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
+        add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
+        add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
+        add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
     }
 
 	public static function get_client_data() {
@@ -185,5 +189,100 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         return $posts;
 
     }
-
+    
+    public static function save_meta( $result, $post, $site, $transport_type, $client ) {
+        if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
+            return false;
+        }
+        $categories = $post['post_category'];
+        wp_set_post_terms($result, $categories, 'category', true);
+        $metas = $post['postmeta'];
+            
+        //handle enclosures separately first
+        $enc_field = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+        $enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
+        if ( isset( $enclosures ) && isset ( $enc_field ) ) {
+            // first remove all enclosures for the post (for updates) if any
+            delete_post_meta( $result, $enc_field);
+            foreach( $enclosures as $enclosure ) {
+                if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
+                    $enclosure = implode("\n", $enclosure);
+                }
+                add_post_meta($result, $enc_field, $enclosure, false);
+            }
+    
+            // now remove them from the rest of the metadata before saving the rest
+            unset($metas['enclosures']);
+        }
+            
+        foreach ($metas as $meta_key => $meta_value) {
+            add_post_meta($result, $meta_key, $meta_value, true);
+        }
+    }
+    
+    public static function update_meta( $result, $post, $site, $transport_type, $client ) {
+        if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
+            return false;
+        }
+        $categories = $post['post_category'];
+        wp_set_post_terms($result, $categories, 'category', true);
+        $metas = $post['postmeta'];
+            
+        // handle enclosures separately first
+        $enc_field = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+        $enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
+        if ( isset( $enclosures ) && isset( $enc_field ) ) {
+            // first remove all enclosures for the post (for updates)
+            delete_post_meta( $result, $enc_field);
+            foreach( $enclosures as $enclosure ) {
+                if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
+                    $enclosure = implode("\n", $enclosure);
+                }
+                add_post_meta($result, $enc_field, $enclosure, false);
+            }
+    
+            // now remove them from the rest of the metadata before saving the rest
+            unset($metas['enclosures']);
+        }
+            
+        foreach ($metas as $meta_key => $meta_value) {
+            update_post_meta($result, $meta_key, $meta_value);
+        }
+    }
+    
+    public static function save_tax( $result, $post, $site, $transport_type, $client ) { 
+        if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
+            return false;
+        }
+        $taxonomies = $post['tax'];
+        foreach ( $taxonomies as $tax_name => $tax_value ) {
+            // post cannot be used to create new taxonomy
+            if ( ! taxonomy_exists( $tax_name ) ) {
+                continue;
+            }
+            wp_set_object_terms($result, (string)$tax_value, $tax_name, true);
+        }
+    }
+    
+    public static function update_tax( $result, $post, $site, $transport_type, $client ) {
+        if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
+            return false;
+        }
+        $taxonomies = $post['tax'];
+        $replace_tax_list = array();
+        foreach ( $taxonomies as $tax_name => $tax_value ) {
+            //post cannot be used to create new taxonomy
+            if ( ! taxonomy_exists( $tax_name ) ) {
+                continue;
+            }
+            if ( !in_array($tax_name, $replace_tax_list ) ) {
+                //if we haven't processed this taxonomy before, replace any terms on the post with the first new one
+                wp_set_object_terms($result, (string)$tax_value, $tax_name );
+                $replace_tax_list[] = $tax_name; 
+            } else {
+                //if we've already added one term for this taxonomy, append any others
+                wp_set_object_terms($result, (string)$tax_value, $tax_name, true);
+            }
+        }
+    }
 }
