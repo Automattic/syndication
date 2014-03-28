@@ -649,6 +649,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<?php 
 			endforeach;
 		endif;
+		
+		do_action( 'syn_after_site_form', $site ); 
 	}
 
 	/**

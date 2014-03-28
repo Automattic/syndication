@@ -137,6 +137,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
         <?php
 
+        do_action( 'syn_after_site_form', $site ); 
     }
 
     public static function save_settings( $site_ID ) {

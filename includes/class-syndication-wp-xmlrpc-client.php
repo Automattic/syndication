@@ -385,6 +385,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		<?php
 
+		do_action( 'syn_after_site_form', $site ); 
 	}
 
 	public static function save_settings( $site_ID ) {

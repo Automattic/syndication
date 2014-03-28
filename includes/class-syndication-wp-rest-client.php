@@ -236,6 +236,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		<?php
 
+		do_action( 'syn_after_site_form', $site );
 	}
 
 	public static function save_settings( $site_ID ) {
