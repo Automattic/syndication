@@ -88,7 +88,7 @@ class WP_Push_Syndication_Server {
 			'show_ui'               => true,
 			'publicly_queryable'    => false,
 			'exclude_from_search'   => true,
-			'menu_position'         => 80,
+			'menu_position'         => 100,
 			// @TODO we need a menu icon here
 			'hierarchical'          => false, // @TODO check this
 			'query_var'             => false,
