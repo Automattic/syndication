@@ -180,7 +180,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                 'post_guid'         => $item->get_id()
             );
 			// This filter can be used to exclude or alter posts during a pull import
-			$post = apply_filters( 'syn_rss_pull_filter_post', $post, $args );
+			$post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item );
 			if ( false === $post )
 				continue;
 			$posts[] = $post;
