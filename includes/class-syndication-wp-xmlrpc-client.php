@@ -170,7 +170,35 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// Delete existing metadata to avoid duplicates
 		$args['custom_fields'] = array();
 		foreach ( $remote_post['custom_fields'] as $custom_field ) {
-			$args['custom_fields'][] = array( 'id' => $custom_field['id'] );
+			$args['custom_fields'][] = array( 
+				'id' => $custom_field['id'],
+				'meta_key_lookup' => $custom_field['key'],
+			);
+
+		}
+
+		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_ID );
+
+		foreach ( $thumbnail_meta_keys as $thumbnail_meta_key ) {
+			$thumbnail_id = get_post_meta( $post_ID, $thumbnail_meta_key, true );
+			$syn_local_meta_key = '_syn_push_thumb_' . $thumbnail_meta_key;
+			$syndicated_thumbnails_by_site = get_post_meta( $post_ID, $syn_local_meta_key, true );
+
+			if ( ! is_array( $syndicated_thumbnails_by_site ) ) {
+				$syndicated_thumbnails_by_site = array();
+			}
+
+			$syndicated_thumbnail_id = isset( $syndicated_thumbnails_by_site[ $this->site_ID ] ) ? $syndicated_thumbnails_by_site[ $this->site_ID ] : false;
+
+			if ( $syndicated_thumbnail_id == $thumbnail_id ) {
+				//need to preserve old meta custom_type_thumbnail_id if it wasn't changed during update
+				//hence we remove ID from the custom_fileds list in order to avoid its deletion
+				foreach ( $args['custom_fields'] as $index => $value ) {
+					if ( $value['meta_key_lookup'] == $thumbnail_meta_key ) {
+						unset( $args['custom_fields'][$index] );
+					}
+				}
+			}
 		}
 		
 		// rearranging arguments
