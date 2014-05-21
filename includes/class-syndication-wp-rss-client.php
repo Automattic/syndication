@@ -9,8 +9,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     private $default_post_status;
     private $default_comment_status;
     private $default_ping_status;
-	private $default_cat_status;
-	
+    private $default_cat_status;
+
     function __construct( $site_ID ) {
 
         switch( SIMPLEPIE_VERSION ) {
@@ -33,7 +33,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         $this->default_post_status      = get_post_meta( $site_ID, 'syn_default_post_status', true );
         $this->default_comment_status   = get_post_meta( $site_ID, 'syn_default_comment_status', true );
         $this->default_ping_status      = get_post_meta( $site_ID, 'syn_default_ping_status', true );
-		$this->default_cat_status		= get_post_meta( $site_ID, 'syn_default_cat_status', true );		
+        $this->default_cat_status       = get_post_meta( $site_ID, 'syn_default_cat_status', true );
 
         add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
         add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
@@ -41,10 +41,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
     }
 
-	public static function get_client_data() {
-		return array( 'id' => 'WP_RSS', 'modes' => array( 'pull' ), 'name' => 'RSS' );
-	}
-		
+    public static function get_client_data() {
+        return array( 'id' => 'WP_RSS', 'modes' => array( 'pull' ), 'name' => 'RSS' );
+    }
+
     public function new_post($post_ID) {
         // Not supported
         return false;
@@ -77,7 +77,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         $default_post_status        = get_post_meta( $site->ID, 'syn_default_post_status', true );
         $default_comment_status     = get_post_meta( $site->ID, 'syn_default_comment_status', true );
         $default_ping_status        = get_post_meta( $site->ID, 'syn_default_ping_status', true );
-		$default_cat_status			= get_post_meta( $site->ID, 'syn_default_cat_status', true );
+        $default_cat_status         = get_post_meta( $site->ID, 'syn_default_cat_status', true );
 
         ?>
 
@@ -141,15 +141,15 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
             <option value="closed" <?php selected( 'closed', $default_ping_status )  ?> >closed</option>
             </select>
         </p>
-		<p>
-			<label for="default_cat_status"><?php echo esc_html__( 'Select category status', 'push-syndication' ); ?></label>
-		</p>
-		<p>
-			<select name="default_cat_status" id="default_cat_status" />
-			<option value="yes" <?php selected( 'yes', $default_cat_status )  ?> ><?php echo esc_html__( 'import categories', 'push-syndication' ); ?></option>
-			<option value="no" <?php selected( 'no', $default_cat_status )  ?> ><?php echo esc_html__( 'ignore categories', 'push-syndication' ); ?></option>
-			</select>
-		</p>
+        <p>
+            <label for="default_cat_status"><?php echo esc_html__( 'Select category status', 'push-syndication' ); ?></label>
+        </p>
+        <p>
+            <select name="default_cat_status" id="default_cat_status" />
+            <option value="yes" <?php selected( 'yes', $default_cat_status )  ?> ><?php echo esc_html__( 'import categories', 'push-syndication' ); ?></option>
+            <option value="no" <?php selected( 'no', $default_cat_status )  ?> ><?php echo esc_html__( 'ignore categories', 'push-syndication' ); ?></option>
+            </select>
+        </p>
 
         <?php
 
@@ -163,7 +163,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         update_post_meta( $site_ID, 'syn_default_post_status', $_POST['default_post_status'] );
         update_post_meta( $site_ID, 'syn_default_comment_status', $_POST['default_comment_status'] );
         update_post_meta( $site_ID, 'syn_default_ping_status', $_POST['default_ping_status'] );
-        update_post_meta( $site_ID, 'syn_default_cat_status', $_POST['default_cat_status'] );		
+        update_post_meta( $site_ID, 'syn_default_cat_status', $_POST['default_cat_status'] );
         return true;
 
     }
@@ -179,13 +179,13 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
         // hold all the posts
         $posts = array();
-		$taxonomy = array( 'cats' => array(), 'tags' => array() );
+        $taxonomy = array( 'cats' => array(), 'tags' => array() );
 
         foreach( $this->get_items() as $item ) {
-			if ( 'yes' == $this->default_cat_status ) {
-            	$taxonomy = $this->set_taxonomy( $item );
-			}
-			
+            if ( 'yes' == $this->default_cat_status ) {
+                $taxonomy = $this->set_taxonomy( $item );
+            }
+
             $post = array(
                 'post_title'        => $item->get_title(),
                 'post_content'      => $item->get_content(),
@@ -196,51 +196,51 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                 'comment_status'    => $this->default_comment_status,
                 'ping_status'       => $this->default_ping_status,
                 'post_guid'         => $item->get_id(),
-				'post_category'     => $taxonomy['cats'],
+                'post_category'     => $taxonomy['cats'],
                 'tags_input'        => $taxonomy['tags']
             );
-			// This filter can be used to exclude or alter posts during a pull import
-			$post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item );
-			if ( false === $post )
-				continue;
-			$posts[] = $post;
+            // This filter can be used to exclude or alter posts during a pull import
+            $post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item );
+            if ( false === $post )
+                continue;
+            $posts[] = $post;
         }
 
         return $posts;
 
     }
-	
-	public function set_taxonomy( $item ) {
-		$cats = $item->get_categories();
-		$ids = array(
-			'cats'	=> array(),
-			'tags'			=> array()
-		);
+    
+    public function set_taxonomy( $item ) {
+        $cats = $item->get_categories();
+        $ids = array(
+            'cats'    => array(),
+            'tags'            => array()
+        );
 
-		foreach ( $cats as $cat ) {
-			// checks if term exists
-			if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
-				}
-			} else {
-				if ( ! $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
-					// creates if not
-					$result = wp_insert_term( $cat->term, 'category' );
-					if ( isset( $result->term_id ) ) {
-						$ids['cats'][] = $result->term_id;
-					}
-				} else {
-					if ( isset( $result->term_id ) ) {
-						$ids['tags'][] = $result->term_id;
-					}
-				}
-			} 
-		}
+        foreach ( $cats as $cat ) {
+            // checks if term exists
+            if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
+                if ( isset( $result->term_id ) ) {
+                    $ids['cats'][] = $result->term_id;
+                }
+            } else {
+                if ( ! $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
+                    // creates if not
+                    $result = wp_insert_term( $cat->term, 'category' );
+                    if ( isset( $result->term_id ) ) {
+                        $ids['cats'][] = $result->term_id;
+                    }
+                } else {
+                    if ( isset( $result->term_id ) ) {
+                        $ids['tags'][] = $result->term_id;
+                    }
+                }
+            } 
+        }
 
-		// returns array ready for post creation
-		return $ids;
-	}
+        // returns array ready for post creation
+        return $ids;
+    }
     
     public static function save_meta( $result, $post, $site, $transport_type, $client ) {
         if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
