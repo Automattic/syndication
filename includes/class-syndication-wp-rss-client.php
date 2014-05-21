@@ -219,7 +219,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 		foreach ( $cats as $cat ) {
 			// checks if term exists
-			if ( ! $result = get_term_by( 'name', $cat->term, 'category' ) ) {
+			if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
+				if ( isset( $result->term_id ) ) {
+					$ids['cats'][] = $result->term_id;
+				}
+			} else {
 				if ( ! $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
 					// creates if not
 					$result = wp_insert_term( $cat->term, 'category' );
@@ -231,11 +235,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 						$ids['tags'][] = $result->term_id;
 					}
 				}
-			} else {
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
-				}
-			}               
+			} 
 		}
 
 		// returns array ready for post creation
