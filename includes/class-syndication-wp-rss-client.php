@@ -224,15 +224,15 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                     $ids['cats'][] = $result->term_id;
                 }
             } elseif ( $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
-				if ( isset( $result->term_id ) ) {
-					$ids['tags'][] = $result->term_id;
-				}                    
+                if ( isset( $result->term_id ) ) {
+                    $ids['tags'][] = $result->term_id;
+                }                    
             } else {
-				// creates if not
-				$result = wp_insert_term( $cat->term, 'category' );
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
-				}
+                // creates if not
+                $result = wp_insert_term( $cat->term, 'category' );
+                if ( isset( $result->term_id ) ) {
+                    $ids['cats'][] = $result->term_id;
+                }
             }
         }
 
