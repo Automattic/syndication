@@ -174,7 +174,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                 'post_excerpt'      => $item->get_description(),
                 'post_type'         => $this->default_post_type,
                 'post_status'       => $this->default_post_status,
-                'post_date'         => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
+                'post_date_gmt'     => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
                 'comment_status'    => $this->default_comment_status,
                 'ping_status'       => $this->default_ping_status,
                 'post_guid'         => $item->get_id()
