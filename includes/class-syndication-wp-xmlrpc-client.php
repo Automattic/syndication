@@ -111,9 +111,13 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
-		if ( false === $post )
+		if ( false === $post ) {
 			return true;
+		}
 		
+		//Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs
+		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+
 		// rearranging arguments
 		$args = array();
 		$args['post_title']	 = $post['post_title'];
@@ -158,8 +162,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
-		if ( false === $post )
+		if ( false === $post ) {
 			return true;
+		}
 
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
@@ -174,7 +179,6 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				'id' => $custom_field['id'],
 				'meta_key_lookup' => $custom_field['key'],
 			);
-
 		}
 
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_ID );
@@ -200,7 +204,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				}
 			}
 		}
-		
+
+		//Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs
+		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+
 		// rearranging arguments
 		$args['post_title']	 = $post['post_title'];
 		$args['post_content']   = $post['post_content'];
@@ -232,6 +239,78 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		do_action( 'syn_xmlrpc_push_edit_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
+	}
+
+	/**
+	* Utility method to Syndicate [gallery] shortcode images
+	* It needs to upload images and inject new IDs into the post_content
+ 	* @access private
+ 	* @uses $shortcode_tags global variable
+ 	* @param string $post_content - post to be syndicated
+ 	* @return string $post_content - post content with replaced gallery shortcodes
+	*/
+	private function syndicate_gallery_images( $post_content ) {
+		$attachment_ids = array();
+		global $shortcode_tags;
+		//overwrite global shortcodes for gallery only and then revert back to original
+		$temp = $shortcode_tags;
+		$shortcode_tags = array( 'gallery' => 'gallery_shortcode' );
+		$pattern = get_shortcode_regex();
+		$shortcode_tags = $temp;
+
+		$image_ids = array();
+		$new_image_ids = array();
+		 
+		if ( preg_match_all( '/' . $pattern . '/s', $post_content, $matches ) ) {
+		  $count=count( $matches[3] );		  
+		  for ( $i = 0; $i < $count; $i++ ) {
+		    $atts = shortcode_parse_atts( $matches[3][$i] );
+		    if ( isset( $atts['ids'] ) ) {
+		      $attachment_ids = explode( ',', $atts['ids'] );
+		      $image_ids[$i] = $attachment_ids;
+		    }
+		  }
+		}
+
+		if( ! empty( $image_ids ) ) {
+			foreach ( $image_ids as $key => $gallery_ids ) {
+				foreach ( $gallery_ids as $index => $id ) {
+					//do upload, get new ID back
+					list( $thumbnail_url ) = wp_get_attachment_image_src( $id, 'full' );
+					$thumbnail_post_data = get_post($id);
+					$thumbnail_alt_text = trim( get_post_meta( $id, '_wp_attachment_image_alt', true ) );
+
+					$result = $this->query(
+						'syndication.postGalleryImage',
+						'1',
+						$this->username,
+						$this->password,
+						$thumbnail_url,
+						$thumbnail_post_data,
+						$thumbnail_alt_text
+					);
+
+					if ( ! $result ) {
+						return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+					}
+					$new_image_ids[$key][$index] = (int) $this->getResponse();
+				}
+			}
+		}
+
+		//new IDs needs to be injected into the post content
+		//replace old gallery code with a new one
+		$lenght = count( $matches[0] );
+		for ( $i = 0; $i < $lenght; $i++ ) {
+			$shortcode = $matches[0][$i];
+			//WP regex matches attribute with leading space, required here
+			$attribute = ' ids="' . implode( ',', $image_ids[$i] ) . '"';
+			$new_attribute = ' ids="' . implode( ',', $new_image_ids[$i] ) . '"';
+			$new_shortcode = str_replace( $attribute, $new_attribute, $shortcode );
+			$post_content = str_replace( $shortcode, $new_shortcode, $post_content );
+		}
+
+		return $post_content;
 	}
 
 	public function delete_post( $remote_post_id ) {
@@ -454,6 +533,8 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 	public static function push_syndicate_methods( $methods ) {
         $methods['syndication.addThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
         $methods['syndication.deleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
+        $methods['syndication.postGalleryImage'] = array(__CLASS__, 'xmlrpc_post_gallery_images');
+
 		return $methods;
 	}
 
@@ -563,6 +644,79 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 	}
 
+	/**
+	* Upload Image for the gallery shortcode
+	* @uses $wp_xmlrpc_server
+	* @param array $args Contains necessary parameters for XMLRCP call: user, paasword, image data
+	* @return integer $thumbnail_id New ID of the newly uploaded image to the remote site
+	*/
+	public static function xmlrpc_post_gallery_images( $args ) {
+		global $wp_xmlrpc_server;
+
+		$wp_xmlrpc_server->escape( $args );
+
+		$blog_id             = (int) $args[0];
+		$username            = $args[1];
+		$password            = $args[2];
+		$thumbnail_url       = esc_url_raw( $args[3] );
+		$thumbnail_post_data = $args[4];
+		$thumbnail_alt_text  = $args[5];
+
+		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
+		if ( ! $thumbnail_raw ) {
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
+		}
+
+		$thumbnail_filename = basename( $thumbnail_url );
+		$thumbnail_type = wp_check_filetype( $thumbnail_filename );
+
+		$args = array(
+			$blog_id,
+			$username,
+			$password,
+			array(
+				'name' => $thumbnail_filename,
+				'type' => $thumbnail_type['type'],
+				'bits' => $thumbnail_raw,
+				'overwrite' => false,
+			),
+		);
+
+		// Note: Leting mw_newMediaObject handle our auth and cap checks
+		$image = $wp_xmlrpc_server->mw_newMediaObject( $args );
+		if ( ! is_array( $image ) || empty($image['url'] ) ) {
+			return $image;
+		}
+
+		$thumbnail_id = (int) $image['id'];
+		if ( empty( $thumbnail_id ) ) {
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
+		}
+		
+		$args = array(
+			$blog_id,
+			$username,
+			$password,
+			$thumbnail_id,
+			array(
+				'post_title' => $thumbnail_post_data['post_title'],
+				'post_content' => $thumbnail_post_data['post_content'],
+				'post_excerpt' => $thumbnail_post_data['post_excerpt'],
+			),
+		);
+
+		//update caption and description of the image
+		$result = $wp_xmlrpc_server->wp_editPost( $args );
+		if ( $result !== true ) {
+			//failed to update atatchment post details
+			//handle it th way you want it (log it, message it)
+			error_log('Syndication. xmlrpc_post_gallery_images Failed to update remote post attachments');
+		}
+		//update alt text of the image
+		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );
+
+		return $thumbnail_id;
+	} //end of xmlrpc_post_gallery_images()
 }
 
 Syndication_WP_XMLRPC_Client_Extensions::init();
