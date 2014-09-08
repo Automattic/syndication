@@ -1143,7 +1143,7 @@ class WP_Push_Syndication_Server {
 
 		foreach( $slave_post_states as $state ) {
 			foreach( $state as $site_ID => $info ) {
-				if( !empty( $info[ 'ext_ID' ] ) ) {
+				if( ! is_wp_error( $info ) && !empty( $info[ 'ext_ID' ] ) ) {
 					$slave_posts[ $site_ID ] = $info[ 'ext_ID' ];
 				}
 			}
