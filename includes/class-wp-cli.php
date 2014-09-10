@@ -5,6 +5,45 @@ WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
+	/**
+	 * Pushes all posts of a given type
+	 *
+	 * @subcommand push-all-posts
+	 * @synopsis [--post_type=<post-type>] [--paged=<page>]
+	 */
+	function push_all_posts( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'post_type' 	=> 'post',
+			'paged' 		=> 1
+		) );
+
+		$query_args = array(
+			'post_type' 		=> $assoc_args[ 'post_type' ],
+			'posts_per_page' 	=> 150,
+			'paged'				=> $assoc_args[ 'paged' ]
+		);
+
+		$query = new WP_Query( $query_args );
+
+		while( $query->post_count ) {
+			WP_CLI::line( sprintf( 'Processing page %d', $query_args[ 'paged' ] ) );
+
+			foreach( $query->posts as $post ) {
+				WP_CLI::line( sprintf( 'Processing post %d (%s)', $post->ID, $post->post_title ) );
+
+				$this->push_post( array(), array( 'post_id' => $post->ID ) );
+			}
+
+			$this->stop_the_insanity();
+
+			sleep( 2 );
+
+			$query_args[ 'paged' ]++;
+
+			$query = new WP_Query( $query_args );
+		}
+	}
+
 	function push_post( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'post_id' => 0,
@@ -114,5 +153,22 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	private function _get_syndication_server() {
 		global $push_syndication_server;
 		return $push_syndication_server;
+	}
+
+	protected function stop_the_insanity() {
+		global $wpdb, $wp_object_cache;
+
+		$wpdb->queries = array(); // or define( 'WP_IMPORTING', true );
+
+		if ( !is_object( $wp_object_cache ) )
+			return;
+
+		$wp_object_cache->group_ops = array();
+		$wp_object_cache->stats = array();
+		$wp_object_cache->memcache_debug = array();
+		$wp_object_cache->cache = array();
+
+		if ( is_callable( $wp_object_cache, '__remoteset' ) )
+			$wp_object_cache->__remoteset(); // important
 	}
 }
