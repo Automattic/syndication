@@ -21,7 +21,7 @@ class WP_Push_Syndication_Server {
 		// custom columns
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
 		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
- 
+
 		// submenus
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
 
@@ -64,14 +64,14 @@ class WP_Push_Syndication_Server {
 					'publish_posts'      => $capability,
 					'read_private_posts' => $capability
 		);
-				
+
 		$taxonomy_capabilities = array(
 			'manage_terms' => 'manage_categories',
 			'edit_terms'   => 'manage_categories',
 			'delete_terms' => 'manage_categories',
 			'assign_terms' => 'edit_posts',
 		);
-				
+
 		register_post_type( 'syn_site', array(
 			'labels' => array(
 				'name'              => __( 'Sites' ),
@@ -179,11 +179,11 @@ class WP_Push_Syndication_Server {
 				break;
 		}
 	}
-	
+
 	public function admin_init() {
 		// @TODO define more parameters
 		$name_match = '#class-syndication-(.+)-client\.php$#';
-		
+
 		$full_path = __DIR__ . '/';
 		if ( $handle = opendir( $full_path ) ) {
 			while ( false !== ( $entry = readdir( $handle ) ) ) {
@@ -196,7 +196,7 @@ class WP_Push_Syndication_Server {
 					continue;
 				$client_data = call_user_func( array( $class_name, 'get_client_data' ) );
 				if ( is_array( $client_data ) && !empty( $client_data ) ) {
-					$this->push_syndicate_transports[$client_data['id']] = array( 'name' => $client_data['name'], 'modes' => $client_data['modes'] ); 
+					$this->push_syndicate_transports[$client_data['id']] = array( 'name' => $client_data['name'], 'modes' => $client_data['modes'] );
 					}
 			}
 		}
@@ -652,7 +652,7 @@ class WP_Push_Syndication_Server {
 
 		// @TODO validate that type and mode are valid
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
-		
+
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
 
 		try {
@@ -854,19 +854,19 @@ class WP_Push_Syndication_Server {
 					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_new_shortcircuit )
 						continue;
-					
+
 					$result = $client->new_post( $post_ID );
 
 					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
-					
+
 				} else { // states 'success', 'edit-error' and 'remove-error'
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit )
 						continue;
-					
+
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
 					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site->ID, $client );
@@ -1110,11 +1110,11 @@ class WP_Push_Syndication_Server {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 					if ( true === $push_delete_shortcircuit )
 						continue;
-					
+
 					$result = $client->delete_post( $ext_ID );
 
 					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
-					
+
 					if( !$result ) {
 						$delete_error_sites[ $site_ID ] = array( $ext_ID );
 					}
@@ -1184,7 +1184,7 @@ class WP_Push_Syndication_Server {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
-		
+
 		$this->schedule_pull_content( $sites );
 
 	}
@@ -1255,6 +1255,8 @@ class WP_Push_Syndication_Server {
 
 			$post_types_processed = array();
 
+			Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+
 			foreach( $posts as $post ) {
 
 				if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
@@ -1262,20 +1264,23 @@ class WP_Push_Syndication_Server {
 					$post_types_processed[] = $post['post_type'];
 				}
 
-				if ( empty( $post['post_guid'] ) )
+				if ( empty( $post['post_guid'] ) ) {
+					Syndication_Logger::log_post_error( $site_id, $status = 'no_post_guid', $message = sprintf( __( 'skipping post no guid', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 					continue;
-
+				}
 				$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
 
 				if ( $post_id ) {
 					$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_edit_shortcircuit )
+					if ( true === $pull_edit_shortcircuit ) {
+						Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 						continue;
-				
+					}
 					// if updation is disabled continue
-					if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' )
+					if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
+						Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 						continue;
-
+					}
 					$post['ID'] = $post_id;
 
 					$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
@@ -1283,12 +1288,13 @@ class WP_Push_Syndication_Server {
 					$result = wp_update_post( $post, true );
 
 					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
-					
+
 				} else {
 					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_new_shortcircuit )
+					if ( true === $pull_new_shortcircuit ) {
+						Syndication_Logger::log_post_info( $site_id, $status = 'syn_pre_pull_new_post_shortcircuit', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 						continue;
-
+					}
 					$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
 
 					$result = wp_insert_post( $post, true );
@@ -1357,6 +1363,6 @@ class WP_Push_Syndication_Server {
 		update_option( 'syn_version', SYNDICATION_VERSION );
 	}
 
-	
+
 
 }
