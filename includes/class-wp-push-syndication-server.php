@@ -1176,9 +1176,6 @@ class WP_Push_Syndication_Server {
 		if ( ! $this->current_user_can_syndicate() )
 			return;
 
-		if( empty( $selected_sitegroups ) )
-			return;
-
 		$sites = array();
 		foreach( $selected_sitegroups as $selected_sitegroup ) {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
@@ -1190,24 +1187,34 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function schedule_pull_content( $sites ) {
+
 		// to unschedule a cron we need the original arguements passed to schedule the cron
 		// we are saving it as a siteoption
 		$old_pull_sites = get_option( 'syn_old_pull_sites' );
 
+
+		// Clear all previously scheduled jobs.
 		if( ! empty( $old_pull_sites ) ) {
-			$timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
-			if( $timestamp )
+			// Clear any jobs that were scheduled the old way: one job to pull many sites.
 				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
+
+			// Clear any jobs that were scheduled the new way: one job to pull one site.
+			foreach ( $old_pull_sites as $old_pull_site ) {
+				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_site ) );
+			}
 
 			wp_clear_scheduled_hook( 'syn_pull_content' );
 		}
 
+		// Schedule new jobs: one job for each site. 
+		foreach ( $sites as $site ) {
 		wp_schedule_event(
 			time() - 1,
 			'syn_pull_time_interval',
 			'syn_pull_content',
-			array()
+				array( $site )
 		);
+		}
 
 		update_option( 'syn_old_pull_sites', $sites );
 	}
