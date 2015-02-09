@@ -76,6 +76,10 @@ class Syndication_Logger {
 	 */
 	public static function init() {
 		self::instance()->log_id = md5( uniqid() . microtime() );
+		if ( is_admin() ) {
+			require_once( dirname( __FILE__ ) . '/class-syndication-logger-viewer.php' );
+			$viewer = new Syndication_Logger_Viewer;
+		}
 	}
 
 	/*
@@ -402,7 +406,7 @@ class Syndication_Logger {
 					 * unnecessary.
 					 * @TODO implement walker
 					 */
-					$all_log_entries = $wpdb->get_results( $wpdb->prepare( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ) ); // cache pass (see note above)
+					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // cache pass (see note above)
 					foreach( $all_log_entries as $log_entry ) {
 						$log_entries[$log_entry->post_id] = unserialize( $log_entry->meta_value );
 					}
