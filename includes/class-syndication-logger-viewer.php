@@ -12,6 +12,10 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 	public $syndication_logger_table = null;
 
+	protected $_min_date = null;
+
+	protected $_max_date = null;
+
 	public function __construct(){
 		global $status, $page;
 
@@ -100,6 +104,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		return $actions;
 	}
 
+	/**
+	 *
+	 */
 	public function prepare_items() {
 		$columns  = $this->get_columns();
 		$hidden   = array();
@@ -139,6 +146,38 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 		$this->found_data = array_slice( $this->prepared_data,( ( $current_page-1 )* $per_page ), $per_page );
 
+
+		// Filter by month
+		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
+		if ( $requested_month ) {
+			$this->found_data = array_filter( $this->found_data, function ( $item ) use ( $requested_month ) {
+				return date( 'Y-m', strtotime( $item['time'] ) ) === $requested_month;
+			} );
+		}
+
+
+		// Filter by type
+		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
+		if ( $requested_type ) {
+			$this->found_data = array_filter( $this->found_data, function ( $item  ) use ( $requested_type ) {
+				return $requested_type === $item['msg_type'];
+			} );
+		}
+
+
+		// Populate min/max dates.
+		if ( $this->found_data ) {
+			$items_sorted_by_time = $this->found_data;
+
+			usort( $items_sorted_by_time, function ( $a, $b  ) {
+				return strtotime( $a['time'] ) - strtotime( $b['time'] );
+			} );
+
+			$this->_max_date = strtotime( end( $items_sorted_by_time )['time'] );
+			$this->_min_date = strtotime( reset( $items_sorted_by_time )['time'] );
+		}
+
+
 		$this->set_pagination_args( array(
 			'total_items' => $total_items,
 			'per_page'    => $per_page
@@ -153,9 +192,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 			if ( 'top' == $which && !is_singular() ) {
 
 				$this->create_log_id_dropdown();
-				// create months_dropdown
-				// create site dropdown
-				// create event dropdown
+				$this->_create_months_dropdown();
+				$this->_create_types_dropdown();
 
 				submit_button( __( 'Filter' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
 			}
@@ -168,7 +206,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	private function create_log_id_dropdown() {
 		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
 		?>
-		<label for="filter-by-log-id"><?php _e( 'Filter by Log ID' ); ?></label>
+		<label class="screen-reader-text" for="filter-by-log-id"><?php _e( 'Filter by Log ID' ); ?></label>
 		<select name="log_id" id="filter-by-log-id">
 			<option<?php selected( $requested_log_id, 0 ); ?> value="0"><?php _e( 'All logs' ); ?></option>
 			<?php
@@ -189,6 +227,44 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 			echo implode( "\n", $log_ids );
 			?>
+		</select>
+
+		<?php
+	}
+
+	protected function _create_months_dropdown() {
+		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
+		?>
+		<label class="screen-reader-text" for="filter-by-month">Filter by month</label>
+		<select name="month" id="filter-by-month">
+			<option value="">All dates</option>
+
+			<?php
+			if ( $this->_min_date && $this->_max_date ) {
+				$month_pointer = new DateTime( '@' . $this->_min_date );
+				$max_month = new DateTime( '@' . $this->_max_date );
+
+				while ( $month_pointer <= $max_month ) { ?>
+					<option
+						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( $month_pointer->format( 'F Y' ) ); ?></option>
+					<?php
+					$month_pointer->modify( '+1 month' );
+				}
+			}
+			?>
+		</select>
+		<?php
+	}
+
+	protected function _create_types_dropdown() {
+		$requested_type = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['type'] ) : null;
+		?>
+		<label class="screen-reader-text" for="filter-by-type">Filter by type</label>
+		<select name="type" id="filter-by-type">
+			<option value="">All types</option>
+			<?php foreach( array( 'success' => 'Success', 'info' => 'Information', 'error' => 'Error' ) as $key => $label ): ?>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $requested_type, $key ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
 		</select>
 		<?php
 	}
@@ -222,8 +298,9 @@ class Syndication_Logger_Viewer {
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>
-			<form method="post" action="">
-				<input type="hidden" name="page" value="ttest_list_table">
+			<form method="get" action="">
+				<input type="hidden" name="post_type" value="syn_site">
+				<input type="hidden" name="page" value="syndication_dashboard">
 				<?php
 				$this->syndication_logger_table->search_box( 'search', 'search_id' );
 
