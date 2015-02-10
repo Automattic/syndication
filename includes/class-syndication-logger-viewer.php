@@ -147,6 +147,19 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$this->found_data = array_slice( $this->prepared_data,( ( $current_page-1 )* $per_page ), $per_page );
 
 
+		// Populate min/max dates.
+		if ( $this->found_data ) {
+			$items_sorted_by_time = $this->found_data;
+
+			usort( $items_sorted_by_time, function ( $a, $b  ) {
+				return strtotime( $a['time'] ) - strtotime( $b['time'] );
+			} );
+
+			$this->_max_date = strtotime( end( $items_sorted_by_time )['time'] );
+			$this->_min_date = strtotime( reset( $items_sorted_by_time )['time'] );
+		}
+
+
 		// Filter by month
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		if ( $requested_month ) {
@@ -162,19 +175,6 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 			$this->found_data = array_filter( $this->found_data, function ( $item  ) use ( $requested_type ) {
 				return $requested_type === $item['msg_type'];
 			} );
-		}
-
-
-		// Populate min/max dates.
-		if ( $this->found_data ) {
-			$items_sorted_by_time = $this->found_data;
-
-			usort( $items_sorted_by_time, function ( $a, $b  ) {
-				return strtotime( $a['time'] ) - strtotime( $b['time'] );
-			} );
-
-			$this->_max_date = strtotime( end( $items_sorted_by_time )['time'] );
-			$this->_min_date = strtotime( reset( $items_sorted_by_time )['time'] );
 		}
 
 
