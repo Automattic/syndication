@@ -8,6 +8,10 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 	public $prepared_data = array();
 
+	public $found_data = array();
+
+	public $syndication_logger_table = null;
+
 	public function __construct(){
 		global $status, $page;
 
