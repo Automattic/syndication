@@ -96,7 +96,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	}
 
 	public function column_log_id($item){
-		return sprintf('%1$s', substr( $item['log_id'], 0, 3 ) . ' ... ' . substr( $item['log_id'], -3 ) );
+		return sprintf('%1$s', substr( $item['log_id'], 0, 3 ) . '&hellip;' . substr( $item['log_id'], -3 ) );
 	}
 
 	public function get_bulk_actions() {
@@ -220,7 +220,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 					$log_ids[$log_id] = sprintf( "<option %s value='%s'>%s</option>\n",
 						selected( $requested_log_id, $log_id, false ),
 						esc_attr( $log_id ),
-						esc_attr( $log_id )
+						esc_attr( $this->column_log_id( $row ) )
 					);
 				}
 			}
