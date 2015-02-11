@@ -465,8 +465,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$enc_field					= get_post_meta( $site->ID, 'syn_enc_field', true );
 		$enc_is_photo				= get_post_meta( $site->ID, 'syn_enc_is_photo', true);
 
-		$last_update_time           = get_post_meta( $site->ID, 'syn_last_pull_time', true);
-
 		if ( isset( $node_config['namespace'] )) {
 			$namespace = $node_config['namespace'];
 		}
@@ -723,56 +721,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			} );
 		</script>
 
-		<h2><?php _e( 'Log', 'push-syndication' ); ?></h2>
-
-		<p class="syn-xml-client-last-update">
-			<em><?php printf( __( 'Last Update: %s', 'push-syndication' ), ( $last_update_time ? date( 'c', $last_update_time ) : __( 'n/a', 'push-syndication' ) ) ); ?></em>
-		</p>
-
 		<?php
-		$syn_log = get_post_meta( $site->ID, 'syn_log', true );
-		if ( ! empty( $syn_log ) ) : ?>
-			<ul class='syn-xml-client-xpath-log-head syn-xml-client-list-head'>
-				<li>
-					<label for="post_id"><?php esc_html_e( 'Post ID', 'push-syndication' ); ?></label>
-				</li>
-				<li>
-					<label for="status"><?php esc_html_e( 'Status', 'push-syndication' ); ?></label>
-				</li>
-				<li class="wide">
-					<label for="date_time"><?php esc_html_e( 'Date/Time', 'push-syndication' ); ?></label>
-				</li>
-				<li>
-					<label for="view"><?php esc_html_e( 'VIEW', 'push-syndication' ); ?></label>
-				</li>
-			</ul>
-			<?php
-			foreach ( $syn_log as $log_row ) :
-				$view_link = get_permalink( $log_row['post_id'] );
-				?>
-				<ul class='syn-xml-client-log syn-xml-client-list'>
-					<li>
-						<?php
-						if ( 'integer' == gettype( $log_row['post_id'] ) ) {
-							edit_post_link( $log_row['post_id'], null, null, $log_row['post_id'] );
-						} else {
-							_e( 'ERROR', 'push-syndication' );
-						}
-						?>
-					</li>
-					<li>
-						<?php echo esc_html( $log_row['status'] ); ?>
-					</li>
-					<li class="wide">
-						<?php echo esc_html( $log_row['time'] ); ?>
-					</li>
-					<li>
-						<a href="<?php echo esc_url( $view_link ); ?>"><?php _e( 'View', 'push-syndication' ); ?></a>
-					</li>
-				</ul>
-			<?php
-			endforeach;
-		endif;
 
 		do_action( 'syn_after_site_form', $site );
 	}
