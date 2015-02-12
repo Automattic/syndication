@@ -12,7 +12,7 @@ class Syndication_Event_Counter {
 	 */
 	public function __construct() {
 		add_action( 'push_syndication_trigger_event', array( $this, 'count_event' ), 10, 2 );
-		add_action( 'push_syndication_reset_event', array( $this, 'reset_event' ) );
+		add_action( 'push_syndication_reset_event', array( $this, 'reset_event' ), 10, 2 );
 	}
 
 	/**
@@ -76,6 +76,6 @@ class Syndication_Event_Counter {
 	 * @return string
 	 */
 	protected function _get_safe_option_name( $event_slug, $event_object_id ) {
-		return 'push_syndication_event_' . md5( (string) $event_slug . (string) $event_object_id );
+		return 'push_syndication_event_' . md5( $event_slug . $event_object_id );
 	}
 }
