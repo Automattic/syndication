@@ -216,6 +216,7 @@ class WP_Push_Syndication_Server {
 
 		// register settings
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
+		register_setting( 'push_syndicate_settings', 'push_syndication_max_pull_attempts', array( $this, 'validate_max_pull_attempts' ) );
 
 		// Maybe run upgrade
 		$this->upgrade();
@@ -260,6 +261,7 @@ class WP_Push_Syndication_Server {
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+		add_settings_field( 'max_pull_attempts', esc_html__( 'Maximum pull attempts', 'push-syndication' ), array( $this, 'display_max_pull_attempts' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 		add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 
 		add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
@@ -352,6 +354,27 @@ class WP_Push_Syndication_Server {
 
 	public function display_time_interval_selection() {
 		echo '<input type="text" size="10" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
+	}
+
+	/**
+	 * Display the form field for the push_syndication_max_pull_attempts option.
+	 */
+	public function display_max_pull_attempts() {
+		?>
+		<input type="text" size="10" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
+		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
+		<?php
+	}
+
+	/**
+	 * Valide the push_syndication_max_pull_attempts option.
+	 *
+	 * @param $val
+	 * @return int
+	 */
+	public function validate_max_pull_attempts( $val ) {
+		// Ensure a value between 0 and 100.
+		return min( 100, max( 0, (int) $val ) );
 	}
 
 	public function display_update_pulled_posts_selection() {
