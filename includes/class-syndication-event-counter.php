@@ -34,7 +34,7 @@ class Syndication_Event_Counter {
 
 		/**
 		 * Fires when a syndication event has occurred. Includes the number of times the event has occurred so far.
-		 *v
+		 *
 		 * @param string $event_slug Event type identifier.
 		 * @param string $event_object_id Event object identifier.
 		 * @param int $count Number of times the event has been fired.
