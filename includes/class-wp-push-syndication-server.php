@@ -1220,12 +1220,12 @@ class WP_Push_Syndication_Server {
 
 		// Schedule new jobs: one job for each site. 
 		foreach ( $sites as $site ) {
-		wp_schedule_event(
-			time() - 1,
-			'syn_pull_time_interval',
-			'syn_pull_content',
+			wp_schedule_event(
+				time() - 1,
+				'syn_pull_time_interval',
+				'syn_pull_content',
 				array( $site )
-		);
+			);
 		}
 
 		update_option( 'syn_old_pull_sites', $sites );
