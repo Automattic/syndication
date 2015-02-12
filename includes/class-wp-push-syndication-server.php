@@ -46,6 +46,18 @@ class WP_Push_Syndication_Server {
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
 		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
 
+		// Handle changes to sites and site groups
+		add_action( 'save_post', array( $this, 'handle_site_change' ) );
+		add_action( 'delete_post', array( $this, 'handle_site_change' ) );
+		add_action( 'create_term', array( $this, 'handle_site_group_change' ), 10, 3 );
+		add_action( 'delete_term', array( $this, 'handle_site_group_change' ), 10, 3 );
+
+		// Generic hook for reprocessing all scheduled pull jobs. This allows
+		// for bulk rescheduling of jobs that were scheduled the old way (one job
+		// for many sites).
+		add_action( 'syn_refresh_pull_jobs', array( $this, 'refresh_pull_jobs' ) );
+
+
 		$this->register_syndicate_actions();
 
 		do_action( 'syn_after_setup_server' );
@@ -1176,9 +1188,6 @@ class WP_Push_Syndication_Server {
 		if ( ! $this->current_user_can_syndicate() )
 			return;
 
-		if( empty( $selected_sitegroups ) )
-			return;
-
 		$sites = array();
 		foreach( $selected_sitegroups as $selected_sitegroup ) {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
@@ -1190,24 +1199,34 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function schedule_pull_content( $sites ) {
+
 		// to unschedule a cron we need the original arguements passed to schedule the cron
 		// we are saving it as a siteoption
 		$old_pull_sites = get_option( 'syn_old_pull_sites' );
 
+
+		// Clear all previously scheduled jobs.
 		if( ! empty( $old_pull_sites ) ) {
-			$timestamp = wp_next_scheduled( 'syn_pull_content', array( $old_pull_sites ) );
-			if( $timestamp )
+			// Clear any jobs that were scheduled the old way: one job to pull many sites.
 				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
+
+			// Clear any jobs that were scheduled the new way: one job to pull one site.
+			foreach ( $old_pull_sites as $old_pull_site ) {
+				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_site ) );
+			}
 
 			wp_clear_scheduled_hook( 'syn_pull_content' );
 		}
 
-		wp_schedule_event(
-			time() - 1,
-			'syn_pull_time_interval',
-			'syn_pull_content',
-			array()
-		);
+		// Schedule new jobs: one job for each site. 
+		foreach ( $sites as $site ) {
+			wp_schedule_event(
+				time() - 1,
+				'syn_pull_time_interval',
+				'syn_pull_content',
+				array( $site )
+			);
+		}
 
 		update_option( 'syn_old_pull_sites', $sites );
 	}
@@ -1337,6 +1356,41 @@ class WP_Push_Syndication_Server {
 			return $post_id;
 
 		return false;
+	}
+
+	/**
+	 * Reschedule all scheduled pull jobs.
+	 */
+	public function refresh_pull_jobs()	{
+		$sites = $this->pull_get_selected_sites();
+
+		$this->schedule_pull_content( $sites );
+	}
+
+	/**
+	 * Handle save_post and delete_post for syn_site posts. If a syn_site post
+	 * is updated or deleted we should reprocess any scheduled pull jobs.
+	 *
+	 * @param $post_id
+	 */
+	public function handle_site_change( $post_id ) {
+		if ( 'syn_site' === get_post_type( $post_id ) ) {
+			$this->refresh_pull_jobs();
+		}
+	}
+
+	/**
+	 * Handle create_term and delete_term for syn_sitegroup terms. If a site
+	 * group is created or deleted we should reprocess any scheduled pull jobs.
+	 *
+	 * @param $term
+	 * @param $tt_id
+	 * @param $taxonomy
+	 */
+	public function handle_site_group_change ( $term, $tt_id, $taxonomy ) {
+		if ( 'syn_sitegroup' === $taxonomy ) {
+			$this->refresh_pull_jobs();
+		}
 	}
 
 	private function upgrade() {
