@@ -30,7 +30,6 @@ class Syndication_Event_Counter {
 		$option_name = $this->_get_safe_option_name( $event_slug, $event_object_id );
 		$count = get_option( $option_name, 0 );
 		$count = $count + 1;
-		var_dump($option_name);
 		update_option( $option_name, $count );
 
 		/**
