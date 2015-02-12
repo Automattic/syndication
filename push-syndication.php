@@ -30,3 +30,7 @@ $push_syndication_server = new WP_Push_Syndication_Server;
 // Create the event counter.
 require __DIR__ . '/includes/class-syndication-event-counter.php';
 new Syndication_Event_Counter();
+
+// Create the site failure monitor.
+require __DIR__ . '/includes/class-syndication-site-failure-monitor.php';
+new Syndication_Site_Failure_Monitor();
