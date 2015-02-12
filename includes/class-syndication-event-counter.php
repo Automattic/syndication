@@ -2,7 +2,7 @@
 /**
  * Event Counter
  *
- * This allows for generic events to be captured and counted. Use the push_syndication_trigger_event and push_syndication_reset_event actions to capture and reset counters.
+ * This allows for generic events to be captured and counted. Use the push_syndication_event and push_syndication_reset_event actions to capture and reset counters. Use push_syndication_after_event to handle events once they've occurred, and to see the number of times the event has occurred.
  */
 
 class Syndication_Event_Counter {
@@ -11,6 +11,7 @@ class Syndication_Event_Counter {
 	 * Setup.
 	 */
 	public function __construct() {
+		add_action( 'push_syndication_event', array( $this, 'count_event' ), 10, 2 );
 		add_action( 'push_syndication_trigger_event', array( $this, 'count_event' ), 10, 2 );
 		add_action( 'push_syndication_reset_event', array( $this, 'reset_event' ), 10, 2 );
 	}
@@ -39,7 +40,7 @@ class Syndication_Event_Counter {
 		 * @param string $event_object_id Event object identifier.
 		 * @param int $count Number of times the event has been fired.
 		 */
-		do_action( 'push_syndication_event', $event_slug, $event_object_id, $count );
+		do_action( 'push_syndication_after_event', $event_slug, $event_object_id, $count );
 
 		/**
 		 * Fires when a syndication event has occurred. Includes the number of times the event has occurred so far.
@@ -49,7 +50,7 @@ class Syndication_Event_Counter {
 		 * @param string $event_object_id Event object identifier.
 		 * @param int $count Number of times the event has been fired.
 		 */
-		do_action( "push_syndication_event_{$event_slug}", $event_object_id, $count );
+		do_action( "push_syndication_after_event_{$event_slug}", $event_object_id, $count );
 	}
 
 	/**
@@ -76,6 +77,6 @@ class Syndication_Event_Counter {
 	 * @return string
 	 */
 	protected function _get_safe_option_name( $event_slug, $event_object_id ) {
-		return 'push_syndication_event_' . md5( $event_slug . $event_object_id );
+		return 'push_syndication_event_counter_' . md5( $event_slug . $event_object_id );
 	}
 }

@@ -13,7 +13,7 @@ class Syndication_Site_Failure_Monitor {
 	 * Setup
 	 */
 	public function __construct() {
-		add_action( 'push_syndication_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
+		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
 	}
 
 	/**
