@@ -37,6 +37,16 @@ class Syndication_Event_Counter {
 		 * @param int $count Number of times the event has been fired.
 		 */
 		do_action( 'push_syndication_event', $event_slug, $event_object_id, $count );
+
+		/**
+		 * Fires when a syndication event has occurred. Includes the number of times the event has occurred so far.
+		 *
+		 * The dynamic portion of the hook name, `$event_slug`, refers to the event slug that triggered the event.
+		 *
+		 * @param string $event_object_id Event object identifier.
+		 * @param int $count Number of times the event has been fired.
+		 */
+		do_action( "push_syndication_event_{$event_slug}", $event_object_id, $count );
 	}
 
 	/**
