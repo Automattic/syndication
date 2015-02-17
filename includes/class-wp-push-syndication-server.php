@@ -1261,6 +1261,11 @@ class WP_Push_Syndication_Server {
 		if ( empty( $sites ) )
 			$sites = $this->pull_get_selected_sites();
 
+		// Treat this process as an import.
+		if ( ! defined( 'WP_IMPORTING' ) ) {
+			define( 'WP_IMPORTING', true );
+		}
+
 		foreach( $sites as $site ) {
 			$site_id = $site->ID;
 
@@ -1307,6 +1312,8 @@ class WP_Push_Syndication_Server {
 					$result = wp_update_post( $post, true );
 
 					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
+
+					clean_post_cache( $result );
 
 				} else {
 					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
