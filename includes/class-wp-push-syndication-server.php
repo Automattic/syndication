@@ -367,14 +367,25 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * Valide the push_syndication_max_pull_attempts option.
+	 * Validate the push_syndication_max_pull_attempts option.
 	 *
 	 * @param $val
 	 * @return int
 	 */
 	public function validate_max_pull_attempts( $val ) {
-		// Ensure a value between 0 and 100.
-		return min( 100, max( 0, (int) $val ) );
+		/**
+		 * Filter the maximum value that can be used for the
+		 * push_syndication_max_pull_attempts option. This only takes effect when the
+		 * option is set. Use the pre_option_push_syndication_max_pull_attempts or
+		 * option_push_syndication_max_pull_attempts filters to modify values that
+		 * have already been set.
+		 *
+		 * @param int $upper_limit Maximum value that can be used. Defaults to 100.
+		 */
+		$upper_limit = apply_filters( 'push_syndication_max_pull_attempts_upper_limit', 100 );
+
+		// Ensure a value between zero and the upper limit.
+		return min( $upper_limit, max( 0, (int) $val ) );
 	}
 
 	public function display_update_pulled_posts_selection() {
