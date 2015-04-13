@@ -284,25 +284,25 @@ class WP_Push_Syndication_Server {
 
 			<form action="options.php" method="post">
 
-				<?php settings_fields( 'push_syndicate_settings' ); ?>
+				<div class="push-syndicate-settings"><?php settings_fields( 'push_syndicate_settings' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
+				<div class="push-syndicate-pull-sitegroups"><?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
+				<div class="push-syndicate-pull-options"><?php do_settings_sections( 'push_syndicate_pull_options' ); ?></div>
 
-				<?php submit_button( '  Pull Now ' ); ?>
+				<div class="pull-now-button"><?php submit_button( '  Pull Now ' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
+				<div class="push-syndicate-post-types"><?php do_settings_sections( 'push_syndicate_post_types' ); ?></div>
 
-				<?php do_settings_sections( 'delete_pushed_posts' ); ?>
+				<div class="delete-pushed-posts"><?php do_settings_sections( 'delete_pushed_posts' ); ?></div>
 
-				<?php do_settings_sections( 'api_token' ); ?>
+				<div class="api-token-config"><?php do_settings_sections( 'api_token' ); ?></div>
 
-				<?php submit_button(); ?>
+				<div class="submit-button"><?php submit_button(); ?></div>
 
 			</form>
 
-			<?php $this->get_api_token() ?>
+			<div class="api-token"><?php $this->get_api_token() ?></div>
 
 		</div>
 
