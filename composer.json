@@ -1,0 +1,18 @@
+{
+  "name"       : "automattic/syndication",
+  "description": "Syndication helps users manage posts across multiple sites. It's useful when managing posts on different platforms. With a single click you can push or pull a post to or from more than 100 sites.",
+  "keywords"   : ["wordpress"],
+  "type"       : "wordpress-plugin",
+  "license"    : "GPL-2.0",
+  "authors"    : [
+    {
+      "name"    : "Automattic Inc",
+      "homepage": "http://automattic.com"
+    }
+  ],
+  "require"    : {
+    "php": ">=5.2.4",
+    "composer/installers": "~1.0"
+  },
+  "minimum-stability": "dev"
+}
