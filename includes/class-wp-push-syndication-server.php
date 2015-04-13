@@ -1258,7 +1258,7 @@ class WP_Push_Syndication_Server {
 				time() - 1,
 				'syn_pull_time_interval',
 				'syn_pull_content',
-				array( $site )
+				array( array( $site ) )
 			);
 		}
 
