@@ -284,21 +284,21 @@ class WP_Push_Syndication_Server {
 
 			<form action="options.php" method="post">
 
-				<div class="push-syndicate-settings"><?php settings_fields( 'push_syndicate_settings' ); ?></div>
+				<div class="syn-push-syndicate-settings"><?php settings_fields( 'push_syndicate_settings' ); ?></div>
 
-				<div class="push-syndicate-pull-sitegroups"><?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?></div>
+				<div class="syn-push-syndicate-pull-sitegroups"><?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?></div>
 
-				<div class="push-syndicate-pull-options"><?php do_settings_sections( 'push_syndicate_pull_options' ); ?></div>
+				<div class="syn-push-syndicate-pull-options"><?php do_settings_sections( 'push_syndicate_pull_options' ); ?></div>
 
-				<div class="pull-now-button"><?php submit_button( '  Pull Now ' ); ?></div>
+				<div class="syn-pull-now-button"><?php submit_button( '  Pull Now ' ); ?></div>
 
-				<div class="push-syndicate-post-types"><?php do_settings_sections( 'push_syndicate_post_types' ); ?></div>
+				<div class="syn-push-syndicate-post-types"><?php do_settings_sections( 'push_syndicate_post_types' ); ?></div>
 
-				<div class="delete-pushed-posts"><?php do_settings_sections( 'delete_pushed_posts' ); ?></div>
+				<div class="syn-delete-pushed-posts"><?php do_settings_sections( 'delete_pushed_posts' ); ?></div>
 
-				<div class="api-token-config"><?php do_settings_sections( 'api_token' ); ?></div>
+				<div class="syn-api-token-config"><?php do_settings_sections( 'api_token' ); ?></div>
 
-				<div class="submit-button"><?php submit_button(); ?></div>
+				<div class="syn-submit-button"><?php submit_button(); ?></div>
 
 			</form>
 
@@ -648,7 +648,7 @@ class WP_Push_Syndication_Server {
 		// nonce for verification when saving
 		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
 
-		echo '<div class="transports">';
+		echo '<div class="syn-transports">';
 		$this->display_transports( $transport_type, $transport_mode );
 		echo '</div>';
 
