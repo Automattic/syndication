@@ -10,6 +10,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     private $default_comment_status;
     private $default_ping_status;
     private $default_cat_status;
+	protected $site_id;
 
     function __construct( $site_ID ) {
 
@@ -26,6 +27,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         }
 
         parent::__construct();
+
+	    $this->site_id                  = $site_ID;
 
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
