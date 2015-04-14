@@ -648,7 +648,9 @@ class WP_Push_Syndication_Server {
 		// nonce for verification when saving
 		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
 
+		echo '<div class="transports">';
 		$this->display_transports( $transport_type, $transport_mode );
+		echo '</div>';
 
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
