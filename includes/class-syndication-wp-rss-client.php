@@ -202,8 +202,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                 'post_category'     => $taxonomy['cats'],
                 'tags_input'        => $taxonomy['tags']
             );
-            // This filter can be used to exclude or alter posts during a pull import
-            $post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item );
+            $post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item, $this->site_id );
             if ( false === $post )
                 continue;
             $posts[] = $post;
