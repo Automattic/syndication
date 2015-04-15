@@ -302,7 +302,7 @@ class WP_Push_Syndication_Server {
 
 			</form>
 
-			<div class="api-token"><?php $this->get_api_token() ?></div>
+			<div class="syn-api-token"><?php $this->get_api_token() ?></div>
 
 		</div>
 
