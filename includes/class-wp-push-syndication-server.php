@@ -669,7 +669,6 @@ class WP_Push_Syndication_Server {
 	public function display_transports( $transport_type, $mode ) {
 
 		echo '<p>' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</p>';
-		echo '<form action="">';
 		// TODO: add direction
 		echo '<select name="transport_type" onchange="this.form.submit()">';
 
@@ -680,7 +679,6 @@ class WP_Push_Syndication_Server {
 			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>';
 		}
 		echo '</select>';
-		echo '</form>';
 
 	}
 
