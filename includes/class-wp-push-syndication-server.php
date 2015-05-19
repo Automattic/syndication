@@ -190,7 +190,7 @@ class WP_Push_Syndication_Server {
 				break;
 			case 'site_status':
 				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
-				if ( false === $site_status ) {
+				if ( ! $site_status ) {
 					esc_html_e( 'disabled', 'push-syndication' );
 				} else {
 					esc_html_e( 'enabled', 'push-syndication' );
@@ -717,6 +717,7 @@ class WP_Push_Syndication_Server {
 			if ( $client->test_connection()  ) {
 				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
 			} else {
+				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 252, $location);' ) );
 				$site_enabled = 'off';
 			}
 
@@ -733,6 +734,7 @@ class WP_Push_Syndication_Server {
 		// general error messages
 		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
 		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
+		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
 
 		// xmlrpc error messages.
 		$messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
