@@ -10,6 +10,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 == Description ==
 Syndication helps users manage posts across multiple sites. It's useful when managing posts on different platforms. With a single click you can push a post to more than 100 sites.
 
+Documentation: https://vip.wordpress.com/plugins/syndication/
 
 == Installation ==
 Enable push syndication plugin through the plugins page in the WordPress admin area. You also need to define an encryption key which will be used to encrypt user credentials and save to the database securely.
