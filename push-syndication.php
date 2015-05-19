@@ -9,6 +9,9 @@
  * License:      GPLv2 or later
  */
 
+require __DIR__ . '/push-syndication-new.php';
+return;
+
 define( 'SYNDICATION_VERSION', 2.0 );
 
 if ( ! defined( 'PUSH_SYNDICATE_KEY' ) )
