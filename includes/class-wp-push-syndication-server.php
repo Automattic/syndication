@@ -167,6 +167,7 @@ class WP_Push_Syndication_Server {
 		$new_columns['title'] = _x( 'Site Name', 'column name' );
 		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
 		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
+		$new_columns['site_status'] = _x( 'Status', 'column name' );
 		$new_columns['date'] = _x('Date', 'column name');
 		return $new_columns;
 	}
@@ -186,6 +187,14 @@ class WP_Push_Syndication_Server {
 				break;
 			case 'syn_sitegroup':
 				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
+				break;
+			case 'site_status':
+				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
+				if ( false === $site_status ) {
+					esc_html_e( 'disabled', 'push-syndication' );
+				} else {
+					esc_html_e( 'enabled', 'push-syndication' );
+				}
 				break;
 			default:
 				break;
