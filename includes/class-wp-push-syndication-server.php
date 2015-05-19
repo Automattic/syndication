@@ -1250,7 +1250,7 @@ class WP_Push_Syndication_Server {
 			wp_clear_scheduled_hook( 'syn_pull_content' );
 		}
 
-		// Schedule new jobs: one job for each site. 
+		// Schedule new jobs: one job for each site.
 		foreach ( $sites as $site ) {
 			wp_schedule_event(
 				time() - 1,
@@ -1319,7 +1319,11 @@ class WP_Push_Syndication_Server {
 
 			$post_types_processed = array();
 
-			Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+			if ( count( $posts ) > 0 ) {
+				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+			} else {
+				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
+			}
 
 			foreach( $posts as $post ) {
 
