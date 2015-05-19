@@ -163,11 +163,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	public static function save_settings( $site_ID ) {
 
 		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_type', $_POST['default_post_type'] );
-		update_post_meta( $site_ID, 'syn_default_post_status', $_POST['default_post_status'] );
-		update_post_meta( $site_ID, 'syn_default_comment_status', $_POST['default_comment_status'] );
-		update_post_meta( $site_ID, 'syn_default_ping_status', $_POST['default_ping_status'] );
-		update_post_meta( $site_ID, 'syn_default_cat_status', $_POST['default_cat_status'] );
+		update_post_meta( $site_ID, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
+		update_post_meta( $site_ID, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
+		update_post_meta( $site_ID, 'syn_default_comment_status', sanitize_text_field($_POST['default_comment_status'] ) );
+		update_post_meta( $site_ID, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
+		update_post_meta( $site_ID, 'syn_default_cat_status', sanitize_text_field( $_POST['default_cat_status'] ) );
 		return true;
 
 	}
