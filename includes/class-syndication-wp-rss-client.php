@@ -11,6 +11,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	private $default_ping_status;
 	private $default_cat_status;
 
+	private $site_ID;
+
 	function __construct( $site_ID ) {
 
 		switch( SIMPLEPIE_VERSION ) {
@@ -26,6 +28,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		}
 
 		parent::__construct();
+
+		$this->site_ID = $site_ID;
 
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
@@ -174,7 +178,19 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 	public function get_posts( $args = array() ) {
 
-		$this->init();
+		$site_post = get_post( $this->site_ID );
+
+		$rss_init = $this->init();
+
+		if ( false === $rss_init ) {
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = isset( $site_post->postmeta['is_update'] ) ? $site_post->postmeta['is_update'] : null, $extra = array( 'error' => $this->error() ) );
+
+			// Track the event.
+			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
+		} else {
+			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $this->get_raw_data() ) ), $log_time = null, $extra = array() );
+		}
+
 		$this->handle_content_type();
 
 		// hold all the posts
