@@ -31,8 +31,8 @@ class Syndication_Logger_Admin_Notice {
 			$notices[$message_type][$message_key] = array(
 				'message_text' => sanitize_text_field( $message_text ),
 				'summarize_multiple' => (boolean) $summarize_multiple,
-				'message_type' => $message_type,
-				'class' => $class
+				'message_type' => sanitize_text_field( $message_type ),
+				'class' => sanitize_text_field( $class ),
 			);
 			$changed = true;
 		}
@@ -71,8 +71,8 @@ class Syndication_Logger_Admin_Notice {
 				$new_message_data = array(
 					'message_text' => sanitize_text_field( $message_text ),
 					'summarize_multiple' => (boolean) $message_data['summarize_multiple'],
-					'message_type' => $message_data['message_type'],
-					'class' => $message_data['class']
+					'message_type' => sanitize_text_field( $message_data['message_type'] ),
+					'class' => sanitize_text_field( $message_data['class'] )
 				);
 
 				if ( $new_message_key != $message_key ) {
