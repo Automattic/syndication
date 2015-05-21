@@ -107,10 +107,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post' ), 10, 5 );
-
-		// Debugging
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );
 	}
 
 	/**
@@ -266,7 +262,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		}
-		
+
 		$abs_post_fields['enclosures_as_strings'] = $enclosures_as_strings;
 
 		// TODO: handle constant strings in XML
@@ -816,59 +812,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 */
 	public static function publish_pulled_post( $result, $post, $site, $transport_type, $client ) {
 		wp_publish_post( $result );
-	}
-
-	/**
-	 * Log the success or failure of saving a new post.
-	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 */
-	public static function log_new( $result, $post, $site, $transport_type, $client ) {
-		self::log_post( $result, $post, $site, __( 'new', 'push-syndication' ) );
-	}
-
-	/**
-	 * Log the success or failure of updating a post.
-	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 */
-	public static function log_update( $result, $post, $site, $transport_type, $client ) {
-		self::log_post( $result, $post, $site, __( 'update', 'push-syndication' ) );
-	}
-
-	/**
-	 * Add the post data to the log.
-	 *
-	 * @param $post_id
-	 * @param $post
-	 * @param $site
-	 * @param $status
-	 */
-	private static function log_post( $post_id, $post, $site, $status ) {
-		// TODO: need to limit how many log entries can be added
-		$log_entry            = array();
-		$log_entry['post_id'] = (int) $post_id;
-		$log_entry['status']  = esc_attr( $status );
-		if ( ! empty( $post ) ) {
-			$log_entry['time'] = sanitize_text_field( $post['postmeta']['is_update'] );
-		} else {
-			$log_entry['time'] = current_time( 'mysql' );
-		}
-		$log = get_post_meta( $site->ID, 'syn_log', true );
-		if ( empty( $log ) ) {
-			$log[0] = $log_entry;
-		} else {
-			$log[] = $log_entry;
-		}
-		update_post_meta( $site->ID, 'syn_log', $log );
 	}
 
 	/**

@@ -76,6 +76,10 @@ class Syndication_Logger {
 	 */
 	public static function init() {
 		self::instance()->log_id = md5( uniqid() . microtime() );
+
+		require_once( dirname( __FILE__ ) . '/class-syndication-admin-notices.php' );
+		new Syndication_Logger_Admin_Notice;
+
 		if ( is_admin() ) {
 			require_once( dirname( __FILE__ ) . '/class-syndication-logger-viewer.php' );
 			$viewer = new Syndication_Logger_Viewer;
