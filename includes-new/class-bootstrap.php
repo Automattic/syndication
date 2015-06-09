@@ -29,6 +29,7 @@ class Bootstrap {
 
 		// Bootstrap individual built-in clients.
 		new Clients\Test\Bootstrap();
+		new Clients\XML\Bootstrap();
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -41,7 +42,6 @@ class Bootstrap {
 
 
 	public function init() {
-
 		do_action( 'syndication/init' );
 	}
 }

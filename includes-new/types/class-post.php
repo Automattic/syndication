@@ -1,19 +1,14 @@
 <?php
 
-// @tott I did this because I thought it was a more explicit documentation of
-// this data type rather than describing it in a comment. If you think Auto
-// won't like this I can just make it an array.
-//
-// @tott What's a better name for this? I feel like "post" confuses it with a
-// WP post, which is not exactly what it is at all.
-
 namespace Automattic\Syndication\Types;
 
-class Post {
+class Import_Post {
 
 	public $local_id = null;
 
 	public $remote_id = null;
+
+	public $site_id = null;
 
 //'post' => [
 //'post_date_gmt' => '',

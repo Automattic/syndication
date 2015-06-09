@@ -2,7 +2,7 @@
 
 namespace Automattic\Syndication\Clients\Test;
 
-use Automattic\Syndication\Types\Post;
+use Automattic\Syndication\Types\Import_Post;
 
 class Pull_Client implements \Automattic\Syndication\Pull_Client
 {
@@ -12,7 +12,7 @@ class Pull_Client implements \Automattic\Syndication\Pull_Client
 
 	public function get_posts() {
 
-		$post = new Post();
+		$post = new Import_Post();
 
 		$post->remote_id = 'hamburger';
 		$post->post_data = [

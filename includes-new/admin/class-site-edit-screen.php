@@ -119,7 +119,7 @@ class Site_Edit_Screen {
 		$this->display_transports( $transport_type );
 
 		if ( $transport_type ) {
-			do_action( 'syndication/render_site_options/' . $transport_type );
+			do_action( 'syndication/render_site_options/' . $transport_type, $post->ID );
 		} else {
 			echo '<p>' . __( 'No client configured for this site.' ) . '</p>';
 		}
@@ -175,6 +175,6 @@ class Site_Edit_Screen {
 		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );
 
 
-		do_action( 'syndication/save_site_options/' . $transport_type );
+		do_action( 'syndication/save_site_options/' . $transport_type, $post->ID );
 	}
 }

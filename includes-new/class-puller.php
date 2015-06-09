@@ -6,6 +6,8 @@ class Puller {
 
 	protected $_client_manager;
 
+	public $current_site_id = null;
+
 	public function __construct( Client_Manager $client_manager ) {
 
 		$this->_client_manager = $client_manager;
@@ -15,6 +17,8 @@ class Puller {
 	 * @param int $site_id
 	 */
 	public function process_site( $site_id ) {
+
+		$this->current_site_id = $site_id;
 
 		// @todo check site status
 
@@ -80,7 +84,6 @@ class Puller {
 
 		// Make sure post exists.
 		if ( $post->local_id && ! get_post( $post->local_id ) ) {
-			// @tott Does it make sense to fail if internal_id is set but not valid?
 			throw new \Exception( 'Post does not exist.' );
 		}
 
@@ -107,6 +110,8 @@ class Puller {
 			$new_post['ID'] = $post->local_id;
 		}
 
+		$new_post = apply_filters( 'syn_before_insert_post', $new_post, $this->current_site_id );
+
 		$res = wp_insert_post( $new_post, true );
 
 		throw_if_wp_error( $res );
@@ -115,6 +120,7 @@ class Puller {
 	public function process_post_meta( Types\Post $post ) {
 
 		// @todo Validate again if this method remains public.
+		$post_meta = apply_filters( 'syn_before_update_post_meta', $post->post_meta, $post, $this->current_site_id );
 
 		foreach ( $post->post_meta as $key => $value ) {
 			$res = update_post_meta( $post->local_id, $key, $value );
@@ -128,8 +134,10 @@ class Puller {
 	public function process_post_terms( Types\Post $post ) {
 
 		// @todo Validate again if this method remains public.
+		$post_terms = apply_filters( 'syn_before_set_object_terms', $post->post_terms, $post, $this->current_site_id );
 
-		foreach ( $post->post_terms as $taxonomy => $terms ) {
+
+		foreach ( $post_terms as $taxonomy => $terms ) {
 
 			$res = wp_set_object_terms( $post->local_id, $terms, $taxonomy );
 
