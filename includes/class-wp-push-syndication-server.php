@@ -284,25 +284,25 @@ class WP_Push_Syndication_Server {
 
 			<form action="options.php" method="post">
 
-				<?php settings_fields( 'push_syndicate_settings' ); ?>
+				<div class="syn-push-syndicate-settings"><?php settings_fields( 'push_syndicate_settings' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
+				<div class="syn-push-syndicate-pull-sitegroups"><?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
+				<div class="syn-push-syndicate-pull-options"><?php do_settings_sections( 'push_syndicate_pull_options' ); ?></div>
 
-				<?php submit_button( '  Pull Now ' ); ?>
+				<div class="syn-pull-now-button"><?php submit_button( '  Pull Now ' ); ?></div>
 
-				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
+				<div class="syn-push-syndicate-post-types"><?php do_settings_sections( 'push_syndicate_post_types' ); ?></div>
 
-				<?php do_settings_sections( 'delete_pushed_posts' ); ?>
+				<div class="syn-delete-pushed-posts"><?php do_settings_sections( 'delete_pushed_posts' ); ?></div>
 
-				<?php do_settings_sections( 'api_token' ); ?>
+				<div class="syn-api-token-config"><?php do_settings_sections( 'api_token' ); ?></div>
 
-				<?php submit_button(); ?>
+				<div class="syn-submit-button"><?php submit_button(); ?></div>
 
 			</form>
 
-			<?php $this->get_api_token() ?>
+			<div class="syn-api-token"><?php $this->get_api_token() ?></div>
 
 		</div>
 
@@ -648,7 +648,9 @@ class WP_Push_Syndication_Server {
 		// nonce for verification when saving
 		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
 
+		echo '<div class="syn-transports">';
 		$this->display_transports( $transport_type, $transport_mode );
+		echo '</div>';
 
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
