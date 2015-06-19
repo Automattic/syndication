@@ -159,7 +159,7 @@ class WP_Push_Syndication_Server {
 
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
-		add_action( 'syn_pull_content', array( $this, 'pull_content' ) );
+		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
 	public function add_new_columns( $columns ) {
