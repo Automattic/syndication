@@ -249,6 +249,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			return array();
 		} else {
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+
+			// Track the event.
+			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 		}
 
 		/** @var SimpleXMLElement $xml */

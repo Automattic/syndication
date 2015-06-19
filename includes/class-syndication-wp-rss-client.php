@@ -189,6 +189,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
 		} else {
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $this->get_raw_data() ) ), $log_time = null, $extra = array() );
+
+			// Track the event.
+			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 		}
 
 		$this->handle_content_type();
