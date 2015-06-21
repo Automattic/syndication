@@ -42,8 +42,9 @@ class Failed_Syndication_Auto_Retry {
 	public function handle_pull_failure_event( $site_id = 0, $failed_attempts = 0 ) {
 
 		$site_auto_retry_count = 0;
-		$site_id         = (int) $site_id;
-		$failed_attempts = (int) $failed_attempts;
+		$site_id               = (int) $site_id;
+		$failed_attempts       = (int) $failed_attempts;
+		$cleanup               = false;
 
 		// Fetch the allowable number of max pull attempts before the site is marked as 'disabled'
 		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
@@ -56,59 +57,79 @@ class Failed_Syndication_Auto_Retry {
 		// Only proceed if we have a valid site id
 		if ( 0 !== $site_id ) {
 
+			// Fetch the site post
+			$site = get_post( $site_id );
+
+			// Fetch the site url
+			$site_url = get_post_meta( $site->ID, 'syn_feed_url', true );
+
+			// Fetch the number of times we've tried to auto-retry
+			$site_auto_retry_count = (int) get_post_meta( $site_id, 'syn_failed_auto_retry_attempts', true );
+
 			// Only proceed if we haven't hit the pull attempt ceiling
 			if ( $failed_attempts < $max_pull_attempts ) {
 
-				// Fetch the number of times we've tried to auto-retry
-				$site_auto_retry_count = (int) get_post_meta(
-					$site_id,
-					'syn_failed_auto_retry_attempts',
-					true
-				);
-
 				// Allow the default auto retry to be filtered
-				$auto_retry_limit = apply_filters(
-					'pull_syndication_failure_auto_retry_limit',
-					3 // By default, only auto retry 3 times
-				);
+				// By default, only auto retry 3 times
+				$auto_retry_limit = apply_filters( 'pull_syndication_failure_auto_retry_limit', 3 );
+
+				// Store the current time for repeated use below
+				$time_now = time();
+
+				// Create a string time to be sent to the logger
+				// Add 1 so our log items appear to occur a second later
+				// and hence order better in the log viewer
+				// without this, sometimes when the pull occurs quickly
+				// these log items appear to occur at the same time as the failure
+				$log_time = date( 'Y-m-d H:i:s', $time_now + 1 );
 
 				// Are we still below the auto retry limit?
 				if ( $site_auto_retry_count < $auto_retry_limit ) {
 
 					// Yes we are..
-					$site = get_post( $site_id );
 
-					// Remove any previous auto retry event calls because we're
-					// scheduling these events < 10min apart
-					wp_clear_scheduled_hook( 'syndication_failure_auto_retry_interval' );
+					// Run in one minute by default
+					$auto_retry_interval = apply_filters( 'syndication_failure_auto_retry_interval', $time_now + MINUTE_IN_SECONDS );
+
+					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), $log_time, $extra = array() );
 
 					// Schedule a pull retry for one minute in the future
 					wp_schedule_single_event(
-						apply_filters(
-							'syndication_failure_auto_retry_interval',
-							time() + MINUTE_IN_SECONDS // run in one minute by default
-						),
-						'syn_pull_content',            // fire the pull content hook
-						array( array( $site ) )     // the site which failed to pull
+						$auto_retry_interval,     // retry in X time
+						'syn_pull_content',       // fire the syndication_auto_retry hook
+						array( array( $site ) )   // the site which failed to pull
 					);
 
 					// Increment our auto retry counter
 					$site_auto_retry_count++;
 
 					// And update the post meta auto retry count
-					update_post_meta(
-						$site_id,
-						'syn_failed_auto_retry_attempts',
-						$site_auto_retry_count
-					);
+					update_post_meta( $site->ID, 'syn_failed_auto_retry_attempts', $site_auto_retry_count );
+
 				} else {
-					// Clean the auto retries
-					$this->clean_auto_retry( $site_id );
+
+					// Auto Retry limit met
+					// Let's cleanup after ourselves
+					$cleanup = true ;
 				}
+			} else {
+
+				// Retry attempt limit met
+				// The site has been disabled, let's cleanup after ourselves
+				$cleanup = true;
 			}
+
+			// Should we cleanup after ourselves?
+			if ( $cleanup ) {
+
+				// Remove the auto retry if there was one
+				delete_post_meta( $site->ID, 'syn_failed_auto_retry_attempts' );
+
+				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %d times to reconnect to %s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
+			}
+
 		}
 	}
-
 
 	/**
 	 * Handle a site pull success event
@@ -118,23 +139,6 @@ class Failed_Syndication_Auto_Retry {
 	 * @return null
 	 */
 	public function handle_pull_success_event( $site_id = 0, $failed_attempts = 0 ) {
-
-		// Clean the auto retries
-		$this->clean_auto_retry( $site_id );
-	}
-
-
-	/**
-	 * Cleanup after the auto retry routine
-	 *
-	 * + Remove any remaining scheduled event hooks
-	 * + Remove the retry counter from the site post meta
-	 *
-	 * @param $site_id int The site id to clean
-	 */
-	public function clean_auto_retry( $site_id ) {
-		// Remove any auto retry event calls
-		wp_clear_scheduled_hook( 'syndication_failure_auto_retry_interval' );
 
 		// Remove the auto retry if there was one
 		delete_post_meta( $site_id, 'syn_failed_auto_retry_attempts' );
