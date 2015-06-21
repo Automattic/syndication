@@ -188,9 +188,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		//TODO: required fields for post
 		//TODO: handle categories
 
-		// clear last log in feed's data
-		delete_post_meta( $this->site_ID, 'syn_log' );
-
 		$abs_nodes       = array();
 		$item_nodes      = array();
 		$enc_nodes       = array();
