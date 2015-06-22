@@ -127,7 +127,6 @@ class Failed_Syndication_Auto_Retry {
 
 				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %d times to reconnect to %s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
 			}
-
 		}
 	}
 
