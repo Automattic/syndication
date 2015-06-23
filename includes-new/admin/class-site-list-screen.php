@@ -44,15 +44,21 @@ class Site_List_Screen {
 
 		global $wpdb;
 		switch ( $column_name ) {
+
+			// Output the client label
 			case 'client-type':
-//				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
-//				try {
-//					$client = Syndication_Client_Factory::get_client( $transport_type, $id );
-//					$client_data = $client->get_client_data();
-//					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
-//				} catch ( Exception $e ) {
-//					printf( __( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
-//				}
+
+				// Fetch the site transport type
+				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
+
+				// Fetch the corresponding client
+				$pull_client = \Automattic\Syndication\get_pull_client( $transport_type );
+
+				// Output the client name
+				if ( isset( $pull_client['label'] ) ) {
+					echo esc_html( $pull_client['label'] );
+				}
+
 				break;
 			case 'syn_sitegroup':
 				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
