@@ -12,6 +12,8 @@
 namespace Automattic\Syndication;
 
 define( 'SYNDICATION_VERSION', '3.0.0' );
+define( 'SYNDICATION_URL', plugin_dir_url( __FILE__ ) );
+define( 'SYNDICATION_PATH', dirname( __FILE__ ) . '/' );
 
 // Load and register the autoloader.
 require __DIR__ . '/includes-new/class-autoloader.php';
