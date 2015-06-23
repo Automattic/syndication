@@ -22,8 +22,8 @@ class Site_List_Screen {
 		global $typenow;
 
 		if ( 'syn_site' == $typenow ) {
-			if( $hook == 'edit.php' ) {
-				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/admin-edit-site.css', __FILE__ ), array(), SYNDICATION_VERSION );
+			if( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
+				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-edit-site.css', array(), SYNDICATION_VERSION );
 			}
 		}
 	}
