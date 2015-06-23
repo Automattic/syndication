@@ -16,6 +16,7 @@ class Upgrade_Tasks {
 
 		// @todo Confirm that upgrades do not also need to happen on regular init.
 		add_action( 'admin_init', [ $this, 'upgrade' ] );
+		add_action( 'admin_init', [ $this, 'upgrade_to_3_0_0' ] );
 	}
 
 	public function upgrade() {
@@ -43,8 +44,55 @@ class Upgrade_Tasks {
 		update_option( 'syn_version', SYNDICATION_VERSION );
 	}
 
-	public function upgrade_to_3() {
+	/**
+	 * Version 3.0.0 Upgrade Routine
+	 *
+	 * + In Version 2.0 we set each site's transport_type post meta to WP_XML, WP_RSS, WP_REST, or WP_XMLRPC. In version 3.0.0 we need to convert these to xml_pull, rss_pull, rest_push, xmlrpc_push; respectively
+	 *
+	 */
+	public function upgrade_to_3_0_0() {
 
-		// @todo migrate options
+		// Only proceed if an update to 3.0.0. is required
+		if ( version_compare( $this->version, '3.0.0', '<' ) ) :
+
+			// Upgrade individual sites
+			global $site_manager;
+
+			// Fetch all sites
+			$sites = $site_manager->get_site_index();
+
+			// Update Routine #1
+			// In Version 2.0 we set each site's transport_type post meta to WP_XML, WP_RSS, WP_REST, or WP_XMLRPC. In version 3.0.0 we need to convert these to xml_pull, rss_pull, rest_push, xmlrpc_push; respectively
+
+			// Loop through each site
+			foreach ( $sites['all'] as $site ) :
+				$new_transport_type = '';
+
+				// Fetch the site's old transport type
+				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
+
+				// Only proceed if we found a transport type
+				if ( false !== $transport_type ) :
+
+					// Determine the site's new transport type
+					switch ( $transport_type ) :
+						case 'WP_XML'    : $new_transport_type = 'xml_pull';    break;
+						case 'WP_RSS'    : $new_transport_type = 'rss_pull';    break;
+						case 'WP_REST'   : $new_transport_type = 'rest_push';   break;
+						case 'WP_XMLRPC' : $new_transport_type = 'xmlrpc_push'; break;
+					endswitch;
+
+					// Update the site's transport type
+					update_post_meta( $site->ID, 'syn_transport_type', $new_transport_type );
+				endif;
+			endforeach;
+
+			// END Update Routine #1
+
+			// Update Routine #2
+			// ...
+			// END Update Routine #2
+
+		endif;
 	}
 }
