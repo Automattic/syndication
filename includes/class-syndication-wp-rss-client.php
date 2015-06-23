@@ -10,6 +10,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
     private $default_comment_status;
     private $default_ping_status;
     private $default_cat_status;
+	protected $site_id;
 
     function __construct( $site_ID ) {
 
@@ -26,6 +27,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
         }
 
         parent::__construct();
+
+	    $this->site_id                  = $site_ID;
 
         $this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
@@ -199,8 +202,19 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
                 'post_category'     => $taxonomy['cats'],
                 'tags_input'        => $taxonomy['tags']
             );
-            // This filter can be used to exclude or alter posts during a pull import
-            $post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item );
+
+	        /**
+	         * Exclude or alter posts during an RSS syndication pull
+	         *
+	         * Return an array of post data to save this post. Return false to exclude
+	         * this post.
+	         *
+	         * @param array          $post The post data, as would be passed to wp_insert_post
+	         * @param array          $args
+	         * @param SimplePie_Item $item A Simplepie item object
+	         * @param int            $this->site_id The ID of the post holding the data describing this feed
+	         */
+            $post = apply_filters( 'syn_rss_pull_filter_post', $post, $args, $item, $this->site_id );
             if ( false === $post )
                 continue;
             $posts[] = $post;
