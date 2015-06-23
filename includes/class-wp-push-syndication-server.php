@@ -71,6 +71,7 @@ class WP_Push_Syndication_Server {
 					'edit_post'          => $capability,
 					'read_post'          => $capability,
 					'delete_post'        => $capability,
+					'delete_posts'		 => $capability, // only added to address notice caused by https://core.trac.wordpress.org/ticket/30991
 					'edit_posts'         => $capability,
 					'edit_others_posts'  => $capability,
 					'publish_posts'      => $capability,
@@ -158,7 +159,7 @@ class WP_Push_Syndication_Server {
 
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
-		add_action( 'syn_pull_content', array( $this, 'pull_content' ) );
+		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
 	public function add_new_columns( $columns ) {
@@ -167,6 +168,7 @@ class WP_Push_Syndication_Server {
 		$new_columns['title'] = _x( 'Site Name', 'column name' );
 		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
 		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
+		$new_columns['site_status'] = _x( 'Status', 'column name' );
 		$new_columns['date'] = _x('Date', 'column name');
 		return $new_columns;
 	}
@@ -186,6 +188,14 @@ class WP_Push_Syndication_Server {
 				break;
 			case 'syn_sitegroup':
 				the_terms( $id, 'syn_sitegroup', '', ', ', '' );
+				break;
+			case 'site_status':
+				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
+				if ( ! $site_status ) {
+					esc_html_e( 'disabled', 'push-syndication' );
+				} else {
+					esc_html_e( 'enabled', 'push-syndication' );
+				}
 				break;
 			default:
 				break;
@@ -708,6 +718,7 @@ class WP_Push_Syndication_Server {
 			if ( $client->test_connection()  ) {
 				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
 			} else {
+				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 252, $location);' ) );
 				$site_enabled = 'off';
 			}
 
@@ -724,6 +735,7 @@ class WP_Push_Syndication_Server {
 		// general error messages
 		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
 		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
+		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
 
 		// xmlrpc error messages.
 		$messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
@@ -1250,7 +1262,7 @@ class WP_Push_Syndication_Server {
 			wp_clear_scheduled_hook( 'syn_pull_content' );
 		}
 
-		// Schedule new jobs: one job for each site. 
+		// Schedule new jobs: one job for each site.
 		foreach ( $sites as $site ) {
 			wp_schedule_event(
 				time() - 1,
@@ -1319,7 +1331,11 @@ class WP_Push_Syndication_Server {
 
 			$post_types_processed = array();
 
-			Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+			if ( count( $posts ) > 0 ) {
+				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+			} else {
+				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
+			}
 
 			foreach( $posts as $post ) {
 
