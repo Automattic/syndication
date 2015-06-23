@@ -23,7 +23,7 @@ class Site_List_Screen {
 
 		if ( 'syn_site' == $typenow ) {
 			if( $hook == 'edit.php' ) {
-				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/sites.css', __FILE__ ), array(), SYNDICATION_VERSION );
+				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/admin-edit-site.css', __FILE__ ), array(), SYNDICATION_VERSION );
 			}
 		}
 	}
