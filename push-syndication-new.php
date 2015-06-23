@@ -11,7 +11,7 @@
 
 namespace Automattic\Syndication;
 
-define( 'SYNDICATION_VERSION', 3 );
+define( 'SYNDICATION_VERSION', '3.0.0' );
 
 // Load and register the autoloader.
 require __DIR__ . '/includes-new/class-autoloader.php';
