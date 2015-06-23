@@ -2,6 +2,8 @@
 
 /**
  * Syndication_Logger implements a unified logging mechanism for the syndication plugin.
+ *
+ * @todo implement removal of old log messages, cron to remove messages older than X?
  */
 class Syndication_Logger {
 

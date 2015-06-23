@@ -34,7 +34,20 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		$post = apply_filters( 'syn_rest_push_filter_new_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
-		
+
+		$body = array (
+			'title'		 => $post['post_title'],
+			'content'	   => $post['post_content'],
+			'excerpt'	   => $post['post_excerpt'],
+			'status'		=> $post['post_status'],
+			'password'	  => $post['post_password'],
+			'date'		  => $post['post_date_gmt'],
+			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
+			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
+		);
+
+		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );
+
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
@@ -43,16 +56,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 				'authorization' => 'Bearer ' . $this->access_token,
 				'Content-Type'  => 'application/x-www-form-urlencoded'
 			),
-			'body' => array (
-				'title'		 => $post['post_title'],
-				'content'	   => $post['post_content'],
-				'excerpt'	   => $post['post_excerpt'],
-				'status'		=> $post['post_status'],
-				'password'	  => $post['post_password'],
-				'date'		  => $post['post_date_gmt'],
-				'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
-				'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
-			),
+			'body' => $body,
 		) );
 
 		if ( is_wp_error( $response ) ) {
@@ -77,7 +81,20 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		$post = apply_filters( 'syn_rest_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
-		
+
+		$body = array (
+			'title'		 => $post['post_title'],
+			'content'	   => $post['post_content'],
+			'excerpt'	   => $post['post_excerpt'],
+			'status'		=> $post['post_status'],
+			'password'	  => $post['post_password'],
+			'date'		  => $post['post_date_gmt'],
+			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
+			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
+		);
+
+		$body = apply_filters( 'syn_rest_push_filter_edit_post_body', $body, $post_ID );
+
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
@@ -86,16 +103,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 				'authorization' => 'Bearer ' . $this->access_token,
 				'Content-Type'  => 'application/x-www-form-urlencoded'
 			),
-			'body' => array (
-				'title'		 => $post['post_title'],
-				'content'	   => $post['post_content'],
-				'excerpt'	   => $post['post_excerpt'],
-				'status'		=> $post['post_status'],
-				'password'	  => $post['post_password'],
-				'date'		  => $post['post_date_gmt'],
-				'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
-				'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
-			),
+			'body' => $body,
 		) );
 
 		if ( is_wp_error( $response ) ) {
