@@ -13,7 +13,13 @@ class Bootstrap {
 		new Custom_Post_Types\Site_Post_Type();
 		new Custom_Taxonomies\Sitegroup_Taxonomy();
 		new Cron();
+
+		global $client_manager;
 		$client_manager = new Client_Manager();
+
+		global $site_manager;
+		$site_manager = new Site_Manager();
+
 		Syndication_Logger::init();
 		new Syndication_Event_Counter();
 		new Syndication_Site_Failure_Monitor();
