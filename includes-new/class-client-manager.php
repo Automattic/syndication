@@ -30,11 +30,29 @@ class Client_Manager {
 	}
 
 	/**
-	 * @param string $client_slug
-	 * @return Pull_Client
+	 * Return a client by it's slug
+	 *
+	 * @param  string $client_slug The slug of the client you want
+	 * @return array               Information about the requested client
 	 */
-	public function get_pull_client( $client_slug ) {
+	public function get_pull_client( $client_slug = '' ) {
+		try {
+			if ( ! empty( $client_slug ) ) {
+				if ( isset( $this->_pull_clients[ $client_slug ] ) ) {
+					return $this->_pull_clients[ $client_slug ];
+				} else {
+					throw new \Exception( "No client found with slug: $client_slug" );
+				}
+			} else {
+				throw new \Exception( 'Client slug must be specified!' );
+			}
+		} catch ( \Exception $e ) {
 
+			// Send the error to the PHP error log
+			error_log( $e );
+
+			return false;
+		}
 	}
 
 	/**
@@ -48,5 +66,24 @@ class Client_Manager {
 	public function get_clients() {
 
 		return $this->_push_clients + $this->_pull_clients;
+	}
+}
+
+/**
+ * Fetch a pull client by it's slug
+ *
+ * Example:
+ * $client = \Automattic\Syndication\get_pull_client( 'my-client-slug' );
+ *
+ * @param  string $client_slug The slug of the client you wish to fetch
+ * @return array               The client if it's found
+ */
+function get_pull_client( $client_slug = '' ) {
+	global $client_manager;
+
+	$pull_client = $client_manager->get_pull_client( $client_slug );
+
+	if ( false !== $pull_client ) {
+		return $pull_client;
 	}
 }
