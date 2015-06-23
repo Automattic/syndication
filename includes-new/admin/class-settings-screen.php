@@ -18,7 +18,6 @@ class Settings_Screen {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts_and_styles' ) );
 	}
 
 	public function init() {
@@ -40,17 +39,6 @@ class Settings_Screen {
 
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 		register_setting( 'push_syndicate_settings', 'push_syndication_max_pull_attempts', array( $this, 'validate_max_pull_attempts' ) );
-	}
-
-	public function load_scripts_and_styles( $hook ) {
-		global $typenow;
-		if ( 'syn_site' == $typenow ) {
-			if( $hook == 'edit.php' ) {
-				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/sites.css', __FILE__ ), array(), SYNDICATION_VERSION );
-			} elseif ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
-				wp_enqueue_style( 'syn-edit-site', plugins_url( 'css/edit-site.css', __FILE__ ), array(), SYNDICATION_VERSION );
-			}
-		}
 	}
 
 	public function push_syndicate_settings_validate( $raw_settings ) {
