@@ -107,13 +107,13 @@ class Site_Manager {
 	}
 
 	public function prime_site_cache( $post_id ) {
-		$this->get_sites( $prime_cache=true );
+		$this->get_site_index( $prime_cache = true );
 	}
 
 	public function prime_site_cache_delete( $post_id ) {
 		$post = get_post( $post_id );
 		if ( 'syn_site' == $post->post_type ) {
-			$this->get_sites( $prime_cache=true );
+			$this->get_site_index( $prime_cache = true );
 		}
 	}
 }
