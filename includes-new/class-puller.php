@@ -3,6 +3,14 @@
 namespace Automattic\Syndication;
 
 class Puller {
+/**
+ * Syndication Puller
+ *
+ * The role of this class is to be a base/parent for all pull client classes.
+ * This parent class contains methods to process a site using this client
+ *
+ * @package Automattic\Syndication
+ */
 
 	protected $_client_manager;
 
@@ -14,7 +22,10 @@ class Puller {
 	}
 
 	/**
-	 * @param int $site_id
+	 * Process a site and pull all it's posts
+	 *
+	 * @param int $site_id The ID of the site for which to pull it's posts
+	 * @return array|bool  Array of posts on success, false on failure
 	 */
 	public function process_site( $site_id ) {
 

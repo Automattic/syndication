@@ -3,6 +3,19 @@
 namespace Automattic\Syndication;
 use WP_Query;
 
+/**
+ * Site Manager
+ *
+ * The role of the site manager is to manage syndication sites.
+ * This entails fetching sites and pushing/pulling content for them.
+ *
+ * The actual site post type and sitegroup taxonomy registration is handled in the main plugin bootstrap.
+ *
+ * Likewise, because sites are simply post types and sitegroups are taxonomy terms;
+ * the CRUD operations for each are handled by WordPress core.
+ *
+ * @package Automattic\Syndication
+ */
 class Site_Manager {
 
 	protected $_sites = null;

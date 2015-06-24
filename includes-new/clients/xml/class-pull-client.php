@@ -4,6 +4,15 @@ namespace Automattic\Syndication\Clients\XML;
 
 use Automattic\Syndication\Puller;
 
+/**
+ * Syndication Client: XML Pull
+ *
+ * Create 'syndication sites' to pull external content into your
+ * WordPress install via XML. Includes XPath mapping to map incoming
+ * XML data to specific post data.
+ *
+ * @package Automattic\Syndication\Clients\XML
+ */
 class Pull_Client extends Puller {
 
 	/**

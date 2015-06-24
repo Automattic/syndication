@@ -2,6 +2,18 @@
 
 namespace Automattic\Syndication;
 
+/**
+ * Client Manager
+ *
+ * The role of the client manager is to manage our syndication clients.
+ * This entails the registration, fetching, and updating of clients.
+ * Individual clients are used to pull or push content to/from your WordPress install.
+ *
+ * All 'sites' are paired with a client/transport type, e.g.
+ * You could have an ESPN site setup to pull content via the XML_Pull client
+ *
+ * @package Automattic\Syndication
+ */
 class Client_Manager {
 
 	protected $_push_clients = [];
@@ -55,6 +67,11 @@ class Client_Manager {
 
 	}
 
+	/**
+	 * Get all push and pull clients
+	 *
+	 * @return array
+	 */
 	public function get_clients() {
 		return $this->_push_clients + $this->_pull_clients;
 	}
