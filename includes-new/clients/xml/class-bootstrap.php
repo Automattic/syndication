@@ -1,6 +1,6 @@
 <?php
 
-namespace Automattic\Syndication\Clients\XML;
+namespace Automattic\Syndication\Clients\XML_Pull;
 
 use Automattic\Syndication\Client_Manager;
 

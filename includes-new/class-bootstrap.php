@@ -35,7 +35,7 @@ class Bootstrap {
 
 		// Bootstrap individual built-in clients.
 		new Clients\Test\Bootstrap();
-		new Clients\XML\Bootstrap();
+		new Clients\XML_Pull\Bootstrap();
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

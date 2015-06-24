@@ -6,7 +6,7 @@
  * sites using that client.
  */
 
-namespace Automattic\Syndication\Clients\XML;
+namespace Automattic\Syndication\Clients\XML_Pull;
 
 class Client_Options {
 

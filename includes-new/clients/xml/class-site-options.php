@@ -5,7 +5,7 @@
  * Site options are options specific to site using a particular client.
  */
 
-namespace Automattic\Syndication\Clients\XML;
+namespace Automattic\Syndication\Clients\XML_Pull;
 
 class Site_Options {
 
