@@ -125,7 +125,7 @@ class Puller {
 
 		$res = wp_insert_post( $new_post, true );
 
-		throw_if_wp_error( $res );
+		is_wp_error_do_throw( $res );
 	}
 
 	public function process_post_meta( Types\Post $post ) {
@@ -152,7 +152,7 @@ class Puller {
 
 			$res = wp_set_object_terms( $post->local_id, $terms, $taxonomy );
 
-			throw_if_wp_error( $res );
+			is_wp_error_do_throw( $res );
 		}
 	}
 

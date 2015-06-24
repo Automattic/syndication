@@ -153,10 +153,10 @@ class Pull_Client extends Puller {
 		$feed = $this->fetch_feed();
 
 		// TODO: kill feed client if too many failures
-		if ( is_wp_error( $feed ) ) {
 
 		$site_post = get_post( $site_id );
 
+		if ( is_wp_error_and_throw( $feed ) ) {
 			Syndication_Logger::log_post_error( $this->site_id, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
