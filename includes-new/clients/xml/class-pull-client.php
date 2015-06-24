@@ -93,9 +93,6 @@ class Pull_Client extends Puller {
 		//TODO: required fields for post
 		//TODO: handle categories
 
-		// clear last log in feed's data
-		delete_post_meta( $this->site_id, 'syn_log' );
-
 		$abs_nodes       = array();
 		$item_nodes      = array();
 		$enc_nodes       = array();
