@@ -2,7 +2,6 @@
 
 namespace Automattic\Syndication;
 
-class Puller {
 /**
  * Syndication Puller
  *
@@ -11,6 +10,7 @@ class Puller {
  *
  * @package Automattic\Syndication
  */
+abstract class Puller {
 
 	protected $_client_manager;
 

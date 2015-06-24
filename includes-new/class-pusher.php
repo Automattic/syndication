@@ -4,7 +4,7 @@ namespace Automattic\Syndication;
 
 use Automattic\Syndication\Types\Post;
 
-class Pusher {
+abstract class Pusher {
 
 	public function __construct( Client_Manager $client_manager ) {
 
