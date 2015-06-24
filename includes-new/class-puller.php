@@ -182,5 +182,46 @@ abstract class Puller {
 
 		return (int) $posts[0];
 	}
+
+	/**
+	 * Wrapper for get_post_meta to return a site's current status
+	 *
+	 * Possible site statuses:
+	 * - idle
+	 * - pulling
+	 * - pushing
+	 * - processing
+	 *
+	 * @param int $site_id
+	 * @return mixed|bool Meta key value on success, false on failure
+	 */
+	public function get_site_status( $site_id = 0 ) {
+		if ( isset( $site_id ) && 0 !== $site_id ) {
+			return get_post_meta( (int) $site_id, $this->site_status_meta_key, true );
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Update a site's status
+	 *
+	 * Available site statuses:
+	 * - idle
+	 * - pulling
+	 * - pushing
+	 * - processing
+	 *
+	 * @param int $site_id       The site ID for which to update
+	 * @param string $new_status The new site status
+	 * @return mixed|bool        $meta_id on success, false on failure
+	 */
+	public function update_status( $site_id = 0, $new_status = '' ) {
+		if ( isset( $new_status ) && ! empty( $new_status ) ) {
+			return update_post_meta( (int) $site_id, $this->site_status_meta_key, sanitize_title( $new_status ) );
+		} else {
+			return false;
+		}
+	}
 }
 
