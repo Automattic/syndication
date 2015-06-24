@@ -32,27 +32,19 @@ class Client_Manager {
 	/**
 	 * Return a client by it's slug
 	 *
+	 * @see Called via functions-template-tags.php:syn_get_pull_client
 	 * @param  string $client_slug The slug of the client you want
 	 * @return array               Information about the requested client
 	 */
 	public function get_pull_client( $client_slug = '' ) {
-		try {
-			if ( ! empty( $client_slug ) ) {
-				if ( isset( $this->_pull_clients[ $client_slug ] ) ) {
-					return $this->_pull_clients[ $client_slug ];
-				} else {
-					throw new \Exception( "No client found with slug: $client_slug" );
-				}
-			} else {
-				throw new \Exception( 'Client slug must be specified!' );
+
+		if ( ! empty( $client_slug ) ) {
+			if ( isset( $this->_pull_clients[ $client_slug ] ) ) {
+				return $this->_pull_clients[ $client_slug ];
 			}
-		} catch ( \Exception $e ) {
-
-			// Send the error to the PHP error log
-			error_log( $e );
-
-			return false;
 		}
+
+		return false;
 	}
 
 	/**
