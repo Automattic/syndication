@@ -14,6 +14,8 @@ abstract class Puller {
 
 	protected $_client_manager;
 
+	public $site_status_meta_key = 'syn_site_status';
+
 	public $current_site_id = null;
 
 	public function __construct( Client_Manager $client_manager ) {
@@ -31,30 +33,40 @@ abstract class Puller {
 
 		$this->current_site_id = $site_id;
 
-		// @todo check site status
-
-		// Load the required client.
-		$client_slug = get_post_meta( $site_id, 'syn_transport_type', true );
-		if ( ! $client_slug ) {
-			// @todo log that this site was skipped because no client set.
-			throw new \Exception( 'No client selected.' );
+		// Fetch the site status
+		if ( 'idle' !== $this->get_site_status( $site_id ) ) {
+			return false;
 		}
 
-		$client = $this->_client_manager->get_pull_client( $client_slug );
+		// Get the required client.
+		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+		if ( ! $client_transport_type ) {
+			return false;
+		}
+
+		// Fetch the client so we may pull it's posts
+		$client = $this->_client_manager->get_pull_client( $client_transport_type );
 		if ( ! $client ) {
-			// @todo log that selected client does not exist.
+			return false;
 		}
 
-		// @todo mark site as in progress
+		// Mark site as in progress
+		$this->update_status( 'pulling' );
 
-		try {
-			$syn_posts = $client->get_posts();
-		} catch ( \Exception $e ) {
-			// @todo log and bail.
+		// Fetch the site's posts by calling the class located at the
+		// namespace given during registration
+		$posts = $client['class']->get_posts( $site_id );
+
+		// Update site status
+		$this->update_status( 'idle' );
+
+		if ( is_array( $posts ) && ! empty( $posts ) ) {
+			return $posts;
+		} else {
+			return false;
 		}
-
-		// @todo update site status
 	}
+
 
 	/**
 	 *

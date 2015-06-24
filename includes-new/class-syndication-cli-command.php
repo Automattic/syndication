@@ -79,7 +79,14 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		// enable verbosity
 		$this->_make_em_talk_pull();
 
-		$this->_get_syndication_server()->pull_content( array( $site ) );
+		// Fetch the site's client/transport type name
+		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+
+		// Fetch the site's client by name
+		$pull_client['class'] = syn_get_pull_client( $client_transport_type );
+
+		// Run the client's process_site method
+		$pull_client->process_site( $site_id );
 	}
 
 	function pull_sitegroup( $args, $assoc_args ) {
