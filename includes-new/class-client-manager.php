@@ -56,7 +56,6 @@ class Client_Manager {
 	}
 
 	public function get_clients() {
-
 		return $this->_push_clients + $this->_pull_clients;
 	}
 }

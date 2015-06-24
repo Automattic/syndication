@@ -2,10 +2,9 @@
 
 namespace Automattic\Syndication\Clients\XML;
 
-use Automattic\Syndication\Types\Import_Post;
+use Automattic\Syndication\Puller;
 
-class Pull_Client implements \Automattic\Syndication\Pull_Client
-{
+class Pull_Client extends Puller {
 
 	/**
 	 * @var int
@@ -62,9 +61,12 @@ class Pull_Client implements \Automattic\Syndication\Pull_Client
 	 */
 	private $error_message = '';
 
-
+	/**
+	 * Build initial pull client object
+	 *
+	 * @param int $site_id
+	 */
 	public function __construct( $site_id ) {
-error_log( 'my_site_id : ' . $site_id );
 		$this->site_id = $site_id;
 		$this->set_feed_url( get_post_meta( $site_id, 'syn_feed_url', true ) );
 
@@ -76,16 +78,15 @@ error_log( 'my_site_id : ' . $site_id );
 		$this->id_field               = get_post_meta( $site_id, 'syn_id_field', true );
 		$this->enc_field              = get_post_meta( $site_id, 'syn_enc_field', true );
 		$this->enc_is_photo           = get_post_meta( $site_id, 'syn_enc_is_photo', true );
-
 	}
 
 	/**
 	 * Retrieves a list of posts from a remote site.
 	 *
-	 * @param   array $args Arguments when retrieving posts.
-	 * @return  boolean true on success false on failure.
+	 * @param   int $site_id The ID of the site to get posts for
+	 * @return  array|bool   Array of posts on success, false on failure.
 	 */
-	public function get_posts( $args = array() ) {
+	public function get_posts( $site_id = 0 ) {
 		// create $post with values from $this::node_to_post
 		// create $post_meta with values from $this::node_to_meta
 
@@ -139,12 +140,17 @@ error_log( 'my_site_id : ' . $site_id );
 			}
 		}
 
+
+		// The instance construct here is fubar..
+		// we're not instantiating the class for each site
+		// using $this->var isn't accurate..
 		$feed = $this->fetch_feed();
 
-		// Catch attempts to pull content from a file which doesn't exist.
 		// TODO: kill feed client if too many failures
-		$site_post = get_post( $this->site_id );
 		if ( is_wp_error( $feed ) ) {
+
+		$site_post = get_post( $site_id );
+
 			Syndication_Logger::log_post_error( $this->site_id, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
@@ -188,8 +194,8 @@ error_log( 'my_site_id : ' . $site_id );
 				}
 			}
 			catch ( Exception $e ) {
-				//TODO: catch value not found here and alert for error
-				//TODO: catch multiple values returned here and alert for error
+				error_log( $e );
+
 				return array();
 			}
 		}
@@ -217,7 +223,7 @@ error_log( 'my_site_id : ' . $site_id );
 
 			//save photos as enclosures in meta
 			if ( ( isset( $enc_parent ) && strlen( $enc_parent ) ) && ! empty( $enc_nodes ) ) {
-				$meta_data['enclosures'] = $this->get_encs( $item->xpath( $enc_parent ), $enc_nodes );
+				$meta_data['enclosures'] = $this->get_enclosures( $item->xpath( $enc_parent ), $enc_nodes );
 			}
 
 			foreach ( $item_nodes as $save_location ) {
@@ -247,8 +253,8 @@ error_log( 'my_site_id : ' . $site_id );
 					}
 				}
 				catch ( Exception $e ) {
-					// TODO: catch value not found here and alert for error
-					// TODO: catch multiple values returned here and alert for error
+					error_log( $e );
+
 					return array();
 				}
 			}
@@ -312,7 +318,7 @@ error_log( 'my_site_id : ' . $site_id );
 	 * @param array $enc_nodes Optional.
 	 * @return array The list of enclosures in the feed.
 	 */
-	private function get_encs( $feed_enclosures = array(), $enc_nodes = array() ) {
+	private function get_enclosures( $feed_enclosures = array(), $enc_nodes = array() ) {
 		$enclosures = array();
 		foreach ( $feed_enclosures as $count => $enc ) {
 			if ( isset( $this->enc_is_photo ) && 1 == $this->enc_is_photo ) {
@@ -341,8 +347,9 @@ error_log( 'my_site_id : ' . $site_id );
 					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
 				}
 				catch ( Exception $e ) {
-					//TODO: catch value not found here and alert for error or not
-					return true;
+					error_log( $e );
+
+					return;
 				}
 			}
 			// if position is not provided in the feed, use the order in which they appear in the feed
@@ -358,11 +365,9 @@ error_log( 'my_site_id : ' . $site_id );
 	/**
 	 * Update post meta for the specified post.
 	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
+	 * @param $post_meta
+	 * $param $post
+	 * $param $site_id
 	 * @return mixed False if an error of if the data to save isn't passed.
 	 */
 	public static function update_meta( $post_meta, $post, $site_id ) {

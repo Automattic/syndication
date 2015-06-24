@@ -11,7 +11,6 @@ namespace Automattic\Syndication\Clients\XML;
 class Client_Options {
 
 	public function __construct() {
-
 		add_action( 'syndication/render_client_options', [ $this, 'render_client_options' ] );
 		add_action( 'syndication/save_client_options', [ $this, 'save_client_options' ] );
 	}
