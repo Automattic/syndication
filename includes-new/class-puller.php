@@ -14,8 +14,6 @@ abstract class Puller {
 
 	protected $_client_manager;
 
-	public $site_status_meta_key = 'syn_site_status';
-
 	public $current_site_id = null;
 
 	public function __construct( Client_Manager $client_manager ) {
@@ -32,9 +30,10 @@ abstract class Puller {
 	public function process_site( $site_id ) {
 
 		$this->current_site_id = $site_id;
+		global $site_manager, $client_manager;
 
 		// Fetch the site status
-		if ( 'idle' !== $this->get_site_status( $site_id ) ) {
+		if ( ! in_array( $site_manager->get_site_status( $site_id ), array( 'idle', '' ) ) ) {
 			return false;
 		}
 
@@ -51,14 +50,14 @@ abstract class Puller {
 		}
 
 		// Mark site as in progress
-		$this->update_status( 'pulling' );
+		$site_manager->update_site_status( 'pulling' );
 
 		// Fetch the site's posts by calling the class located at the
 		// namespace given during registration
 		$posts = $client['class']->get_posts( $site_id );
 
 		// Update site status
-		$this->update_status( 'idle' );
+		$site_manager->update_site_status( 'idle' );
 
 		if ( is_array( $posts ) && ! empty( $posts ) ) {
 			return $posts;
@@ -205,47 +204,6 @@ abstract class Puller {
 		return ! is_wp_error( $this->remote_get( $remote_url = '' ) );
 	}
 
-	/**
-	 * Wrapper for get_post_meta to return a site's current status
-	 *
-	 * Possible site statuses:
-	 * - idle
-	 * - pulling
-	 * - pushing
-	 * - processing
-	 *
-	 * @param int $site_id
-	 * @return mixed|bool Meta key value on success, false on failure
-	 */
-	public function get_site_status( $site_id = 0 ) {
-		if ( isset( $site_id ) && 0 !== $site_id ) {
-			return get_post_meta( (int) $site_id, $this->site_status_meta_key, true );
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Update a site's status
-	 *
-	 * Available site statuses:
-	 * - idle
-	 * - pulling
-	 * - pushing
-	 * - processing
-	 *
-	 * @param int $site_id       The site ID for which to update
-	 * @param string $new_status The new site status
-	 * @return mixed|bool        $meta_id on success, false on failure
-	 */
-	public function update_status( $site_id = 0, $new_status = '' ) {
-		if ( isset( $new_status ) && ! empty( $new_status ) ) {
-			return update_post_meta( (int) $site_id, $this->site_status_meta_key, sanitize_title( $new_status ) );
-		} else {
-			return false;
-		}
-	}
-	
 	/**
 	 * Fetch a remote url.
 	 *
