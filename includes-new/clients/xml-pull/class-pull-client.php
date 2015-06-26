@@ -20,15 +20,7 @@ class Pull_Client extends Puller {
 	/**
 	 * Hook into WordPress
 	 */
-	public function __construct() {
-		/*
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post', 10, 5 );
-		*/
-	}
+	public function __construct() {}
 
 	/**
 	 * Retrieves a list of posts from a remote site.

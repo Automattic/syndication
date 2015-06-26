@@ -12,7 +12,19 @@ namespace Automattic\Syndication;
  */
 abstract class Puller {
 
-	public function __construct(){}
+	public function __construct(){
+
+		//@todo make the following hooks work again
+		// these were in version 2.0, however we've restructured so much that these methods should no longer be called individually. now, instead they are called in succession in process_post below
+
+		/*
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
+		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
+		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post', 10, 5 );
+		*/
+	}
 
 	/**
 	 * Process a site and pull all it's posts
