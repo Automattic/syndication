@@ -405,29 +405,4 @@ class Pull_Client extends Puller {
 			update_post_meta( $result, $meta_key, $meta_value );
 		}
 	}
-
-	/**
-	 * Test the connection with the slave site.
-	 *
-	 * @return bool True on success; false on failure.
-	 */
-	public function test_connection() {
-		return ! is_wp_error( $this->fetch_feed() );
-	}
-
-	/**
-	 * Fetch a remote feed.
-	 *
-	 * @return string|WP_Error The content of the remote feed, or error if there's a problem.
-	 */
-	public function fetch_feed() {
-		$request = wp_remote_get( $this->feed_url );
-		if ( is_wp_error( $request ) ) {
-			return $request;
-		} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
-			return new WP_Error( 'syndication-fetch-failure', 'Failed to fetch XML Feed; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
-		}
-
-		return wp_remote_retrieve_body( $request );
-	}
 }

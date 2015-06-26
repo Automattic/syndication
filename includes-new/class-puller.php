@@ -196,6 +196,16 @@ abstract class Puller {
 	}
 
 	/**
+	 * Test the connection with the slave site.
+	 *
+	 * @param string $remote_url The remote URL
+	 * @return bool True on success; false on failure.
+	 */
+	public function test_connection( $remote_url = '' ) {
+		return ! is_wp_error( $this->remote_get( $remote_url = '' ) );
+	}
+
+	/**
 	 * Wrapper for get_post_meta to return a site's current status
 	 *
 	 * Possible site statuses:
@@ -231,6 +241,31 @@ abstract class Puller {
 	public function update_status( $site_id = 0, $new_status = '' ) {
 		if ( isset( $new_status ) && ! empty( $new_status ) ) {
 			return update_post_meta( (int) $site_id, $this->site_status_meta_key, sanitize_title( $new_status ) );
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Fetch a remote url.
+	 *
+	 * @param string $remote_url The remote URL
+	 * @return string|WP_Error The content of the remote feed, or error if there's a problem.
+	 */
+	public function remote_get( $remote_url = '' ) {
+
+		// Only proceed if we have a valid remote url
+		if ( isset( $remote_url ) && ! empty( $remote_url ) ) {
+
+			$request = wp_remote_get( esc_url_raw( $remote_url ) );
+
+			if ( \Automattic\Syndication\is_wp_error_do_throw( $request ) ) {
+				return $request;
+			} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
+				return new \WP_Error( 'syndication-fetch-failure', 'Failed to fetch Remote URL; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
+			}
+
+			return wp_remote_retrieve_body( $request );
 		} else {
 			return false;
 		}
