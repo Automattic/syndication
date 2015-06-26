@@ -200,57 +200,6 @@ class Pull_Client extends Puller {
 
 		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $new_posts ) ), $log_time = null, $extra = array() );
 
-	/**
-	 * Get enclosures (images/attachments) from a feed.
-	 *
-	 * @param array $feed_enclosures Optional.
-	 * @param array $enc_nodes Optional.
-	 * @param bool  $enc_is_photo
-	 * @return array The list of enclosures in the feed.
-	 */
-	private function get_enclosures( $feed_enclosures = array(), $enc_nodes = array(), $enc_is_photo = false ) {
-		$enclosures = array();
-		foreach ( $feed_enclosures as $count => $enc ) {
-			if ( isset( $enc_is_photo ) && 1 == $enc_is_photo ) {
-				$enc_array = array(
-					'caption'     => '',
-					'credit'      => '',
-					'description' => '',
-					'url'         => '',
-					'width'       => '',
-					'height'      => '',
-					'position'    => '',
-				);
-			} else {
-				$enc_array = array();
-			}
-
-			$enc_value = array();
-
-			foreach ( $enc_nodes as $post_value ) {
-				try {
-					if ( 'string(' == substr( $post_value['xpath'], 0, 7 ) ) {
-						$enc_value[0] = substr( $post_value['xpath'], 7, strlen( $post_value['xpath'] ) - 8 );
-					} else {
-						$enc_value = $enc->xpath( stripslashes( $post_value['xpath'] ) );
-					}
-					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
-				}
-				catch ( Exception $e ) {
-					error_log( $e );
-
-					return;
-				}
-			}
-			// if position is not provided in the feed, use the order in which they appear in the feed
-			if ( empty( $enc_array['position'] ) ) {
-				$enc_array['position'] = $count;
-			}
-			$enclosures[] = $enc_array;
-		}
-
-		return $enclosures;
-	}
 
 	/**
 	 * Update post meta for the specified post.
