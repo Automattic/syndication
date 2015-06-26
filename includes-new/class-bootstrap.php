@@ -7,7 +7,15 @@ namespace Automattic\Syndication;
 
 class Bootstrap {
 
+	/**
+	 * Fire up the Syndication plugin
+	 *
+	 * Note: Class Autoloading is in use
+	 */
 	public function __construct() {
+
+		// Load our helper functions which autoload can't..load
+		require_once( SYNDICATION_PATH . 'includes-new/functions-helpers.php');
 
 		// Always load.
 		new Custom_Post_Types\Site_Post_Type();
@@ -39,7 +47,8 @@ class Bootstrap {
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
+			require_once( SYNDICATION_PATH . 'includes-new/class-syndication-cli-command.php' );
+			\WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 		}
 
 		// Hooks.
