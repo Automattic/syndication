@@ -103,36 +103,29 @@ class Pull_Client extends Puller {
 		// TODO: handle constant strings in XML
 		foreach ( $abs_nodes as $abs_node ) {
 			$value_array = array();
-			try {
-				if ( 'string(' == substr( $abs_node['xpath'], 0, 7 ) ) {
-					$value_array[0] = substr( $abs_node['xpath'], 7, strlen( $abs_node['xpath'] ) - 8 );
-				} else {
-					$value_array = $xml->xpath( stripslashes( $abs_node['xpath'] ) );
-				}
 
-				if ( $abs_node['is_meta'] ) {
-					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
-						$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
-					}
-				} else if ( $abs_node['is_tax'] ) {
-					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
-						$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
-					}
-				} else {
-					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
-						$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
-					}
-				}
+			if ( 'string(' == substr( $abs_node['xpath'], 0, 7 ) ) {
+				$value_array[0] = substr( $abs_node['xpath'], 7, strlen( $abs_node['xpath'] ) - 8 );
+			} else {
+				$value_array = $xml->xpath( stripslashes( $abs_node['xpath'] ) );
 			}
-			catch ( Exception $e ) {
-				error_log( $e );
 
-				return array();
+			if ( $abs_node['is_meta'] ) {
+				if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+					$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
+				}
+			} else if ( $abs_node['is_tax'] ) {
+				if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+					$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
+				}
+			} else {
+				if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+					$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
+				}
 			}
 		}
 
-		$post_position = 0;
-		$items         = $xml->xpath( $node_config['post_root'] );
+		$items = $xml->xpath( $node_config['post_root'] );
 
 		if ( empty( $items ) ) {
 			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = printf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $node_config['post_root'] ), $log_time = $site->postmeta['is_update'], $extra = array() );
@@ -141,14 +134,14 @@ class Pull_Client extends Puller {
 			Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
 		}
 
-		foreach ( $items as $item )
+		foreach ( $items as $item_index => $item ) {
 
 			// @todo flush out how the post is actually created
-			$post_object = new Types\Post();
+			$new_post = new Types\Post();
 
 			$enclosures = $meta_data = $tax_data = $value_array = [];
 			$meta_data['is_update'] = current_time( 'mysql' );
-			$post_object->post_data['post_type'] = get_post_meta( $site->ID, 'syn_default_post_type', true );;
+			$new_post->post_data['post_type'] = get_post_meta( $site->ID, 'syn_default_post_type', true );;
 
 			//save photos as enclosures in meta
 			if ( ( isset( $node_config['enc_parent'] ) && strlen( $node_config['enc_parent'] ) ) && ! empty( $enc_nodes ) ) {
@@ -156,37 +149,36 @@ class Pull_Client extends Puller {
 			}
 
 			foreach ( $item_nodes as $save_location ) {
-				try {
-					if ( 'string(' == substr( $save_location['xpath'], 0, 7 ) ) {
-						$value_array[0] = substr( $save_location['xpath'], 7, strlen( $save_location['xpath'] ) - 8 );
-					} else {
-						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
-					}
-					if ( isset( $save_location['is_meta'] ) && $save_location['is_meta'] ) {
-						//SimpleXMLElement::xpath returns either an array or false if an element isn't returned
-						//checking $value_array first avoids the warning we get if the field isn't found
-						if ( $value_array && ( count( $value_array ) > 1 ) ) {
-							$value_array = array_map( 'strval', $value_array );
-							$meta_data[ $save_location['field'] ] = $value_array;
-						} else if ( $value_array ) {
-							//return a string if $value_array contains only a single element
-							$meta_data[ $save_location['field'] ] = (string) $value_array[0];
-						}
-					} else if ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
-						//for some taxonomies, multiple values may be supplied in the field
-						foreach ( $value_array as $value ) {
-							$tax_data[ $save_location['field'] ] = (string) $value;
-						}
-					} else {
-						$post_object->post_data[ $save_location['field'] ] = (string) $value_array[0];
-					}
+				if ( 'string(' == substr( $save_location['xpath'], 0, 7 ) ) {
+					$value_array[0] = substr( $save_location['xpath'], 7, strlen( $save_location['xpath'] ) - 8 );
+				} else {
+					$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
 				}
-				catch ( Exception $e ) {
-					error_log( $e );
-
-					return array();
+				if ( isset( $save_location['is_meta'] ) && $save_location['is_meta'] ) {
+					//SimpleXMLElement::xpath returns either an array or false if an element isn't returned
+					//checking $value_array first avoids the warning we get if the field isn't found
+					if ( $value_array && ( count( $value_array ) > 1 ) ) {
+						$value_array = array_map( 'strval', $value_array );
+						$meta_data[ $save_location['field'] ] = $value_array;
+					} else if ( $value_array ) {
+						//return a string if $value_array contains only a single element
+						$meta_data[ $save_location['field'] ] = (string) $value_array[0];
+					}
+				} else if ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
+					//for some taxonomies, multiple values may be supplied in the field
+					foreach ( $value_array as $value ) {
+						$tax_data[ $save_location['field'] ] = (string) $value;
+					}
+				} else {
+					$new_post->post_data[ $save_location['field'] ] = (string) $value_array[0];
 				}
 			}
+
+			// get this into the tax data
+			$new_post->post_data['post_category'] = $node_config['categories'];
+
+			// get this into the meta data
+			$meta_data['site_id'] = $site->ID;
 
 			$meta_data = array_merge( $meta_data, $abs_meta_data );
 			$tax_data  = array_merge( $tax_data, $abs_tax_data );
@@ -196,33 +188,25 @@ class Pull_Client extends Puller {
 			}
 
 			if ( ! isset( $meta_data['position'] ) ) {
-				$meta_data['position'] = $post_position;
+				$meta_data['position'] = $item_index;
 			}
 
 			if ( ! empty( $meta_data ) ) {
-				$post_object->post_meta = $meta_data;
+				$new_post->post_meta = $meta_data;
 			}
 
 			if ( ! empty( $tax_data ) ) {
-				$post_object->post_terms = $tax_data;
+				$new_post->post_terms = $tax_data;
 			}
-
-			$post_object->post_data['post_category'] = $node_config['categories'];
 
 			if ( ! empty( $meta_data[ $id_field ] ) ) {
-				$post_object->post_data['post_guid'] = $meta_data[ $id_field ];
-				$post_object->remote_id = $meta_data[ $id_field ];
+				$new_post->post_data['guid'] = $meta_data[ $id_field ];
 			}
 
-			$post_object->site_id = $site->ID;
-			$posts[] = $post_object;
-			$post_position++;
+			$new_posts[] = $new_post;
 		}
 
-		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
-
-		return $posts;
-	}
+		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $new_posts ) ), $log_time = null, $extra = array() );
 
 	/**
 	 * Get enclosures (images/attachments) from a feed.
@@ -312,5 +296,6 @@ class Pull_Client extends Puller {
 		foreach ( $metas as $meta_key => $meta_value ) {
 			update_post_meta( $result, $meta_key, $meta_value );
 		}
+		return $new_posts;
 	}
 }

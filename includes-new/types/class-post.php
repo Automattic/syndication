@@ -2,42 +2,55 @@
 
 namespace Automattic\Syndication\Types;
 
+/**
+ * Post content type
+ *
+ * The role of this class is to unify all remotely-fetched posts
+ * so that we have clearly defined post attributes, and so we let
+ * the pull clients simply handle pulling data, using this unified type.
+ *
+ * @package Automattic\Syndication\Types
+ */
 class Post {
 
-	public $local_id = null;
-
-	public $remote_id = null;
-
-	public $site_id = null;
-
-//'post' => [
-//'post_date_gmt' => '',
-//'post_content' => '',
-//'post_excerpt' => '',
-//'post_status' => '', // maybe
-//'post_type' => '', // maybe
-//'comment_status' => '',
-//'ping_status' => '',
-//'post_password' => '',
-//'post_name' => '',
-//'post_modified_gmt' => '',
-//'post_parent' => '', // maybe
-//],
 	public $post_data = [];
-
 	public $post_meta = [];
-
-	// I don't understand the WP style for commenting arrays
-	// [ 'category' ] => [ 'bacon' => 'Bacon', 'lettuce' => 'Lettuce', 'tomato' => 'Tomato' ];
 	public $post_terms = [];
 
-	/**
-	 * @var DateTime
-	 */
-	public $publish_date = null;
+	// Instantiation
+	public function __construct() {
 
-	/**
-	 * @var DateTime
-	 */
-	public $modified_date = null;
+		// Prime the post_data array
+		$this->post_data = [
+			'ID'                    => '', //must be left blank
+			'post_content'          => '',
+			'post_name'             => '',
+			'post_title'            => '',
+			'post_status'           => '',
+			'post_type'             => '',
+			'post_author'           => '',
+			'ping_status'           => '',
+			'post_parent'           => '',
+			'menu_order'            => '',
+			'to_ping'               => '',
+			'pinged'                => '',
+			'post_password'         => '',
+			'guid'                  => '', //must be left blank
+			'post_content_filtered' => '',
+			'post_excerpt'          => '',
+			'post_date'             => '',
+			'post_date_gmt'         => '',
+			'comment_status'        => '',
+			'post_category'         => '',
+			'tags_input'            => '',
+			'tax_input'             => '',
+			'page_template'         => '', //na
+		];
+
+		// Prime the post_meta array
+		$this->post_meta = [
+			'enc_field' => null,
+			'enclosures' => null,
+		];
+	}
 }
