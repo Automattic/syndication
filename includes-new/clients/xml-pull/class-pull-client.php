@@ -138,6 +138,16 @@ class Pull_Client extends Puller {
 			//save photos as enclosures in meta
 			if ( ( isset( $node_config['enc_parent'] ) && strlen( $node_config['enc_parent'] ) ) && ! empty( $enc_nodes ) ) {
 				$meta_data['enclosures'] = $this->get_enclosures( $item->xpath( $node_config['enc_parent'] ), $enc_nodes, $enc_is_photo );
+				// This is wonky and messed up, @todo repair me please
+				// the old implementation in 2.0 (in class-syndication-wp-xml-client.php:876)
+				// used the following logic (named updated for refactor)
+				// however, they purposefully only saved the last enclosure
+				foreach ( $meta_data['enclosures'] as $enclosure ) {
+					if ( defined( 'ENCLOSURES_AS_STRINGS' ) && constant( 'ENCLOSURES_AS_STRINGS' ) ) {
+						$enclosure = implode( "\n", $enclosure );
+					}
+					$new_post->post_meta['enc_field'] = $enclosure;
+				}
 			}
 
 			foreach ( $item_nodes as $save_location ) {
@@ -200,43 +210,6 @@ class Pull_Client extends Puller {
 
 		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $new_posts ) ), $log_time = null, $extra = array() );
 
-
-	/**
-	 * Update post meta for the specified post.
-	 *
-	 * @param $post_meta
-	 * $param $post
-	 * $param $site_id
-	 * @return mixed False if an error of if the data to save isn't passed.
-	 */
-	public static function update_meta( $post_meta, $post, $site_id ) {
-		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
-			return false;
-		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
-
-		// handle enclosures separately first
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
-		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
-		if ( isset( $enclosures ) && isset( $enc_field ) ) {
-			// first remove all enclosures for the post (for updates)
-			delete_post_meta( $result, $enc_field );
-			foreach ( $enclosures as $enclosure ) {
-				if ( defined( 'ENCLOSURES_AS_STRINGS' ) && constant( 'ENCLOSURES_AS_STRINGS' ) ) {
-					$enclosure = implode( "\n", $enclosure );
-				}
-				add_post_meta( $result, $enc_field, $enclosure, false );
-			}
-
-			// now remove them from the rest of the metadata before saving the rest
-			unset( $metas['enclosures'] );
-		}
-
-		foreach ( $metas as $meta_key => $meta_value ) {
-			update_post_meta( $result, $meta_key, $meta_value );
-		}
 		return $new_posts;
 	}
 }
