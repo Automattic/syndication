@@ -66,6 +66,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	function pull_site( $args, $assoc_args ) {
+		global $client_manager;
+
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'site_id' => 0,
 		) );
@@ -83,10 +85,11 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
 
 		// Fetch the site's client by name
-		$pull_client['class'] = syn_get_pull_client( $client_transport_type );
+		$client_details = $client_manager->get_pull_client( $client_transport_type );
 
 		// Run the client's process_site method
-		$pull_client->process_site( $site_id );
+		$client = new $client_details['class'];
+		$client->process_site( $client, $site_id );
 	}
 
 	function pull_sitegroup( $args, $assoc_args ) {
