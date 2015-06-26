@@ -137,7 +137,13 @@ class Pull_Client extends Puller {
 
 			//save photos as enclosures in meta
 			if ( ( isset( $node_config['enc_parent'] ) && strlen( $node_config['enc_parent'] ) ) && ! empty( $enc_nodes ) ) {
-				$meta_data['enclosures'] = $this->get_enclosures( $item->xpath( $node_config['enc_parent'] ), $enc_nodes, $enc_is_photo );
+
+				$meta_data['enclosures'] = $this->get_enclosures(
+					$item->xpath( $node_config['enc_parent'] ),
+					$enc_nodes,
+					$enc_is_photo
+				);
+
 				// This is wonky and messed up, @todo repair me please
 				// the old implementation in 2.0 (in class-syndication-wp-xml-client.php:876)
 				// used the following logic (named updated for refactor)

@@ -89,7 +89,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		// Run the client's process_site method
 		$client = new $client_details['class'];
-		$client->process_site( $client, $site_id );
+		$client->process_site( $site_id, $client );
 	}
 
 	function pull_sitegroup( $args, $assoc_args ) {
@@ -121,6 +121,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		$this->enabled_verbosity = true;
 
+		// @todo make these filters/actions work again
 		// output when a post is new or updated
 		add_filter( 'syn_pre_pull_posts', function( $posts, $site, $client ) {
 			WP_CLI::line( sprintf( 'Processing feed %s (%d)', $site->post_title, $site->ID ) );

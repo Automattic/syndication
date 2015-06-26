@@ -29,11 +29,11 @@ abstract class Puller {
 	/**
 	 * Process a site and pull all it's posts
 	 *
-	 * @param obj $client  The syndication client class instance
 	 * @param int $site_id The ID of the site for which to pull it's posts
+	 * @param obj $client  The syndication client class instance
 	 * @return array|bool  Array of posts on success, false on failure
 	 */
-	public static function process_site( $client, $site_id ) {
+	public function process_site( $site_id, $client ) {
 		global $site_manager, $client_manager;
 
 		// Fetch the site status
@@ -56,9 +56,17 @@ abstract class Puller {
 		// Mark site as in progress
 		$site_manager->update_site_status( 'pulling' );
 
-		// Fetch the site's posts by calling the class located at the
-		// namespace given during registration
-		$posts = $client->get_posts( $site_id );
+		try {
+			// Fetch the site's posts by calling the class located at the
+			// namespace given during registration
+			$posts = $client->get_posts( $site_id );
+
+			// Process the posts we fetched
+			$this->process_posts( $posts );
+
+		} catch ( \Exception $e ) {
+			error_log( $e );
+		}
 
 		// Update site status
 		$site_manager->update_site_status( 'idle' );
@@ -70,132 +78,118 @@ abstract class Puller {
 		}
 	}
 
-
 	/**
+	 * Process new posts fetched for a feed
 	 *
-	 * @param $posts array|\Traversable
+	 * @param array $posts An array of new posts fetched
 	 * @throws \Exception
+	 * @return mixed False on failure
 	 */
 	public function process_posts( $posts ) {
 		// @todo perform actions to improve performance
 
-		if ( ! is_array( $posts ) || ! $posts instanceof \Traversable ) {
-			throw new \InvalidArgumentException( '$posts must be array or Traversable.' );
+		if ( ! is_array( $posts ) && ! empty( $posts ) ) {
+			throw new \Exception( '$posts must be array' );
+
+			return false;
 		}
 
+		$inserted_posts = 0;
+
 		foreach ( $posts as $post ) {
-			$this->process_post( $post );
+			$post_id = $this->process_post( $post );
+
+			if ( false !== $post_id ) {
+				$inserted_posts++;
+			}
 		};
 
+		Syndication_Logger::log_post_info( $site->ID, $status = 'posts_inserted', $message = sprintf( __( '%d posts were successfully inserted', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
+		
 		// @todo remove actions to improve performance
 	}
 
 	/**
-	 * @param Types\Post $post
-	 * @throws \Exception
+	 * Process a new post
+	 *
+	 * Insert the post into WP, then if successful,
+	 * insert the posts meta and terms
+	 *
+	 * @param Types\Post $post A prepared
+	 * @return int $post_id The ID of the newly inserted post
 	 */
 	public function process_post( Types\Post $post ) {
 
 		// @todo hooks
 		// @todo Validate the post.
-
-		// Find local ID.
-		if ( ! $post->local_id ) {
-			$local_id = $this->get_local_id( $post->remote_id );
-
-			if ( $local_id ) {
-				$post->local_id = $local_id;
-			}
-		}
-
-		// Make sure post exists.
-		if ( $post->local_id && ! get_post( $post->local_id ) ) {
-			throw new \Exception( 'Post does not exist.' );
-		}
-
 		// @todo Bail if post exists and in-progress marker is set.
 		// @todo Mark post as in-progress (if post exists).
 
-		// Consume the post.
-		$this->process_post_data( $post );
-		$this->process_post_meta( $post );
-		$this->process_post_terms( $post );
+		// Consume the post
+		$post = apply_filters( 'syn_before_insert_post', $post );
+		$post_id = wp_insert_post( $post->post_data, true );
+
+		if ( ! is_wp_error_do_throw( $post_id ) ) {
+			$this->process_post_meta( $post_id, $post->post_meta );
+			$this->process_post_terms( $post_id, $post->post_terms );
+		}
+
+		return $post_id;
 
 		// @todo Mark post as done.
 	}
 
-	public function process_post_data( Types\Post $post ) {
+	/**
+	 * Add meta to a post
+	 *
+	 * @param int   $post_id   The ID of the post for which to insert the given meta
+	 * @param array $post_meta Associative array of meta to add to the post
+	 * @throws \Exception
+	 * @return mixed           False on failure
+	 */
+	public function process_post_meta( $post_id, $post_meta ) {
 
 		// @todo Validate again if this method remains public.
+		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_id, $post_meta );
 
-		$new_post = $post->post_data;
+		if ( is_array( $post_meta ) && ! empty( $post_meta ) ) {
 
-		// @todo Date/time futzing.
+			foreach ( $post_meta as $key => $value ) {
+				try {
+					$res = update_post_meta( $post_id, $key, $value );
 
-		if ( $post->local_id ) {
-			$new_post['ID'] = $post->local_id;
-		}
-
-		$new_post = apply_filters( 'syn_before_insert_post', $new_post, $this->current_site_id );
-
-		$res = wp_insert_post( $new_post, true );
-
-		is_wp_error_do_throw( $res );
-	}
-
-	public function process_post_meta( Types\Post $post ) {
-
-		// @todo Validate again if this method remains public.
-		$post_meta = apply_filters( 'syn_before_update_post_meta', $post->post_meta, $post, $this->current_site_id );
-
-		foreach ( $post->post_meta as $key => $value ) {
-			$res = update_post_meta( $post->local_id, $key, $value );
-
-			if ( ! $res ) {
-				throw new \Exception( 'Could not insert post meta.' );
+					if ( ! $res ) {
+						throw new \Exception( "Could not insert post meta. Key: $key, Value: $value" );
+					}
+				} catch ( \Exception $e ) {
+					error_log( $e );
+				}
 			}
+		} else {
+			return false;
 		}
 	}
-
-	public function process_post_terms( Types\Post $post ) {
-
-		// @todo Validate again if this method remains public.
-		$post_terms = apply_filters( 'syn_before_set_object_terms', $post->post_terms, $post, $this->current_site_id );
-
-
-		foreach ( $post_terms as $taxonomy => $terms ) {
-
-			$res = wp_set_object_terms( $post->local_id, $terms, $taxonomy );
-
-			is_wp_error_do_throw( $res );
-		}
-	}
-
 
 	/**
-	 * @param $identifier
-	 * @return int|void
+	 * Add taxonomy terms to a post
+	 *
+	 * @param int   $post_id    The ID of the post for which to insert the given meta
+	 * @param array $post_terms Associative array of taxonomy|terms to add to the post
+	 * @throws \Exception
 	 */
-	public function get_local_id( $identifier ) {
+	public function process_post_terms( $post_id, $post_terms ) {
 
-		$identifier = (string) $identifier;
+		// @todo Validate again if this method remains public.
+		$post_terms = apply_filters( 'syn_before_set_object_terms', $post_id, $post_terms );
 
-		if ( empty( $identifier ) ) {
-			return;
+		if ( is_array( $post_terms ) && ! empty( $post_terms ) ) {
+			foreach ( $post_terms as $taxonomy => $terms ) {
+
+				$res = wp_set_object_terms( $post_id, $terms, $taxonomy );
+
+				is_wp_error_do_throw( $res );
+			}
 		}
-
-		$posts = get_posts( [
-			'meta_key' => 'syn_identifier',
-			'meta_value' => $identifier,
-			'posts_per_page' => 1,
-			'fields' => 'ids',
-		] );
-
-		if ( ! $posts ) {
-			return;
-		}
-
-		return (int) $posts[0];
 	}
 
 	/**
@@ -221,7 +215,7 @@ abstract class Puller {
 
 			$request = wp_remote_get( esc_url_raw( $remote_url ) );
 
-			if ( \Automattic\Syndication\is_wp_error_do_throw( $request ) ) {
+			if ( is_wp_error_do_throw( $request ) ) {
 				return $request;
 			} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
 				return new \WP_Error( 'syndication-fetch-failure', 'Failed to fetch Remote URL; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
