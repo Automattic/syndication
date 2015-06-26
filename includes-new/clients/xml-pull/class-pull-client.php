@@ -3,6 +3,7 @@
 namespace Automattic\Syndication\Clients\XML_Pull;
 
 use Automattic\Syndication\Puller;
+use Automattic\Syndication\Types;
 
 /**
  * Syndication Client: XML Pull
@@ -224,6 +225,8 @@ class Pull_Client extends Puller {
 			$meta_data['is_update'] = current_time( 'mysql' );
 			$tax_data               = array();
 			$value_array            = array();
+			// @todo flush out how the post is actually created
+			$post_object = new Types\Post();
 
 			$post_object->post_data['post_type'] = $this->default_post_type;
 

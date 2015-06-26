@@ -2,7 +2,7 @@
 
 namespace Automattic\Syndication\Types;
 
-class Import_Post {
+class Post {
 
 	public $local_id = null;
 
