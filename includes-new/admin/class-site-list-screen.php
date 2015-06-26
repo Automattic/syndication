@@ -52,7 +52,7 @@ class Site_List_Screen {
 				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
 
 				// Fetch the corresponding client
-				$pull_client = \Automattic\Syndication\get_pull_client( $transport_type );
+				$pull_client = syn_get_pull_client( $transport_type );
 
 				// Output the client name
 				if ( isset( $pull_client['label'] ) ) {

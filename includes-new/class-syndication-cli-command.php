@@ -99,14 +99,17 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		if ( empty( $sitegroup ) )
 			WP_CLI::error( "Please specify a valid sitegroup" );
 
+		/*
+		 * @todo Update for new restructured architecture
 		$server = $this->_get_syndication_server();
 		$sites = $server->get_sites_by_sitegroup( $sitegroup );
+		*/
 
 		// enable verbosity
 		$this->_make_em_talk_pull();
 
 		// do it, to it
-		$server->pull_content( $sites );
+		//$server->pull_content( $sites );
 	}
 
 	private function _make_em_talk_pull() {
@@ -154,11 +157,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		}, 10, 6 );
 
 	}
-
+	/*
+	 * @todo remove, unneeded with new architecture
 	private function _get_syndication_server() {
 		global $push_syndication_server;
 		return $push_syndication_server;
 	}
+	*/
 
 	protected function stop_the_insanity() {
 		global $wpdb, $wp_object_cache;
