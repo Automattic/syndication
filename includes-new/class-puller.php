@@ -12,24 +12,16 @@ namespace Automattic\Syndication;
  */
 abstract class Puller {
 
-	protected $_client_manager;
-
-	public $current_site_id = null;
-
-	public function __construct( Client_Manager $client_manager ) {
-
-		$this->_client_manager = $client_manager;
-	}
+	public function __construct(){}
 
 	/**
 	 * Process a site and pull all it's posts
 	 *
+	 * @param obj $client  The syndication client class instance
 	 * @param int $site_id The ID of the site for which to pull it's posts
 	 * @return array|bool  Array of posts on success, false on failure
 	 */
-	public function process_site( $site_id ) {
-
-		$this->current_site_id = $site_id;
+	public static function process_site( $client, $site_id ) {
 		global $site_manager, $client_manager;
 
 		// Fetch the site status
@@ -44,8 +36,8 @@ abstract class Puller {
 		}
 
 		// Fetch the client so we may pull it's posts
-		$client = $this->_client_manager->get_pull_client( $client_transport_type );
-		if ( ! $client ) {
+		$client_details = $client_manager->get_pull_client( $client_transport_type );
+		if ( ! $client_details ) {
 			return false;
 		}
 
@@ -54,7 +46,7 @@ abstract class Puller {
 
 		// Fetch the site's posts by calling the class located at the
 		// namespace given during registration
-		$posts = $client['class']->get_posts( $site_id );
+		$posts = $client->get_posts( $site_id );
 
 		// Update site status
 		$site_manager->update_site_status( 'idle' );

@@ -2,6 +2,7 @@
 
 namespace Automattic\Syndication\Clients\XML_Pull;
 
+use Automattic\Syndication;
 use Automattic\Syndication\Puller;
 use Automattic\Syndication\Types;
 
@@ -17,77 +18,16 @@ use Automattic\Syndication\Types;
 class Pull_Client extends Puller {
 
 	/**
-	 * @var int
+	 * Hook into WordPress
 	 */
-	private $site_id;
-
-	/**
-	 * @var string
-	 */
-	private $default_post_type;
-
-	/**
-	 * @var string
-	 */
-	private $default_post_status;
-
-	/**
-	 * @var string
-	 */
-	private $default_comment_status;
-
-	/**
-	 * @var string
-	 */
-	private $default_ping_status;
-
-	/**
-	 * @var array
-	 */
-	private $nodes_to_post;
-
-	/**
-	 * @var mixed
-	 */
-	private $id_field;
-
-	/**
-	 * @var mixed
-	 */
-	private $enc_field;
-
-	/**
-	 * @var bool
-	 */
-	private $enc_is_photo;
-
-	/**
-	 * @var string
-	 */
-	private $feed_url;
-
-	/**
-	 * @var string
-	 */
-	private $error_message = '';
-
-	/**
-	 * Build initial pull client object
-	 *
-	 * @param int $site_id
-	 */
-	public function __construct( $site_id ) {
-		$this->site_id = $site_id;
-		$this->set_feed_url( get_post_meta( $site_id, 'syn_feed_url', true ) );
-
-		$this->default_post_type      = get_post_meta( $site_id, 'syn_default_post_type', true );
-		$this->default_post_status    = get_post_meta( $site_id, 'syn_default_post_status', true );
-		$this->default_comment_status = get_post_meta( $site_id, 'syn_default_comment_status', true );
-		$this->default_ping_status    = get_post_meta( $site_id, 'syn_default_ping_status', true );
-		$this->nodes_to_post          = get_post_meta( $site_id, 'syn_node_config', false );
-		$this->id_field               = get_post_meta( $site_id, 'syn_id_field', true );
-		$this->enc_field              = get_post_meta( $site_id, 'syn_enc_field', true );
-		$this->enc_is_photo           = get_post_meta( $site_id, 'syn_enc_is_photo', true );
+	public function __construct() {
+		/*
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
+		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
+		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post', 10, 5 );
+		*/
 	}
 
 	/**
@@ -103,36 +43,19 @@ class Pull_Client extends Puller {
 		//TODO: required fields for post
 		//TODO: handle categories
 
-		$abs_nodes       = array();
-		$item_nodes      = array();
-		$enc_nodes       = array();
-		$tax_nodes       = array();
-		$abs_post_fields = array();
-		$abs_meta_data   = array();
-		$abs_tax_data    = array();
-		$posts           = array();
+		$abs_nodes = $item_nodes = $enc_nodes = $tax_nodes = $abs_post_fields = $abs_meta_data = $abs_tax_data = $posts = [];
 
-		$nodes     = $this->nodes_to_post[0];
-		$post_root = $nodes['post_root'];
-		unset( $nodes['post_root'] );
-
-		$namespace = isset( $nodes['namespace'] ) ? $nodes['namespace'] : null;
-		unset( $nodes['namespace'] );
-
-		$enc_parent = $nodes['enc_parent'];
-		unset( $nodes['enc_parent'] );
-
-		$enc_field = isset( $this->enc_field ) ? $this->enc_field : null;
-
-		$categories = (array) $nodes['categories'];
-		unset( $nodes['categories'] );
-
-		$enclosures_as_strings = isset( $nodes['enclosures_as_strings'] ) ? true : false;
-		unset( $nodes['enclosures_as_strings'] );
+		$site = get_post( $site_id );
+		$node_config = get_post_meta( $site->ID, 'syn_node_config', true );
+		$enc_field = get_post_meta( $site->ID, 'syn_enc_field', true );
+		$feed_url = apply_filters( 'syn_feed_url', get_post_meta( $site->ID, 'syn_feed_url', true ) );
+		$enclosures_as_strings = isset( $node_config['enclosures_as_strings'] ) ? true : false;
+		$id_field = get_post_meta( $site_id, 'syn_id_field', true );
+		$enc_is_photo = get_post_meta( $site_id, 'syn_enc_is_photo', true );
 
 		//TODO: add checkbox on feed config to allow enclosures to be saved as strings as SI does
 		//TODO: add tags here and in feed set up UI
-		foreach ( $nodes['nodes'] as $key => $storage_locations ) {
+		foreach ( $node_config['nodes'] as $key => $storage_locations ) {
 			foreach ( $storage_locations as $storage_location ) {
 				$storage_location['xpath'] = $key;
 				if ( $storage_location['is_item'] ) {
@@ -147,35 +70,30 @@ class Pull_Client extends Puller {
 			}
 		}
 
+		// Fetch the XML feed
+		$feed = $this->remote_get( $feed_url );
 
-		// The instance construct here is fubar..
-		// we're not instantiating the class for each site
-		// using $this->var isn't accurate..
-		$feed = $this->fetch_feed();
-
-		// TODO: kill feed client if too many failures
-
-		$site_post = get_post( $site_id );
-
-		if ( is_wp_error_and_throw( $feed ) ) {
-			Syndication_Logger::log_post_error( $this->site_id, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+		if ( Syndication\is_wp_error_do_throw( $feed ) ) {
+			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
 			// Track the event.
-			do_action( 'push_syndication_event', 'pull_failure', $this->site_id );
+			do_action( 'push_syndication_event', 'pull_failure', $site->ID );
 
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_id, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+			Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
 		}
 
-		/** @var SimpleXMLElement $xml */
-		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
+		/**
+		 * @var SimpleXMLElement $xml
+		 */
+		$xml = simplexml_load_string( $feed, null, 0, $node_config['namespace'], false );
 
 		if ( false === $xml ) {
-			Syndication_Logger::log_post_error( $this->site_id, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $feed_url ), $log_time = null, $extra = array() );
 
 			// Track the event.
-			do_action( 'push_syndication_event', 'pull_failure', $this->site_id );
+			do_action( 'push_syndication_event', 'pull_failure', $site->ID );
 
 			return array();
 		}
@@ -193,11 +111,17 @@ class Pull_Client extends Puller {
 				}
 
 				if ( $abs_node['is_meta'] ) {
-					$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
+					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+						$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
+					}
 				} else if ( $abs_node['is_tax'] ) {
-					$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
+					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+						$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
+					}
 				} else {
-					$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
+					if ( isset( $value_array[0] ) && ! empty( $value_array[0] ) ) {
+						$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
+					}
 				}
 			}
 			catch ( Exception $e ) {
@@ -208,31 +132,27 @@ class Pull_Client extends Puller {
 		}
 
 		$post_position = 0;
-		$items         = $xml->xpath( $post_root );
+		$items         = $xml->xpath( $node_config['post_root'] );
 
 		if ( empty( $items ) ) {
-			Syndication_Logger::log_post_error( $this->site_id, $status = 'error', $message = printf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = printf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $node_config['post_root'] ), $log_time = $site->postmeta['is_update'], $extra = array() );
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_id, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
+			Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
 		}
 
-		foreach ( $items as $item ) {
-			$post_object = new Import_Post;
+		foreach ( $items as $item )
 
-			$enclosures             = array();
-			$meta_data              = array();
-			$meta_data['is_update'] = current_time( 'mysql' );
-			$tax_data               = array();
-			$value_array            = array();
 			// @todo flush out how the post is actually created
 			$post_object = new Types\Post();
 
-			$post_object->post_data['post_type'] = $this->default_post_type;
+			$enclosures = $meta_data = $tax_data = $value_array = [];
+			$meta_data['is_update'] = current_time( 'mysql' );
+			$post_object->post_data['post_type'] = get_post_meta( $site->ID, 'syn_default_post_type', true );;
 
 			//save photos as enclosures in meta
-			if ( ( isset( $enc_parent ) && strlen( $enc_parent ) ) && ! empty( $enc_nodes ) ) {
-				$meta_data['enclosures'] = $this->get_enclosures( $item->xpath( $enc_parent ), $enc_nodes );
+			if ( ( isset( $node_config['enc_parent'] ) && strlen( $node_config['enc_parent'] ) ) && ! empty( $enc_nodes ) ) {
+				$meta_data['enclosures'] = $this->get_enclosures( $item->xpath( $node_config['enc_parent'] ), $enc_nodes, $enc_is_photo );
 			}
 
 			foreach ( $item_nodes as $save_location ) {
@@ -279,45 +199,29 @@ class Pull_Client extends Puller {
 				$meta_data['position'] = $post_position;
 			}
 
-			$post_object->post_meta = $meta_data;
+			if ( ! empty( $meta_data ) ) {
+				$post_object->post_meta = $meta_data;
+			}
 
 			if ( ! empty( $tax_data ) ) {
 				$post_object->post_terms = $tax_data;
 			}
 
-			$post_object->post_data['post_category'] = $categories;
+			$post_object->post_data['post_category'] = $node_config['categories'];
 
-			if ( ! empty( $meta_data[ $this->id_field ] ) ) {
-				$post_object->post_data['post_guid'] = $meta_data[ $this->id_field ];
-				$post_object->remote_id = $meta_data[ $this->id_field ];
+			if ( ! empty( $meta_data[ $id_field ] ) ) {
+				$post_object->post_data['post_guid'] = $meta_data[ $id_field ];
+				$post_object->remote_id = $meta_data[ $id_field ];
 			}
 
-			$post_object->site_id = $this->site_id;
-
+			$post_object->site_id = $site->ID;
 			$posts[] = $post_object;
 			$post_position++;
 		}
 
-		Syndication_Logger::log_post_info( $this->site_id, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
+		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
 
 		return $posts;
-
-	}
-
-	/**
-	 * Sets the URL of the external feed to pull from.
-	 *
-	 * @param string $url The URL of the feed to pull.
-	 */
-	private function set_feed_url( $url ) {
-
-		$url = apply_filters( 'syn_feed_url', $url );
-
-		if ( parse_url( $url ) ) {
-			$this->feed_url = $url;
-		} else {
-			$this->error_message = sprintf( __( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
-		}
 	}
 
 	/**
@@ -325,12 +229,13 @@ class Pull_Client extends Puller {
 	 *
 	 * @param array $feed_enclosures Optional.
 	 * @param array $enc_nodes Optional.
+	 * @param bool  $enc_is_photo
 	 * @return array The list of enclosures in the feed.
 	 */
-	private function get_enclosures( $feed_enclosures = array(), $enc_nodes = array() ) {
+	private function get_enclosures( $feed_enclosures = array(), $enc_nodes = array(), $enc_is_photo = false ) {
 		$enclosures = array();
 		foreach ( $feed_enclosures as $count => $enc ) {
-			if ( isset( $this->enc_is_photo ) && 1 == $this->enc_is_photo ) {
+			if ( isset( $enc_is_photo ) && 1 == $enc_is_photo ) {
 				$enc_array = array(
 					'caption'     => '',
 					'credit'      => '',
