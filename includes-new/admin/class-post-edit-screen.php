@@ -12,15 +12,17 @@ class Post_Edit_Screen {
 	}
 
 	public function add_post_metaboxes() {
-
+		global $settings_manager;
 		// return if no post types supports push syndication
-		if( empty( $this->push_syndicate_settings['selected_post_types'] ) )
+		if( empty( $settings_manager->get_setting( 'selected_post_types' ) ) ) {
 			return;
+		}
 
-		if( !$this->current_user_can_syndicate() )
+		if( ! $this->current_user_can_syndicate() ) {
 			return;
+		}
 
-		$selected_post_types = $this->push_syndicate_settings[ 'selected_post_types' ];
+		$selected_post_types = $settings_manager->get_setting( 'selected_post_types' );
 		foreach( $selected_post_types as $selected_post_type ) {
 			add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
 			//add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );

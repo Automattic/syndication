@@ -343,7 +343,7 @@ class Site_Options {
 		$node_config['namespace']  = sanitize_text_field( $_POST['namespace'] );
 		$node_config['post_root']  = sanitize_text_field( $_POST['post_root'] );
 		$node_config['enc_parent'] = sanitize_text_field( $_POST['enc_parent'] );
-		$node_config['categories'] = is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
+		$node_config['categories'] = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
 		$node_config['nodes']      = $custom_nodes;
 		update_post_meta( $site_id, 'syn_node_config', $node_config );
 		return true;

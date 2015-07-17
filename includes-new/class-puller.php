@@ -127,7 +127,38 @@ abstract class Puller {
 
 		// Consume the post
 		$post = apply_filters( 'syn_before_insert_post', $post );
-		$post_id = wp_insert_post( $post->post_data, true );
+
+		// Generate a unique `syndicated_guid` combining the site id and the item guid.
+		$syndicated_guid = md5( $post->post_meta['site_id'] . '_' . $post->post_data['post_guid'] );
+
+		// Query for posts with a matching syndicated_guid
+		$query_args = array(
+			'meta_key'      => 'syndicated_guid',
+			'meta_value'    => $syndicated_guid,
+			'post_status'   => 'any',
+			'post_per_page' => 1
+		);
+		$existing_post_query = new \WP_Query( $query_args );
+		// If the post has already been consumed, update it; otherwise insert it.
+		// @todo Only update if updates enabled in settings
+		if ( $existing_post_query->have_posts() ) {
+			// Existing post, set the post ID for update.
+			$existing_post_query->the_post();
+			$post->post_data['ID'] = get_the_ID();
+
+			// Maintain the post's status.
+			$post->post_data['post_status'] = get_post_status();
+
+			// Update the existing post.
+			$post_id = wp_update_post( $post->post_data, true );
+		} else {
+			//  Include the syndicated_guid so we can update this post later.
+			$post->post_meta['syndicated_guid'] = $syndicated_guid;
+
+			// The post is new, insert it.
+			$post_id = wp_insert_post( $post->post_data, true );
+		}
+		wp_reset_postdata();
 
 		if ( ! is_wp_error_do_throw( $post_id ) ) {
 			$this->process_post_meta( $post_id, $post->post_meta );
@@ -148,22 +179,13 @@ abstract class Puller {
 	 * @return mixed           False on failure
 	 */
 	public function process_post_meta( $post_id, $post_meta ) {
-
 		// @todo Validate again if this method remains public.
-		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_id, $post_meta );
+		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_meta, $post_id );
 
 		if ( is_array( $post_meta ) && ! empty( $post_meta ) ) {
 
 			foreach ( $post_meta as $key => $value ) {
-				try {
-					$res = update_post_meta( $post_id, $key, $value );
-
-					if ( ! $res ) {
-						throw new \Exception( "Could not insert post meta. Key: $key, Value: $value" );
-					}
-				} catch ( \Exception $e ) {
-					error_log( $e );
-				}
+				update_post_meta( $post_id, $key, $value );
 			}
 		} else {
 			return false;

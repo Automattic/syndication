@@ -22,6 +22,10 @@ class Bootstrap {
 		new Custom_Taxonomies\Sitegroup_Taxonomy();
 		new Cron();
 
+		// Settings helper.
+		global $settings_manager;
+		$settings_manager = new Syndication_Settings();
+
 		global $client_manager;
 		$client_manager = new Client_Manager();
 
@@ -40,6 +44,9 @@ class Bootstrap {
 		new Admin\Site_List_Screen();
 		new Admin\Site_Edit_Screen( $client_manager );
 		new Admin\Post_Edit_Screen();
+
+		// Load the runner.
+		new Syndication_Runner();
 
 		// Bootstrap individual built-in clients.
 		new Clients\Test\Bootstrap();
