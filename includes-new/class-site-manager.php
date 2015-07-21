@@ -74,8 +74,8 @@ class Site_Manager {
 	}
 
 	private function sort_sites_by_last_pull_date( $site_a, $site_b ) {
-		$site_a_pull_date = (int) get_post_meta( $site_a->ID, 'syn_last_pull_time', true );
-		$site_b_pull_date = (int) get_post_meta( $site_b->ID, 'syn_last_pull_time', true );
+		$site_a_pull_date = (int) get_post_meta( $site_a, 'syn_last_pull_time', true );
+		$site_b_pull_date = (int) get_post_meta( $site_b, 'syn_last_pull_time', true );
 
 		if ( $site_a_pull_date == $site_b_pull_date )
 			return 0;
