@@ -124,43 +124,6 @@ class Site_Options {
 		update_post_meta( $site_id, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
 		update_post_meta( $site_id, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
 
-		$node_changes = $_POST['node'];
-		$node_config  = array();
-		$custom_nodes = array();
-		if ( isset( $node_changes ) ) {
-			foreach ( $node_changes as $row ) {
-				$row_data = array();
-
-				//if no new has been added to the empty row at the end, ignore it
-				if ( ! empty( $row['xpath'] ) ) {
-
-					foreach ( array( 'is_item', 'is_meta', 'is_tax', 'is_photo' ) as $field ) {
-						$row_data[ $field ] = isset( $row[ $field ] ) && in_array( $row[ $field ], array(
-								'true',
-								'on'
-							) ) ? 1 : 0;
-					}
-					$xpath = html_entity_decode( $row['xpath'] );
-
-					unset( $row['xpath'] );
-
-					$row_data['field'] = sanitize_text_field( $row['field'] );
-
-					if ( ! isset( $custom_nodes[ $xpath ] ) ) {
-						$custom_nodes[ $xpath ] = array();
-					}
-
-					$custom_nodes[ $xpath ][] = $row_data;
-				}
-			}
-		}
-
-		$node_config['namespace']  = sanitize_text_field( $_POST['namespace'] );
-		$node_config['post_root']  = sanitize_text_field( $_POST['post_root'] );
-		$node_config['enc_parent'] = sanitize_text_field( $_POST['enc_parent'] );
-		$node_config['categories'] = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
-		$node_config['nodes']      = $custom_nodes;
-		update_post_meta( $site_id, 'syn_node_config', $node_config );
 		return true;
 	}
 
