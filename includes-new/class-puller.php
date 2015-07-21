@@ -62,7 +62,7 @@ abstract class Puller {
 			$posts = $client->get_posts( $site_id );
 
 			// Process the posts we fetched
-			$this->process_posts( $posts );
+			$this->process_posts( $posts, $site_id );
 
 		} catch ( \Exception $e ) {
 			error_log( $e );
@@ -85,7 +85,7 @@ abstract class Puller {
 	 * @throws \Exception
 	 * @return mixed False on failure
 	 */
-	public function process_posts( $posts ) {
+	public function process_posts( $posts, $site_id ) {
 		// @todo perform actions to improve performance
 
 		if ( ! is_array( $posts ) && ! empty( $posts ) ) {
@@ -104,7 +104,7 @@ abstract class Puller {
 			}
 		};
 
-		Syndication_Logger::log_post_info( $site->ID, $status = 'posts_inserted', $message = sprintf( __( '%d posts were successfully inserted', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
+		Syndication_Logger::log_post_info( $site_id, $status = 'posts_inserted', $message = sprintf( __( '%d posts were successfully inserted', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
 		
 		// @todo remove actions to improve performance
 	}
