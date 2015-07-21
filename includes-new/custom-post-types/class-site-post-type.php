@@ -14,7 +14,7 @@ class Site_Post_Type {
 		$post_type_capabilities = array(
 			'edit_post'          => $capability,
 			'read_post'          => $capability,
-			'delete_post'        => $capability,
+			'delete_posts'       => $capability,
 			'edit_posts'         => $capability,
 			'edit_others_posts'  => $capability,
 			'publish_posts'      => $capability,
