@@ -35,7 +35,7 @@ class Post {
 			'to_ping'               => '',
 			'pinged'                => '',
 			'post_password'         => '',
-			'guid'                  => '', //must be left blank
+			'post_guid'             => '', //must be left blank
 			'post_content_filtered' => '',
 			'post_excerpt'          => '',
 			'post_date'             => '',
@@ -49,7 +49,8 @@ class Post {
 
 		// Prime the post_meta array
 		$this->post_meta = [
-			'enc_field' => null,
+			'enc_field'  => null,
+			'site_id'    => '',
 			'enclosures' => null,
 		];
 	}
