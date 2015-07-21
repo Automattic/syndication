@@ -65,9 +65,91 @@ class Syndication_Runner {
 		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
+
+
+	// get the slave posts as $site_ID => $ext_ID
+	public function get_slave_posts( $post_ID ) {
+
+		// array containing states of sites
+		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
+		if ( empty( $slave_post_states ) )
+			return;
+
+		// array containing slave posts as $site_ID => $ext_ID
+		$slave_posts = array();
+
+		foreach( $slave_post_states as $state ) {
+			foreach( $state as $site_ID => $info ) {
+				if( ! is_wp_error( $info ) && !empty( $info[ 'ext_ID' ] ) ) {
+					$slave_posts[ $site_ID ] = $info[ 'ext_ID' ];
+				}
+			}
+		}
+
+		return $slave_posts;
+
+	}
+
+
+	/**
+	 * Delete_content callback from v2.
+	 * @todo review and test.
+	 */
+	public function delete_content( $post_ID ) {
+
+		$delete_error_sites = get_option( 'syn_delete_error_sites' );
+		$delete_error_sites = !empty( $delete_error_sites ) ? $delete_error_sites : array() ;
+		$slave_posts        = $this->get_slave_posts( $post_ID );
+
+		if( empty( $slave_posts ) )
+			return;
+
+		foreach( $slave_posts as $site_ID => $ext_ID ) {
+
+			$site_enabled = get_post_meta( $site_ID, 'syn_site_enabled', true);
+
+			// check whether the site is enabled
+			if( $site_enabled == 'on' ) {
+
+				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
+				$client         = Syndication_Client_Factory::get_client( $transport_type , $site_ID );
+
+				if( $client->is_post_exists( $ext_ID ) ) {
+					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
+					if ( true === $push_delete_shortcircuit )
+						continue;
+
+					$result = $client->delete_post( $ext_ID );
+
+					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
+
+					if( !$result ) {
+						$delete_error_sites[ $site_ID ] = array( $ext_ID );
+					}
+
+				}
+
+			}
+
+		}
+
+		update_option( 'syn_delete_error_sites', $delete_error_sites );
+		// all post metadata will be automatically deleted including slave_post_states
+
+	}
+
 	public function syndication_user_agent( $user_agent ) {
 		return apply_filters( 'syn_pull_user_agent', self::CUSTOM_USER_AGENT );
 	}
+
+	public function schedule_delete_content( $post_ID ) {
+		wp_schedule_single_event(
+			time() - 1,
+			'syn_delete_content',
+			array( $post_ID )
+		);
+	}
+
 
 	/**
 	 * Pull a single site.
