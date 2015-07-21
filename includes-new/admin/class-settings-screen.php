@@ -32,8 +32,8 @@ class Settings_Screen {
 	public function push_syndicate_settings_validate( $raw_settings ) {
 
 		$settings                               = array();
-		$settings['client_id']                  = sanitize_text_field( $raw_settings['client_id'] );
-		$settings['client_secret']              = sanitize_text_field( $raw_settings['client_secret'] );
+		$settings['client_id']                  = ! empty( $raw_settings['client_id'] ) ? sanitize_text_field( $raw_settings['client_id'] ) : '';
+		$settings['client_secret']              = ! empty( $raw_settings['client_secret'] ) ? sanitize_text_field( $raw_settings['client_secret'] ) : '';
 		$settings['selected_post_types']        = !empty( $raw_settings['selected_post_types'] ) ? $raw_settings['selected_post_types'] : array() ;
 		$settings['delete_pushed_posts']        = !empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off' ;
 		$settings['selected_pull_sitegroups']   = !empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
