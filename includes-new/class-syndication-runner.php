@@ -250,6 +250,9 @@ class Syndication_Runner {
 	 */
 	public function refresh_pull_jobs()	{
 		global $site_manager;
+		// Prime the caches.
+		$site_manager->prime_site_cache();
+
 		$sites         = $site_manager->pull_get_selected_sites();
 		$enabled_sites = $site_manager->get_sites_by_status( 'enabled' );
 		$sites         = array_intersect( $sites, $enabled_sites );
