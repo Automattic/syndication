@@ -66,7 +66,7 @@ class Site_Manager {
 					}
 				}
 			}
-
+			$this->_sites = $sites;
 			wp_cache_set( 'syn_site_cache', $sites, 'syndication' );
 		}
 
