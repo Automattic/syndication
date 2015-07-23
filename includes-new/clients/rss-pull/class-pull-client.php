@@ -50,7 +50,14 @@ class Pull_Client extends Puller {
 			$args['reject_unsafe_urls'] = false;
 			return $args;
 		} );
+
+		/**
+		 * Fetch the RSS feed, with limited caching.
+		 */
+		add_filter( 'wp_feed_cache_transient_lifetime', array( $this, 'set_wp_feed_cache_transient_lifetime' ) );
 		$feed = fetch_feed( $feed_url );
+		remove_filter( 'wp_feed_cache_transient_lifetime', array( $this, 'set_wp_feed_cache_transient_lifetime' ) );
+
 		if ( is_wp_error( $feed ) ) {
 			return array();
 		}
