@@ -278,7 +278,7 @@ class Syndication_Runner {
 
 			// Clear any jobs that were scheduled the new way: one job to pull one site.
 			foreach ( $old_pull_sites as $old_pull_site ) {
-				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_site ) );
+				wp_clear_scheduled_hook( 'syn_pull_content', array( array( $old_pull_site ) ) );
 			}
 
 			wp_clear_scheduled_hook( 'syn_pull_content' );
