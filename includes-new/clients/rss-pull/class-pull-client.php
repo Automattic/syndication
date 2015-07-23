@@ -33,18 +33,17 @@ class Pull_Client extends Puller {
 	 * @return  array|bool   Array of posts on success, false on failure.
 	 */
 	public function get_posts( $site_id = 0 ) {
-		// create $post with values from $this::node_to_post
-		// create $post_meta with values from $this::node_to_meta
 
-		$feed_url    = apply_filters( 'syn_feed_url', get_post_meta( $site_id, 'syn_feed_url', true ) );
-		$default_post_type        = get_post_meta( $site_id, 'syn_default_post_type', true );
-		$default_post_status      = get_post_meta( $site_id, 'syn_default_post_status', true );
-		$default_comment_status   = get_post_meta( $site_id, 'syn_default_comment_status', true );
-		$default_ping_status      = get_post_meta( $site_id, 'syn_default_ping_status', true );
-		$default_cat_status       = get_post_meta( $site_id, 'syn_default_cat_status', true );
+		$feed_url               = apply_filters( 'syn_feed_url', get_post_meta( $site_id, 'syn_feed_url', true ) );
+		$default_post_type      = get_post_meta( $site_id, 'syn_default_post_type', true );
+		$default_post_status    = get_post_meta( $site_id, 'syn_default_post_status', true );
+		$default_comment_status = get_post_meta( $site_id, 'syn_default_comment_status', true );
+		$default_ping_status    = get_post_meta( $site_id, 'syn_default_ping_status', true );
+		$default_cat_status     = get_post_meta( $site_id, 'syn_default_cat_status', true );
 
 		/**
 		 * The following filter allows for local testing.
+		 * @todo Remove after testing.
 		 */
 		add_filter( 'http_request_args', function( $args ) {
 			$args['reject_unsafe_urls'] = false;
@@ -84,7 +83,7 @@ class Pull_Client extends Puller {
 			$new_post->post_data['post_category']  = isset( $taxonomy['cats'] ) ? $taxonomy['cats'] : '';
 			$new_post->post_data['tags_input']     = isset( $taxonomy['tags'] ) ? $taxonomy['tags'] : '';
 
-			$new_post->post_meta['site_id']= $item->get_id();
+			$new_post->post_meta['site_id'] = $item->get_id();
 
 				// This filter can be used to exclude or alter posts during a pull import
 			$new_post = apply_filters( 'syn_rss_pull_filter_post', $new_post, array(), $item );
