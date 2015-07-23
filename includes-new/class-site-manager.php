@@ -206,7 +206,7 @@ class Site_Manager {
 
 	}
 
-	public function prime_site_cache( $post_id ) {
+	public function prime_site_cache() {
 		$this->get_site_index( $prime_cache = true );
 	}
 
