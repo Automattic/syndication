@@ -104,7 +104,7 @@ abstract class Puller {
 			}
 		};
 
-		Syndication_Logger::log_post_info( $site_id, $status = 'posts_inserted', $message = sprintf( __( '%d posts were successfully inserted', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
+		Syndication_Logger::log_post_info( $site_id, $status = 'posts_processed', $message = sprintf( __( '%d posts were successfully processed', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
 		
 		// @todo remove actions to improve performance
 	}
