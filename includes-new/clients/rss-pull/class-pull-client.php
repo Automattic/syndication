@@ -21,6 +21,11 @@ class Pull_Client extends Puller {
 	 */
 	public function __construct() {}
 
+	public function set_wp_feed_cache_transient_lifetime( $time ) {
+		global $settings_manager;
+
+		return (int) $settings_manager->get_setting( 'pull_time_interval' );
+	}
 	/**
 	 * Retrieves a list of posts from a remote site.
 	 *
