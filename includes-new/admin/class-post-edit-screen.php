@@ -11,6 +11,14 @@ class Post_Edit_Screen {
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
 	}
 
+	public function checked_array( $value, $group ) {
+		if( !empty( $group ) ) {
+			if( in_array( $value, $group ) ) {
+				echo 'checked="checked"';
+			}
+		}
+	}
+
 	public function add_post_metaboxes() {
 		global $settings_manager;
 		// return if no post types supports push syndication
