@@ -180,8 +180,9 @@ abstract class Puller {
 	 */
 	public function process_post_meta( $post_id, $post_meta ) {
 		// @todo Validate again if this method remains public.
+		// @todo Ensure works correctly for updates.
 		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_meta, $post_id );
-//handle enclosures separately first
+		//handle enclosures separately first
 		$enc_field = isset( $post_meta['enc_field'] ) ? $post_meta['enc_field'] : null;
 		$enclosures = isset( $post_meta['enclosures'] ) ? $post_meta['enclosures'] : null;
 		if ( isset( $enclosures ) && isset ( $enc_field ) ) {
