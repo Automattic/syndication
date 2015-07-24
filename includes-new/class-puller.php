@@ -181,6 +181,24 @@ abstract class Puller {
 	public function process_post_meta( $post_id, $post_meta ) {
 		// @todo Validate again if this method remains public.
 		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_meta, $post_id );
+//handle enclosures separately first
+		$enc_field = isset( $post_meta['enc_field'] ) ? $post_meta['enc_field'] : null;
+		$enclosures = isset( $post_meta['enclosures'] ) ? $post_meta['enclosures'] : null;
+		if ( isset( $enclosures ) && isset ( $enc_field ) ) {
+			// first remove all enclosures for the post (for updates) if any
+			delete_post_meta( $post_id, $enc_field);
+			foreach( $enclosures as $enclosure ) {
+				if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
+					$enclosure = implode("\n", $enclosure);
+				}
+				error_log( sprintf( 'adding enclosure meta to %s field %s enclosure %s', $post_id, $enc_field, json_encode( $enclosure ) ) );
+
+				add_post_meta( $post_id, $enc_field, $enclosure, false );
+			}
+
+			// now remove them from the rest of the metadata before saving the rest
+			unset($post_meta['enclosures']);
+		}
 
 		if ( is_array( $post_meta ) && ! empty( $post_meta ) ) {
 
@@ -286,8 +304,6 @@ abstract class Puller {
 					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
 				}
 				catch ( Exception $e ) {
-					error_log( $e );
-
 					return;
 				}
 			}
@@ -297,7 +313,6 @@ abstract class Puller {
 			}
 			$enclosures[] = $enc_array;
 		}
-
 		return $enclosures;
 	}
 }
