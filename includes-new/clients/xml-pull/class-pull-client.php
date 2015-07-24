@@ -37,13 +37,14 @@ class Pull_Client extends Puller {
 
 		$abs_nodes = $item_nodes = $enc_nodes = $tax_nodes = $abs_post_fields = $abs_meta_data = $abs_tax_data = $posts = [];
 
-		$site = get_post( $site_id );
-		$node_config = get_post_meta( $site->ID, 'syn_node_config', true );
-		$enc_field = get_post_meta( $site->ID, 'syn_enc_field', true );
-		$feed_url = apply_filters( 'syn_feed_url', get_post_meta( $site->ID, 'syn_feed_url', true ) );
+		$site                  = get_post( $site_id );
+		$node_config           = get_post_meta( $site->ID, 'syn_node_config', true );
+		$enc_field             = get_post_meta( $site->ID, 'syn_enc_field', true );
+		$feed_url              = apply_filters( 'syn_feed_url', get_post_meta( $site->ID, 'syn_feed_url', true ) );
 		$enclosures_as_strings = isset( $node_config['enclosures_as_strings'] ) ? true : false;
-		$id_field = get_post_meta( $site_id, 'syn_id_field', true );
-		$enc_is_photo = get_post_meta( $site_id, 'syn_enc_is_photo', true );
+		$id_field              = get_post_meta( $site_id, 'syn_id_field', true );
+		$enc_is_photo          = get_post_meta( $site_id, 'syn_enc_is_photo', true );
+		$new_posts             = array();
 
 		//TODO: add checkbox on feed config to allow enclosures to be saved as strings as SI does
 		//TODO: add tags here and in feed set up UI
