@@ -132,7 +132,7 @@ class Pull_Client extends Puller {
 			// @todo flush out how the post is actually created
 			$new_post = new Types\Post();
 
-			$enclosures = $meta_data = $tax_data = $value_array = [];
+			$meta_data = $tax_data = $value_array = [];
 			$meta_data['is_update'] = current_time( 'mysql' );
 			$new_post->post_data['post_type'] = get_post_meta( $site->ID, 'syn_default_post_type', true );;
 
