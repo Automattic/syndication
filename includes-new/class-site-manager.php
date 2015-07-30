@@ -200,7 +200,7 @@ class Site_Manager {
 
 		}
 
-		update_post_meta( $post_ID, '_syn_old_sitegroups', $selected_sitegroups );
+		update_post_meta( $site->ID, '_syn_old_sitegroups', $selected_sitegroups );
 
 		return $data;
 
