@@ -29,17 +29,5 @@ abstract class Pusher {
 
 		// @todo mark site as in progress
 
-		try {
-			$syn_posts = $client->get_posts();
-		} catch ( \Exception $e ) {
-			// @todo log and bail.
-		}
-
 		// @todo update site status
 	}
-
-	public function get_posts() {
-
-
-	}
-}
