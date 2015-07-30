@@ -34,7 +34,7 @@ class Syndication_Settings {
 			'pull_time_interval'        => '3600',
 			'update_pulled_posts'       => 'off',
 			'client_id'                 => '',
-			'client_secret'             => ''
+			'client_secret'             => '',
 		);
 
 		/**
@@ -43,7 +43,7 @@ class Syndication_Settings {
 		$this->push_syndicate_settings = wp_parse_args(
 											(array) get_option( 'push_syndicate_settings' ),
 											$this->push_syndicate_default_settings
-										 );
+		);
 	}
 
 	/**
