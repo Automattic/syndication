@@ -11,6 +11,16 @@
 
 namespace Automattic\Syndication;
 
+/**
+ * Don't load on autosave or ajax requests.
+ */
+if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+	return;
+}
+if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+	return;
+}
+
 define( 'SYNDICATION_VERSION', '3.0.0' );
 define( 'SYNDICATION_URL', plugin_dir_url( __FILE__ ) );
 define( 'SYNDICATION_PATH', dirname( __FILE__ ) . '/' );
