@@ -65,6 +65,13 @@ class Client_Manager {
 	 */
 	public function get_push_client( $client_slug ) {
 
+		if ( ! empty( $client_slug ) ) {
+			if ( isset( $this->_push_clients[ $client_slug ] ) ) {
+				return $this->_push_clients[ $client_slug ];
+			}
+		}
+
+		return false;
 	}
 
 	/**
