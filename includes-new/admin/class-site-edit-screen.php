@@ -170,7 +170,10 @@ class Site_Edit_Screen {
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 
 
-		// @todo test connection
+		// Trigger the client test action to test the connection.
+		// @todo implement for all base clients.
+		do_action( 'syndication/test_site_options/' . $transport_type, $post->ID );
+
 
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
 		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );

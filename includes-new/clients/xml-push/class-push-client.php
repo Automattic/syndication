@@ -43,6 +43,11 @@ class Push_Client extends WP_HTTP_IXR_Client implements Pusher {
 
 		parent::__construct( $server );
 
+		/**
+		 * Set up the connection test action.
+		 */
+		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
+
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
 			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
@@ -643,7 +648,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 	 *
 	 * @return bool
 	 */
-	public function test_connection() {
+	public function test_connection( $site_ID ) {
 		$username = get_post_meta( $site_ID, 'syn_site_username', true );
 		$password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true ) );
 
