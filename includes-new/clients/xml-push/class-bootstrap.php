@@ -7,11 +7,10 @@ use Automattic\Syndication\Client_Manager;
 /**
  * Syndication Client: XML Push
  *
- * Create 'syndication sites' to pull external content into your
- * WordPress install via XML. Includes XPath mapping to map incoming
- * XML data to specific post data.
+ * Create 'syndication sites' to push external content from your site
+ * to a remote WordPress site via XML-RPC
  *
- * @package Automattic\Syndication\Clients\XML_PULL
+ * @package Automattic\Syndication\Clients\XML_PUSH
  * @internal Called via instantiation in includes/class-bootstrap.php
  */
 class Bootstrap {
@@ -32,10 +31,12 @@ class Bootstrap {
 	 * @param Client_Manager $client_man
 	 */
 	public function register_clients( Client_Manager $client_man ) {
-		$client_man->register_pull_client( 'xml_push', [
-			'label' => 'XML Push Client',
-			'class' => __NAMESPACE__ . '\Push_Client',
-		] );
+		$client_man->register_pull_client(
+			'xml_push', [
+				'label' => 'XML Push Client',
+				'class' => __NAMESPACE__ . '\Push_Client',
+			]
+		);
 	}
 
 	public function pre_load() {
