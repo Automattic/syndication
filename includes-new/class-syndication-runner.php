@@ -72,15 +72,16 @@ class Syndication_Runner {
 
 		// array containing states of sites
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
-		if ( empty( $slave_post_states ) )
+		if ( empty( $slave_post_states ) ) {
 			return;
+		}
 
 		// array containing slave posts as $site_ID => $ext_ID
 		$slave_posts = array();
 
-		foreach( $slave_post_states as $state ) {
-			foreach( $state as $site_ID => $info ) {
-				if( ! is_wp_error( $info ) && !empty( $info[ 'ext_ID' ] ) ) {
+		foreach ( $slave_post_states as $state ) {
+			foreach ( $state as $site_ID => $info ) {
+				if ( ! is_wp_error( $info ) && ! empty( $info[ 'ext_ID' ] ) ) {
 					$slave_posts[ $site_ID ] = $info[ 'ext_ID' ];
 				}
 			}
@@ -98,23 +99,23 @@ class Syndication_Runner {
 	public function delete_content( $post_ID ) {
 
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
-		$delete_error_sites = !empty( $delete_error_sites ) ? $delete_error_sites : array() ;
+		$delete_error_sites = ! empty( $delete_error_sites ) ? $delete_error_sites : array() ;
 		$slave_posts        = $this->get_slave_posts( $post_ID );
 
-		if( empty( $slave_posts ) )
+		if ( empty( $slave_posts ) ) {
 			return;
 
-		foreach( $slave_posts as $site_ID => $ext_ID ) {
+		foreach ( $slave_posts as $site_ID => $ext_ID ) {
 
-			$site_enabled = get_post_meta( $site_ID, 'syn_site_enabled', true);
+			$site_enabled = get_post_meta( $site_ID, 'syn_site_enabled', true );
 
 			// check whether the site is enabled
-			if( $site_enabled == 'on' ) {
+			if ( $site_enabled == 'on' ) {
 
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
 				$client         = Syndication_Client_Factory::get_client( $transport_type , $site_ID );
 
-				if( $client->is_post_exists( $ext_ID ) ) {
+				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 					if ( true === $push_delete_shortcircuit )
 						continue;
@@ -123,14 +124,11 @@ class Syndication_Runner {
 
 					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 
-					if( !$result ) {
+					if ( ! $result ) {
 						$delete_error_sites[ $site_ID ] = array( $ext_ID );
 					}
-
 				}
-
 			}
-
 		}
 
 		update_option( 'syn_delete_error_sites', $delete_error_sites );
@@ -212,7 +210,7 @@ class Syndication_Runner {
 		//error_log( 'pull' );
 		//error_log( json_encode( $sites ) );
 
-		foreach( $sites as $site_id ) {
+		foreach ( $sites as $site_id ) {
 
 			$site_updated_post_ids = $this->pull_site( $site_id );
 			$updated_post_ids      = array_merge( $updated_post_ids, $site_updated_post_ids );
@@ -272,7 +270,7 @@ class Syndication_Runner {
 
 
 		// Clear all previously scheduled jobs.
-		if( ! empty( $old_pull_sites ) ) {
+		if( ! empty ( $old_pull_sites ) ) {
 			// Clear any jobs that were scheduled the old way: one job to pull many sites.
 			wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
 
@@ -312,12 +310,12 @@ class Syndication_Runner {
 		}
 
 		// if our nonce isn't there, or we can't verify it return
-		if( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
 
 		// Varify user capabilities.
-		if( ! $this->current_user_can_syndicate() ) {
+		if ( ! $this->current_user_can_syndicate() ) {
 			return;
 		}
 
@@ -338,7 +336,7 @@ class Syndication_Runner {
 	 * @param $tt_id
 	 * @param $taxonomy
 	 */
-	public function handle_site_group_change ( $term, $tt_id, $taxonomy ) {
+	public function handle_site_group_change( $term, $tt_id, $taxonomy ) {
 		if ( 'syn_sitegroup' === $taxonomy ) {
 			$this->refresh_pull_jobs();
 		}
