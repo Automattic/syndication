@@ -118,11 +118,11 @@ class Site_Options {
 		// TODO: validate saved values (e.g. valid post_type? valid status?)
 		// TODO: actually check if saving was successful or not and return a proper bool
 
-		update_post_meta( $site_id, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_id, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
-		update_post_meta( $site_id, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
-		update_post_meta( $site_id, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
-		update_post_meta( $site_id, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
+		update_post_meta( $site_id, 'syn_feed_url', isset ( $_POST['feed_url'] ) ? esc_url_raw( $_POST['feed_url'] ) : '' );
+		update_post_meta( $site_id, 'syn_default_post_type', isset ( $_POST['default_post_type'] ) ? sanitize_text_field( $_POST['default_post_type'] ) : '' );
+		update_post_meta( $site_id, 'syn_default_post_status', isset ( $_POST['default_post_status'] ) ? sanitize_text_field( $_POST['default_post_status'] ) : '' );
+		update_post_meta( $site_id, 'syn_default_comment_status', isset ( $_POST['default_comment_status'] ) ? sanitize_text_field( $_POST['default_comment_status'] ) : '' );
+		update_post_meta( $site_id, 'syn_default_ping_status', isset ( $_POST['default_ping_status'] ) ? sanitize_text_field( $_POST['default_ping_status'] ) : '' );
 
 		return true;
 	}
