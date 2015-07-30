@@ -22,7 +22,7 @@ abstract class Pusher {
 			throw new \Exception( 'No client selected.' );
 		}
 
-		$client = $this->_client_manager->get_pull_client( $client_slug );
+		$client = $this->_client_manager->get_push_client( $client_slug );
 		if ( !$client ) {
 			// @todo log that selected client does not exist.
 		}
