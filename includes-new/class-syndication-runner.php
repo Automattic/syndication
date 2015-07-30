@@ -97,6 +97,7 @@ class Syndication_Runner {
 	 * @todo review and test.
 	 */
 	public function delete_content( $post_ID ) {
+		global $client_manager;
 
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
 		$delete_error_sites = ! empty( $delete_error_sites ) ? $delete_error_sites : array() ;
@@ -104,6 +105,7 @@ class Syndication_Runner {
 
 		if ( empty( $slave_posts ) ) {
 			return;
+		}
 
 		foreach ( $slave_posts as $site_ID => $ext_ID ) {
 
@@ -112,8 +114,9 @@ class Syndication_Runner {
 			// check whether the site is enabled
 			if ( $site_enabled == 'on' ) {
 
-				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
-				$client         = Syndication_Client_Factory::get_client( $transport_type , $site_ID );
+				//@todo this needs to be rewritten
+				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
+				$client         = $client_manager->get_client( $site_ID );
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
