@@ -43,10 +43,13 @@ class Push_Client extends WP_HTTP_IXR_Client implements Pusher {
 
 		parent::__construct( $server );
 
-		/**
-		 * Set up the connection test action.
-		 */
+
+		// Set up the connection test action.
 		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
+
+		// Set up the push callback.
+		add_action( 'syndication/syn_schedule_push_content', [ $this, 'schedule_push_content' ])
+
 
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
