@@ -331,6 +331,13 @@ class Syndication_Runner {
 		do_action( 'syn_schedule_push_content', $post->ID, $sites );
 	}
 
+	function schedule_push_content( $post_id, $sites ) {
+		wp_schedule_single_event(
+			time() - 1,
+			'syn_push_content',
+			array( $sites )
+		);
+	}
 	/**
 	 * Handle create_term and delete_term for syn_sitegroup terms. If a site
 	 * group is created or deleted we should reprocess any scheduled pull jobs.
