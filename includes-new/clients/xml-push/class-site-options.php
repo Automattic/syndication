@@ -59,7 +59,7 @@ class Site_Options {
 	}
 
 	public function save_site_options_push( $site_id ) {
-		global $site_manager, $settings_manager;
+		global $client_manager, $settings_manager;
 
 		$_POST['site_url'] = str_replace( '/xmlrpc.php', '', isset( $_POST['site_url'] ) ? $_POST['site_url'] : '' );
 
