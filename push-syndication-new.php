@@ -12,11 +12,8 @@
 namespace Automattic\Syndication;
 
 /**
- * Don't load on autosave or ajax requests.
+ * Don't load on autosave requests.
  */
-if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-	return;
-}
 if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 	return;
 }
