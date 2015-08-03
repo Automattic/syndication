@@ -6,6 +6,16 @@ class Site_Post_Type {
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'remove_autosave_script' ) );
+
+	}
+
+	function remove_autosave_script( $pagehook ) {
+		global $post_type;
+
+		if ( 'syn_site' === $post_type ) {
+			wp_deregister_script( 'autosave' );
+		}
 	}
 
 	public function register_post_type() {
