@@ -20,7 +20,7 @@ class WP_Push_Syndication_Server {
 
 		// custom columns
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
-		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
+		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 
 		// submenus
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
