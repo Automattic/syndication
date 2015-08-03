@@ -48,7 +48,7 @@ class Push_Client extends WP_HTTP_IXR_Client implements Pusher {
 		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
 
 		// Set up the push callback.
-		add_action( 'syndication/syn_schedule_push_content', [ $this, 'schedule_push_content' ])
+		add_action( 'syndication/syn_schedule_push_content', [ $this, 'schedule_push_content' ] );
 
 
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
