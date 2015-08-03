@@ -21,31 +21,34 @@ include_once( ABSPATH . 'wp-includes/class-wp-http-ixr-client.php' );
 include_once( ABSPATH . 'wp-includes/class-IXR.php' );
 include_once( ABSPATH . 'wp-includes/class-wp-http-ixr-client.php' );
 
-class Push_Client extends WP_HTTP_IXR_Client implements Pusher {
+class Push_Client extends \WP_HTTP_IXR_Client {
 
 	private $username;
 	private $password;
 
 	private $site_ID;
 
-	function __construct( $site_ID ) {
 
+	function __construct() {}
+
+	public function get_posts( $site_ID = 0 ) {
+	}
+
+	public function process_site( $site_ID = 0 ) {
+		global  $settings_manager;
 		// @TODO check port, timeout etc
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
-		if ( false === strpos( $server, 'xmlrpc.php' ) )
+		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
 			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
-		else
+		} else {
 			$server = esc_url_raw( $server );
+		}
 
-		$this->username = get_post_meta( $site_ID, 'syn_site_username', true);
+		$this->username = get_post_meta( $site_ID, 'syn_site_username', true );
 		$this->password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
 		$this->site_ID  = $site_ID;
 
 		parent::__construct( $server );
-
-
-		// Set up the connection test action.
-		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
 
 		// Set up the push callback.
 		add_action( 'syndication/syn_schedule_push_content', [ $this, 'schedule_push_content' ] );
@@ -448,7 +451,63 @@ class Push_Client extends WP_HTTP_IXR_Client implements Pusher {
 		return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
 	}
 
+	/**
+	 * Test the connection.
+	 *
+	 * @return bool
+	 */
+	public function test_connection( $site_ID ) {
+		global $settings_manager;
 
+		$this->username = get_post_meta( $site_ID, 'syn_site_username', true );
+		$this->password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true ) );
+		$this->site_ID  = $site_ID;
+
+		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
+		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
+			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
+		} else {
+			$server = esc_url_raw( $server );
+		}
+
+		parent::__construct( $server );
+
+		$result = $this->query(
+			'wp.getPostTypes', // @TODO find a better suitable function
+			'1',
+			$this->username,
+			$this->password
+		);
+
+		if ( ! $result ) {
+
+			$error_code = absint( $this->getErrorCode() );
+
+			switch ( $error_code ) {
+				case 32301:
+					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 305, $location);' ) );
+					break;
+				case 401:
+					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 302, $location);' ) );
+					break;
+				case 403:
+					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 303, $location);' ) );
+					break;
+				case 405:
+					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 304, $location);' ) );
+					break;
+				default:
+					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 306, $location);' ) );
+					break;
+			}
+
+			return false;
+
+		}
+
+		return true;
+
+	}
 
 }
 class Syndication_WP_XMLRPC_Client_Extensions {
@@ -645,52 +704,6 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		return $thumbnail_id;
 	} //end of xmlrpc_post_gallery_images()
 
-
-	/**
-	 * Test the connection.
-	 *
-	 * @return bool
-	 */
-	public function test_connection( $site_ID ) {
-		$username = get_post_meta( $site_ID, 'syn_site_username', true );
-		$password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true ) );
-
-		$result = $this->query(
-			'wp.getPostTypes', // @TODO find a better suitable function
-			'1',
-			$username,
-			$password
-		);
-
-		if ( ! $result ) {
-
-			$error_code = absint( $this->getErrorCode() );
-
-			switch ( $error_code ) {
-				case 32301:
-					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 305, $location);' ) );
-					break;
-				case 401:
-					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 302, $location);' ) );
-					break;
-				case 403:
-					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 303, $location);' ) );
-					break;
-				case 405:
-					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 304, $location);' ) );
-					break;
-				default:
-					add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg("message", 306, $location);' ) );
-					break;
-			}
-
-			return false;
-
-		}
-
-		return true;
-
-	}
 }
 
 Syndication_WP_XMLRPC_Client_Extensions::init();
