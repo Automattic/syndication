@@ -116,7 +116,12 @@ class Syndication_Runner {
 
 				//@todo this needs to be rewritten
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
-				$client         = $client_manager->get_client( $site_ID );
+				//@todo also push clients
+				// Fetch the site's client by name
+				$client_details = $client_manager->get_pull_client( $transport_type );
+
+				// Construct the client
+				$client = new $client_details['class'];
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
@@ -166,6 +171,7 @@ class Syndication_Runner {
 		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
 
 		// Fetch the site's client by name
+		// @todo check push clients
 		$client_details = $client_manager->get_pull_client( $client_transport_type );
 
 		// Run the client's process_site method
