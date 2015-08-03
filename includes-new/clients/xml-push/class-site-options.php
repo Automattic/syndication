@@ -11,9 +11,13 @@ namespace Automattic\Syndication\Clients\XML_Push;
 class Site_Options {
 
 	public function __construct() {
-
+		error_log('setup site_options');
 		add_action( 'syndication/render_site_options/xml_push', [ $this, 'render_site_options_push' ] );
 		add_action( 'syndication/save_site_options/xml_push', [ $this, 'save_site_options_push' ] );
+
+		// Set up the connection test action.
+		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
+
 
 		/**
 		 * Load the {@see Walker_CategoryDropdownMultiple}
@@ -72,37 +76,6 @@ class Site_Options {
 			return false;
 		}
 
-		/**
-		 * When saving, test the connection.
-		 * @todo possibly belongs elsewhere.
-		 */
-		try {
-			// Get the required client.
-			$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
-			if ( ! $client_transport_type ) {
-				return false;
-			}
-
-			// Fetch the client so we may pull it's posts
-			$client_details = $client_manager->get_pull_client( $client_transport_type );
-			if ( ! $client_details ) {
-				return false;
-			}
-
-			//$client = $site_manager->get_sites_by_post_ID( $site_id );
-			/*
-			if ( $client->test_connection()  ) {
-				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
-			} else {
-				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 252, $location);' ) );
-				$site_enabled = 'off';
-			}
-			*/
-
-		} catch( Exception $e ) {
-			add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 250, $location);' ) );
-		}
-
 		return true;
 
 	}
@@ -118,5 +91,36 @@ class Site_Options {
 	}
 
 
+	/**
+	 * Test the connection.
+	 *
+	 * @return bool
+	 */
+	public function test_connection( $site_ID ) {
+		global $client_manager;
+
+		// Get the required client.
+		$client_transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
+		if ( ! $client_transport_type ) {
+			return false;
+		}
+
+		// Fetch the client so we may pull it's posts
+		$client_details = $client_manager->get_push_client( $client_transport_type );
+
+		if ( ! $client_details ) {
+			return false;
+		}
+
+		// Run the client's process_site method
+		$client = new $client_details['class'];
+
+		//@todo this show the user an error message.
+		if ( $client->test_connection( $site_ID ) ) {
+			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 251, $location);' ) );
+		} else {
+			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 252, $location);' ) );
+		}
+	}
 
 }
