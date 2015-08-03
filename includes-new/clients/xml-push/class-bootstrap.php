@@ -31,7 +31,7 @@ class Bootstrap {
 	 * @param Client_Manager $client_man
 	 */
 	public function register_clients( Client_Manager $client_man ) {
-		$client_man->register_pull_client(
+		$client_man->register_push_client(
 			'xml_push', [
 				'label' => 'XML Push Client',
 				'class' => __NAMESPACE__ . '\Push_Client',
