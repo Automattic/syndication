@@ -313,6 +313,7 @@ class Syndication_Runner {
 	 */
 	public function pre_schedule_push_content( $new_status, $old_status, $post ) {
 
+		global $settings_manager, $site_manager;
 		// Don't fire on autosave.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -324,7 +325,7 @@ class Syndication_Runner {
 		}
 
 		// Verify user capabilities.
-		if ( ! $this->current_user_can_syndicate() ) {
+		if ( ! $settings_manager->current_user_can_syndicate() ) {
 			return;
 		}
 

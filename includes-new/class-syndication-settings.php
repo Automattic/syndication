@@ -93,4 +93,9 @@ class Syndication_Settings {
 
 	}
 
+	// checking user capability
+	public function current_user_can_syndicate() {
+		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
+		return current_user_can( $syndicate_cap );
+	}
 }
