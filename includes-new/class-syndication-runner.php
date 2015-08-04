@@ -335,9 +335,19 @@ class Syndication_Runner {
 			return;
 		}
 
+		/**
+		 * Trigger the push content action, passing the current post id and the sites to push to.
+		 * @note: currently post id is unused
+		 */
 		do_action( 'syn_schedule_push_content', $post->ID, $sites );
 	}
 
+	/**
+	 * Trigger immediate cron callback(s) for the site push events.
+	 *
+	 * @param int   $post_id The post id triggering the callback, unused.
+	 * @param Array $sites   An array of site ids that should get the `syn_push_content` event.
+	 */
 	function schedule_push_content( $post_id, $sites ) {
 		wp_schedule_single_event(
 			time() - 1,
@@ -345,6 +355,96 @@ class Syndication_Runner {
 			array( $sites )
 		);
 	}
+
+	// cron job function to syndicate content
+	public function push_content( $sites ) {
+
+		// if another process running on it return
+		if( get_transient( 'syn_syndicate_lock' ) == 'locked' )
+			return;
+
+		// set value as locked, valid for 5 mins
+		set_transient( 'syn_syndicate_lock', 'locked', 60*5 );
+
+		/** start of critical section **/
+
+		$post_ID = $sites['post_ID'];
+
+		// an array containing states of sites
+		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
+		$slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
+
+		$sites = apply_filters( 'syn_pre_push_post_sites', $sites, $post_ID, $slave_post_states );
+
+		if( !empty( $sites['selected_sites'] ) ) {
+
+			foreach( $sites['selected_sites'] as $site ) {
+
+				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
+				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
+				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+
+				if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
+
+					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					if ( true === $push_new_shortcircuit )
+						continue;
+
+					$result = $client->new_post( $post_ID );
+
+					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
+					$this->update_slave_post_states( $post_ID, $slave_post_states );
+
+					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
+
+				} else { // states 'success', 'edit-error' and 'remove-error'
+					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					if ( true === $push_edit_shortcircuit )
+						continue;
+
+					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
+
+					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site->ID, $client );
+					$this->update_slave_post_states( $post_ID, $slave_post_states );
+
+					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
+				}
+			}
+
+		}
+
+		if( !empty( $sites['removed_sites'] ) ) {
+
+			foreach( $sites['removed_sites'] as $site ) {
+
+				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
+				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
+				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+
+				// if the post is not pushed we do not need to delete them
+				if( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
+
+					$result = $client->delete_post( $info['ext_ID'] );
+					if ( is_wp_error( $result ) ) {
+						$slave_post_states[ 'remove-error' ][ $site->ID ] = $result;
+						$this->update_slave_post_states( $post_ID, $slave_post_states );
+					}
+
+				}
+
+			}
+
+		}
+
+
+		/** end of critical section **/
+
+		// release the lock.
+		delete_transient( 'syn_syndicate_lock' );
+
+	}
+
+
 	/**
 	 * Handle create_term and delete_term for syn_sitegroup terms. If a site
 	 * group is created or deleted we should reprocess any scheduled pull jobs.
