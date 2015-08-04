@@ -63,13 +63,29 @@ class Site_Options {
 	}
 
 	public function save_site_options_push( $site_id ) {
-		global $client_manager, $settings_manager;
+		global $settings_manager;
 
-		$_POST['site_url'] = str_replace( '/xmlrpc.php', '', isset( $_POST['site_url'] ) ? $_POST['site_url'] : '' );
+		/**
+		 * If this isn't a save action, bail.
+		 */
+		if ( ! isset( $_POST['site_url'] ) ) {
+			return false;
+		}
 
-		update_post_meta( $site_id, 'syn_site_url', esc_url_raw( $_POST['site_url'] ) );
-		update_post_meta( $site_id, 'syn_site_username', sanitize_text_field( $_POST['site_username'] ) );
-		update_post_meta( $site_id, 'syn_site_password', $settings_manager->syndicate_encrypt( sanitize_text_field( $_POST['site_password'] ) ) );
+		/**
+		 * Grab and sanitize save values.
+		 */
+		$site_url = isset( $_POST['site_url'] )      ? sanitize_text_field( $_POST['site_url'] )      : '';
+		$username = isset( $_POST['site_username'] ) ? sanitize_text_field( $_POST['site_username'] ) : '';
+		$password = isset( $_POST['site_password'] ) ? sanitize_text_field( $_POST['site_password'] ) : '';
+
+		// Remove training `/xmlrpc.php` from site_url if present.
+		$site_url = str_replace( '/xmlrpc.php', '', $site_url );
+
+		//
+		update_post_meta( $site_id, 'syn_site_url', esc_url_raw( $site_url ) );
+		update_post_meta( $site_id, 'syn_site_username', $username );
+		update_post_meta( $site_id, 'syn_site_password', $settings_manager->syndicate_encrypt( $password ) );
 
 		if ( ! filter_var( $_POST['site_url'], FILTER_VALIDATE_URL ) ) {
 			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 301, $location );' ) );
