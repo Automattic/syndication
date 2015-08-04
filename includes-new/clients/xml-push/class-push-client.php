@@ -34,6 +34,11 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	public function get_posts( $site_ID = 0 ) {
 	}
 
+	/**
+	 * Process this site, setting up callbacks.
+	 *
+	 * @param int $site_ID The id of the site to set up.
+	 */
 	public function process_site( $site_ID = 0 ) {
 		global  $settings_manager;
 		// @TODO check port, timeout etc
@@ -66,6 +71,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
 	}
 
+	/**
+	 * Push thumbnail along with the post.
+	 */
 	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
 
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id );
@@ -132,6 +140,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		return array( 'id' => 'WP_XMLRPC', 'modes' => array( 'push' ), 'name' => 'WordPress XMLRPC' );
 	}
 
+	/**
+	 * Push a new post to the remote.
+	 */
 	public function new_post( $post_ID ) {
 
 		$post = (array)get_post( $post_ID );
@@ -181,6 +192,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 	}
 
+	/**
+	 * Update an existing post on the remote.
+	 */
 	public function edit_post( $post_ID, $remote_post_id ) {
 
 		$args = array();
@@ -340,6 +354,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		return $post_content;
 	}
 
+	/**
+	 * When we delete a local post, delete the remote as well.
+	 */
 	public function delete_post( $remote_post_id ) {
 
 		$result = $this->query(
@@ -410,6 +427,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		return $terms_names;
 	}
 
+	/**
+	 * Retrieve a remote post by ID.
+	 */
 	function get_remote_post( $remote_post_id ) {
 
 		$result = $this->query(
@@ -426,6 +446,9 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		return $this->getResponse();
 	}
 
+	/**
+	 * Check to see if a remote post exists.
+	 */
 	public function is_post_exists( $remote_post_id ) {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
@@ -452,7 +475,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	}
 
 	/**
-	 * Test the connection.
+	 * Test the connection to the remote server.
 	 *
 	 * @return bool
 	 */
@@ -668,7 +691,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			),
 		);
 
-		// Note: Leting mw_newMediaObject handle our auth and cap checks
+		// Note: Letting mw_newMediaObject handle our auth and cap checks
 		$image = $wp_xmlrpc_server->mw_newMediaObject( $args );
 		if ( ! is_array( $image ) || empty($image['url'] ) ) {
 			return $image;

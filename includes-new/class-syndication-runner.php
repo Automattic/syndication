@@ -26,7 +26,7 @@ class Syndication_Runner {
 		// adding custom time interval
 		add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
 
-		// Post saved changed or deleted, firing a cron jobs.
+		// Post saved changed or deleted, firing push client updates.
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
 		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
 
@@ -323,7 +323,7 @@ class Syndication_Runner {
 			return;
 		}
 
-		// Varify user capabilities.
+		// Verify user capabilities.
 		if ( ! $this->current_user_can_syndicate() ) {
 			return;
 		}
