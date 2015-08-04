@@ -483,6 +483,14 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$this->site_ID  = $site_ID;
 
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
+
+		/**
+		 * Bail on connection test if we don't have a server URL.
+		 */
+		if ( '' === $server ) {
+			return false;
+		}
+
 		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
 			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
 		} else {
