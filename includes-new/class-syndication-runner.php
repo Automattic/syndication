@@ -29,7 +29,7 @@ class Syndication_Runner {
 		// Post saved changed or deleted, firing push client updates.
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
 		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
-
+		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 		// Handle changes to sites and site groups, reset cron jobs.
 		add_action( 'save_post',   array( $this, 'handle_site_change' ) );
 		add_action( 'delete_post', array( $this, 'handle_site_change' ) );
