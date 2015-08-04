@@ -11,7 +11,7 @@ namespace Automattic\Syndication\Clients\XML_Push;
 class Site_Options {
 
 	public function __construct() {
-		error_log('setup site_options');
+
 		add_action( 'syndication/render_site_options/xml_push', [ $this, 'render_site_options_push' ] );
 		add_action( 'syndication/save_site_options/xml_push', [ $this, 'save_site_options_push' ] );
 
