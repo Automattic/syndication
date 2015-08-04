@@ -55,10 +55,6 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 		parent::__construct( $server );
 
-		// Set up the push callback.
-		add_action( 'syndication/syn_schedule_push_content', [ $this, 'schedule_push_content' ] );
-
-
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
 			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
