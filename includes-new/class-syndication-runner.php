@@ -305,7 +305,7 @@ class Syndication_Runner {
 	}
 
 	/**
-	 * Fire events right before scheduling push content.
+	 * Fire events right before scheduling push content, triggered by transition_post_status.
 	 *
 	 * @param $new_status
 	 * @param $old_status
