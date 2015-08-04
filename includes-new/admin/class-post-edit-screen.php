@@ -9,6 +9,8 @@ class Post_Edit_Screen {
 
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
+		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load
+		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 	}
 
 	public function checked_array( $value, $group ) {
@@ -26,7 +28,7 @@ class Post_Edit_Screen {
 			return;
 		}
 
-		if( ! $this->current_user_can_syndicate() ) {
+		if( ! $settings_manager->current_user_can_syndicate() ) {
 			return;
 		}
 
@@ -38,19 +40,14 @@ class Post_Edit_Screen {
 
 	}
 
-	// checking user capability
-	public function current_user_can_syndicate() {
-		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
-		return current_user_can( $syndicate_cap );
-	}
-
 	public function add_syndicate_metabox( ) {
 
 		global $post;
 
 		// nonce for verification when saving
-		wp_nonce_field( plugin_basename( __FILE__ ), 'syndicate_noncename' );
-
+		wp_nonce_field( 'syndicate_post_edit', 'syndicate_noncename' );
+		error_log('adding nonce syndicate_noncename');
+		error_log('syndicate_post_edit');
 		// get all sitegroups
 		$sitegroups = get_terms( 'syn_sitegroup', array(
 			'fields'        => 'all',
@@ -85,6 +82,26 @@ class Post_Edit_Screen {
 		}
 
 		echo '</ul>';
+
+	}
+
+	public function save_syndicate_settings() {
+		error_log('SAVE - save_syndicate_settings');
+		global $post, $settings_manager;
+
+		// autosave verification
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			return;
+
+		// if our nonce isn't there, or we can't verify it return
+		if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], 'syndicate_post_edit' ) )
+			return;
+
+		if ( ! $settings_manager->current_user_can_syndicate() )
+			return;
+
+		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '' ;
+		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
 
 	}
 }
