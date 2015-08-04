@@ -82,4 +82,20 @@ class Client_Manager {
 	public function get_clients() {
 		return $this->_push_clients + $this->_pull_clients;
 	}
+
+	/**
+	 * Get a push or pull client by slug, trying pull first.
+	 *
+	 * @param string $client_slug
+	 * @return Push or Pull Client
+	 */
+	public function get_pull_or_push_client( $client_slug ) {
+		$client = $this->get_pull_client( $client_slug );
+
+		if ( ! $client ) {
+			$client = $this->get_push_client( $client_slug );
+		}
+
+		return $client;
+	}
 }
