@@ -40,20 +40,6 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	 * @param int $site_ID The id of the site to set up.
 	 */
 	public function process_site( $site_ID = 0 ) {
-		global  $settings_manager;
-		// @TODO check port, timeout etc
-		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
-		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
-			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
-		} else {
-			$server = esc_url_raw( $server );
-		}
-
-		$this->username = get_post_meta( $site_ID, 'syn_site_username', true );
-		$this->password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true) );
-		$this->site_ID  = $site_ID;
-
-		parent::__construct( $server );
 
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
