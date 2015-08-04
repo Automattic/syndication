@@ -167,10 +167,10 @@ class Site_Manager {
 					continue;
 				}
 
-				foreach( $sites as $site ) {
-					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true);
+				foreach( $sites as $site_id ) {
+					$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true);
 					if( $site_enabled == 'on' ) {
-						$data[ 'selected_sites' ][] = $site;
+						$data[ 'selected_sites' ][] = $site_id;
 					}
 				}
 
