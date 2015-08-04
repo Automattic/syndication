@@ -42,7 +42,7 @@ class Site_List_Screen {
 
 	public function manage_columns( $column_name, $id ) {
 
-		global $wpdb;
+		global $client_manager;
 		switch ( $column_name ) {
 
 			// Output the client label
@@ -52,7 +52,7 @@ class Site_List_Screen {
 				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
 
 				// Fetch the corresponding client
-				$pull_client = syn_get_pull_client( $transport_type );
+				$pull_client = $client_manager->get_pull_or_push_client( $transport_type );
 
 				// Output the client name
 				if ( isset( $pull_client['label'] ) ) {
