@@ -319,7 +319,7 @@ class Syndication_Runner {
 		}
 
 		// if our nonce isn't there, or we can't verify it return
-		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], 'syndicate_post_edit' ) ) {
 			return;
 		}
 
