@@ -16,7 +16,7 @@ use Automattic\Syndication\Client_Manager;
 class Bootstrap {
 
 	public function __construct() {
-		error_log( 'constructing RSS Pull client' );
+
 		// Register our syndication client
 		add_action( 'syndication/register_clients', [ $this, 'register_clients' ] );
 
