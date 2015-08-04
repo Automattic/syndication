@@ -328,8 +328,8 @@ class Syndication_Runner {
 		if ( ! $settings_manager->current_user_can_syndicate() ) {
 			return;
 		}
+		$sites = $site_manager->get_sites_by_post_ID( $post->ID );
 
-		$sites = $this->get_sites_by_post_ID( $post->ID );
 
 		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
 			return;
