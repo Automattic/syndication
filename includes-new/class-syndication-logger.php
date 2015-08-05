@@ -178,8 +178,9 @@ class Syndication_Logger {
 			}
 			Syndication_Logger::log_post_error( $site, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		} else {
-			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
-			Syndication_Logger::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			$guid    = isset( $post['post_guid'] ) ? sanitize_text_field( $post['post_guid'] ) : sanitize_text_field( $post['guid'] );
+			$message = sprintf( '%s,%d', $guid, intval( $result ) );
+			Syndication_Logger::log_post_success( $site, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		}
 	}
 
