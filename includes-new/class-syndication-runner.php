@@ -359,8 +359,9 @@ class Syndication_Runner {
 	public function push_content( $sites ) {
 
 		// if another process running on it return
-		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' )
+		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' ) {
 			return;
+		}
 
 		// set value as locked, valid for 5 mins
 		set_transient( 'syn_syndicate_lock', 'locked', 5 * MINUTE_IN_SECONDS );
