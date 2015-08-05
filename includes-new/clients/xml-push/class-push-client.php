@@ -486,28 +486,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	 * @return bool
 	 */
 	public function test_connection( $site_ID ) {
-		global $settings_manager;
-
-		$this->username = get_post_meta( $site_ID, 'syn_site_username', true );
-		$this->password = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_password', true ) );
-		$this->site_ID  = $site_ID;
-
-		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
-
-		/**
-		 * Bail on connection test if we don't have a server URL.
-		 */
-		if ( '' === $server ) {
-			return false;
-		}
-
-		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
-			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
-		} else {
-			$server = esc_url_raw( $server );
-		}
-
-		parent::__construct( $server );
+		$this->init( $site_ID );
 
 		$result = $this->query(
 			'wp.getPostTypes', // @TODO find a better suitable function
