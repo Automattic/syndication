@@ -358,6 +358,7 @@ class Syndication_Runner {
 
 	// cron job function to syndicate content
 	public function push_content( $sites ) {
+		global $client_manager, $site_manager;
 
 		// if another process running on it return
 		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' ) {
@@ -379,60 +380,76 @@ class Syndication_Runner {
 
 		if ( ! empty( $sites['selected_sites'] ) ) {
 
-			foreach ( $sites['selected_sites'] as $site ) {
+			foreach ( $sites['selected_sites'] as $site_id ) {
 
-				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				// Construct the client
+				$transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+				$client_details = $client_manager->get_push_client( $transport_type );
+				/**
+				 * Skip this client if no valid details found.
+				 */
+				if ( ! $client_details ){
+					continue;
+				}
+				$client         = new $client_details['class'];
+				$client->init( $site_id );
+				$info           = $site_manager->get_site_info( $site_id, $slave_post_states, $client );
 
 				if ( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
 
-					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site_id, $transport_type, $client, $info );
 					if ( true === $push_new_shortcircuit )
 						continue;
 
 					$result = $client->new_post( $post_ID );
-
-					$this->validate_result_new_post( $result, $slave_post_states, $site->ID, $client );
+					$this->validate_result_new_post( $result, $slave_post_states, $site_id, $client );
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
-					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
+					do_action( 'syn_post_push_new_post', $result, $post_ID, $site_id, $transport_type, $client, $info );
 
 				} else { // states 'success', 'edit-error' and 'remove-error'
-					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
+					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site_id, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit )
 						continue;
 
 					$result = $client->edit_post( $post_ID, $info['ext_ID'] );
 
-					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site->ID, $client );
+					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site_id, $client );
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
-					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
+					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site_id, $transport_type, $client, $info );
 				}
 			}
 		}
 
 		if ( ! empty( $sites['removed_sites'] ) ) {
 
-			foreach ( $sites['removed_sites'] as $site ) {
+			foreach ( $sites['removed_sites'] as $site_id ) {
 
-				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				$transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+				$client_details = $client_manager->get_push_client( $transport_type );
+				/**
+				 * Skip this client if no valid details found.
+				 */
+				if ( ! $client_details ){
+					continue;
+				}
+				$client         = new $client_details['class'];
+				$client->init( $site_id );
+				$info           = $this->get_site_info( $site_id, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them
 				if ( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
 
 					$result = $client->delete_post( $info['ext_ID'] );
 					if ( is_wp_error( $result ) ) {
-						$slave_post_states[ 'remove-error' ][ $site->ID ] = $result;
+						$slave_post_states[ 'remove-error' ][ $site_id ] = $result;
 						$this->update_slave_post_states( $post_ID, $slave_post_states );
 					}
 				}
 			}
 		}
-		
+
 		/** end of critical section **/
 
 		// release the lock.
@@ -440,6 +457,28 @@ class Syndication_Runner {
 
 	}
 
+	/**
+	 * if the result is false state transitions
+	 * new          -> new-error
+	 * new-error    -> new-error
+	 * remove-error -> new-error
+	 */
+	public function validate_result_new_post( $result, &$slave_post_states, $site_ID, $client ) {
+
+		if ( is_wp_error( $result ) ) {
+			$slave_post_states[ 'new-error' ][ $site_ID ] = $result;
+		} else {
+			$slave_post_states[ 'success' ][ $site_ID ] = array(
+				'ext_ID' => (int) $result,
+			);
+		}
+
+		return $result;
+	}
+
+	private function update_slave_post_states( $post_id, $slave_post_states ) {
+		update_post_meta( $post_id, '_syn_slave_post_states', $slave_post_states );
+	}
 
 	/**
 	 * Handle create_term and delete_term for syn_sitegroup terms. If a site
@@ -468,4 +507,23 @@ class Syndication_Runner {
 
 	}
 
+	/**
+	 * if the result is false state transitions
+	 * edit-error   -> edit-error
+	 * success      -> edit-error
+	 */
+	public function validate_result_edit_post( $result, $ext_ID, &$slave_post_states, $site_ID, $client ) {
+		if ( is_wp_error( $result ) ) {
+			$slave_post_states[ 'edit-error' ][ $site_ID ] = array(
+				'error' => $result,
+				'ext_ID' => (int) $ext_ID,
+			);
+		} else {
+			$slave_post_states[ 'success' ][ $site_ID ] = array(
+				'ext_ID'        => (int) $ext_ID
+			);
+		}
+
+		return $result;
+	}
 }
