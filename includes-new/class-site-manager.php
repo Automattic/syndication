@@ -257,4 +257,38 @@ class Site_Manager {
 			return false;
 		}
 	}
+
+
+	/**
+	 * $site_states is an array containing state of the site
+	 * with regard to the post the state. The states are
+	 *  success - the post was pushed successfully.
+	 *  new-error - error when creating the post.
+	 *  edit-error - error when editing the post.
+	 *  remove-error - error when removing the post in a slave site, when the sitegroup is unselected
+	 *  new - if the state is not found or the post is deleted in the slave site.
+	 */
+	public function get_site_info( $site_ID, &$slave_post_states, $client ) {
+
+		if( empty( $slave_post_states ) )
+			return array( 'state' => 'new' );
+
+		foreach( $slave_post_states as $state => $sites  ) {
+			if( isset( $sites[ $site_ID ] ) && is_array( $sites[ $site_ID ] ) && ! empty( $sites[ $site_ID ]['ext_ID'] )   ) {
+				if( $client->is_post_exists( $sites[ $site_ID ]['ext_ID'] ) ) {
+					$info = array(
+						'state'     => $state,
+						'ext_ID'    => $sites[ $site_ID ]['ext_ID'] );
+					unset( $slave_post_states[ $state ] [$site_ID] );
+					return $info;
+				} else {
+					return array( 'state' => 'new' );
+				}
+			}
+		}
+
+		return array( 'state' => 'new' );
+
+	}
+
 }
