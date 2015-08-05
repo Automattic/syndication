@@ -73,7 +73,7 @@ class Syndication_Runner {
 		// array containing states of sites
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
 		if ( empty( $slave_post_states ) ) {
-			return;
+			return false;
 		}
 
 		// array containing slave posts as $site_ID => $ext_ID
@@ -280,7 +280,7 @@ class Syndication_Runner {
 
 
 		// Clear all previously scheduled jobs.
-		if( ! empty ( $old_pull_sites ) ) {
+		if ( ! empty ( $old_pull_sites ) ) {
 			// Clear any jobs that were scheduled the old way: one job to pull many sites.
 			wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
 
@@ -520,7 +520,7 @@ class Syndication_Runner {
 			);
 		} else {
 			$slave_post_states[ 'success' ][ $site_ID ] = array(
-				'ext_ID'        => (int) $ext_ID
+				'ext_ID' => (int) $ext_ID,
 			);
 		}
 

@@ -33,7 +33,7 @@ class Site_Manager {
 		$this->_sites = $this->get_site_index();
 	}
 
-	public function get_site_index( $prime_cache=false ) {
+	public function get_site_index( $prime_cache = false ) {
 
 		if ( ! is_null( $this->_sites ) && false === $prime_cache ) {
 			return $this->_sites;
@@ -42,17 +42,19 @@ class Site_Manager {
 		$sites = wp_cache_get( 'syn_site_cache', 'syndication' );
 
 		if ( false === $sites || true === $prime_cache ) {
-			$results = new WP_Query( array(
-				'post_type'         => 'syn_site',
-				'posts_per_page'    => apply_filters( 'syn_posts_per_page_override', 100 ),
-			) );
+			$results = new WP_Query(
+				array(
+					'post_type'         => 'syn_site',
+					'posts_per_page'    => apply_filters( 'syn_posts_per_page_override', 100 ),
+				)
+			);
 			$sites = array(
 				'by_site_group' => array(),
 				'by_client' => array(),
 				'by_status' => array(),
 			);
-			foreach( (array) $results->posts as $site_post ) {
-				$site_enabled = get_post_meta( $site_post->ID, 'syn_site_enabled', true);
+			foreach ( (array) $results->posts as $site_post ) {
+				$site_enabled = get_post_meta( $site_post->ID, 'syn_site_enabled', true );
 				$site_groups  = wp_get_object_terms( $site_post->ID, 'syn_sitegroup' );
 				$site_enabled = 'on' === $site_enabled ? true : false;
 
@@ -60,7 +62,7 @@ class Site_Manager {
 				if ( ! isset( $sites['by_status'][$site_enabled] ) || ! in_array( $site_post->ID, $sites['by_status'][$site_enabled] ) ) {
 					$sites['by_status'][(true === $site_enabled) ? 'enabled' : 'disabled'][] = $site_post->ID;
 				}
-				foreach( $site_groups as $group_term ) {
+				foreach ( $site_groups as $group_term ) {
 					if ( ! isset( $sites['by_site_group'][$group_term->slug] ) || ! in_array( $site_post->ID, $sites['by_site_group'][$group_term->slug] ) ) {
 						$sites['by_site_group'][$group_term->slug][] = $site_post->ID;
 					}
@@ -89,7 +91,7 @@ class Site_Manager {
 		$selected_sitegroups = $settings_manager->get_setting( 'selected_pull_sitegroups' );
 
 		$sites = array();
-		foreach( $selected_sitegroups as $selected_sitegroup ) {
+		foreach ( $selected_sitegroups as $selected_sitegroup ) {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
@@ -133,7 +135,7 @@ class Site_Manager {
 	/**
 	 * Get site data from a site group.
 	 *
-	 * @param $post_ID The id of the site group.
+	 * @param $post_ID int The id of the site group.
 	 *
 	 * @return array
 	 *          post_ID        The passed post ID
@@ -144,9 +146,9 @@ class Site_Manager {
 		$all_sites = $this->get_site_index();
 
 		$selected_sitegroups    = get_post_meta( $post_ID, '_syn_selected_sitegroups', true );
-		$selected_sitegroups    = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
+		$selected_sitegroups    = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
 		$old_sitegroups         = get_post_meta( $post_ID, '_syn_old_sitegroups', true );
-		$old_sitegroups         = !empty( $old_sitegroups ) ? $old_sitegroups : array() ;
+		$old_sitegroups         = ! empty( $old_sitegroups ) ? $old_sitegroups : array() ;
 		$removed_sitegroups     = array_diff( $old_sitegroups, $selected_sitegroups );
 
 		// Initialize return object.
@@ -157,47 +159,43 @@ class Site_Manager {
 		);
 
 		// Find sites in selected site groups.
-		if( ! empty( $selected_sitegroups ) ) {
+		if ( ! empty( $selected_sitegroups ) ) {
 
-			foreach( $selected_sitegroups as $selected_sitegroup ) {
+			foreach ( $selected_sitegroups as $selected_sitegroup ) {
 
 				// get all the sites in the sitegroup
 				$sites = $all_sites['by_site_group'][ $selected_sitegroup ];
-				if( empty( $sites ) ) {
+				if ( empty( $sites ) ) {
 					continue;
 				}
 
-				foreach( $sites as $site_id ) {
-					$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true);
-					if( $site_enabled == 'on' ) {
+				foreach ( $sites as $site_id ) {
+					$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true );
+					if ( $site_enabled == 'on' ) {
 						$data[ 'selected_sites' ][] = $site_id;
 					}
 				}
-
 			}
-
 		}
 
 		// Find sites in removed site groups.
-		if( ! empty( $removed_sitegroups ) ) {
+		if ( ! empty( $removed_sitegroups ) ) {
 
-			foreach( $removed_sitegroups as $removed_sitegroup ) {
+			foreach ( $removed_sitegroups as $removed_sitegroup ) {
 
 				// get all the sites in the sitegroup
 				$sites = $all_sites['by_site_group'][ $removed_sitegroup ];
-				if( empty( $sites ) ) {
+				if ( empty( $sites ) ) {
 					continue;
 				}
 
-				foreach( $sites as $site ) {
-					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true);
-					if( $site_enabled == 'on' ) {
+				foreach ( $sites as $site ) {
+					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
+					if ( $site_enabled == 'on' ) {
 						$data[ 'removed_sites' ][] = $site;
 					}
 				}
-
 			}
-
 		}
 
 		update_post_meta( $post_ID, '_syn_old_sitegroups', $selected_sitegroups );
@@ -270,15 +268,17 @@ class Site_Manager {
 	 */
 	public function get_site_info( $site_ID, &$slave_post_states, $client ) {
 
-		if( empty( $slave_post_states ) )
+		if ( empty( $slave_post_states ) ) {
 			return array( 'state' => 'new' );
+		}
 
-		foreach( $slave_post_states as $state => $sites  ) {
-			if( isset( $sites[ $site_ID ] ) && is_array( $sites[ $site_ID ] ) && ! empty( $sites[ $site_ID ]['ext_ID'] )   ) {
-				if( $client->is_post_exists( $sites[ $site_ID ]['ext_ID'] ) ) {
+		foreach ( $slave_post_states as $state => $sites  ) {
+			if ( isset( $sites[ $site_ID ] ) && is_array( $sites[ $site_ID ] ) && ! empty( $sites[ $site_ID ]['ext_ID'] ) ) {
+				if ( $client->is_post_exists( $sites[ $site_ID ]['ext_ID'] ) ) {
 					$info = array(
 						'state'     => $state,
-						'ext_ID'    => $sites[ $site_ID ]['ext_ID'] );
+						'ext_ID'    => $sites[ $site_ID ]['ext_ID'],
+					);
 					unset( $slave_post_states[ $state ] [$site_ID] );
 					return $info;
 				} else {
