@@ -337,7 +337,6 @@ class Syndication_Runner {
 
 		/**
 		 * Trigger the push content action, passing the current post id and the sites to push to.
-		 * @note: currently post id is unused
 		 */
 		do_action( 'syn_schedule_push_content', $post->ID, $sites );
 	}
@@ -345,7 +344,7 @@ class Syndication_Runner {
 	/**
 	 * Trigger immediate cron callback(s) for the site push events.
 	 *
-	 * @param int   $post_id The post id triggering the callback, unused.
+	 * @param int   $post_id The post id triggering the callback.
 	 * @param Array $sites   An array of site ids that should get the `syn_push_content` event.
 	 */
 	function schedule_push_content( $post_id, $sites ) {
