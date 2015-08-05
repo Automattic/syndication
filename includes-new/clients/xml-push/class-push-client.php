@@ -153,7 +153,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	 */
 	public function new_post( $post_ID ) {
 
-		$post = (array)get_post( $post_ID );
+		$post = (array) get_post( $post_ID );
 
 		// This filter can be used to exclude or alter posts during a content push
 		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
@@ -166,16 +166,14 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 		// rearranging arguments
 		$args = array();
-		$args['post_title']	 = $post['post_title'];
-		$args['post_content']   = $post['post_content'];
-		$args['post_excerpt']   = $post['post_excerpt'];
-		$args['post_status']	= $post['post_status'];
-		$args['post_type']	  = $post['post_type'];
-		$args['wp_password']	= $post['post_password'];
-		$args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
-
-		$args['terms_names'] = $this->_get_post_terms( $post_ID );
-
+		$args['post_title']	   = $post['post_title'];
+		$args['post_content']  = $post['post_content'];
+		$args['post_excerpt']  = $post['post_excerpt'];
+		$args['post_status']   = $post['post_status'];
+		$args['post_type']     = $post['post_type'];
+		$args['wp_password']   = $post['post_password'];
+		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+		$args['terms_names']   = $this->_get_post_terms( $post_ID );
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
 		$args = apply_filters( 'syn_xmlrpc_push_new_post_args', $args, $post );
