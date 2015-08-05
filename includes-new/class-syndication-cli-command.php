@@ -89,6 +89,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		// Run the client's process_site method
 		$client = new $client_details['class'];
+		$client->init( $site_id );
 		$client->process_site( $site_id, $client );
 	}
 
