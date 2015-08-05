@@ -187,7 +187,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		);
 
 		if ( ! $result ) {
-			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+			return new \WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
 		$remote_post_id = (int) $this->getResponse();
