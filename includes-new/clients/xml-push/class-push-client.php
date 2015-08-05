@@ -477,7 +477,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		if ( $date === '0000-00-00 00:00:00' ) {
 			return new IXR_Date( '00000000T00:00:00Z' );
 		}
-		return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
+		return new \IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
 	}
 
 	/**
