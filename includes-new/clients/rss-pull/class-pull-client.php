@@ -21,6 +21,11 @@ class Pull_Client extends Puller {
 	 */
 	public function __construct() {}
 
+	/**
+	 * Initialize the client for a specific site id.
+	 */
+	public function init( $site_id ) {}
+
 	public function set_wp_feed_cache_transient_lifetime( $time ) {
 		global $settings_manager;
 

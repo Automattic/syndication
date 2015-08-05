@@ -23,6 +23,11 @@ class Pull_Client extends Puller {
 	public function __construct() {}
 
 	/**
+	 * Initialize the client for a specific site id.
+	 */
+	public function init( $site_id ) {}
+
+	/**
 	 * Retrieves a list of posts from a remote site.
 	 *
 	 * @param   int $site_id The ID of the site to get posts for

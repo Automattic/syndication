@@ -122,6 +122,7 @@ class Syndication_Runner {
 
 				// Construct the client
 				$client = new $client_details['class'];
+				$client->init( $site_ID );
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
@@ -177,7 +178,7 @@ class Syndication_Runner {
 		// Run the client's process_site method
 		$client            = new $client_details['class'];
 		$updated_post_ids  = array();
-
+		$client->init( $site_id );
 		$processed_posts   = $client->process_site( $site_id, $client );
 
 		/**
