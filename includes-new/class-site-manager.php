@@ -135,7 +135,7 @@ class Site_Manager {
 	/**
 	 * Get site data from a site group.
 	 *
-	 * @param $post_ID int The id of the site group.
+	 * @param int $post_ID The id of the site group.
 	 *
 	 * @return array
 	 *          post_ID        The passed post ID
