@@ -16,9 +16,9 @@ namespace Automattic\Syndication;
  */
 class Client_Manager {
 
-	protected $_push_clients = [];
+	protected $_push_clients = array();
 
-	protected $_pull_clients = [];
+	protected $_pull_clients = array();
 
 	public function __construct() {
 

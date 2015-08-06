@@ -15,16 +15,14 @@ class Pull_Client implements \Automattic\Syndication\Pull_Client
 		$post = new Import_Post();
 
 		$post->remote_id = 'hamburger';
-		$post->post_data = [
-			'post_title' => 'This is the post title',
+		$post->post_data = array(
+			'post_title'   => 'This is the post title',
 			'post_content' => 'This is the post content.',
-		];
-		$post->post_meta = [
-
-		];
-		$post->post_terms = [
-			'category' => [ 'Bacon', 'Lettuce', 'Tomato' ],
-		];
+		);
+		$post->post_meta  = array();
+		$post->post_terms = array(
+			'category' => array( 'Bacon', 'Lettuce', 'Tomato' ),
+		);
 
 		return [ $post ];
 	}

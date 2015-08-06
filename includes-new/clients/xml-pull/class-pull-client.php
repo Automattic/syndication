@@ -40,7 +40,7 @@ class Pull_Client extends Puller {
 		//TODO: required fields for post
 		//TODO: handle categories
 
-		$abs_nodes = $item_nodes = $enc_nodes = $tax_nodes = $abs_post_fields = $abs_meta_data = $abs_tax_data = $posts = [];
+		$abs_nodes = $item_nodes = $enc_nodes = $tax_nodes = $abs_post_fields = $abs_meta_data = $abs_tax_data = $posts = array();
 
 		$site                  = get_post( $site_id );
 		$node_config           = get_post_meta( $site->ID, 'syn_node_config', true );
@@ -137,7 +137,7 @@ class Pull_Client extends Puller {
 			// @todo flush out how the post is actually created
 			$new_post = new Types\Post();
 
-			$meta_data = $tax_data = $value_array = [];
+			$meta_data = $tax_data = $value_array = array();
 			$meta_data['is_update'] = current_time( 'mysql' );
 			$new_post->post_data['post_type'] = get_post_meta( $site->ID, 'syn_default_post_type', true );;
 

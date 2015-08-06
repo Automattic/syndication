@@ -13,15 +13,15 @@ namespace Automattic\Syndication\Types;
  */
 class Post {
 
-	public $post_data = [];
-	public $post_meta = [];
-	public $post_terms = [];
+	public $post_data  = array();
+	public $post_meta  = array();
+	public $post_terms = array();
 
 	// Instantiation
 	public function __construct() {
 
 		// Prime the post_data array
-		$this->post_data = [
+		$this->post_data = array(
 			'ID'                    => '', //must be left blank
 			'post_content'          => '',
 			'post_name'             => '',
@@ -45,13 +45,13 @@ class Post {
 			'tags_input'            => '',
 			'tax_input'             => '',
 			'page_template'         => '', //na
-		];
+		);
 
 		// Prime the post_meta array
-		$this->post_meta = [
+		$this->post_meta = array(
 			'enc_field'  => null,
 			'site_id'    => '',
 			'enclosures' => null,
-		];
+		);
 	}
 }
