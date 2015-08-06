@@ -22,7 +22,6 @@ class Bootstrap {
 
 		add_action( 'syndication/pre_load_client/xml_pull', [ $this, 'pre_load' ] );
 
-		new Site_Options();
 		new Client_Options();
 	}
 
@@ -41,4 +40,5 @@ class Bootstrap {
 	public function pre_load() {
 		// Clients could use this hook to make sure the class is included.
 	}
+
 }

@@ -22,8 +22,11 @@ class Bootstrap {
 
 		add_action( 'syndication/pre_load_client/rss_pull', [ $this, 'pre_load' ] );
 
+		// Add hooks client can for rendering and saving client settings.
+		add_action( 'syndication/render_client_options', [ $this, 'render_client_options' ] );
+		add_action( 'syndication/save_client_options', [ $this, 'save_client_options' ] );
+
 		new Site_Options();
-		new Client_Options();
 	}
 
 	/**
@@ -40,5 +43,18 @@ class Bootstrap {
 
 	public function pre_load() {
 		// Clients could use this hook to make sure the class is included.
+	}
+
+	/**
+	 * Render client options on the Settings->Syndication screen.
+	 */
+	public function render_client_options() {
+	}
+
+	/**
+	 * Save client settings from the Settings->Syndication screen.
+	 */
+	public function save_client_options() {
+
 	}
 }
