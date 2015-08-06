@@ -36,26 +36,27 @@ require __DIR__ . '/class-syndication-event-counter.php';
 // Clients
 // @todo combine client files into single file
 
+// Helpers
+require __DIR__ . '/clients/helpers/class-walker-category-dropdown-multiple.php';
+
+
 // XML Pull
 require __DIR__ . '/clients/xml-pull/class-bootstrap.php';
 require __DIR__ . '/clients/xml-pull/class-client-options.php';
 require __DIR__ . '/clients/xml-pull/class-pull-client.php';
 require __DIR__ . '/clients/xml-pull/class-site-options.php';
-require __DIR__ . '/clients/xml-pull/class-walker-category-dropdown-multiple.php';
 
 // XML Push
 require __DIR__ . '/clients/xml-push/class-bootstrap.php';
 require __DIR__ . '/clients/xml-push/class-client-options.php';
 require __DIR__ . '/clients/xml-push/class-push-client.php';
 require __DIR__ . '/clients/xml-push/class-site-options.php';
-require __DIR__ . '/clients/xml-push/class-walker-category-dropdown-multiple.php';
 
 // RSS Pull
 require __DIR__ . '/clients/rss-pull/class-bootstrap.php';
 require __DIR__ . '/clients/rss-pull/class-client-options.php';
 require __DIR__ . '/clients/rss-pull/class-pull-client.php';
 require __DIR__ . '/clients/rss-pull/class-site-options.php';
-require __DIR__ . '/clients/rss-pull/class-walker-category-dropdown-multiple.php';
 
 // Admin
 require __DIR__ . '/admin/class-post-edit-screen.php';

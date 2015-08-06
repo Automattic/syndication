@@ -18,12 +18,6 @@ class Site_Options {
 		// Set up the connection test action.
 		add_action( 'syndication/test_site_options/xml_push', [ $this, 'test_connection' ] );
 
-
-		/**
-		 * Load the {@see Walker_CategoryDropdownMultiple}
-		 */
-		include_once( dirname( __FILE__ ) . '/class-walker-category-dropdown-multiple.php' );
-
 	}
 
 

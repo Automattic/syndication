@@ -11,7 +11,7 @@ class Walker_CategoryDropdownMultiple extends Walker {
 
 	var $tree_type = 'category';
 
-	var $db_fields = array ('parent' => 'parent', 'id' => 'term_id');
+	var $db_fields = array( 'parent' => 'parent', 'id' => 'term_id' );
 
 	/**
 	 * Start the element output.
@@ -30,7 +30,7 @@ class Walker_CategoryDropdownMultiple extends Walker {
 
 		$cat_name = apply_filters( 'list_cats', $category->name, $category );
 
-		$output .= "\t<option class=\"level-$depth\" value=\"".$category->term_id."\"";
+		$output .= "\t<option class=\"level-$depth\" value=\"" . $category->term_id . "\"";
 		if ( isset( $args['selected_array'] ) && in_array( $category->term_id, $args['selected_array'] ) ) {
 			$output .= ' selected="selected"';
 		}

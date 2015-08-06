@@ -14,11 +14,6 @@ class Site_Options {
 		add_action( 'syndication/render_site_options/rss_pull', [ $this, 'render_site_options_pull' ] );
 		add_action( 'syndication/save_site_options/rss_pull', [ $this, 'save_site_options_pull' ] );
 
-		/**
-		 * Load the {@see Walker_CategoryDropdownMultiple}
-		 */
-		include_once( dirname( __FILE__ ) . '/class-walker-category-dropdown-multiple.php' );
-
 	}
 
 	public function render_site_options_pull( $site_id ) {
