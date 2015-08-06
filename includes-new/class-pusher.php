@@ -17,13 +17,13 @@ abstract class Pusher {
 
 		// Load the required client.
 		$client_slug = get_post_meta( $site_id, 'syn_transport_type', true );
-		if ( !$client_slug ) {
+		if ( ! $client_slug ) {
 			// @todo log that this site was skipped because no client set.
 			throw new \Exception( 'No client selected.' );
 		}
 
 		$client = $this->_client_manager->get_push_client( $client_slug );
-		if ( !$client ) {
+		if ( ! $client ) {
 			// @todo log that selected client does not exist.
 		}
 
@@ -31,3 +31,4 @@ abstract class Pusher {
 
 		// @todo update site status
 	}
+}
