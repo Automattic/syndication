@@ -27,6 +27,7 @@ class Site_Edit_Screen {
 		if ( 'syn_site' == $typenow ) {
 			if( 'post.php' === $hook || 'post-new.php' === $hook ) {
 				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-sites-list.css', array(), SYNDICATION_VERSION );
+				//@todo verify below working, maybe need `wp_deregister_script` here
 				wp_dequeue_script( 'autosave' );
 			}
 		}

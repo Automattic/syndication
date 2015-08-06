@@ -17,12 +17,6 @@ require __DIR__ . '/functions-template-tags.php';
 require __DIR__ . '/types/class-post.php';
 require __DIR__ . '/types/class-term.php';
 
-// Custom Taxonomies
-require __DIR__ . '/custom-taxonomies/class-sitegroup-taxonomy.php';
-
-// Custom post types
-require __DIR__ . '/custom-post-types/class-site-post-type.php';
-
 // Classes
 require __DIR__ . '/class-client-manager.php';
 require __DIR__ . '/class-cron.php';
@@ -84,8 +78,6 @@ class Bootstrap {
 		require_once( SYNDICATION_PATH . 'includes-new/functions-helpers.php');
 
 		// Always load.
-		new Custom_Post_Types\Site_Post_Type();
-		new Custom_Taxonomies\Sitegroup_Taxonomy();
 		new Cron();
 
 		// Settings helper.
@@ -127,10 +119,97 @@ class Bootstrap {
 
 		// Hooks.
 		add_action( 'init', [ $this, 'init' ] );
+
 	}
 
-
+	/**
+	 * Initialize the plugin!
+	 */
 	public function init() {
+		$this->register_taxonomy();
+		$this->register_post_type();
 		do_action( 'syndication/init' );
+	}
+
+	public function register_taxonomy() {
+		$taxonomy_capabilities = array(
+			'manage_terms' => 'manage_categories',
+			'edit_terms'   => 'manage_categories',
+			'delete_terms' => 'manage_categories',
+			'assign_terms' => 'edit_posts',
+		);
+
+		register_taxonomy(
+			'syn_sitegroup',
+			'syn_site', array(
+				'labels' => array(
+					'name'              => __( 'Site Groups' ),
+					'singular_name'     => __( 'Site Group' ),
+					'search_items'      => __( 'Search Site Groups' ),
+					'popular_items'     => __( 'Popular Site Groups' ),
+					'all_items'         => __( 'All Site Groups' ),
+					'parent_item'       => __( 'Parent Site Group' ),
+					'parent_item_colon' => __( 'Parent Site Group' ),
+					'edit_item'         => __( 'Edit Site Group' ),
+					'update_item'       => __( 'Update Site Group' ),
+					'add_new_item'      => __( 'Add New Site Group' ),
+					'new_item_name'     => __( 'New Site Group Name' ),
+
+				),
+				'public'                => false,
+				'show_ui'               => true,
+				'show_tagcloud'         => false,
+				'show_in_nav_menus'     => false,
+				'hierarchical'          => true,
+				'rewrite'               => false,
+				'capabilities'          => $taxonomy_capabilities,
+			)
+		);
+	}
+
+	/**
+	 * Set up the `syn_site` custom post type.
+	 */
+	public function register_post_type() {
+		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
+
+		$post_type_capabilities = array(
+			'edit_post'          => $capability,
+			'read_post'          => $capability,
+			'delete_posts'       => $capability,
+			'edit_posts'         => $capability,
+			'edit_others_posts'  => $capability,
+			'publish_posts'      => $capability,
+			'read_private_posts' => $capability,
+		);
+
+		register_post_type(
+			'syn_site', array(
+				'labels' => array(
+					'name'              => __( 'Sites' ),
+					'singular_name'     => __( 'Site' ),
+					'add_new'           => __( 'Add Site' ),
+					'add_new_item'      => __( 'Add New Site' ),
+					'edit_item'         => __( 'Edit Site' ),
+					'new_item'          => __( 'New Site' ),
+					'view_item'         => __( 'View Site' ),
+					'search_items'      => __( 'Search Sites' ),
+				),
+				'description'           => __( 'Sites in the network' ),
+				'public'                => false,
+				'show_ui'               => true,
+				'publicly_queryable'    => false,
+				'exclude_from_search'   => true,
+				'menu_position'         => 100,
+				// @TODO we need a menu icon here
+				'hierarchical'          => false, // @TODO check this
+				'query_var'             => false,
+				'rewrite'               => false,
+				'supports'              => array( 'title' ),
+				'can_export'            => true,
+				// 'register_meta_box_cb'  => array( $this, 'site_metaboxes' ),
+				'capabilities'          => $post_type_capabilities,
+			)
+		);
 	}
 }
