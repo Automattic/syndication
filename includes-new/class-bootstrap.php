@@ -55,6 +55,11 @@ require __DIR__ . '/clients/rss-pull/class-bootstrap.php';
 require __DIR__ . '/clients/rss-pull/class-pull-client.php';
 require __DIR__ . '/clients/rss-pull/class-client-options.php';
 
+// REST Push
+require __DIR__ . '/clients/rest-push/class-bootstrap.php';
+require __DIR__ . '/clients/rest-push/class-push-client.php';
+require __DIR__ . '/clients/rest-push/class-client-options.php';
+
 // Admin
 require __DIR__ . '/admin/class-post-edit-screen.php';
 require __DIR__ . '/admin/class-settings-screen.php';
@@ -108,6 +113,7 @@ class Bootstrap {
 		new Clients\XML_Pull\Bootstrap();
 		new Clients\RSS_Pull\Bootstrap();
 		new Clients\XML_Push\Bootstrap();
+		new Clients\REST_Push\Bootstrap();
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
