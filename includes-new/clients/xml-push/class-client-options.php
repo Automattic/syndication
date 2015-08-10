@@ -96,48 +96,16 @@ class Client_Options {
 	}
 
 	/**
-	 * Rewrite wp_dropdown_categories output to enable a multiple select
-	 * @param  string $result rendered category dropdown list
-	 * @return string altered category dropdown list
-	 */
-	public static function make_multiple_categories_dropdown( $result ) {
-		$result = preg_replace( '#^<select name#', '<select multiple="multiple" name', $result );
-		return $result;
-	}
-
-
-	/**
 	 * Test the connection, used to validate feed.
 	 *
 	 * @return bool
-	 * @todo verify fires on save, compare to v2
 	 */
 	public function test_connection( $site_ID ) {
 		global $client_manager;
 
-		// Get the required client.
-		$client_transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
-		if ( ! $client_transport_type ) {
-			return false;
-		}
-
-		// Fetch the client so we may pull it's posts
-		$client_details = $client_manager->get_push_client( $client_transport_type );
-
-		if ( ! $client_details ) {
-			return false;
-		}
-
-		// Run the client's process_site method
-		$client = new $client_details['class'];
-
-		//@todo this show the user an error message.
-		if ( $client->test_connection( $site_ID ) ) {
-			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 251, $location);' ) );
-		} else {
-			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 252, $location);' ) );
-		}
+		$client_manager->test_connection( $site_ID );
 	}
+
 
 	/**
 	 * Render client options on the Settings->Syndication screen.
