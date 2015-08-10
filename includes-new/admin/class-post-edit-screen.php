@@ -45,8 +45,6 @@ class Post_Edit_Screen {
 
 		// nonce for verification when saving
 		wp_nonce_field( 'syndicate_post_edit', 'syndicate_noncename' );
-		error_log('adding nonce syndicate_noncename');
-		error_log('syndicate_post_edit');
 		// get all sitegroups
 		$sitegroups = get_terms( 'syn_sitegroup', array(
 			'fields'        => 'all',
@@ -85,7 +83,6 @@ class Post_Edit_Screen {
 	}
 
 	public function save_syndicate_settings() {
-		error_log('SAVE - save_syndicate_settings');
 		global $post, $settings_manager;
 
 		// autosave verification

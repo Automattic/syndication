@@ -170,7 +170,6 @@ class Client_Options {
 			return;
 
 		}
-
 		?>
 
 		<table class="form-table">

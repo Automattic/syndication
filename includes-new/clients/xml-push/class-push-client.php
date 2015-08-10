@@ -32,7 +32,6 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	function __construct() {}
 
 	public function init( $site_ID = 0 ) {
-		error_log('Syndication PUSH INIT');
 		global $settings_manager;
 
 		$this->username = get_post_meta( $site_ID, 'syn_site_username', true );
@@ -712,7 +711,6 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		if ( $result !== true ) {
 			//failed to update atatchment post details
 			//handle it th way you want it (log it, message it)
-			error_log('Syndication. xmlrpc_post_gallery_images Failed to update remote post attachments');
 		}
 		//update alt text of the image
 		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );

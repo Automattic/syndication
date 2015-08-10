@@ -221,8 +221,6 @@ class Syndication_Runner {
 
 		// Keep track of posts that are added or changed.
 		$updated_post_ids = array();
-		//error_log( 'pull' );
-		//error_log( json_encode( $sites ) );
 
 		foreach ( $sites as $site_id ) {
 
