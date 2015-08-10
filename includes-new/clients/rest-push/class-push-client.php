@@ -27,14 +27,14 @@ class Push_Client extends Pusher {
 
 	function __construct() {}
 
-	public function init( $site_ID = 0 ) {
+	public function init( $site_ID = 0, $port = 80, $timeout = 45 ) {
 		global $settings_manager;
 
 		$this->access_token = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_token', true) );
-		$this->blog_ID	  = get_post_meta( $site_ID, 'syn_site_id', true);
-		$this->timeout	  = $timeout;
-		$this->useragent	= 'push-syndication-plugin';
-		$this->port		 = $port;
+		$this->blog_ID      = get_post_meta( $site_ID, 'syn_site_id', true);
+		$this->timeout      = $timeout;
+		$this->useragent    = 'push-syndication-plugin';
+		$this->port         = $port;
 
 	}
 
