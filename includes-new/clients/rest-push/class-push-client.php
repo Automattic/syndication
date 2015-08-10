@@ -18,11 +18,12 @@ use Automattic\Syndication\Types;
 
 class Push_Client extends Pusher {
 
-	private $username;
-	private $password;
+	private $access_token;
+	private $blog_ID;
 
-	private $site_ID;
-
+	private $port;
+	private $useragent;
+	private $timeout;
 
 	function __construct() {}
 
@@ -260,10 +261,10 @@ class Push_Client extends Pusher {
 	public function test_connection( $site_ID ) {
 				// @TODo find a better method
 		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1/me/?pretty=1', array(
-			'timeout'	   => $this->timeout,
-			'user-agent'	=> $this->useragent,
-			'sslverify'	 => false,
-			'headers'	   => array (
+			'timeout'       => $this->timeout,
+			'user-agent'    => $this->useragent,
+			'sslverify'     => false,
+			'headers'       => array (
 				'authorization' => 'Bearer ' . $this->access_token,
 			),
 		) );
