@@ -167,6 +167,7 @@ class Syndication_Runner {
 	 */
 	function pull_site( $site_id ) {
 		global $client_manager;
+		$updated_post_ids  = array();
 
 		// Fetch the site's client/transport type name
 		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
@@ -175,9 +176,12 @@ class Syndication_Runner {
 		// @todo check push clients
 		$client_details = $client_manager->get_pull_client( $client_transport_type );
 
+		// Skip this client if unidentified.
+		if ( ! isset( $client_details['class'] ) || null === $client_details['class'] ) {
+			return $updated_post_ids;
+		}
 		// Run the client's process_site method
 		$client            = new $client_details['class'];
-		$updated_post_ids  = array();
 		$client->init( $site_id );
 		$processed_posts   = $client->process_site( $site_id, $client );
 
