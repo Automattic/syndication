@@ -98,4 +98,36 @@ class Client_Manager {
 
 		return $client;
 	}
+
+	/**
+	 * Test a client connection, used to validate feed.
+	 *
+	 * @return bool
+	 * @todo verify fires on save, compare to v2
+	 */
+	public function test_connection( $site_ID ) {
+
+		// Get the required client.
+		$client_transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
+		if ( ! $client_transport_type ) {
+			return false;
+		}
+
+		// Fetch the client so we may pull it's posts
+		$client_details = $this->get_push_client( $client_transport_type );
+
+		if ( ! $client_details ) {
+			return false;
+		}
+
+		// Run the client's process_site method
+		$client = new $client_details['class'];
+
+		//@todo verify this show the user an error message.
+		if ( $client->test_connection( $site_ID ) ) {
+			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 251, $location);' ) );
+		} else {
+			add_filter( 'redirect_post_location', create_function( '$location', 'return add_query_arg( "message", 252, $location);' ) );
+		}
+	}
 }
