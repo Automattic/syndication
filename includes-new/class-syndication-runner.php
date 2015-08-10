@@ -118,7 +118,7 @@ class Syndication_Runner {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
 				//@todo also push clients
 				// Fetch the site's client by name
-				$client_details = $client_manager->get_pull_client( $transport_type );
+				$client_details = $client_manager->get_pull_or_push_client( $transport_type );
 
 				// Construct the client
 				$client = new $client_details['class'];
