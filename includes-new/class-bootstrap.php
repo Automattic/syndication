@@ -181,6 +181,7 @@ class Bootstrap {
 			'edit_post'          => $capability,
 			'read_post'          => $capability,
 			'delete_posts'       => $capability,
+			'delete_post'        => $capability,
 			'edit_posts'         => $capability,
 			'edit_others_posts'  => $capability,
 			'publish_posts'      => $capability,
