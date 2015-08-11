@@ -97,8 +97,12 @@ class Syndication_Runner {
 	 * @todo review and test.
 	 */
 	public function delete_content( $post_ID ) {
-		global $client_manager;
+		global $client_manager, $settings_manager;
 
+		// Only delete remote posts if setting enabled.
+		if ( 'on' !== $settings_manager->get_setting( 'delete_pushed_posts' ) ) {
+			return false;
+		}
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
 		$delete_error_sites = ! empty( $delete_error_sites ) ? $delete_error_sites : array() ;
 		$slave_posts        = $this->get_slave_posts( $post_ID );
