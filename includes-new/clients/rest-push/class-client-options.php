@@ -72,7 +72,7 @@ class Client_Options {
 		// Verify values set before saving.
 		$site_token   = isset( $_POST['site_token'] ) ? $_POST['site_token'] : '';
 		$feed_site_id = isset( $_POST['site_id'] ) ? $_POST['site_id'] : '';
-		$site_url     = isset( $_POST['site_token'] ) ? $_POST['site_token'] : '';
+		$site_url     = isset( $_POST['site_url'] ) ? $_POST['site_url'] : '';
 
 		// Save the options
 		update_post_meta( $site_id, 'syn_site_token', $settings_manager->syndicate_encrypt( sanitize_text_field( $site_token ) ) );
@@ -170,7 +170,6 @@ class Client_Options {
 			return;
 
 		}
-
 		?>
 
 		<table class="form-table">

@@ -29,7 +29,6 @@ class Client_Options {
 	public function render_site_options_push( $site_id ) {
 		global $settings_manager;
 
-		error_log( 'push xml render_client_options ' );
 		$site_url      = get_post_meta( $site_id, 'syn_site_url', true );
 		$site_username = get_post_meta( $site_id, 'syn_site_username', true );
 		$site_password = $settings_manager->syndicate_decrypt( get_post_meta( $site_id, 'syn_site_password', true ) );

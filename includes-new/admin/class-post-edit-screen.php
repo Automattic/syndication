@@ -10,7 +10,6 @@ class Post_Edit_Screen {
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
 		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load
-		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 	}
 
 	public function checked_array( $value, $group ) {
@@ -47,8 +46,6 @@ class Post_Edit_Screen {
 
 		// nonce for verification when saving
 		wp_nonce_field( 'syndicate_post_edit', 'syndicate_noncename' );
-		error_log('adding nonce syndicate_noncename');
-		error_log('syndicate_post_edit');
 		// get all sitegroups
 		$sitegroups = get_terms( 'syn_sitegroup', array(
 			'fields'        => 'all',
@@ -87,7 +84,6 @@ class Post_Edit_Screen {
 	}
 
 	public function save_syndicate_settings() {
-		error_log('SAVE - save_syndicate_settings');
 		global $post, $settings_manager;
 
 		// autosave verification

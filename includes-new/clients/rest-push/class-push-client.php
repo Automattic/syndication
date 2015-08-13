@@ -72,14 +72,14 @@ class Push_Client extends Pusher {
 			return true;
 
 		$body = array (
-			'title'		 => $post['post_title'],
-			'content'	   => $post['post_content'],
-			'excerpt'	   => $post['post_excerpt'],
-			'status'		=> $post['post_status'],
-			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
-			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
-			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
+			'title'      => $post['post_title'],
+			'content'    => $post['post_content'],
+			'excerpt'    => $post['post_excerpt'],
+			'status'     => $post['post_status'],
+			'password'   => $post['post_password'],
+			'date'       => $post['post_date_gmt'],
+			'categories' => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array( 'fields' => 'names', ) ) ),
+			'tags'       => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array( 'fields' => 'names', ) ) ),
 		);
 
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );

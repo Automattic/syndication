@@ -97,8 +97,12 @@ class Syndication_Runner {
 	 * @todo review and test.
 	 */
 	public function delete_content( $post_ID ) {
-		global $client_manager;
+		global $client_manager, $settings_manager;
 
+		// Only delete remote posts if setting enabled.
+		if ( 'on' !== $settings_manager->get_setting( 'delete_pushed_posts' ) ) {
+			return false;
+		}
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
 		$delete_error_sites = ! empty( $delete_error_sites ) ? $delete_error_sites : array() ;
 		$slave_posts        = $this->get_slave_posts( $post_ID );
@@ -118,7 +122,7 @@ class Syndication_Runner {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
 				//@todo also push clients
 				// Fetch the site's client by name
-				$client_details = $client_manager->get_pull_client( $transport_type );
+				$client_details = $client_manager->get_pull_or_push_client( $transport_type );
 
 				// Construct the client
 				$client = new $client_details['class'];
@@ -167,6 +171,7 @@ class Syndication_Runner {
 	 */
 	function pull_site( $site_id ) {
 		global $client_manager;
+		$updated_post_ids  = array();
 
 		// Fetch the site's client/transport type name
 		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
@@ -175,9 +180,12 @@ class Syndication_Runner {
 		// @todo check push clients
 		$client_details = $client_manager->get_pull_client( $client_transport_type );
 
+		// Skip this client if unidentified.
+		if ( ! isset( $client_details['class'] ) || null === $client_details['class'] ) {
+			return $updated_post_ids;
+		}
 		// Run the client's process_site method
 		$client            = new $client_details['class'];
-		$updated_post_ids  = array();
 		$client->init( $site_id );
 		$processed_posts   = $client->process_site( $site_id, $client );
 
@@ -217,8 +225,6 @@ class Syndication_Runner {
 
 		// Keep track of posts that are added or changed.
 		$updated_post_ids = array();
-		//error_log( 'pull' );
-		//error_log( json_encode( $sites ) );
 
 		foreach ( $sites as $site_id ) {
 
