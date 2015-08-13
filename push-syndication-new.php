@@ -25,9 +25,9 @@ define( 'SYNDICATION_PATH', dirname( __FILE__ ) . '/' );
 if ( ! defined( 'PUSH_SYNDICATE_KEY' ) ) {
 	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
 }
-
-// Load the plugin bootstrap.
-require __DIR__ . '/includes-new/class-bootstrap.php';
+// Load and register the autoloader.
+require __DIR__ . '/includes-new/class-autoloader.php';
+Autoloader::register_namespace( 'Automattic\Syndication', __DIR__ . '/includes-new' );
 
 // Initialize the bootstrapper.
 new Bootstrap();
