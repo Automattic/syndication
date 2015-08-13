@@ -41,6 +41,15 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
 
 		/**
+		 * Set up the callbacks for attachments.
+		 */
+		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
+			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
+			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
+			// TODO: on delete post, delete thumbnail
+		}
+
+		/**
 		 * Bail on connection test if we don't have a server URL.
 		 */
 		if ( '' === $server ) {
@@ -57,20 +66,6 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	}
 
 	public function get_posts( $site_ID = 0 ) {
-	}
-
-	/**
-	 * Process this site, setting up callbacks.
-	 *
-	 * @param int $site_ID The id of the site to set up.
-	 */
-	public function process_site( $site_ID = 0 ) {
-
-		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
-			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			// TODO: on delete post, delete thumbnail
-		}
 	}
 
 	private function get_thumbnail_meta_keys( $post_id ) {
