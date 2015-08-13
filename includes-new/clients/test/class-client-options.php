@@ -7,7 +7,7 @@
 
 namespace Automattic\Syndication\Clients\Test;
 
-class Site_Options {
+class Client_Options {
 
 	public function __construct() {
 
