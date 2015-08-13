@@ -43,6 +43,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+
+		add_filter( 'syn_pull_new_post', array( __CLASS__, 'convert_video_html_to_shortcode' ) );
 	}
 
 	public static function get_client_data() {
@@ -354,4 +356,70 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			}
 		}
 	}
+
+	/**
+	 * Detects video embed HTML on incoming posts and coverts to video shortcode
+	 *
+	 * @param array $post An array of post data
+	 * @return array (Un)modified post data
+	 */
+	public function convert_video_html_to_shortcode( $post ) {
+
+		// Look for the video embed HTML in the post content
+		$html_regex = "/[\s\S]*(<div>[\s\S]+<script>document\.createElement\('video'\);<\/script><![\s\S]+>\n<video [\s\S]+><source type=\"[\s\S]*\" src=\"(.*)\"><\/source><a href=\"(.*)\">(.*)<\/a><\/video><\/div>)[\s\S]*/";
+		$html_match = preg_match( $html_regex, $post['post_content'], $html_matches );
+
+		if ( 1 !== $html_match ) { // No video in this post
+			return $post;
+		}
+
+		// There should be four matches - the full string, then three URLs
+		if ( 5 !== count( $html_matches ) ) {
+			return $post; // We haven't matched enough URLs, somehow
+		}
+
+		// Log if there are bad URLs
+		$bad_url = false;
+
+		// Isolate the URLs from the HTML matches
+		$urls = array(
+			$html_matches[2],
+			$html_matches[3],
+			$html_matches[4],
+		);
+
+		// Check each URL is valid
+		foreach ( $urls as $url ) {
+
+			$url_regex = '/(?P<protocol>(?:(?:f|ht)tp|https):\/\/)?(?P<domain>(?:(?!-)(?P<sld>[a-zA-Z\d\-]+)(?<!-)[\.]){1,2}(?P<tld>(?:[a-zA-Z]{2,}\.?){1,}){1,}|(?P<ip>(?:(?(?<!\/)\.)(?:25[0-5]|2[0-4]\d|[01]?\d?\d)){4}))(?::(?P<port>\d{2,5}))?(?:\/(?P<script>[~a-zA-Z\/.0-9-_]*)?(?:\?(?P<parameters>[=a-zA-Z+%&0-9,.\/_ -]*))?)?(?:\#(?P<anchor>[=a-zA-Z+%&0-9._]*))?/';
+
+			$url_match = preg_match( $url_regex, $url, $url_matches );
+
+			if ( 1 !== $url_match ) { // URL doesn't match pattern
+				$bad_url = true;
+			}
+
+		}
+
+		// Do nothing if one of the URLs wasn't valid
+		if ( $bad_url ) {
+			return $post;
+		}
+
+		// No bad URLs, so grab the 2nd URL
+		$video_url = $html_matches[3];
+
+		// Build the shortcode
+		$shortcode = sprintf(
+			'[video src="%s"]',
+			$video_url
+		);
+
+		// Replace the video HTML with the shortcode
+		$post['post_content'] = str_replace( $html_matches[1], $shortcode, $post['post_content'] );
+
+		return $post;
+
+	}
+
 }
