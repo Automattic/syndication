@@ -24,7 +24,8 @@ class Post_Edit_Screen {
 	public function add_post_metaboxes() {
 		global $settings_manager;
 		// return if no post types supports push syndication
-		if( empty( $settings_manager->get_setting( 'selected_post_types' ) ) ) {
+		$setting = $settings_manager->get_setting( 'selected_post_types' );
+		if( empty( $setting ) ) {
 			return;
 		}
 

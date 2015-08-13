@@ -12,7 +12,6 @@ class Bootstrap {
 		add_action( 'syndication/pre_load_client/test_pull', [ $this, 'pre_load' ] );
 		add_action( 'syndication/pre_load_client/test_push', [ $this, 'pre_load' ] );
 
-		new Site_Options();
 		new Client_Options();
 	}
 
