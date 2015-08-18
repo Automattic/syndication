@@ -47,7 +47,9 @@ class Upgrade_Tasks {
 	/**
 	 * Version 3.0.0 Upgrade Routine
 	 *
-	 * + In Version 2.0 we set each site's transport_type post meta to WP_XML, WP_RSS, WP_REST, or WP_XMLRPC. In version 3.0.0 we need to convert these to xml_pull, rss_pull, rest_push, xmlrpc_push; respectively
+	 * + In Version 2.0 we set each site's transport_type post meta to WP_XML, WP_RSS, WP_REST, or
+	 * WP_XMLRPC. In version 3.0.0 we need to convert these to xml_pull, rss_pull, rest_push,
+	 * xmlrpc_push; respectively.
 	 *
 	 */
 	public function upgrade_to_3_0_0() {
@@ -61,8 +63,6 @@ class Upgrade_Tasks {
 			// Fetch all sites
 			$sites = $site_manager->get_site_index();
 
-			// Update Routine #1
-			// In Version 2.0 we set each site's transport_type post meta to WP_XML, WP_RSS, WP_REST, or WP_XMLRPC. In version 3.0.0 we need to convert these to xml_pull, rss_pull, rest_push, xmlrpc_push; respectively
 
 			// Loop through each site
 			foreach ( $sites['all'] as $site ) :
@@ -86,12 +86,6 @@ class Upgrade_Tasks {
 					update_post_meta( $site->ID, 'syn_transport_type', $new_transport_type );
 				endif;
 			endforeach;
-
-			// END Update Routine #1
-
-			// Update Routine #2
-			// ...
-			// END Update Routine #2
 
 		endif;
 	}
