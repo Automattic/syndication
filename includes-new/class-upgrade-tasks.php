@@ -79,7 +79,7 @@ class Upgrade_Tasks {
 						case 'WP_XML'    : $new_transport_type = 'xml_pull';    break;
 						case 'WP_RSS'    : $new_transport_type = 'rss_pull';    break;
 						case 'WP_REST'   : $new_transport_type = 'rest_push';   break;
-						case 'WP_XMLRPC' : $new_transport_type = 'xmlrpc_push'; break;
+						case 'WP_XMLRPC' : $new_transport_type = 'xml_push'; break;
 					endswitch;
 
 					// Update the site's transport type
