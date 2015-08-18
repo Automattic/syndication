@@ -2,42 +2,32 @@
 /**
  * Plugin Name:  Syndication
  * Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
- * Description:  Syndicate content to and from your sites
- * Version:      2.0
+ * Description:  Syndicate content to and from your sites.
+ * Version:      3.0
  * Author:       Automattic
- * Author URI:   http://automattic.com
+ * Author URI:   http://automattic.com/
  * License:      GPLv2 or later
  */
 
-require __DIR__ . '/push-syndication-new.php';
-return;
-
-define( 'SYNDICATION_VERSION', 2.0 );
-
-if ( ! defined( 'PUSH_SYNDICATE_KEY' ) )
-	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
+namespace Automattic\Syndication;
 
 /**
- * Load syndication logger
+ * Don't load on autosave requests.
  */
-require_once( dirname( __FILE__ ) . '/includes/class-syndication-logger.php' );
-Syndication_Logger::init();
+if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+	return;
+}
 
-require_once( dirname( __FILE__ ) . '/includes/class-wp-push-syndication-server.php' );
+define( 'SYNDICATION_VERSION', '3.0.0' );
+define( 'SYNDICATION_URL', plugin_dir_url( __FILE__ ) );
+define( 'SYNDICATION_PATH', dirname( __FILE__ ) . '/' );
 
-if ( defined( 'WP_CLI' ) && WP_CLI )
-	require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
+if ( ! defined( 'PUSH_SYNDICATE_KEY' ) ) {
+	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
+}
+// Load and register the autoloader.
+require __DIR__ . '/includes-new/class-autoloader.php';
+Autoloader::register_namespace( 'Automattic\Syndication', __DIR__ . '/includes-new' );
 
-$push_syndication_server = new WP_Push_Syndication_Server;
-
-// Create the event counter.
-require __DIR__ . '/includes/class-syndication-event-counter.php';
-new Syndication_Event_Counter();
-
-// Create the site failure monitor.
-require __DIR__ . '/includes/class-syndication-site-failure-monitor.php';
-new Syndication_Site_Failure_Monitor();
-
-// Create the site auto retry functionality
-require __DIR__ . '/includes/class-syndication-site-auto-retry.php';
-new Failed_Syndication_Auto_Retry();
+// Initialize the bootstrapper.
+new Bootstrap();
