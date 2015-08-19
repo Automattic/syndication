@@ -186,7 +186,6 @@ abstract class Puller {
 				if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
 					$enclosure = implode("\n", $enclosure);
 				}
-				error_log( sprintf( 'adding enclosure meta to %s field %s enclosure %s', $post_id, $enc_field, json_encode( $enclosure ) ) );
 
 				add_post_meta( $post_id, $enc_field, $enclosure, false );
 			}

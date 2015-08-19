@@ -185,15 +185,14 @@ class Syndication_Runner {
 			return $updated_post_ids;
 		}
 		// Run the client's process_site method
-		$client            = new $client_details['class'];
+		$client = new $client_details['class'];
 		$client->init( $site_id );
-		$processed_posts   = $client->process_site( $site_id, $client );
+		$processed_posts = $client->process_site( $site_id, $client );
 
 		/**
 		 * Always return only the processed post IDs.
 		 */
 		if ( $processed_posts ) {
-
 			$updated_post_data = wp_list_pluck( $processed_posts, 'post_data' );
 			$updated_post_ids  = wp_list_pluck( $updated_post_data, 'ID' );
 		}
