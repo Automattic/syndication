@@ -41,18 +41,6 @@ abstract class Puller {
 			return false;
 		}
 
-		// Get the required client.
-		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
-		if ( ! $client_transport_type ) {
-			return false;
-		}
-
-		// Fetch the client so we may pull it's posts
-		$client_details = $client_manager->get_pull_client( $client_transport_type );
-		if ( ! $client_details ) {
-			return false;
-		}
-
 		// Mark site as in progress
 		$site_manager->update_site_status( 'pulling' );
 
