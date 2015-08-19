@@ -53,7 +53,13 @@ abstract class Puller {
 			$this->process_posts( $posts, $site_id );
 
 		} catch ( \Exception $e ) {
-			error_log( $e );
+			Syndication_Logger::log_post_error(
+				$site_id,
+				$status = 'error',
+				$message = __( 'Exception processing site.', 'push-syndication' ),
+				$log_time = null,
+				$extra = array( 'error' => $e )
+			);
 		}
 
 		// Update site status
