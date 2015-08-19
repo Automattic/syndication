@@ -246,8 +246,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 			<?php
 			if ( $this->_min_date && $this->_max_date ) {
-				$month_pointer = new DateTime( '@' . $this->_min_date );
-				$max_month = new DateTime( '@' . $this->_max_date );
+				$month_pointer = new \DateTime( '@' . $this->_min_date );
+				$max_month     = new \DateTime( '@' . $this->_max_date );
 
 				while ( $month_pointer <= $max_month ) { ?>
 					<option
