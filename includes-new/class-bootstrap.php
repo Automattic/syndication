@@ -33,6 +33,7 @@ class Bootstrap {
 		Syndication_Logger::init();
 		new Syndication_Event_Counter();
 		new Syndication_Site_Failure_Monitor();
+		new Syndication_Fail_Auto_Retry();
 
 		new Upgrade_Tasks();
 		new Legacy_Hooks();
