@@ -41,13 +41,16 @@ class Syndication_Fail_Auto_Retry {
 	 * @return null
 	 */
 	public function handle_pull_failure_event( $site_id = 0, $failed_attempts = 0 ) {
+		global $settings_manager;
+
 		$site_auto_retry_count = 0;
 		$site_id               = (int) $site_id;
 		$failed_attempts       = (int) $failed_attempts;
 		$cleanup               = false;
 
 		// Fetch the allowable number of max pull attempts before the site is marked as 'disabled'
-		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
+		$max_pull_attempts = (int) $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 );
+		error_log('max times to retry: ' . $max_pull_attempts);
 
 		// Bail if we've already met the max pull attempt count
 		if ( ! $max_pull_attempts ) {

@@ -25,9 +25,10 @@ class Syndication_Site_Failure_Monitor {
 	 * @param $count
 	 */
 	public function handle_pull_failure_event( $site_id, $count ) {
+		global $settings_manager;
 		$site_id = (int) $site_id;
 
-		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
+		$max_pull_attempts = (int) $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 );
 
 		if ( ! $max_pull_attempts ) {
 			return;

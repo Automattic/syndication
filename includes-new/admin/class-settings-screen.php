@@ -39,6 +39,7 @@ class Settings_Screen {
 		$settings['selected_pull_sitegroups']   = !empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
 		$settings['pull_time_interval']         = !empty( $raw_settings['pull_time_interval'] ) ? max( $raw_settings['pull_time_interval'], 300 ) : '3600';
 		$settings['update_pulled_posts']        = !empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
+		$settings['push_syndication_max_pull_attempts'] = !empty( $raw_settings['push_syndication_max_pull_attempts'] ) ? $raw_settings['push_syndication_max_pull_attempts'] : 0 ;
 
 		return $settings;
 
@@ -155,8 +156,9 @@ class Settings_Screen {
 	 * Display the form field for the push_syndication_max_pull_attempts option.
 	 */
 	public function display_max_pull_attempts() {
+		global $settings_manager;
 		?>
-		<input type="text" size="10" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
+		<input type="text" size="10" name="push_syndicate_settings[push_syndication_max_pull_attempts]" value="<?php echo esc_attr( $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
 		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
 	<?php
 	}
