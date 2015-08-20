@@ -53,8 +53,8 @@ class Syndication_Settings {
 	 *
 	 * @return mixed             The setting value, or false if unset.
 	 */
-	public function get_setting( $setting_id ) {
-		return isset( $this->push_syndicate_settings[ $setting_id ] ) ? $this->push_syndicate_settings[ $setting_id ] : false;
+	public function get_setting( $setting_id, $default =false ) {
+		return isset( $this->push_syndicate_settings[ $setting_id ] ) ? $this->push_syndicate_settings[ $setting_id ] : $default;
 	}
 
 	static function syndicate_encrypt( $data ) {
