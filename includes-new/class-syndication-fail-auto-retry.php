@@ -101,7 +101,7 @@ class Syndication_Fail_Auto_Retry {
 					wp_schedule_single_event(
 						$auto_retry_interval,     // retry in X time
 						'syn_pull_content',       // fire the syndication_auto_retry hook
-						array( array( $site ) )   // the site which failed to pull
+						array( array( $site->ID ) )   // the site which failed to pull
 					);
 
 					// Increment our auto retry counter
