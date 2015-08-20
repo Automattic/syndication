@@ -63,6 +63,9 @@ class Pull_Client extends Puller {
 		remove_filter( 'wp_feed_cache_transient_lifetime', array( $this, 'set_wp_feed_cache_transient_lifetime' ) );
 
 		if ( is_wp_error( $feed ) ) {
+			// Track the event.
+			do_action( 'push_syndication_event', 'pull_failure', $site_id );
+
 			return array();
 		}
 
@@ -90,7 +93,7 @@ class Pull_Client extends Puller {
 
 			$new_post->post_meta['site_id'] = $item->get_id();
 
-				// This filter can be used to exclude or alter posts during a pull import
+			// This filter can be used to exclude or alter posts during a pull import
 			$new_post = apply_filters( 'syn_rss_pull_filter_post', $new_post, array(), $item );
 			if ( false === $new_post ) {
 				continue;
