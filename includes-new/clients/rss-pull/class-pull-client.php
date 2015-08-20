@@ -100,6 +100,8 @@ class Pull_Client extends Puller {
 			}
 			$posts[] = $new_post;
 		}
+		// Track the event.
+		do_action( 'push_syndication_event', 'pull_success', $site->ID );
 
 		return $posts;
 	}
