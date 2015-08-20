@@ -1,5 +1,5 @@
 <?php
-
+namespace Automattic\Syndication;
 /**
  * Failed Syndication Auto Retry
  *
@@ -17,12 +17,13 @@
  * @uses Syndication_Logger
  */
 
-class Failed_Syndication_Auto_Retry {
+class Syndication_Fail_Auto_Retry {
 
 	/**
 	 * Hook into WordPress
 	 */
 	public function __construct() {
+		error_log( 'Syndication_Fail_Auto_Retry loading' );
 
 		// Watch the push_syndication_event action for site pull failures
 		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
@@ -40,7 +41,6 @@ class Failed_Syndication_Auto_Retry {
 	 * @return null
 	 */
 	public function handle_pull_failure_event( $site_id = 0, $failed_attempts = 0 ) {
-
 		$site_auto_retry_count = 0;
 		$site_id               = (int) $site_id;
 		$failed_attempts       = (int) $failed_attempts;
