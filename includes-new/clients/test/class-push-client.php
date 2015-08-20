@@ -6,8 +6,11 @@ class Push_Client implements \Automattic\Syndication\Push_Client
 {
 	protected $_output;
 
-	public function __construct( $site_id )
+	public function __construct()
 	{
 
 	}
+
+	public function init() {}
+
 }

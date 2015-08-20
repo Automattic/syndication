@@ -222,6 +222,8 @@ class Pull_Client extends Puller {
 
 		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $new_posts ) ), $log_time = null, $extra = array() );
 
+		// Track the event.
+		do_action( 'push_syndication_event', 'pull_success', $site->ID );
 		return $new_posts;
 	}
 }

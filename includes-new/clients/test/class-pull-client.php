@@ -4,12 +4,17 @@ namespace Automattic\Syndication\Clients\Test;
 
 use Automattic\Syndication\Types\Import_Post;
 
-class Pull_Client implements \Automattic\Syndication\Pull_Client
+class Pull_Client
 {
-	public function __construct( $site_id ) {
+	public function __construct() {
 
 	}
 
+	public function init() {}
+
+	public function is_post_exists( $id ) {
+		return false;
+	}
 	public function get_posts() {
 
 		$post = new Import_Post();
