@@ -15,7 +15,7 @@ class Bootstrap {
 	public function __construct() {
 
 		// Load our helper functions which autoload can't..load
-		require_once( SYNDICATION_PATH . 'includes-new/functions-helpers.php');
+		require_once( SYNDICATION_PATH . 'includes/functions-helpers.php');
 
 		// Always load.
 		new Cron();
@@ -56,7 +56,7 @@ class Bootstrap {
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require_once( SYNDICATION_PATH . 'includes-new/class-syndication-cli-command.php' );
+			require_once( SYNDICATION_PATH . 'includes/class-syndication-cli-command.php' );
 			\WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 		}
 
