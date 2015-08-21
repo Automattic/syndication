@@ -32,7 +32,7 @@ class Client_Options {
 		$node_config				= get_post_meta( $site_id, 'syn_node_config', true );
 		$default_cat_status		    = get_post_meta( $site_id, 'syn_default_cat_status', true );
 
-		if ( isset( $node_config['namespace'] )) {
+		if ( isset( $node_config['namespace'] ) ) {
 			$namespace = $node_config['namespace'];
 		}
 
@@ -53,7 +53,7 @@ class Client_Options {
 
 			$post_types = get_post_types();
 
-			foreach( $post_types as $post_type ) {
+			foreach ( $post_types as $post_type ) {
 				echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $default_post_type ) . '>' . esc_html( $post_type )  . '</option>';
 			}
 
@@ -71,7 +71,7 @@ class Client_Options {
 
 			$post_statuses  = get_post_statuses();
 
-			foreach( $post_statuses as $key => $value ) {
+			foreach ( $post_statuses as $key => $value ) {
 				echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $default_post_status ) . '>' . esc_html( $key )  . '</option>';
 			}
 

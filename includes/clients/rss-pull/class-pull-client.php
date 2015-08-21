@@ -50,10 +50,13 @@ class Pull_Client extends Puller {
 		 * The following filter allows for local testing.
 		 * @todo Remove after testing.
 		 */
-		add_filter( 'http_request_args', function( $args ) {
-			$args['reject_unsafe_urls'] = false;
-			return $args;
-		} );
+		add_filter(
+			'http_request_args',
+			function( $args ) {
+				$args['reject_unsafe_urls'] = false;
+				return $args;
+			}
+		);
 
 		/**
 		 * Fetch the RSS feed, with limited caching.
@@ -72,7 +75,7 @@ class Pull_Client extends Puller {
 		$all_items = $feed->get_items();
 
 		$posts = array();
-		foreach( $all_items as $item ) {
+		foreach ( $all_items as $item ) {
 			if ( 'yes' == $default_cat_status ) {
 				$taxonomy = $this->set_taxonomy( $item );
 			}

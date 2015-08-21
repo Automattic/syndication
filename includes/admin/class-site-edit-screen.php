@@ -25,7 +25,7 @@ class Site_Edit_Screen {
 		global $typenow;
 
 		if ( 'syn_site' == $typenow ) {
-			if( 'post.php' === $hook || 'post-new.php' === $hook ) {
+			if ( 'post.php' === $hook || 'post-new.php' === $hook ) {
 				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-sites-list.css', array(), SYNDICATION_VERSION );
 				//@todo verify below working, maybe need `wp_deregister_script` here
 				wp_dequeue_script( 'autosave' );
@@ -35,9 +35,9 @@ class Site_Edit_Screen {
 
 	public function site_metaboxes() {
 
-		add_meta_box('sitediv', __(' Site Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
-		remove_meta_box('submitdiv', 'syn_site', 'side');
-		add_meta_box( 'submitdiv', __(' Site Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'sitediv', __( ' Site Settings ' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
+		remove_meta_box( 'submitdiv', 'syn_site', 'side' );
+		add_meta_box( 'submitdiv', __( ' Site Status ' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -50,7 +50,7 @@ class Site_Edit_Screen {
 						<label for="post_status"><?php _e( 'Status:', 'push-syndication' ) ?></label>
 						<span id="post-status-display">
 						<?php
-						switch( $site_enabled ) {
+						switch ( $site_enabled ) {
 							case 'on':
 								_e( 'Enabled', 'push-syndication' );
 								break;
@@ -109,11 +109,11 @@ class Site_Edit_Screen {
 
 		global $post;
 
-		$transport_type = get_post_meta( $post->ID, 'syn_transport_type', true);
-		$site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true);
+		$transport_type = get_post_meta( $post->ID, 'syn_transport_type', true );
+		$site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true );
 
 		// default values
-		$site_enabled   = !empty( $site_enabled ) ? $site_enabled : 'off';
+		$site_enabled   = ! empty( $site_enabled ) ? $site_enabled : 'off';
 
 		// nonce for verification when saving
 		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
@@ -145,7 +145,7 @@ class Site_Edit_Screen {
 		$max_len = 0;
 
 		echo '<option value=""></option>';
-		foreach( $this->_client_manager->get_clients() as $key => $options ) {
+		foreach ( $this->_client_manager->get_clients() as $key => $options ) {
 			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s' ), $options['label'] ) . '</option>';
 		}
 		echo '</select>';
@@ -162,7 +162,7 @@ class Site_Edit_Screen {
 			return;
 
 		// if our nonce isn't there, or we can't verify it return
-		if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
+		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
 			return;
 
 		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists

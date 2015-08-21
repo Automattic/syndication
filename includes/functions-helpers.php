@@ -6,7 +6,7 @@ namespace Automattic\Syndication;
  * Checks if variable is a WP_Error object, and if so, rethrows the error as an
  * exception.
  *
- * @param $maybe_error Possibly a WP_Error object
+ * @param $maybe_error WP_Error|int|null|array Possibly a WP_Error object
  * @return bool
  * @throws \Exception
  *

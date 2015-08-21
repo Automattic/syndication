@@ -31,10 +31,13 @@ class Bootstrap {
 	 * @param Client_Manager $client_man
 	 */
 	public function register_clients( Client_Manager $client_man ) {
-		$client_man->register_pull_client( 'rss_pull', [
-			'label' => 'RSS Pull Client',
-			'class' => __NAMESPACE__ . '\Pull_Client',
-		] );
+		$client_man->register_pull_client(
+			'rss_pull',
+			array(
+				'label' => 'RSS Pull Client',
+				'class' => __NAMESPACE__ . '\Pull_Client',
+			)
+		);
 	}
 
 	public function pre_load() {

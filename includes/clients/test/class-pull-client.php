@@ -26,7 +26,7 @@ class Pull_Client
 		);
 		$post->post_meta  = array();
 		$post->post_terms = array(
-			'category' => array( 'Bacon', 'Lettuce', 'Tomato' ),
+			'category' => array( 'Bacon', 'Lettuce', 'Tomato', ),
 		);
 
 		return [ $post ];

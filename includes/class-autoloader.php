@@ -101,7 +101,7 @@ class Autoloader
 		$class = strtolower( $class );
 		$parts = explode( '\\', $class );
 		
-		for ( $i = count($parts) - 1; $i; $i-- ) {
+		for ( $i = count( $parts ) - 1; $i; $i-- ) {
 			$needle = implode( '\\', array_slice( $parts, 0, $i ) );
 			
 			if ( array_key_exists( $needle, self::$_ns_to_path ) ) {

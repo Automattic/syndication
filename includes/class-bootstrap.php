@@ -97,7 +97,6 @@ class Bootstrap {
 					'update_item'       => __( 'Update Site Group' ),
 					'add_new_item'      => __( 'Add New Site Group' ),
 					'new_item_name'     => __( 'New Site Group Name' ),
-
 				),
 				'public'                => false,
 				'show_ui'               => true,

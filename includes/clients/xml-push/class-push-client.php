@@ -250,16 +250,14 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
 
 		// rearranging arguments
-		$args['post_title']	 = $post['post_title'];
-		$args['post_content']   = $post['post_content'];
-		$args['post_excerpt']   = $post['post_excerpt'];
-		$args['post_status']	= $post['post_status'];
-		$args['post_type']	  = $post['post_type'];
-		$args['wp_password']	= $post['post_password'];
-		$args['post_date_gmt']  = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
-
-		$args['terms_names'] = $this->_get_post_terms( $post_ID );
-
+		$args['post_title']    = $post['post_title'];
+		$args['post_content']  = $post['post_content'];
+		$args['post_excerpt']  = $post['post_excerpt'];
+		$args['post_status']   = $post['post_status'];
+		$args['post_type']     = $post['post_type'];
+		$args['wp_password']   = $post['post_password'];
+		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
+		$args['terms_names']   = $this->_get_post_terms( $post_ID );
 		$args['custom_fields'] = array_merge( $args['custom_fields'], $this->_get_custom_fields( $post_ID ) );
 
 		$args = apply_filters( 'syn_xmlrpc_push_edit_post_args', $args, $post );
@@ -303,7 +301,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$new_image_ids = array();
 
 		if ( preg_match_all( '/' . $pattern . '/s', $post_content, $matches ) ) {
-			$count=count( $matches[3] );
+			$count = count( $matches[3] );
 			for ( $i = 0; $i < $count; $i++ ) {
 				$atts = shortcode_parse_atts( $matches[3][$i] );
 				if ( isset( $atts['ids'] ) ) {
@@ -313,12 +311,12 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 			}
 		}
 
-		if( ! empty( $image_ids ) ) {
+		if ( ! empty( $image_ids ) ) {
 			foreach ( $image_ids as $key => $gallery_ids ) {
 				foreach ( $gallery_ids as $index => $id ) {
 					//do upload, get new ID back
 					list( $thumbnail_url ) = wp_get_attachment_image_src( $id, 'full' );
-					$thumbnail_post_data = get_post($id);
+					$thumbnail_post_data = get_post( $id );
 					$thumbnail_alt_text = trim( get_post_meta( $id, '_wp_attachment_image_alt', true ) );
 
 					$result = $this->query(
@@ -345,10 +343,10 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		for ( $i = 0; $i < $lenght; $i++ ) {
 			$shortcode = $matches[0][$i];
 			//WP regex matches attribute with leading space, required here
-			$attribute = ' ids="' . implode( ',', $image_ids[$i] ) . '"';
+			$attribute     = ' ids="' . implode( ',', $image_ids[$i] ) . '"';
 			$new_attribute = ' ids="' . implode( ',', $new_image_ids[$i] ) . '"';
 			$new_shortcode = str_replace( $attribute, $new_attribute, $shortcode );
-			$post_content = str_replace( $shortcode, $new_shortcode, $post_content );
+			$post_content  = str_replace( $shortcode, $new_shortcode, $post_content );
 		}
 
 		return $post_content;
@@ -440,7 +438,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 			$remote_post_id
 		);
 
-		if( !$result )
+		if ( ! $result )
 			return false;
 
 		return $this->getResponse();
@@ -452,7 +450,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 	public function is_post_exists( $remote_post_id ) {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
-		if( ! $remote_post || $remote_post_id != $remote_post['post_id'] ) {
+		if ( ! $remote_post || $remote_post_id != $remote_post['post_id'] ) {
 			return false;
 		}
 
@@ -527,9 +525,9 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 	}
 
 	public static function push_syndicate_methods( $methods ) {
-		$methods['syndication.addThumbnail']    = array( __CLASS__, 'xmlrpc_add_thumbnail' );
-		$methods['syndication.deleteThumbnail']    = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
-		$methods['syndication.postGalleryImage'] = array(__CLASS__, 'xmlrpc_post_gallery_images');
+		$methods['syndication.addThumbnail']     = array( __CLASS__, 'xmlrpc_add_thumbnail' );
+		$methods['syndication.deleteThumbnail']  = array( __CLASS__, 'xmlrpc_delete_thumbnail' );
+		$methods['syndication.postGalleryImage'] = array( __CLASS__, 'xmlrpc_post_gallery_images' );
 
 		return $methods;
 	}
@@ -577,7 +575,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return $image;
 
 		$thumbnail_id = (int) $image['id'];
-		if( empty( $thumbnail_id ) )
+		if ( empty( $thumbnail_id ) )
 			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
 
 		if ( '_thumbnail_id' == $meta_key )
@@ -606,7 +604,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			//handle it th way you want it (log it, message it)
 		}
 		//update alt text of the image
-		update_post_meta($thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text);
+		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );
 
 		return $thumbnail_id;
 	}
@@ -616,13 +614,13 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		global $wp_xmlrpc_server;
 		$wp_xmlrpc_server->escape( $args );
 
-		$blog_id	    = (int) $args[0];
-		$username	    = $args[1];
-		$password	    = $args[2];
-		$post_ID            = (int) $args[3];
+		$blog_id  = (int) $args[0];
+		$username = $args[1];
+		$password = $args[2];
+		$post_ID  = (int) $args[3];
 		$meta_key = ! empty( $args[4] ) ? sanitize_text_field( $args[4] ) : '_thumbnail_id';
 
-		if ( !$user = $wp_xmlrpc_server->login( $username, $password ) )
+		if ( ! $user = $wp_xmlrpc_server->login( $username, $password ) )
 			return $wp_xmlrpc_server->error;
 
 		if ( ! current_user_can( 'edit_post', $post_ID ) )

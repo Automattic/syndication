@@ -17,15 +17,21 @@ class Bootstrap {
 
 	public function register_clients( Client_Manager $client_man )
 	{
-		$client_man->register_pull_client( 'test_pull', [
-			'label' => 'Test Pull Client',
-			'class' => __NAMESPACE__ . '\Pull_Client',
-		] );
+		$client_man->register_pull_client(
+			'test_pull',
+			array(
+				'label' => 'Test Pull Client',
+				'class' => __NAMESPACE__ . '\Pull_Client',
+			)
+		);
 
-		$client_man->register_push_client( 'test_push', [
-			'label' => 'Test Push Client',
-			'class' => __NAMESPACE__ . '\Push_Client',
-		] );
+		$client_man->register_push_client(
+			'test_push',
+			array(
+				'label' => 'Test Push Client',
+				'class' => __NAMESPACE__ . '\Push_Client',
+			)
+		);
 	}
 
 	public function pre_load() {

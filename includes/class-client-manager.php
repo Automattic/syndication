@@ -44,7 +44,6 @@ class Client_Manager {
 	/**
 	 * Return a client by it's slug
 	 *
-	 * @see Called via functions-template-tags.php:syn_get_pull_client
 	 * @param  string $client_slug The slug of the client you want
 	 * @return array               Information about the requested client
 	 */
@@ -61,7 +60,7 @@ class Client_Manager {
 
 	/**
 	 * @param string $client_slug
-	 * @return Push_Client
+	 * @return Pusher Push_Client
 	 */
 	public function get_push_client( $client_slug ) {
 
@@ -87,7 +86,7 @@ class Client_Manager {
 	 * Get a push or pull client by slug, trying pull first.
 	 *
 	 * @param string $client_slug
-	 * @return Push or Pull Client
+	 * @return Pusher|Puller Push or Pull Client
 	 */
 	public function get_pull_or_push_client( $client_slug ) {
 		$client = $this->get_pull_client( $client_slug );

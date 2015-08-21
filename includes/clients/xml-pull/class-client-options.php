@@ -155,13 +155,15 @@ class Client_Options {
 		<p>
 			<?php
 				add_filter( 'wp_dropdown_cats', array( __CLASS__, 'make_multiple_categories_dropdown' ) );
-				wp_dropdown_categories( array(
+				wp_dropdown_categories(
+					array(
 						'hide_empty' => false,
 						'hierarchical' => true,
 						'selected_array' => $categories,
 						'walker' => new Walker_CategoryDropdownMultiple,
-						'name' => 'categories[]'
-				) );
+						'name' => 'categories[]',
+					)
+				);
 				remove_filter( 'wp_dropdown_cats', array( __CLASS__, 'make_multiple_categories_dropdown' ) );
 			?>
 		</p>
@@ -319,10 +321,7 @@ class Client_Options {
 				if ( ! empty( $row['xpath'] ) ) {
 
 					foreach ( array( 'is_item', 'is_meta', 'is_tax', 'is_photo' ) as $field ) {
-						$row_data[ $field ] = isset( $row[ $field ] ) && in_array( $row[ $field ], array(
-								'true',
-								'on'
-							) ) ? 1 : 0;
+						$row_data[ $field ] = isset( $row[ $field ] ) &&  in_array( $row[ $field ], array( 'true', 'on', ) ) ? 1 : 0;
 					}
 					$xpath = html_entity_decode( $row['xpath'] );
 

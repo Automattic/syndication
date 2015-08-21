@@ -98,9 +98,9 @@ class Client_Options {
 	 * Render client options on the Settings->Syndication screen.
 	 */
 	public function render_client_options() {
-		add_settings_section( 'api_token', esc_html__(' API Token Configuration ', 'push-syndication' ), array( $this, 'display_apitoken_description' ), 'api_token' );
-		add_settings_field( 'client_id', esc_html__(' Enter your client id ', 'push-syndication' ), array( $this, 'display_client_id' ), 'api_token', 'api_token' );
-		add_settings_field( 'client_secret', esc_html__(' Enter your client secret ', 'push-syndication' ), array( $this, 'display_client_secret' ), 'api_token', 'api_token' );
+		add_settings_section( 'api_token', esc_html__( ' API Token Configuration ', 'push-syndication' ), array( $this, 'display_apitoken_description' ), 'api_token' );
+		add_settings_field( 'client_id', esc_html__( ' Enter your client id ', 'push-syndication' ), array( $this, 'display_client_id' ), 'api_token', 'api_token' );
+		add_settings_field( 'client_secret', esc_html__( ' Enter your client secret ', 'push-syndication' ), array( $this, 'display_client_secret' ), 'api_token', 'api_token' );
 		do_settings_sections( 'api_token' );
 		$this->get_api_token();
 	}
@@ -130,7 +130,7 @@ class Client_Options {
 		echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
 
 		// if code is not found return or settings updated return
-		if( empty( $_GET['code'] ) || !empty( $_GET[ 'settings-updated' ] ) ) {
+		if ( empty( $_GET['code'] ) || ! empty( $_GET['settings-updated'] ) ) {
 
 			echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 
@@ -144,20 +144,23 @@ class Client_Options {
 
 		}
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/oauth2/token', array(
-			'sslverify' => false,
-			'body'      => array (
-				'client_id'     => $settings_manager->get_setting( 'client_id' ),
-				'redirect_uri'  => $redirect_uri,
-				'client_secret' => $settings_manager->get_setting( 'client_secret' ),
-				'code'          => $_GET['code'],
-				'grant_type'    => 'authorization_code',
-			),
-		) );
+		$response = wp_remote_post(
+			'https://public-api.wordpress.com/oauth2/token',
+			array(
+				'sslverify' => false,
+				'body'      => array(
+					'client_id'     => $settings_manager->get_setting( 'client_id' ),
+					'redirect_uri'  => $redirect_uri,
+					'client_secret' => $settings_manager->get_setting( 'client_secret' ),
+					'code'          => $_GET['code'],
+					'grant_type'    => 'authorization_code',
+				),
+			)
+		);
 
 		$result = json_decode( $response['body'] );
 
-		if( !empty( $result->error ) ) {
+		if ( ! empty( $result->error ) ) {
 
 			echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
 

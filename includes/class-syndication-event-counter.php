@@ -26,7 +26,7 @@ class Syndication_Event_Counter {
 	 */
 	public function count_event( $event_slug, $event_object_id = null ) {
 		// Coerce the slug and ID to strings. PHP will fire appropriate warnings if the given slug and ID are not coercible.
-		$event_slug = (string) $event_slug;
+		$event_slug      = (string) $event_slug;
 		$event_object_id = (string) $event_object_id;
 
 		// Increment the event counter.

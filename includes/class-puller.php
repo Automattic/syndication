@@ -12,19 +12,7 @@ namespace Automattic\Syndication;
  */
 abstract class Puller {
 
-	public function __construct(){
-
-		//@todo make the following hooks work again
-		// these were in version 2.0, however we've restructured so much that these methods should no longer be called individually. now, instead they are called in succession in process_post below
-
-		/*
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_meta' ), 10, 5 );
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post', 10, 5 );
-		*/
-	}
+	public function __construct(){}
 
 	/**
 	 * Process a site and pull all it's posts
@@ -84,14 +72,12 @@ abstract class Puller {
 
 		if ( ! is_array( $posts ) && ! empty( $posts ) ) {
 			throw new \Exception( '$posts must be array' );
-
-			return false;
 		}
 
 		$inserted_posts = 0;
 
-		foreach ( $posts as $post ) {
-			$post_id = $this->process_post( $post );
+		foreach ( $posts as $the_post ) {
+			$post_id = $this->process_post( $the_post );
 
 			if ( false !== $post_id ) {
 				$inserted_posts++;
@@ -240,7 +226,7 @@ abstract class Puller {
 	 * Fetch a remote url.
 	 *
 	 * @param string $remote_url The remote URL
-	 * @return string|WP_Error The content of the remote feed, or error if there's a problem.
+	 * @return string|\WP_Error The content of the remote feed, or error if there's a problem.
 	 */
 	public function remote_get( $remote_url = '' ) {
 
@@ -298,7 +284,7 @@ abstract class Puller {
 					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
 				}
 				catch ( Exception $e ) {
-					return;
+					return false;
 				}
 			}
 			// if position is not provided in the feed, use the order in which they appear in the feed

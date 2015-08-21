@@ -167,7 +167,7 @@ class Syndication_Logger {
 			'post' 			 => $post,
 			'result' 		 => $result,
 			'transpost_type' => $transport_type,
-			'client' 		 => $client
+			'client' 		 => $client,
 		);
 
 		if ( false == $result || is_wp_error( $result ) ) {
@@ -176,11 +176,11 @@ class Syndication_Logger {
 			} else {
 				$message = 'fail';
 			}
-			Syndication_Logger::log_post_error( $site, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			Syndication_Logger::log_post_error( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		} else {
 			$guid    = isset( $post['post_guid'] ) ? sanitize_text_field( $post['post_guid'] ) : sanitize_text_field( $post['guid'] );
 			$message = sprintf( '%s,%d', $guid, intval( $result ) );
-			Syndication_Logger::log_post_success( $site, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			Syndication_Logger::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		}
 	}
 

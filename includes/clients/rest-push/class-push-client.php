@@ -30,8 +30,8 @@ class Push_Client extends Pusher {
 	public function init( $site_ID = 0, $port = 80, $timeout = 45 ) {
 		global $settings_manager;
 
-		$this->access_token = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_token', true) );
-		$this->blog_ID      = get_post_meta( $site_ID, 'syn_site_id', true);
+		$this->access_token = $settings_manager->syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_token', true ) );
+		$this->blog_ID      = get_post_meta( $site_ID, 'syn_site_id', true );
 		$this->timeout      = $timeout;
 		$this->useragent    = 'push-syndication-plugin';
 		$this->port         = $port;
@@ -71,7 +71,7 @@ class Push_Client extends Pusher {
 		if ( false === $post )
 			return true;
 
-		$body = array (
+		$body = array(
 			'title'      => $post['post_title'],
 			'content'    => $post['post_content'],
 			'excerpt'    => $post['post_excerpt'],
@@ -84,16 +84,19 @@ class Push_Client extends Pusher {
 
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/', array(
-			'timeout'	   => $this->timeout,
-			'user-agent'	=> $this->useragent,
-			'sslverify'	 => false,
-			'headers'	   => array (
-				'authorization' => 'Bearer ' . $this->access_token,
-				'Content-Type'  => 'application/x-www-form-urlencoded'
-			),
-			'body' => $body,
-		) );
+		$response = wp_remote_post(
+			'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/',
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+					'Content-Type'  => 'application/x-www-form-urlencoded',
+				),
+				'body' => $body,
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -101,7 +104,7 @@ class Push_Client extends Pusher {
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty( $response->error ) ) {
+		if ( empty( $response->error ) ) {
 			return $response->ID;
 		} else {
 			return new WP_Error( 'rest-push-new-fail', $response->message );
@@ -121,29 +124,32 @@ class Push_Client extends Pusher {
 		if ( false === $post )
 			return true;
 
-		$body = array (
-			'title'		 => $post['post_title'],
-			'content'	   => $post['post_content'],
-			'excerpt'	   => $post['post_excerpt'],
-			'status'		=> $post['post_status'],
-			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
-			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
-			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
+		$body = array(
+			'title'      => $post['post_title'],
+			'content'    => $post['post_content'],
+			'excerpt'    => $post['post_excerpt'],
+			'status'     => $post['post_status'],
+			'password'   => $post['post_password'],
+			'date'       => $post['post_date_gmt'],
+			'categories' => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array( 'fields' => 'names' ) ) ),
+			'tags'       => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array( 'fields' => 'names' ) ) )
 		);
 
 		$body = apply_filters( 'syn_rest_push_filter_edit_post_body', $body, $post_ID );
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(
-			'timeout'	   => $this->timeout,
-			'user-agent'	=> $this->useragent,
-			'sslverify'	 => false,
-			'headers'	   => array (
-				'authorization' => 'Bearer ' . $this->access_token,
-				'Content-Type'  => 'application/x-www-form-urlencoded'
-			),
-			'body' => $body,
-		) );
+		$response = wp_remote_post(
+			'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/',
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+					'Content-Type'  => 'application/x-www-form-urlencoded',
+				),
+				'body' => $body,
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -151,7 +157,7 @@ class Push_Client extends Pusher {
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty( $response->error ) ) {
+		if ( empty( $response->error ) ) {
 			return $post_ID;
 		} else {
 			return new WP_Error( 'rest-push-edit-fail', $response->message );
@@ -176,14 +182,17 @@ class Push_Client extends Pusher {
 	 */
 	public function delete_post( $ext_ID ) {
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/delete', array(
-			'timeout'	   => $this->timeout,
-			'user-agent'	=> $this->useragent,
-			'sslverify'	 => false,
-			'headers'	   => array (
-				'authorization' => 'Bearer ' . $this->access_token,
-			),
-		) );
+		$response = wp_remote_post(
+			'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/delete',
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+				),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -191,7 +200,7 @@ class Push_Client extends Pusher {
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty( $response->error ) ) {
+		if ( empty( $response->error ) ) {
 			return true;
 		} else {
 			return new WP_Error( 'rest-push-delete-fail', $response->message );
@@ -213,7 +222,7 @@ class Push_Client extends Pusher {
 
 		$terms_csv = '';
 
-		foreach( $terms as $term ) {
+		foreach ( $terms as $term ) {
 			$terms_csv .= $term . ',';
 		}
 
@@ -230,14 +239,17 @@ class Push_Client extends Pusher {
 	 */
 	public function is_post_exists( $post_ID ) {
 
-		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $post_ID . '/?pretty=1', array(
-			'timeout'	   => $this->timeout,
-			'user-agent'	=> $this->useragent,
-			'sslverify'	 => false,
-			'headers'	   => array (
-				'authorization' => 'Bearer ' . $this->access_token,
-			),
-		) );
+		$response = wp_remote_get(
+			'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $post_ID . '/?pretty=1',
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+				),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return false;
@@ -245,7 +257,7 @@ class Push_Client extends Pusher {
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty($response->error) ) {
+		if ( empty( $response->error ) ) {
 			return true;
 		} else {
 			return false;
@@ -260,14 +272,17 @@ class Push_Client extends Pusher {
 	 */
 	public function test_connection( $site_ID ) {
 				// @TODo find a better method
-		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1/me/?pretty=1', array(
-			'timeout'       => $this->timeout,
-			'user-agent'    => $this->useragent,
-			'sslverify'     => false,
-			'headers'       => array (
-				'authorization' => 'Bearer ' . $this->access_token,
-			),
-		) );
+		$response = wp_remote_get(
+			'https://public-api.wordpress.com/rest/v1/me/?pretty=1',
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+				),
+			)
+		);
 
 		// TODO: return WP_Error
 		if ( is_wp_error( $response ) ) {
@@ -276,7 +291,7 @@ class Push_Client extends Pusher {
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if( empty( $response->error ) ) {
+		if ( empty( $response->error ) ) {
 			return true;
 		} else {
 			return false;

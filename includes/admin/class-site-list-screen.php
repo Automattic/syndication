@@ -14,7 +14,7 @@ class Site_List_Screen {
 
 		// custom columns
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
-		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
+		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 	}
 
 
@@ -22,7 +22,7 @@ class Site_List_Screen {
 		global $typenow;
 
 		if ( 'syn_site' == $typenow ) {
-			if( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
+			if ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
 				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-edit-site.css', array(), SYNDICATION_VERSION );
 			}
 		}
@@ -30,12 +30,12 @@ class Site_List_Screen {
 
 	public function add_new_columns( $columns ) {
 
-		$new_columns = array();
-		$new_columns['cb'] = '<input type="checkbox" />';
-		$new_columns['title'] = _x( 'Site Name', 'column name' );
-		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
+		$new_columns                  = array();
+		$new_columns['cb']            = '<input type="checkbox" />';
+		$new_columns['title']         = _x( 'Site Name', 'column name' );
+		$new_columns['client-type']   = _x( 'Client Type', 'column name' );
 		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['date'] = _x('Date', 'column name');
+		$new_columns['date']          = _x( 'Date', 'column name' );
 
 		return $new_columns;
 	}
