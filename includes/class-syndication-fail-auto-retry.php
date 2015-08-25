@@ -23,7 +23,6 @@ class Syndication_Fail_Auto_Retry {
 	 * Hook into WordPress
 	 */
 	public function __construct() {
-		error_log( 'Syndication_Fail_Auto_Retry loading' );
 
 		// Watch the push_syndication_event action for site pull failures
 		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );

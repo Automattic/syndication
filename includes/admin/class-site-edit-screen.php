@@ -170,16 +170,13 @@ class Site_Edit_Screen {
 		// @TODO validate that type and mode are valid
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 
-
-		// Trigger the client test action to test the connection.
-		// @todo implement for all base clients.
-		do_action( 'syndication/test_site_options/' . $transport_type, $post->ID );
-
-
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
 		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );
 
-
 		do_action( 'syndication/save_site_options/' . $transport_type, $post->ID );
+
+		// Trigger the client test action to test the connection after saving.
+		// @todo implement for all base clients.
+		do_action( 'syndication/test_site_options/' . $transport_type, $post->ID );
 	}
 }
