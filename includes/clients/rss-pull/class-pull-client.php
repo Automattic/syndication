@@ -100,7 +100,7 @@ class Pull_Client extends Puller {
 			$new_post->post_data['post_category']  = isset( $taxonomy['cats'] ) ? $taxonomy['cats'] : '';
 			$new_post->post_data['tags_input']     = isset( $taxonomy['tags'] ) ? $taxonomy['tags'] : '';
 
-			$new_post->post_meta['site_id'] = $item->get_id();
+			$new_post->post_meta['site_id'] = $site->ID;
 
 			// This filter can be used to exclude or alter posts during a pull import
 			/**
