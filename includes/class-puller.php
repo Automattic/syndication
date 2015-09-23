@@ -119,7 +119,13 @@ abstract class Puller {
 		// @todo Bail if post exists and in-progress marker is set.
 		// @todo Mark post as in-progress (if post exists).
 
-		// Consume the post
+		/**
+		 * Filter a post before it is processed for insert/update.
+		 *
+		 * @param Types\Post $post The post being processing.
+		 *
+		 * @todo Consider adding $site_id, $slient, $client_transport_type for context.
+		 */
 		$post = apply_filters( 'syn_before_insert_post', $post );
 
 		$syndicated_guid = $post->post_data['post_guid'];
@@ -297,6 +303,12 @@ abstract class Puller {
 	public function process_post_meta( $post_id, $post_meta ) {
 		// @todo Validate again if this method remains public.
 		// @todo Ensure works correctly for updates.
+		/**
+		 * Filter meta updates for a post before updating.
+		 *
+		 * @param array $post_meta Associative array of meta to add to the post.
+		 * @param int   $post_id   The ID of the post for which to insert the given meta.
+		 */
 		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_meta, $post_id );
 		//handle enclosures separately first
 		$enc_field = isset( $post_meta['enc_field'] ) ? $post_meta['enc_field'] : null;
@@ -336,6 +348,15 @@ abstract class Puller {
 	public function process_post_terms( $post_id, $post_terms ) {
 
 		// @todo Validate again if this method remains public.
+
+		/**
+		 * Filter term updates for a post before updating.
+		 *
+		 * @param int   $post_id   The ID of the post for which to insert the given meta.
+		 * @param array $post_terms Associative array of terms to attach to the post.
+		 *
+		 * @todo Consider reversing the signature here to match `syn_before_update_post_meta` (id 2nd).
+		 */
 		$post_terms = apply_filters( 'syn_before_set_object_terms', $post_id, $post_terms );
 
 		if ( is_array( $post_terms ) && ! empty( $post_terms ) ) {
