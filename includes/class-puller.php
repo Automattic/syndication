@@ -37,8 +37,17 @@ abstract class Puller {
 			// namespace given during registration
 			$posts = $client->get_posts( $site_id );
 
+			/**
+			 * Filter the array of posts to be processed by a pull client.
+			 *
+			 * @param array       $posts   The array of Types\Post objects to be pulled.
+			 * @param int         $site_id The id of the site being processed.
+			 * @param Pull_Client $client  The pull client processing the posts.
+			 */
+			$posts = apply_filters( 'syn_pre_pull_posts', $posts, $site_id, $client );
+
 			// Process the posts we fetched
-			$this->process_posts( $posts, $site_id );
+			$this->process_posts( $posts, $site_id, $client );
 
 		} catch ( \Exception $e ) {
 			Syndication_Logger::log_post_error(
@@ -61,13 +70,14 @@ abstract class Puller {
 	}
 
 	/**
-	 * Process new posts fetched for a feed
+	 * Process new posts fetched for a feed.
 	 *
-	 * @param array $posts An array of new posts fetched
-	 * @throws \Exception
-	 * @return mixed False on failure
+	 * @param array $posts   An array of new posts fetched.
+	 * @param int   $site_id The id of the site being processed.
+	 * @param obj   $client  The syndication client class instance.
+	 * @throws \Exception.
 	 */
-	public function process_posts( $posts, $site_id ) {
+	public function process_posts( $posts, $site_id, $client ) {
 		// @todo perform actions to improve performance
 
 		if ( ! is_array( $posts ) && ! empty( $posts ) ) {
@@ -77,7 +87,7 @@ abstract class Puller {
 		$inserted_posts = 0;
 
 		foreach ( $posts as $the_post ) {
-			$post_id = $this->process_post( $the_post );
+			$post_id = $this->process_post( $the_post, $site_id, $client );
 
 			if ( false !== $post_id ) {
 				$inserted_posts++;
@@ -85,7 +95,7 @@ abstract class Puller {
 		};
 
 		Syndication_Logger::log_post_info( $site_id, $status = 'posts_processed', $message = sprintf( __( '%d posts were successfully processed', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
-		
+
 		// @todo remove actions to improve performance
 	}
 
@@ -93,12 +103,16 @@ abstract class Puller {
 	 * Process a new post
 	 *
 	 * Insert the post into WP, then if successful,
-	 * insert the posts meta and terms
+	 * insert the posts meta and terms.
 	 *
-	 * @param Types\Post $post A prepared
-	 * @return int $post_id The ID of the newly inserted post
+	 * @param Types\Post $post    The post for processing.
+	 * @param int        $site_id The id of the site being processed.
+	 * @param obj        $client  The syndication client class instance.
+	 *
+	 * @return int       $post_id The ID of the newly inserted post, or false if processing skipped.
 	 */
-	public function process_post( Types\Post $post ) {
+	public function process_post( Types\Post $post, $site_id, $client ) {
+		global $settings_manager;
 
 		// @todo hooks
 		// @todo Validate the post.
@@ -109,7 +123,7 @@ abstract class Puller {
 		$post = apply_filters( 'syn_before_insert_post', $post );
 
 		// Generate a unique `syndicated_guid` combining the site id and the item guid.
-		$syndicated_guid = md5( $post->post_meta['site_id'] . '_' . $post->post_data['post_guid'] );
+		$syndicated_guid = md5( $site_id . '_' . $post->post_data['post_guid'] );
 
 		// Query for posts with a matching syndicated_guid
 		$query_args = array(
@@ -120,11 +134,46 @@ abstract class Puller {
 		);
 		$existing_post_query = new \WP_Query( $query_args );
 		// If the post has already been consumed, update it; otherwise insert it.
-		// @todo Only update if updates enabled in settings
 		if ( $existing_post_query->have_posts() ) {
+			// Update existing posts?
+			if ( 'on' !== $settings_manager->get_setting( 'update_pulled_posts' ) ) {
+				Syndication_Logger::log_post_info(
+					$site_id,
+					$status = 'skip_update_pulled_posts',
+					$message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ),
+					$log_time = null,
+					$extra = array( 'post' => $post ) );
+				return false;
+			}
+
 			// Existing post, set the post ID for update.
 			$existing_post_query->the_post();
 			$post->post_data['ID'] = get_the_ID();
+
+			$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+
+			/**
+			 * Filter to short circuit the processing of a pulled post update (edit).
+			 *
+			 * Return true to short circuit the processing of this post update.
+			 *
+			 * @param bool   $edit_shortcircuit Whether to short-circuit the updating of a post.
+			 * @param int    $site_id           The id of the site being processed.
+			 * @param string $transport_type    The client transport type.
+			 * @param obj    $client            The syndication client class instance.
+			 */
+			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
+
+			if ( true === $pull_new_shortcircuit ) {
+				Syndication_Logger::log_post_info(
+					$site_id,
+					$status = 'syn_pre_pull_edit_post_shortcircuit',
+					$message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ),
+					$log_time = null,
+					$extra = array( 'post' => $post )
+				);
+				return false;
+			}
 
 			// Maintain the post's status.
 			$post->post_data['post_status'] = get_post_status();
@@ -132,6 +181,30 @@ abstract class Puller {
 			// Update the existing post.
 			$post_id = wp_update_post( $post->post_data, true );
 		} else {
+
+			/**
+			 * Filter to short circuit the processing of a pulled post insert.
+			 *
+			 * Return true to short circuit the processing of this post insert.
+			 *
+			 * @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
+			 * @param int    $site_id             The id of the site being processed.
+			 * @param string $transport_type      The client transport type.
+			 * @param obj    $client              The syndication client class instance.
+			 */
+			$insert_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
+			if ( true === $pull_new_shortcircuit ) {
+				Syndication_Logger::log_post_info(
+					$site_id,
+					$status = 'syn_pre_pull_edit_post_shortcircuit',
+					$message = sprintf( __( 'skipping post per syn_pre_pull_new_post_shortcircuit', 'push-syndication' ) ),
+					$log_time = null,
+					$extra = array( 'post' => $post )
+				);
+				return false;
+			}
+
+
 			//  Include the syndicated_guid so we can update this post later.
 			$post->post_meta['syndicated_guid'] = $syndicated_guid;
 
