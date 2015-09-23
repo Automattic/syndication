@@ -127,6 +127,7 @@ class Bootstrap {
 	 * Set up the `syn_site` custom post type.
 	 */
 	public function register_post_type() {
+		/* This filter is documented in includes/admin/class-settings-screen.php */
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
 		$post_type_capabilities = array(

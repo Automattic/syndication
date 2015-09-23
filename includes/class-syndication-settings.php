@@ -41,8 +41,9 @@ class Syndication_Settings {
 		 * Merge the values stored in options with the default values.
 		 */
 		$this->push_syndicate_settings = wp_parse_args(
-											(array) get_option( 'push_syndicate_settings' ),
-											$this->push_syndicate_default_settings
+			/* This filter is documented in includes/admin/class-settings-screen.php */
+			(array) get_option( 'push_syndicate_settings' ),
+			$this->push_syndicate_default_settings
 		);
 	}
 

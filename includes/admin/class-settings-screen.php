@@ -51,6 +51,11 @@ class Settings_Screen {
 			'options-general.php',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
 			esc_html__( 'Syndication', 'push-syndication' ),
+			/**
+			 * Filter the capability required for the `Syndication Settings` menu to be displayed to a user.
+			 *
+			 * @param string $capability The capability required to show a menu. Default is 'manage_options'.
+			 */
 			apply_filters( 'syn_syndicate_cap', 'manage_options' ),
 			'push-syndicate-settings',
 			array( $this, 'display_syndicate_settings' )
@@ -198,7 +203,7 @@ class Settings_Screen {
 		 * option_push_syndication_max_pull_attempts filters to modify values that
 		 * have already been set.
 		 *
-		 * @param int $upper_limit Maximum value that can be used. Defaults to 100.
+		 * @param int $upper_limit Maximum value that can be used. Defaults is 100.
 		 */
 		$upper_limit = apply_filters( 'push_syndication_max_pull_attempts_upper_limit', 100 );
 
