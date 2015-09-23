@@ -44,8 +44,13 @@ class Site_Manager {
 		if ( false === $sites || true === $prime_cache ) {
 			$results = new WP_Query(
 				array(
-					'post_type'         => 'syn_site',
-					'posts_per_page'    => apply_filters( 'syn_posts_per_page_override', 100 ),
+					'post_type'      => 'syn_site',
+					/**
+					 * Filter the limit used in site processing, limiting total sites.
+					 *
+					 * @param int $max_sites The maximum number of sites to support. Default 100.
+					 */
+					'posts_per_page' => apply_filters( 'syn_posts_per_page_override', 100 ),
 				)
 			);
 			$sites = array(
