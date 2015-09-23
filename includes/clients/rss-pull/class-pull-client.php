@@ -39,6 +39,12 @@ class Pull_Client extends Puller {
 	 */
 	public function get_posts( $site_id = 0 ) {
 
+		/**
+		 * Filter the RSS feed pull client feed url.
+		 *
+		 * @param string $feed_url The site's feed url.
+		 * @todo Consider adding $site_id for context.
+		 */
 		$feed_url               = apply_filters( 'syn_feed_url', get_post_meta( $site_id, 'syn_feed_url', true ) );
 		$default_post_type      = get_post_meta( $site_id, 'syn_default_post_type', true );
 		$default_post_status    = get_post_meta( $site_id, 'syn_default_post_status', true );
@@ -97,6 +103,15 @@ class Pull_Client extends Puller {
 			$new_post->post_meta['site_id'] = $item->get_id();
 
 			// This filter can be used to exclude or alter posts during a pull import
+			/**
+			 * Filter the post used by the RSS pull client when pulling an update.
+			 *
+			 * This filter can be used to exclude or alter posts during a content update to an
+			 * existing post on the remote. Return false to short circuit the post push update.
+			 *
+			 * @param WP_Post $post    The post the be pushed.
+			 * @param int     $post_ID The id of the post originating this request.
+		 */
 			$new_post = apply_filters( 'syn_rss_pull_filter_post', $new_post, array(), $item );
 			if ( false === $new_post ) {
 				continue;
