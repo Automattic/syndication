@@ -125,6 +125,16 @@ class Syndication_Runner {
 				$client->init( $site_ID );
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
+					/**
+					 * Filter to short circuit a post delete action.
+					 *
+					 * @param bool   $short_circuit  Whether to short circuit the delete action.
+					 * @param int    $ext_ID         The external post id that will be deleted.
+					 * @param int    $post_ID        The local post that has been deleted.
+					 * @param int    $site_ID        The id of the site being processed.
+					 * @param string $transport_type The client transport type.
+					 * @param obj    $client         The syndication client class instance.
+					 */
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 					if ( true === $push_delete_shortcircuit )
 						continue;
@@ -146,6 +156,12 @@ class Syndication_Runner {
 	}
 
 	public function syndication_user_agent( $user_agent ) {
+		/**
+		 * Filter the syndication user agent.
+		 *
+		 * @param string $user_agent The user agent used by syndication clients.
+		 *                           Default is 'WordPress/Syndication Plugin'.
+		 */
 		return apply_filters( 'syn_pull_user_agent', self::CUSTOM_USER_AGENT );
 	}
 
@@ -384,6 +400,13 @@ class Syndication_Runner {
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
 		$slave_post_states = ! empty( $slave_post_states ) ? $slave_post_states : array() ;
 
+		/**
+		 * Filter the sites to push content to.
+		 *
+		 * @param array $sites             An array of site ids that should get the `syn_push_content` event.
+		 * @param int   $post_ID           The passed post.
+		 * @param array $slave_post_states An array containing states of sites.
+		 */
 		$sites = apply_filters( 'syn_pre_push_post_sites', $sites, $post_ID, $slave_post_states );
 
 		if ( ! empty( $sites['selected_sites'] ) ) {
@@ -405,6 +428,17 @@ class Syndication_Runner {
 
 				if ( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
 
+					/**
+					 * Filter to short circuit the processing of a pushed post insert.
+					 *
+					 * Return true to short circuit the processing of this post insert.
+					 *
+					 * @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
+					 * @param int    $site_id             The id of the site being processed.
+					 * @param string $transport_type      The client transport type.
+					 * @param obj    $client              The syndication client class instance.
+					 * @param array  $info                Array of site information from `get_site_info`.
+					 */
 					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site_id, $transport_type, $client, $info );
 					if ( true === $push_new_shortcircuit )
 						continue;
@@ -416,6 +450,18 @@ class Syndication_Runner {
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site_id, $transport_type, $client, $info );
 
 				} else { // states 'success', 'edit-error' and 'remove-error'
+
+					/**
+					* Filter to short circuit the processing of a pushed post insert.
+					*
+					* Return true to short circuit the processing of this post insert.
+					*
+					* @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
+					* @param int    $site_id             The id of the site being processed.
+					* @param string $transport_type      The client transport type.
+					* @param obj    $client              The syndication client class instance.
+					* @param array  $info                Array of site information from `get_site_info`.
+					*/
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site_id, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit )
 						continue;
