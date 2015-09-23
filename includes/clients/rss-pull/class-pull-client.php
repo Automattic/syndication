@@ -111,7 +111,7 @@ class Pull_Client extends Puller {
 			 *
 			 * @param WP_Post $post    The post the be pushed.
 			 * @param int     $post_ID The id of the post originating this request.
-		 */
+			 */
 			$new_post = apply_filters( 'syn_rss_pull_filter_post', $new_post, array(), $item );
 			if ( false === $new_post ) {
 				continue;
