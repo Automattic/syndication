@@ -144,6 +144,10 @@ abstract class Puller {
 			'post_per_page' => 1
 		);
 		$existing_post_query = new \WP_Query( $query_args );
+
+		// Get the client transport type, passed to some hooks.
+		$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
+
 		// If the post has already been consumed, update it; otherwise insert it.
 		if ( $existing_post_query->have_posts() || $filtered_post_id ) {
 			// Update existing posts?
@@ -164,8 +168,6 @@ abstract class Puller {
 			} else {
 				$post->post_data['ID'] = $syndicated_guid;
 			}
-
-			$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
 
 			/**
 			 * Filter to short circuit the processing of a pulled post update (edit).
@@ -193,8 +195,31 @@ abstract class Puller {
 			// Maintain the post's status.
 			$post->post_data['post_status'] = get_post_status();
 
+			/**
+			 * Filter the post data, just before updating a post during pull post processing.
+			 *
+			 * Enables adjusting the data used to update a post.
+			 *
+			 * @param Types\Post $post    The Post object containing the post update data.
+			 * @param int        $site_id The id of the site being processed.
+			 * @param obj        $client  The syndication client class instance.
+			 */
+			$post = apply_filters( 'syn_pull_edit_post', $post, $site_id, $client );
+
 			// Update the existing post.
 			$post_id = wp_update_post( $post->post_data, true );
+
+			/**
+			 * Fires just after updating a post during pull post processing.
+			 *
+			 * @param int        $post_id        The result of `wp_update_post` (0 if update failed, otherwise post id).
+			 * @param Types\Post $post           The Post object containing the post update data.
+			 * @param int        $site_id        The id of the site being processed.
+			 * @param string     $transport_type The client transport type.
+			 * @param obj        $client         The syndication client class instance.
+			 */
+			do_action( 'syn_post_pull_edit_post', $post_id, $post, $site_id, $transport_type, $client );
+
 		} else {
 
 			/**
@@ -223,8 +248,31 @@ abstract class Puller {
 			//  Include the syndicated_guid so we can update this post later.
 			$post->post_meta['syn_post_guid'] = $post['post_guid'];
 
+			/**
+			 * Filter the post data, just before inserting a new post during pull post processing.
+			 *
+			 * Enables adjusting the data used to insert a new post.
+			 *
+			 * @param Types\Post $post    The Post object containing the post insert data.
+			 * @param int        $site_id The id of the site being processed.
+			 * @param obj        $client  The syndication client class instance.
+			 */
+			$post = apply_filters( 'syn_pull_new_post', $post, $site_id, $client );
+
 			// The post is new, insert it.
 			$post_id = wp_insert_post( $post->post_data, true );
+
+			/**
+			 * Fires just after inserting a new post during pull post processing.
+			 *
+			 * @param int        $post_id        The result of `wp_update_post` (0 if update failed, otherwise post id).
+			 * @param Types\Post $post           The Post object containing the post insert data.
+			 * @param int        $site_id        The id of the site being processed.
+			 * @param string     $transport_type The client transport type.
+			 * @param obj        $client         The syndication client class instance.
+			 */
+			do_action( 'syn_post_pull_new_post', $post_id, $post, $site, $transport_type, $client );
+
 		}
 		wp_reset_postdata();
 
