@@ -122,19 +122,30 @@ abstract class Puller {
 		// Consume the post
 		$post = apply_filters( 'syn_before_insert_post', $post );
 
-		// Generate a unique `syndicated_guid` combining the site id and the item guid.
-		$syndicated_guid = md5( $site_id . '_' . $post->post_data['post_guid'] );
+		$syndicated_guid = $post->post_data['post_guid'];
+
+		/**
+		 * Filter the $post id retrieved when locating by guid.
+		 *
+		 * Enabled altering the post id that will be tied to a specific pulled post update. Return a post
+		 * id to force updated to happen to that post, return falsde to leave update behavior unchanged.
+		 *
+		 * @param string     $syndicated_guid The post's guid.
+		 * @param Types\Post $post            The post for processing.
+		 * @param int        $site_id The id of the site being processed.
+		 */
+		$filtered_post_id = apply_filters( 'syn_pre_find_post_by_guid', false, $syndicated_guid, $post, $site_id );
 
 		// Query for posts with a matching syndicated_guid
 		$query_args = array(
-			'meta_key'      => 'syndicated_guid',
+			'meta_key'      => 'syn_post_guid',
 			'meta_value'    => $syndicated_guid,
 			'post_status'   => 'any',
 			'post_per_page' => 1
 		);
 		$existing_post_query = new \WP_Query( $query_args );
 		// If the post has already been consumed, update it; otherwise insert it.
-		if ( $existing_post_query->have_posts() ) {
+		if ( $existing_post_query->have_posts() || $filtered_post_id ) {
 			// Update existing posts?
 			if ( 'on' !== $settings_manager->get_setting( 'update_pulled_posts' ) ) {
 				Syndication_Logger::log_post_info(
@@ -146,9 +157,13 @@ abstract class Puller {
 				return false;
 			}
 
-			// Existing post, set the post ID for update.
-			$existing_post_query->the_post();
-			$post->post_data['ID'] = get_the_ID();
+			if ( false === $filtered_post_id ) {
+				// Existing post, set the post ID for update.
+				$existing_post_query->the_post();
+				$post->post_data['ID'] = get_the_ID();
+			} else {
+				$post->post_data['ID'] = $syndicated_guid;
+			}
 
 			$client_transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
 
@@ -206,7 +221,7 @@ abstract class Puller {
 
 
 			//  Include the syndicated_guid so we can update this post later.
-			$post->post_meta['syndicated_guid'] = $syndicated_guid;
+			$post->post_meta['syn_post_guid'] = $post['post_guid'];
 
 			// The post is new, insert it.
 			$post_id = wp_insert_post( $post->post_data, true );
