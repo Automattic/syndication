@@ -51,7 +51,14 @@ class Push_Client extends Pusher {
 	}
 
 	private function get_thumbnail_meta_keys( $post_id ) {
-		// Support for non-core images, like from the Multiple Post Thumbnail plugin
+
+		/**
+		 * Filter the meta keys used used for thumbnail meta.
+		 *
+		 * Enables support for non-core images, like from the Multiple Post Thumbnail plugin.
+		 *
+		 * @param array $meta_keys Array of meta keys to use for thumbnail meta.
+		 */
 		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
 	}
 
@@ -66,7 +73,15 @@ class Push_Client extends Pusher {
 
 		$post = (array)get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		/**
+		 * Filter the post used by the REST push client when pushing a new post to a remote.
+		 *
+		 * This filter can be used to exclude or alter posts during a content push. Return false
+		 * to short circuit the post push.
+		 *
+		 * @param WP_Post $post    The post the be pushed.
+		 * @param int     $post_ID The id of the post originating this request.
+		 */
 		$post = apply_filters( 'syn_rest_push_filter_new_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
@@ -82,6 +97,12 @@ class Push_Client extends Pusher {
 			'tags'       => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array( 'fields' => 'names', ) ) ),
 		);
 
+		/**
+		 * Filter the REST push client body before pushing a new post.
+		 *
+		 * @param string $body    The body to send to the REST API endpoint.
+		 * @param int    $post_ID The id of the post being pushed.
+		 */
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );
 
 		$response = wp_remote_post(
@@ -119,7 +140,15 @@ class Push_Client extends Pusher {
 
 		$post = (array)get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		/**
+		 * Filter the post used by the REST push client when pushing an update.
+		 *
+		 * This filter can be used to exclude or alter posts during a content update to an
+		 * existing post on the remote. Return false to short circuit the post push update.
+		 *
+		 * @param WP_Post $post    The post the be pushed.
+		 * @param int     $post_ID The id of the post originating this request.
+		 */
 		$post = apply_filters( 'syn_rest_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post )
 			return true;
@@ -135,6 +164,12 @@ class Push_Client extends Pusher {
 			'tags'       => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array( 'fields' => 'names' ) ) )
 		);
 
+		/**
+		 * Filter the REST push client body before pushing an existing post update.
+		 *
+		 * @param string $body    The body to send to the REST API endpoint.
+		 * @param int    $post_ID The id of the post being pushed.
+		 */
 		$body = apply_filters( 'syn_rest_push_filter_edit_post_body', $body, $post_ID );
 
 		$response = wp_remote_post(
