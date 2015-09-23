@@ -43,6 +43,15 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		/**
 		 * Set up the callbacks for attachments.
 		 */
+		/**
+		 * Filter whether the XML push client should push thumbnails.
+		 *
+		 * Return false to skip sending thumbnails.
+		 *
+		 * @param bool     $push_thumbnails Whether to push thumbnails. Default is true.
+		 * @param int      $site_ID         The id of the site being pushed to.
+		 * @param XML_Push $this            The push client instance.
+		 */
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
 			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
@@ -70,6 +79,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 	private function get_thumbnail_meta_keys( $post_id ) {
 		// Support for non-core images, like from the Multiple Post Thumbnail plugin
+		/** Filter is documented in includes/clients/rest-push/class-push-client.php */
 		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
 	}
 
@@ -149,7 +159,15 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 		$post = (array) get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		/**
+		* Filter the post used by the XML push client when pushing a new post.
+		*
+		* This filter can be used to exclude or alter posts a post push. Return false
+		* to short circuit the post push.
+		*
+		* @param WP_Post $post    The post the be pushed.
+		* @param int     $post_ID The id of the post originating this request.
+		*/
 		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
@@ -170,6 +188,10 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$args['terms_names']   = $this->_get_post_terms( $post_ID );
 		$args['custom_fields'] = $this->_get_custom_fields( $post_ID );
 
+		/**
+		 * Filter the args used for the XML Push client XML request when creating a new post.
+		 * @param array $args Array of args to use.
+		 */
 		$args = apply_filters( 'syn_xmlrpc_push_new_post_args', $args, $post );
 
 		$result = $this->query(
@@ -201,7 +223,15 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 		$post = (array)get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		/**
+		* Filter the post used by the XML push client when pushing an update.
+		*
+		* This filter can be used to exclude or alter posts during a content update to an
+		* existing post on the remote. Return false to short circuit the post push update.
+		*
+		* @param WP_Post $post    The post the be pushed.
+		* @param int     $post_ID The id of the post originating this request.
+		*/
 		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
@@ -260,6 +290,10 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$args['terms_names']   = $this->_get_post_terms( $post_ID );
 		$args['custom_fields'] = array_merge( $args['custom_fields'], $this->_get_custom_fields( $post_ID ) );
 
+		/**
+		 * Filter the args used for the XML Push client XML request when updating a post.
+		 * @param array $args Array of args to use.
+		 */
 		$args = apply_filters( 'syn_xmlrpc_push_edit_post_args', $args, $post );
 
 		$result = $this->query(
@@ -406,6 +440,11 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id );
 
 		$blacklist = array_merge( $blacklist, $thumbnail_meta_keys );
+		/**
+		 * Filter the list of ignored or blacklisted meta fields.
+		 *
+		 * @param array $blacklist The array of meta fields to ignore. Default is [ '_edit_last', '_edit_lock' ].
+		 */
 		return apply_filters( 'syn_ignored_meta_fields', $blacklist, $post_id );
 	}
 
