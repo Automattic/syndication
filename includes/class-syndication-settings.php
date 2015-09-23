@@ -99,7 +99,7 @@ class Syndication_Settings {
 		/**
 		 * Filter the capability required for a user to syndication.
 		 *
-		 * @param string $capability The capability required to syndication content. Default is 'manage_options'.
+		 * @param string $capability The capability required to syndicate content. Default is 'manage_options'.
 		 */
 		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 		return current_user_can( $syndicate_cap );
