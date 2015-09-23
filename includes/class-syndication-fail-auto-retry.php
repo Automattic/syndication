@@ -81,8 +81,12 @@ class Syndication_Fail_Auto_Retry {
 			// Only proceed if we haven't hit the pull attempt ceiling
 			if ( $failed_attempts < $max_pull_attempts ) {
 
-				// Allow the default auto retry to be filtered
-				// By default, only auto retry 3 times
+				/**
+				 * Filter the auto retry limit.
+				 *
+				 * @param int $retry_limit The maximum number of times a client should auto_retry
+				 *                         when failing. Default is 3.
+				 */
 				$auto_retry_limit = apply_filters( 'pull_syndication_failure_auto_retry_limit', 3 );
 
 
@@ -92,6 +96,12 @@ class Syndication_Fail_Auto_Retry {
 					// Yes we are..
 
 					// Run in one minute by default
+					/**
+					 * Filter the time to next retry when triggering an auto-retry.
+					 *
+					 * @param int $timestamp The time you want the auto-retry to occur. Default is one
+					 *                       minute from now ( time() + MINUTE_IN_SECONDS ).
+					 */
 					$auto_retry_interval = apply_filters( 'syndication_failure_auto_retry_interval', $time_now + MINUTE_IN_SECONDS );
 
 					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), '', $extra = array() );
