@@ -71,7 +71,21 @@ class Bootstrap {
 	public function init() {
 		$this->register_taxonomy();
 		$this->register_post_type();
+
+		/**
+		 * Fires after the syndication server is initialized.
+		 *
+		 * Watched by syndication clients trigger initialization.
+		 */
 		do_action( 'syndication/init' );
+
+		/**
+		 * Fires after the syndication server is initialized.
+		 *
+		 * Legacy hook.
+		 */
+		do_action( 'syn_after_init_server' );
+
 	}
 
 	public function register_taxonomy() {
