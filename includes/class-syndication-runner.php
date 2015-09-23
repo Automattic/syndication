@@ -15,9 +15,6 @@ namespace Automattic\Syndication;
 class Syndication_Runner {
 	const CUSTOM_USER_AGENT = 'WordPress/Syndication Plugin';
 
-	public  $push_syndicate_transports;
-
-
 	/**
 	 * Set up the Syndication Runner.
 	 */
@@ -59,7 +56,6 @@ class Syndication_Runner {
 	public function register_syndicate_actions() {
 		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ), 10, 2 );
 		add_action( 'syn_schedule_delete_content', array( $this, 'schedule_delete_content' ) );
-
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
 		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
@@ -154,6 +150,13 @@ class Syndication_Runner {
 	}
 
 	public function schedule_delete_content( $post_ID ) {
+		/**
+		 * Fires just before a post is scheduled to be deleted by a cron job.
+		 *
+		 * @param int $post_ID The id of the post being scheduled for deletion.
+		 */
+		do_action( 'syn_schedule_delete_content', $post_ID );
+
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_delete_content',
@@ -165,7 +168,7 @@ class Syndication_Runner {
 	/**
 	 * Pull a single site.
 	 *
-	 * @param  site_id string The site to pull.
+	 * @param  site_id int    The site to pull.
 	 *
 	 * @return Array          An array of updated and added post ids.
 	 */
