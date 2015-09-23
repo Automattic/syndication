@@ -96,7 +96,7 @@ class Pull_Client extends Puller {
 			$new_post->post_data['post_date']      = date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) );
 			$new_post->post_data['comment_status'] = $default_comment_status;
 			$new_post->post_data['ping_status']    = $default_ping_status;
-			$new_post->post_data['post_guid']           = $site_id;
+			$new_post->post_data['post_guid']      = $item->get_id();
 			$new_post->post_data['post_category']  = isset( $taxonomy['cats'] ) ? $taxonomy['cats'] : '';
 			$new_post->post_data['tags_input']     = isset( $taxonomy['tags'] ) ? $taxonomy['tags'] : '';
 
