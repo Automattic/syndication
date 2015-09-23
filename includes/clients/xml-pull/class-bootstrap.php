@@ -73,6 +73,12 @@ class Walker_CategoryDropdownMultiple extends Walker {
 	function start_el( &$output, $category, $depth = 0, $args = array(), $current_object_id = 0 ) {
 		$pad = str_repeat( '&nbsp;', $depth * 3 );
 
+		/**
+		 * Filter the category name used in the category dropdown used in the XML pull client.
+		 *
+		 * @param string $category_name The name of the category.
+		 * @param object $category      Category data object.
+		 */
 		$cat_name = apply_filters( 'list_cats', $category->name, $category );
 
 		$output .= "\t<option class=\"level-$depth\" value=\"" . $category->term_id . "\"";
