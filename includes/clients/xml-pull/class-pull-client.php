@@ -45,7 +45,12 @@ class Pull_Client extends Puller {
 		$site                  = get_post( $site_id );
 		$node_config           = get_post_meta( $site->ID, 'syn_node_config', true );
 		$enc_field             = get_post_meta( $site->ID, 'syn_enc_field', true );
-		$feed_url              = apply_filters( 'syn_feed_url', get_post_meta( $site->ID, 'syn_feed_url', true ) );
+		/**
+		 * Filter the XML pull client feed url.
+		 *
+		 * @param string $feed_url The site's feed url.
+		 * @todo Consider adding $site_id for context.
+		 */		$feed_url              = apply_filters( 'syn_feed_url', get_post_meta( $site->ID, 'syn_feed_url', true ) );
 		$enclosures_as_strings = isset( $node_config['enclosures_as_strings'] ) ? true : false;
 		$id_field              = get_post_meta( $site_id, 'syn_id_field', true );
 		$enc_is_photo          = get_post_meta( $site_id, 'syn_enc_is_photo', true );

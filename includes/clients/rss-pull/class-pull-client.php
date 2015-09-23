@@ -40,7 +40,7 @@ class Pull_Client extends Puller {
 	public function get_posts( $site_id = 0 ) {
 
 		/**
-		 * Filter the RSS feed pull client feed url.
+		 * Filter the RSS pull client feed url.
 		 *
 		 * @param string $feed_url The site's feed url.
 		 * @todo Consider adding $site_id for context.
