@@ -50,7 +50,15 @@ class Syndication_Logger {
 		add_action( 'syn_post_push_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
 		add_action( 'syn_post_push_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );
 
-		// Allow setting of a debug_level (info || default).
+		// Allow
+		/**
+		 * Filter the debug level.
+		 *
+		 * Enables setting of a debug_level. Return true for info and false for default.
+		 *
+		 * @param bool $enable_debug Whether to enable debug logging. Default is false.
+		 *                           Note that WP_DEBUG must also be true.
+		 */
 		$this->debug_level = apply_filters( 'syn_pre_debug_level', false );
 
 		if ( false === $this->debug_level ) {
@@ -61,7 +69,13 @@ class Syndication_Logger {
 			}
 		}
 
-		// Allow setting of use_php_error_logging.
+		/**
+		 * Filter the `use_php_error_logging` setting.
+		 *
+		 * Returning true causes the plugin to add `error_log` calls when logging activity.
+		 *
+		 * @param bool $use_php_error_logging Whether to use PHP error logging. Default is false.
+		 */
 		$this->use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
 
 		if ( false === $this->use_php_error_logging ) {
@@ -375,6 +389,13 @@ class Syndication_Logger {
 	 * @return string            Formatted log message
 	 */
 	private function format_log_message( $msg_type, $log_entry ) {
+		/**
+		 * Filter the format used for log entries written via `error_log`.
+		 *
+		 * @param string $msg       The formatted message.
+		 * @param string $msg_type  Type of message.
+	 	 * @param array  $log_entry Prepared log_entry array.
+		 */
 		$msg = apply_filters( 'syn_error_log_message_format', sprintf( 'SYN_%s:%s,%d,%s%s', strtoupper( $msg_type ), $log_entry['object_type'], $log_entry['object_id'], $log_entry['status'], $log_entry['message'] ? ',' . $log_entry['message'] : '' ), $msg_type, $log_entry );
 		return $msg;
 	}
