@@ -51,11 +51,7 @@ class Settings_Screen {
 			'options-general.php',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
 			esc_html__( 'Syndication', 'push-syndication' ),
-			/**
-			 * Filter the capability required for the `Syndication Settings` menu to be displayed to a user.
-			 *
-			 * @param string $capability The capability required to show a menu. Default is 'manage_options'.
-			 */
+			/* This filter is documented in includes/admin/class-settings-screen.php */
 			apply_filters( 'syn_syndicate_cap', 'manage_options' ),
 			'push-syndicate-settings',
 			array( $this, 'display_syndicate_settings' )
