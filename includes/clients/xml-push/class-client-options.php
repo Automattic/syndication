@@ -56,6 +56,7 @@ class Client_Options {
 
 		<?php
 
+		/* This action is documented in includes/clients/rest-push/class-client-options.php */
 		do_action( 'syn_after_site_form', $site_id );
 
 	}

@@ -62,6 +62,11 @@ class Client_Options {
 
 		<?php
 
+		/**
+		 * Fires after the site options form renders.
+		 *
+		 * @param int $site_id The id of the site being rendered.
+		 */
 		do_action( 'syn_after_site_form', $site_id );
 
 	}
