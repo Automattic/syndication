@@ -208,6 +208,12 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 		$remote_post_id = (int) $this->getResponse();
 
+		/**
+		* Fires when a new post is pushed to a remote by the XML Push client.
+		*
+		* @param WP_Post $remote_post_id The remote post id that was pushed.
+		* @param int     $post_ID        The id of the post originating this request.
+		*/
 		do_action( 'syn_xmlrpc_push_new_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
@@ -309,6 +315,12 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
+		/**
+		* Fires when a post is updated on a remote by the XML Push client.
+		*
+		* @param WP_Post $remote_post_id The remote post id that was updated.
+		* @param int     $post_ID        The id of the post originating this request.
+		*/
 		do_action( 'syn_xmlrpc_push_edit_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
