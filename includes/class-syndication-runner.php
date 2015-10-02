@@ -41,7 +41,11 @@ class Syndication_Runner {
 
 		$this->register_syndicate_actions();
 
-		// Legacy action.
+		/**
+		 * Fires after the syndication runner is set up.
+		 *
+		 * Legacy action.
+		 */
 		do_action( 'syn_after_setup_server' );
 
 	}
@@ -141,6 +145,16 @@ class Syndication_Runner {
 
 					$result = $client->delete_post( $ext_ID );
 
+					/**
+					 * Fires when a post is deleted by the syndication runner.
+					 *
+					 * @param mixed  $results        The result of the delete action.
+					 * @param int    $ext_ID         The external post id that will be deleted.
+					 * @param int    $post_ID        The local post that has been deleted.
+					 * @param int    $site_ID        The id of the site being processed.
+					 * @param string $transport_type The client transport type.
+					 * @param obj    $client         The syndication client class instance.
+					 */
 					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 
 					if ( ! $result ) {
@@ -434,7 +448,7 @@ class Syndication_Runner {
 					 * Return true to short circuit the processing of this post insert.
 					 *
 					 * @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
-					 * @param int    $site_id             The id of the site being processed.
+					 * @param int    $post_ID             The id of the post being processed.
 					 * @param string $transport_type      The client transport type.
 					 * @param obj    $client              The syndication client class instance.
 					 * @param array  $info                Array of site information from `get_site_info`.
@@ -447,6 +461,16 @@ class Syndication_Runner {
 					$this->validate_result_new_post( $result, $slave_post_states, $site_id, $client );
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
+					/**
+					 * Fires when a new post is pushed by the syndication runner.
+					 *
+					 * @param mixed  $results        The result of the push action.
+					 * @param int    $post_ID        The local post that has been pushed.
+					 * @param int    $site_id        The id of the site being processed.
+					 * @param string $transport_type The client transport type.
+					 * @param obj    $client         The syndication client class instance.
+					 * @param array  $info           Array of site information from `get_site_info`.
+					 */
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site_id, $transport_type, $client, $info );
 
 				} else { // states 'success', 'edit-error' and 'remove-error'
@@ -457,7 +481,7 @@ class Syndication_Runner {
 					* Return true to short circuit the processing of this post insert.
 					*
 					* @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
-					* @param int    $site_id             The id of the site being processed.
+					* @param int    $post_ID             The id of the post being processed.
 					* @param string $transport_type      The client transport type.
 					* @param obj    $client              The syndication client class instance.
 					* @param array  $info                Array of site information from `get_site_info`.
@@ -471,6 +495,16 @@ class Syndication_Runner {
 					$this->validate_result_edit_post( $result, $info['ext_ID'], $slave_post_states, $site_id, $client );
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
+					/**
+					 * Fires when a post is updated by the syndication runner.
+					 *
+					 * @param mixed  $results        The result of the update action.
+					 * @param int    $post_ID        The local post that has been pushed in the update.
+					 * @param int    $site_id        The id of the site being processed.
+					 * @param string $transport_type The client transport type.
+					 * @param obj    $client         The syndication client class instance.
+					 * @param array  $info           Array of site information from `get_site_info`.
+					 */
 					do_action( 'syn_post_push_edit_post', $result, $post_ID, $site_id, $transport_type, $client, $info );
 				}
 			}
