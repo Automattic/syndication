@@ -72,7 +72,13 @@ class Pull_Client extends Puller {
 		remove_filter( 'wp_feed_cache_transient_lifetime', array( $this, 'set_wp_feed_cache_transient_lifetime' ) );
 
 		if ( is_wp_error( $feed ) ) {
-			// Track the event.
+
+			/**
+			 * Fires after a syndication event.
+			 *
+			 * @param string $event Event type. One of 'pull_failure', 'pull_success'.
+			 * @param int $site_id    The id of the site triggering the event.
+			 */
 			do_action( 'push_syndication_event', 'pull_failure', $site_id );
 
 			return array();
@@ -118,7 +124,7 @@ class Pull_Client extends Puller {
 			}
 			$posts[] = $new_post;
 		}
-		// Track the event.
+		/* This action is documented in includes/clients/rss-pull/class-pull-client.php */
 		do_action( 'push_syndication_event', 'pull_success', $site->ID );
 
 		return $posts;

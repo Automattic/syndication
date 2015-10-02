@@ -79,7 +79,7 @@ class Pull_Client extends Puller {
 		if ( Syndication\is_wp_error_do_throw( $feed ) ) {
 			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
-			// Track the event.
+			/* This action is documented in includes/clients/rss-pull/class-pull-client.php */
 			do_action( 'push_syndication_event', 'pull_failure', $site->ID );
 
 			return array();
@@ -95,7 +95,7 @@ class Pull_Client extends Puller {
 		if ( false === $xml ) {
 			Syndication\Syndication_Logger::log_post_error( $site->ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $feed_url ), $log_time = null, $extra = array() );
 
-			// Track the event.
+			/* This action is documented in includes/clients/rss-pull/class-pull-client.php */
 			do_action( 'push_syndication_event', 'pull_failure', $site->ID );
 
 			return array();
@@ -227,7 +227,7 @@ class Pull_Client extends Puller {
 
 		Syndication\Syndication_Logger::log_post_info( $site->ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $new_posts ) ), $log_time = null, $extra = array() );
 
-		// Track the event.
+		/* This action is documented in includes/clients/rss-pull/class-pull-client.php */
 		do_action( 'push_syndication_event', 'pull_success', $site->ID );
 		return $new_posts;
 	}
