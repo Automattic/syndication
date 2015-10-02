@@ -108,12 +108,6 @@ class Settings_Screen {
 
 				<?php do_settings_sections( 'delete_pushed_posts' ); ?>
 
-				<?php
-				// @todo not sure of the validity of this
-				do_action( 'syndication/render_plugin_options' );
-				do_action( 'syndication/render_client_options' );
-				?>
-
 				<?php submit_button(); ?>
 
 			</form>
