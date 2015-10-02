@@ -38,7 +38,13 @@ class Syndication_Site_Failure_Monitor {
 			// Disable the site.
 			update_post_meta( $site_id, 'syn_site_enabled', false );
 
-			// Reset the event counter.
+			/**
+			 * Fires when the site pull failure count exceeds the maximum pull attempts.
+			 *
+			 *  Triggers a reset of the event counter.
+			 *
+			 * @param int $site_id The id of the site that failed.
+			 */
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
