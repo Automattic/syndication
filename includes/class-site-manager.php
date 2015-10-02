@@ -29,6 +29,14 @@ class Site_Manager {
 	}
 
 	public function init() {
+
+		/**
+		 * Fires when the site manager initializes.
+		 *
+		 * Clients can hook into this to handle intialization.
+		 *
+		 * @param Site_Manager $site_manager The Site_Manager.
+		 */
 		do_action( 'syndication/site_manager_init', [ $this ] );
 		$this->_sites = $this->get_site_index();
 	}
