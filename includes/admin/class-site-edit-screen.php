@@ -121,6 +121,13 @@ class Site_Edit_Screen {
 		$this->display_transports( $transport_type );
 
 		if ( $transport_type ) {
+
+			/**
+			 * Fires when rendering the Syndication site settings metabox.
+			 *
+			 * @param string     $transport_type The client transport type.
+			 * @param int        $post_id        The post_id of the site being rendered.
+			 */
 			do_action( 'syndication/render_site_options/' . $transport_type, $post->ID );
 		} else {
 			echo '<p>' . __( 'No client configured for this site.' ) . '</p>';
@@ -173,10 +180,24 @@ class Site_Edit_Screen {
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
 		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );
 
+		/**
+		 * Fires after saving syndication site options.
+		 *
+		 * Clients hook into this event to save any options.
+		 *
+		 * @param string     $transport_type The client transport type.
+		 * @param int        $post_id        The post_id of the site being rendered.
+		 */
 		do_action( 'syndication/save_site_options/' . $transport_type, $post->ID );
 
-		// Trigger the client test action to test the connection after saving.
-		// @todo implement for all base clients.
+		/**
+		 * Fires after saving syndication site options.
+		 *
+		 * Trigger the client test action to test the connection after saving.
+		 *
+		 * @param string     $transport_type The client transport type.
+		 * @param int        $post_id        The post_id of the site being rendered.
+		 */
 		do_action( 'syndication/test_site_options/' . $transport_type, $post->ID );
 	}
 }
