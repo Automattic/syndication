@@ -5,6 +5,8 @@
  * This allows for generic events to be captured and counted. Use the push_syndication_event and push_syndication_reset_event actions to capture and reset counters. Use push_syndication_after_event to handle events once they've occurred, and to see the number of times the event has occurred.
  */
 
+namespace Automattic\Syndication;
+
 class Syndication_Event_Counter {
 
 	/**
@@ -24,7 +26,7 @@ class Syndication_Event_Counter {
 	 */
 	public function count_event( $event_slug, $event_object_id = null ) {
 		// Coerce the slug and ID to strings. PHP will fire appropriate warnings if the given slug and ID are not coercible.
-		$event_slug = (string) $event_slug;
+		$event_slug      = (string) $event_slug;
 		$event_object_id = (string) $event_object_id;
 
 		// Increment the event counter.

@@ -1,5 +1,10 @@
 <?php
 
+namespace Automattic\Syndication;
+
+use WP_List_Table;
+
+// @todo better place for this?
 if( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
@@ -20,7 +25,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		global $status, $page;
 
 		parent::__construct( array(
-			'singular'  => __( 'log', 'push-syndication' ),
+			'singular'  => __( 'log', 'push-syndication'),
 			'plural'    => __( 'logs', 'push-syndication' ),
 			'ajax'      => false
 		) );
@@ -113,14 +118,14 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$sortable = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$log_id = ( isset( $_REQUEST['log_id'] ) ) ? esc_attr( $_REQUEST['log_id'] ) : null;
-		$msg_type = null;
-		$object_id = null;
-		$object_type = 'post';
-		$log_status = null;
-		$date_start = null;
-		$date_end = null;
-		$message = null;
+		$log_id       = ( isset( $_REQUEST['log_id'] ) ) ? esc_attr( $_REQUEST['log_id'] ) : null;
+		$msg_type     = null;
+		$object_id    = null;
+		$object_type  = 'post';
+		$log_status   = null;
+		$date_start   = null;
+		$date_end     = null;
+		$message      = null;
 		$storage_type = 'object';
 
 		$log_data = Syndication_Logger::instance()->get_messages(
@@ -140,9 +145,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		}
 		usort( $this->prepared_data, array( $this, 'usort_reorder' ) );
 
-		$per_page = $this->get_items_per_page( 'per_page' );
+		$per_page     = $this->get_items_per_page( 'per_page' );
 		$current_page = $this->get_pagenum();
-		$total_items = count( $this->prepared_data );
+		$total_items  = count( $this->prepared_data );
 
 		$this->found_data = array_slice( $this->prepared_data,( ( $current_page-1 )* $per_page ), $per_page );
 
@@ -225,7 +230,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				}
 			}
 
-			echo implode( "\n", $log_ids ); // sanitization happens right above
+			echo implode( "\n", $log_ids );
 			?>
 		</select>
 
@@ -241,8 +246,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 			<?php
 			if ( $this->_min_date && $this->_max_date ) {
-				$month_pointer = new DateTime( '@' . $this->_min_date );
-				$max_month = new DateTime( '@' . $this->_max_date );
+				$month_pointer = new \DateTime( '@' . $this->_min_date );
+				$max_month     = new \DateTime( '@' . $this->_max_date );
 
 				while ( $month_pointer <= $max_month ) { ?>
 					<option
@@ -262,7 +267,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<label class="screen-reader-text" for="filter-by-type">Filter by type</label>
 		<select name="type" id="filter-by-type">
 			<option value="">All types</option>
-			<?php foreach( array( 'success' => 'Success', 'info' => 'Information', 'error' => 'Error' ) as $key => $label ): ?>
+			<?php foreach ( array( 'success' => 'Success', 'info' => 'Information', 'error' => 'Error', ) as $key => $label ): ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $requested_type, $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
@@ -286,7 +291,11 @@ class Syndication_Logger_Viewer {
 
 	public function initialize_list_table() {
 		if ( ! empty( $_POST['log_id'] ) && ( empty( $_GET['log_id'] ) || esc_attr( $_GET['log_id'] ) != esc_attr( $_POST['log_id'] ) ) ) {
-			wp_safe_redirect( add_query_arg( array( 'log_id' => esc_attr( $_REQUEST['log_id'] ) ), wp_unslash($_SERVER['REQUEST_URI'] ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array( 'log_id' => esc_attr( $_REQUEST['log_id'] ) ), wp_unslash( $_SERVER['REQUEST_URI'] )
+				)
+			);
 			exit;
 		}
 		$this->syndication_logger_table = new Syndication_Logger_List_Table();
@@ -294,7 +303,7 @@ class Syndication_Logger_Viewer {
 
 	public function render_list_page(){
 		?>
-		<div class="wrap"><h2><?php _e( "Syndication Logs", "syndication" ); ?></h2>
+		<div class="wrap"><h2><?php _e( 'Syndication Logs', 'syndication' ); ?></h2>
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>

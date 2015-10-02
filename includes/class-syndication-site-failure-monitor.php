@@ -1,11 +1,13 @@
 <?php
 /**
- * Site Failure Moniture
+ * Site Failure Monitur
  *
  * Watches syndication events and handles site-related failures.
  *
  * @uses Syndication_Logger
  */
+
+namespace Automattic\Syndication;
 
 class Syndication_Site_Failure_Monitor {
 
@@ -23,9 +25,10 @@ class Syndication_Site_Failure_Monitor {
 	 * @param $count
 	 */
 	public function handle_pull_failure_event( $site_id, $count ) {
+		global $settings_manager;
 		$site_id = (int) $site_id;
 
-		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
+		$max_pull_attempts = (int) $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 );
 
 		if ( ! $max_pull_attempts ) {
 			return;
@@ -35,13 +38,17 @@ class Syndication_Site_Failure_Monitor {
 			// Disable the site.
 			update_post_meta( $site_id, 'syn_site_enabled', false );
 
-			// Reset the event counter.
+			/**
+			 * Fires when the site pull failure count exceeds the maximum pull attempts.
+			 *
+			 *  Triggers a reset of the event counter.
+			 *
+			 * @param int $site_id The id of the site that failed.
+			 */
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
-			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
-
-			do_action( 'push_syndication_site_disabled', $site_id, $count );
+			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site disabled after %d pull failure(s).', 'push-syndication' ), $count ) );
 		}
 	}
 }

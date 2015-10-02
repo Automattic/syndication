@@ -1,10 +1,10 @@
 <?php
-
 /**
  * Syndication_Logger implements a unified logging mechanism for the syndication plugin.
- *
- * @todo implement removal of old log messages, cron to remove messages older than X?
  */
+
+namespace Automattic\Syndication;
+
 class Syndication_Logger {
 
 	/**
@@ -50,7 +50,15 @@ class Syndication_Logger {
 		add_action( 'syn_post_push_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
 		add_action( 'syn_post_push_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );
 
-		// Allow setting of a debug_level (info || default).
+		// Allow
+		/**
+		 * Filter the debug level.
+		 *
+		 * Enables setting of a debug_level. Return true for info and false for default.
+		 *
+		 * @param bool $enable_debug Whether to enable debug logging. Default is false.
+		 *                           Note that WP_DEBUG must also be true.
+		 */
 		$this->debug_level = apply_filters( 'syn_pre_debug_level', false );
 
 		if ( false === $this->debug_level ) {
@@ -61,7 +69,13 @@ class Syndication_Logger {
 			}
 		}
 
-		// Allow setting of use_php_error_logging.
+		/**
+		 * Filter the `use_php_error_logging` setting.
+		 *
+		 * Returning true causes the plugin to add `error_log` calls when logging activity.
+		 *
+		 * @param bool $use_php_error_logging Whether to use PHP error logging. Default is false.
+		 */
 		$this->use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
 
 		if ( false === $this->use_php_error_logging ) {
@@ -78,10 +92,6 @@ class Syndication_Logger {
 	 */
 	public static function init() {
 		self::instance()->log_id = md5( uniqid() . microtime() );
-
-		require_once( dirname( __FILE__ ) . '/class-syndication-admin-notices.php' );
-		new Syndication_Logger_Admin_Notice;
-
 		if ( is_admin() ) {
 			require_once( dirname( __FILE__ ) . '/class-syndication-logger-viewer.php' );
 			$viewer = new Syndication_Logger_Viewer;
@@ -171,7 +181,7 @@ class Syndication_Logger {
 			'post' 			 => $post,
 			'result' 		 => $result,
 			'transpost_type' => $transport_type,
-			'client' 		 => $client
+			'client' 		 => $client,
 		);
 
 		if ( false == $result || is_wp_error( $result ) ) {
@@ -182,7 +192,8 @@ class Syndication_Logger {
 			}
 			Syndication_Logger::log_post_error( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		} else {
-			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
+			$guid    = isset( $post['post_guid'] ) ? sanitize_text_field( $post['post_guid'] ) : sanitize_text_field( $post['guid'] );
+			$message = sprintf( '%s,%d', $guid, intval( $result ) );
 			Syndication_Logger::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		}
 	}
@@ -378,6 +389,13 @@ class Syndication_Logger {
 	 * @return string            Formatted log message
 	 */
 	private function format_log_message( $msg_type, $log_entry ) {
+		/**
+		 * Filter the format used for log entries written via `error_log`.
+		 *
+		 * @param string $msg       The formatted message.
+		 * @param string $msg_type  Type of message.
+	 	 * @param array  $log_entry Prepared log_entry array.
+		 */
 		$msg = apply_filters( 'syn_error_log_message_format', sprintf( 'SYN_%s:%s,%d,%s%s', strtoupper( $msg_type ), $log_entry['object_type'], $log_entry['object_id'], $log_entry['status'], $log_entry['message'] ? ',' . $log_entry['message'] : '' ), $msg_type, $log_entry );
 		return $msg;
 	}

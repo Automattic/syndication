@@ -1,5 +1,5 @@
 <?php
-
+namespace Automattic\Syndication;
 /**
  * Failed Syndication Auto Retry
  *
@@ -17,7 +17,7 @@
  * @uses Syndication_Logger
  */
 
-class Failed_Syndication_Auto_Retry {
+class Syndication_Fail_Auto_Retry {
 
 	/**
 	 * Hook into WordPress
@@ -40,6 +40,7 @@ class Failed_Syndication_Auto_Retry {
 	 * @return null
 	 */
 	public function handle_pull_failure_event( $site_id = 0, $failed_attempts = 0 ) {
+		global $settings_manager;
 
 		$site_auto_retry_count = 0;
 		$site_id               = (int) $site_id;
@@ -47,9 +48,10 @@ class Failed_Syndication_Auto_Retry {
 		$cleanup               = false;
 
 		// Fetch the allowable number of max pull attempts before the site is marked as 'disabled'
-		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
+		$max_pull_attempts = (int) $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 );
+		error_log('max times to retry: ' . $max_pull_attempts);
 
-		// Bail if we've already met the max pull attempt count
+		// Bail if auto retry feature disabled
 		if ( ! $max_pull_attempts ) {
 			return;
 		}
@@ -66,38 +68,49 @@ class Failed_Syndication_Auto_Retry {
 			// Fetch the number of times we've tried to auto-retry
 			$site_auto_retry_count = (int) get_post_meta( $site_id, 'syn_failed_auto_retry_attempts', true );
 
+			// Store the current time for repeated use below
+			$time_now = time();
+
+			// Create a string time to be sent to the logger
+			// Add 1 so our log items appear to occur a second later
+			// and hence order better in the log viewer
+			// without this, sometimes when the pull occurs quickly
+			// these log items appear to occur at the same time as the failure
+			$log_time = date( 'Y-m-d H:i:s', $time_now + 1 );
+
 			// Only proceed if we haven't hit the pull attempt ceiling
 			if ( $failed_attempts < $max_pull_attempts ) {
 
-				// Allow the default auto retry to be filtered
-				// By default, only auto retry 3 times
+				/**
+				 * Filter the auto retry limit.
+				 *
+				 * @param int $retry_limit The maximum number of times a client should auto_retry
+				 *                         when failing. Default is 3.
+				 */
 				$auto_retry_limit = apply_filters( 'pull_syndication_failure_auto_retry_limit', 3 );
 
-				// Store the current time for repeated use below
-				$time_now = time();
-
-				// Create a string time to be sent to the logger
-				// Add 1 so our log items appear to occur a second later
-				// and hence order better in the log viewer
-				// without this, sometimes when the pull occurs quickly
-				// these log items appear to occur at the same time as the failure
-				$log_time = date( 'Y-m-d H:i:s', $time_now + 1 );
 
 				// Are we still below the auto retry limit?
-				if ( $site_auto_retry_count < $auto_retry_limit ) {
+				if ( $site_auto_retry_count <= $auto_retry_limit ) {
 
 					// Yes we are..
 
 					// Run in one minute by default
+					/**
+					 * Filter the time to next retry when triggering an auto-retry.
+					 *
+					 * @param int $timestamp The time you want the auto-retry to occur. Default is one
+					 *                       minute from now ( time() + MINUTE_IN_SECONDS ).
+					 */
 					$auto_retry_interval = apply_filters( 'syndication_failure_auto_retry_interval', $time_now + MINUTE_IN_SECONDS );
 
-					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), $log_time, $extra = array() );
+					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), '', $extra = array() );
 
 					// Schedule a pull retry for one minute in the future
 					wp_schedule_single_event(
 						$auto_retry_interval,     // retry in X time
 						'syn_pull_content',       // fire the syndication_auto_retry hook
-						array( array( $site ) )   // the site which failed to pull
+						array( array( $site->ID ) )   // the site which failed to pull
 					);
 
 					// Increment our auto retry counter
@@ -125,7 +138,7 @@ class Failed_Syndication_Auto_Retry {
 				// Remove the auto retry if there was one
 				delete_post_meta( $site->ID, 'syn_failed_auto_retry_attempts' );
 
-				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %d times to reconnect to %s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
+				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %d times to reconnect to %s', 'push-syndication' ), ++$site_auto_retry_count, $site_url ), $log_time, $extra = array() );
 			}
 		}
 	}
