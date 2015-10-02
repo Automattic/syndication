@@ -26,6 +26,14 @@ class Client_Manager {
 	}
 
 	public function init() {
+
+		/**
+		 * Fires when the client manager initializes.
+		 *
+		 * Clients hook into this to register themselves with the client manager.
+		 *
+		 * @param Site_Manager $site_manager The Site_Manager.
+		 */
 		do_action( 'syndication/register_clients', [ $this ] );
 	}
 
