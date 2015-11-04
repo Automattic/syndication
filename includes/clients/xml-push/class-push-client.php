@@ -246,7 +246,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
 		if ( ! $remote_post ) {
-			return new WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'syndication' ) );
+			return new \WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'syndication' ) );
 		}
 
 		// Delete existing metadata to avoid duplicates
@@ -312,7 +312,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		);
 
 		if ( ! $result ) {
-			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+			return new \WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
 		/**
@@ -376,7 +376,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 					);
 
 					if ( ! $result ) {
-						return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+						return new \WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 					}
 					$new_image_ids[$key][$index] = (int) $this->getResponse();
 				}
@@ -412,7 +412,7 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 		);
 
 		if ( ! $result ) {
-			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+			return new \WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
 		return true;

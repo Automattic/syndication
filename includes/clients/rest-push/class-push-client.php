@@ -128,7 +128,7 @@ class Push_Client extends Pusher {
 		if ( empty( $response->error ) ) {
 			return $response->ID;
 		} else {
-			return new WP_Error( 'rest-push-new-fail', $response->message );
+			return new \WP_Error( 'rest-push-new-fail', $response->message );
 		}
 
 	}
@@ -195,7 +195,7 @@ class Push_Client extends Pusher {
 		if ( empty( $response->error ) ) {
 			return $post_ID;
 		} else {
-			return new WP_Error( 'rest-push-edit-fail', $response->message );
+			return new \WP_Error( 'rest-push-edit-fail', $response->message );
 		}
 
 	}
@@ -238,7 +238,7 @@ class Push_Client extends Pusher {
 		if ( empty( $response->error ) ) {
 			return true;
 		} else {
-			return new WP_Error( 'rest-push-delete-fail', $response->message );
+			return new \WP_Error( 'rest-push-delete-fail', $response->message );
 		}
 
 	}

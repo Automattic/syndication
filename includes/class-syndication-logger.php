@@ -308,12 +308,12 @@ class Syndication_Logger {
 			if ( 'post' == $object_type ) {
 
 				if ( ! is_integer( $object_id ) ) {
-					return new WP_Error( 'logger_no_post_id', __( 'You need to provide a valid post_id or use log_option instead', 'push-syndication' ) );
+					return new \WP_Error( 'logger_no_post_id', __( 'You need to provide a valid post_id or use log_option instead', 'push-syndication' ) );
 				}
 
 				$post = get_post( $object_id );
 				if ( ! $post ) {
-					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
+					return new \WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
 				$log = get_post_meta( $post->ID, 'syn_log', true);
