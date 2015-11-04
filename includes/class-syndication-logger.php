@@ -171,8 +171,8 @@ class Syndication_Logger {
 			$post = get_post( $post, ARRAY_A );
 		}
 
-		if ( isset( $post['postmeta'] ) && isset( $post['postmeta']['is_update'] ) ) {
-			$log_time = $post['postmeta']['is_update'];
+		if ( isset( $post->post_data['postmeta'] ) && isset( $post->post_data['postmeta']['is_update'] ) ) {
+			$log_time = $post->post_data['postmeta']['is_update'];
 		} else {
 			$log_time = null;
 		}
@@ -192,7 +192,7 @@ class Syndication_Logger {
 			}
 			Syndication_Logger::log_post_error( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		} else {
-			$guid    = isset( $post['post_guid'] ) ? sanitize_text_field( $post['post_guid'] ) : sanitize_text_field( $post['guid'] );
+			$guid    = isset( $post->post_data['post_guid'] ) ? sanitize_text_field( $post->post_data['post_guid'] ) : sanitize_text_field( $post->post_data['guid'] );
 			$message = sprintf( '%s,%d', $guid, intval( $result ) );
 			Syndication_Logger::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
 		}

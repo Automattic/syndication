@@ -252,7 +252,7 @@ abstract class Puller {
 
 
 			//  Include the syndicated_guid so we can update this post later.
-			$post->post_meta['syn_post_guid'] = $post['post_guid'];
+			$post->post_meta['syn_post_guid'] = $post->post_data['post_guid'];
 
 			/**
 			 * Filter the post data, just before inserting a new post during pull post processing.
