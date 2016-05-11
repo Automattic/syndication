@@ -159,7 +159,7 @@ class Bootstrap {
 				'publicly_queryable'    => false,
 				'exclude_from_search'   => true,
 				'menu_position'         => 100,
-				// @TODO we need a menu icon here
+				'menu_icon'             => 'dashicons-networking',
 				'hierarchical'          => false, // @TODO check this
 				'query_var'             => false,
 				'rewrite'               => false,
