@@ -30,7 +30,6 @@ class Settings_Screen {
 	 * @return array              Validated settings.
 	 */
 	public function push_syndicate_settings_validate( $raw_settings ) {
-		vip_dump( $_POST );
 		if ( isset( $_POST['push_syndicate_pull_now'] ) && 'Pull Now & Save Changes' === $_POST['push_syndicate_pull_now'] ) {
 			\Automattic\Syndication\Syndication_Runner::pull_now_job();
 		}
