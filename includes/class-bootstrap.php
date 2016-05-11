@@ -143,15 +143,17 @@ class Bootstrap {
 
 		register_post_type(
 			'syn_site', array(
-				'labels' => array(
-					'name'              => __( 'Sites' ),
-					'singular_name'     => __( 'Site' ),
-					'add_new'           => __( 'Add Site' ),
-					'add_new_item'      => __( 'Add New Site' ),
-					'edit_item'         => __( 'Edit Site' ),
-					'new_item'          => __( 'New Site' ),
-					'view_item'         => __( 'View Site' ),
-					'search_items'      => __( 'Search Sites' ),
+				'labels'                => array(
+					'name'                => __( 'Sites' ),
+					'singular_name'       => __( 'Site' ),
+					'add_new'             => __( 'Add Site' ),
+					'add_new_item'        => __( 'Add New Site' ),
+					'edit_item'           => __( 'Edit Site' ),
+					'new_item'            => __( 'New Site' ),
+					'view_item'           => __( 'View Site' ),
+					'search_items'        => __( 'Search Sites' ),
+					'not_found'           => __( 'No sites found' ),
+					'not_found_in_trash'  => __( 'No sites found in trash' ),
 				),
 				'description'           => __( 'Sites in the network' ),
 				'public'                => false,
