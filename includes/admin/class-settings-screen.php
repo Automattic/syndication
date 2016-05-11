@@ -41,6 +41,7 @@ class Settings_Screen {
 		$settings['update_pulled_posts']                = ! empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
 		$settings['push_syndication_max_pull_attempts'] = ! empty( $raw_settings['push_syndication_max_pull_attempts'] ) ? $raw_settings['push_syndication_max_pull_attempts'] : 0 ;
 
+		\Automattic\Syndication\Syndication_Runner::refresh_pull_jobs();
 		return $settings;
 
 	}

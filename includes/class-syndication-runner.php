@@ -301,7 +301,7 @@ class Syndication_Runner {
 		$sites         = $site_manager->pull_get_selected_sites();
 		$enabled_sites = $site_manager->get_sites_by_status( 'enabled' );
 		$sites         = array_intersect( $sites, $enabled_sites );
-		$this->schedule_pull_content( $sites );
+		\Automattic\Syndication\Syndication_Runner::schedule_pull_content( $sites );
 	}
 
 	/**
