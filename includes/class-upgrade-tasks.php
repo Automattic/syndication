@@ -63,6 +63,10 @@ class Upgrade_Tasks {
 			// Fetch all sites
 			$sites = $site_manager->get_site_index();
 
+			// If no sites exist, bail.
+			if ( ! isset( $sites['all'] ) ) {
+				return;
+			}
 
 			// Loop through each site
 			foreach ( $sites['all'] as $site ) :
