@@ -61,6 +61,7 @@ class Syndication_Runner {
 		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ), 10, 2 );
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
+		add_action( 'syn_one_time_pull_content', array( $this, 'pull_content' ), 10, 1 );
 		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
@@ -290,6 +291,21 @@ class Syndication_Runner {
 			$this->refresh_pull_jobs();
 		}
 	}
+
+	/**
+	 * Schedule a single event to pull sites "now"
+	 */
+	public function pull_now_job() {
+		global $site_manager;
+		// Prime the caches.
+		$site_manager->prime_site_cache();
+
+		$sites         = $site_manager->pull_get_selected_sites();
+		$enabled_sites = $site_manager->get_sites_by_status( 'enabled' );
+		$sites         = array_intersect( $sites, $enabled_sites );
+		\Automattic\Syndication\Syndication_Runner::schedule_pull_content( $sites, 'now' );
+	}
+
 	/**
 	 * Reschedule all scheduled pull jobs.
 	 */
@@ -309,7 +325,7 @@ class Syndication_Runner {
 	 *
 	 * @param $sites Array Sites that need to be scheduled
 	 */
-	public function schedule_pull_content( $sites ) {
+	public function schedule_pull_content( $sites, $schedule = 'syn_pull_time_interval' ) {
 
 		// to unschedule a cron we need the original arguments passed to schedule the cron
 		// we are saving it as a site option
@@ -331,12 +347,20 @@ class Syndication_Runner {
 
 		// Schedule new jobs: one job for each site.
 		foreach ( $sites as $site ) {
-			wp_schedule_event(
-				time() - 1,
-				'syn_pull_time_interval',
-				'syn_pull_content',
-				array( array( $site ) )
-			);
+			if ( 'now' === $schedule ) {
+				wp_schedule_single_event(
+					time() - 1,
+					'syn_one_time_pull_content',
+					array( array( $site ) )
+				);
+			} else {
+				wp_schedule_event(
+					time() - 1,
+					'syn_pull_time_interval',
+					'syn_pull_content',
+					array( array( $site ) )
+				);
+			}
 		}
 
 		update_option( 'syn_old_pull_sites', $sites );
