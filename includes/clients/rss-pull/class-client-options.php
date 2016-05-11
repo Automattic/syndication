@@ -122,6 +122,7 @@ class Client_Options {
 		update_post_meta( $site_id, 'syn_default_post_status', isset ( $_POST['default_post_status'] ) ? sanitize_text_field( $_POST['default_post_status'] ) : '' );
 		update_post_meta( $site_id, 'syn_default_comment_status', isset ( $_POST['default_comment_status'] ) ? sanitize_text_field( $_POST['default_comment_status'] ) : '' );
 		update_post_meta( $site_id, 'syn_default_ping_status', isset ( $_POST['default_ping_status'] ) ? sanitize_text_field( $_POST['default_ping_status'] ) : '' );
+		update_post_meta( $site_id, 'syn_default_cat_status', isset ( $_POST['default_cat_status'] ) ? sanitize_text_field( $_POST['default_cat_status'] ) : '' );
 
 		return true;
 	}
