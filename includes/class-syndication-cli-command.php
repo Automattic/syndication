@@ -4,6 +4,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 	
 	/**
+	 * List sites
 	 *
 	 * @subcommand sites-list
 	 */
@@ -16,6 +17,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * List sitegroups
+	 *
 	 * @subcommand sitegroups-list
 	 */
 	function list_sitegroups() {
@@ -65,6 +68,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Push a given post
+	 *
+	 * @subcommand push-post
+	 * @synopsis --post_id=<post_id>
+	 */
 	function push_post( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'post_id' => 0,
@@ -88,6 +97,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server->push_content( $sites );
 	}
 
+	/**
+	 * Pull a site
+	 *
+	 * @subcommand pull-site
+	 * @synopsis --blog_id=<blog_id>
+	 */
 	function pull_site( $args, $assoc_args ) {
 		global $client_manager;
 
@@ -116,6 +131,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$client->process_site( $site_id, $client );
 	}
 
+	/**
+	 * Pull a sitegroup
+	 *
+	 * @subcommand pull-sitegroup
+	 * @synopsis --sitegroup=<sitegroup>
+	 */
 	function pull_sitegroup( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args( $assoc_args, array(
 			'sitegroup' => '',
