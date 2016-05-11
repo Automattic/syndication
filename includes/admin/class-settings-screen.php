@@ -30,6 +30,9 @@ class Settings_Screen {
 	 * @return array              Validated settings.
 	 */
 	public function push_syndicate_settings_validate( $raw_settings ) {
+		if ( isset( $_POST['push_syndicate_pull_now'] ) && 'Pull Now & Save Changes' === $_POST['push_syndicate_pull_now'] ) {
+			\Automattic\Syndication\Syndication_Runner::pull_now_job();
+		}
 
 		$settings                                       = array();
 		$settings['client_id']                          = ! empty( $raw_settings['client_id'] ) ? sanitize_text_field( $raw_settings['client_id'] ) : '';
@@ -102,7 +105,7 @@ class Settings_Screen {
 
 				<?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
 
-				<?php submit_button( '  Pull Now ' ); ?>
+				<?php submit_button( 'Pull Now & Save Changes', 'primary', 'push_syndicate_pull_now' ); ?>
 
 				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
