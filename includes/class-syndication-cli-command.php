@@ -2,6 +2,29 @@
 
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
+	
+	/**
+	 *
+	 * @subcommand sites-list
+	 */
+	function list_sites() {
+		$site_manager = new \Automattic\Syndication\Site_Manager;
+		$sites = $site_manager->get_site_index();
+		$sites = $sites['all'];
+
+		WP_CLI\Utils\format_items( 'table', $sites, array( 'ID', 'post_title', 'post_name' ) );
+	}
+
+	/**
+	 * @subcommand sitegroups-list
+	 */
+	function list_sitegroups() {
+		$site_manager = new \Automattic\Syndication\Site_Manager;
+		$sites = $site_manager->get_site_index();
+		$sitegroups = array_keys( $sites['by_site_group'] );
+		$out = implode( PHP_EOL, $sitegroups );
+		WP_CLI::line( $out );
+	}
 
 	/**
 	 * Pushes all posts of a given type
