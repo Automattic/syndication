@@ -48,8 +48,6 @@ class Bootstrap {
 		new Syndication_Runner();
 
 		// Bootstrap individual built-in clients.
-		new Clients\Test\Bootstrap();
-		new Clients\XML_Pull\Bootstrap();
 		new Clients\RSS_Pull\Bootstrap();
 		new Clients\XML_Push\Bootstrap();
 		new Clients\REST_Push\Bootstrap();
