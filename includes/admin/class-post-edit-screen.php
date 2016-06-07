@@ -107,6 +107,12 @@ class Post_Edit_Screen {
 
 		echo '</ul>';
 
+		/**
+		 * Fires after the 'Syndicate' meta box content renders.
+		 *
+		 * @param \WP_Post $post Post object for the post being edited.
+		 */
+		do_action( 'syn_after_syndicate_metabox', $post );
 	}
 
 	public function save_syndicate_settings() {
