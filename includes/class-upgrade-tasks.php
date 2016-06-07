@@ -86,8 +86,10 @@ class Upgrade_Tasks {
 						case 'WP_XMLRPC' : $new_transport_type = 'xml_push'; break;
 					endswitch;
 
-					// Update the site's transport type
-					update_post_meta( $site->ID, 'syn_transport_type', $new_transport_type );
+					// Update the site's transport type if there is a new one.
+					if ( $new_transport_type ) {
+						update_post_meta( $site->ID, 'syn_transport_type', $new_transport_type );
+					}
 				endif;
 			endforeach;
 
