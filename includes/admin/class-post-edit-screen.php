@@ -38,7 +38,26 @@ class Post_Edit_Screen {
 
 		$selected_post_types = $settings_manager->get_setting( 'selected_post_types' );
 		foreach ( $selected_post_types as $selected_post_type ) {
-			add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
+			add_meta_box(
+				'syndicatediv',
+				__( 'Syndicate', 'push-syndication' ),
+				array( $this, 'add_syndicate_metabox' ),
+				$selected_post_type,
+				/**
+				 * Filters the 'Syndicate' meta box context.
+				 *
+				 * @param string $context Meta box context. Default 'side'.
+				 * @param string $selected_post_type Post type the meta box is being added to.
+				 */
+				apply_filters( 'syn_syndicate_metabox_context', 'side', $selected_post_type ),
+				/**
+				 * Filters the 'Syndicate' meta box priority.
+				 *
+				 * @param string $priority Meta box priority. Default 'high'.
+				 * @param string $selected_post_type Post type the meta box is being added to.
+				 */
+				apply_filters( 'syn_syndicate_metabox_priority', 'high', $selected_post_type )
+			);
 			//add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );
 		}
 
