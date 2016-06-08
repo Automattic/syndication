@@ -124,8 +124,9 @@ class Post_Edit_Screen {
 		 * Fires after the 'Syndicate' meta box content renders.
 		 *
 		 * @param \WP_Post $post Post object for the post being edited.
+		 * @param array $sitegroups \WP_Term objects for the sitegroups that were selectable.
 		 */
-		do_action( 'syn_after_syndicate_metabox', $post );
+		do_action( 'syn_after_syndicate_metabox', $post, $sitegroups );
 	}
 
 	public function save_syndicate_settings() {
