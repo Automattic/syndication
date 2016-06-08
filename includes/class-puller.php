@@ -134,7 +134,7 @@ abstract class Puller {
 		 * Filter the $post id retrieved when locating by guid.
 		 *
 		 * Enabled altering the post id that will be tied to a specific pulled post update. Return a post
-		 * id to force updated to happen to that post, return falsde to leave update behavior unchanged.
+		 * id to force updated to happen to that post, return false to leave update behavior unchanged.
 		 *
 		 * @param string     $syndicated_guid The post's guid.
 		 * @param Types\Post $post            The post for processing.
@@ -172,7 +172,7 @@ abstract class Puller {
 				$existing_post_query->the_post();
 				$post->post_data['ID'] = get_the_ID();
 			} else {
-				$post->post_data['ID'] = $syndicated_guid;
+				$post->post_data['ID'] = $filtered_post_id;
 			}
 
 			/**
