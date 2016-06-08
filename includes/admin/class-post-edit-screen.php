@@ -72,7 +72,7 @@ class Post_Edit_Screen {
 		// get all sitegroups
 		$sitegroups = get_terms(
 			'syn_sitegroup',
-				array(
+			array(
 				'fields'     => 'all',
 				'hide_empty' => false,
 				'orderby'    => 'name',
@@ -83,6 +83,19 @@ class Post_Edit_Screen {
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+			return;
+		}
+
+		/**
+		 * Filters the selectable Site Groups in the 'Syndicate' meta box.
+		 *
+		 * @param array $sitegroups Array of found 'syn_sitegroup' \WP_Term objects.
+		 * @param \WP_Post $post Post object for the post being edited.
+		 */
+		$sitegroups = apply_filters( 'syn_syndicate_metabox_sitegroups', $sitegroups, $post );
+
+		if ( empty( $sitegroups ) ) {
+			echo '<p>' . esc_html__( 'No Site Groups found.', 'push-syndication' ) . '</p>';
 			return;
 		}
 
