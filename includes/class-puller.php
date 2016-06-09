@@ -352,12 +352,10 @@ abstract class Puller {
 		/**
 		 * Filter term updates for a post before updating.
 		 *
-		 * @param int   $post_id   The ID of the post for which to insert the given meta.
 		 * @param array $post_terms Associative array of terms to attach to the post.
-		 *
-		 * @todo Consider reversing the signature here to match `syn_before_update_post_meta` (id 2nd).
+		 * @param int   $post_id   The ID of the post for which to insert the given meta.
 		 */
-		$post_terms = apply_filters( 'syn_before_set_object_terms', $post_id, $post_terms );
+		$post_terms = apply_filters( 'syn_before_set_object_terms', $post_terms, $post_id );
 
 		if ( is_array( $post_terms ) && ! empty( $post_terms ) ) {
 			foreach ( $post_terms as $taxonomy => $terms ) {
