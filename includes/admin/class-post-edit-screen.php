@@ -38,7 +38,26 @@ class Post_Edit_Screen {
 
 		$selected_post_types = $settings_manager->get_setting( 'selected_post_types' );
 		foreach ( $selected_post_types as $selected_post_type ) {
-			add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
+			add_meta_box(
+				'syndicatediv',
+				__( 'Syndicate', 'push-syndication' ),
+				array( $this, 'add_syndicate_metabox' ),
+				$selected_post_type,
+				/**
+				 * Filters the 'Syndicate' meta box context.
+				 *
+				 * @param string $context Meta box context. Default 'side'.
+				 * @param string $selected_post_type Post type the meta box is being added to.
+				 */
+				apply_filters( 'syn_syndicate_metabox_context', 'side', $selected_post_type ),
+				/**
+				 * Filters the 'Syndicate' meta box priority.
+				 *
+				 * @param string $priority Meta box priority. Default 'high'.
+				 * @param string $selected_post_type Post type the meta box is being added to.
+				 */
+				apply_filters( 'syn_syndicate_metabox_priority', 'high', $selected_post_type )
+			);
 			//add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );
 		}
 
@@ -53,7 +72,7 @@ class Post_Edit_Screen {
 		// get all sitegroups
 		$sitegroups = get_terms(
 			'syn_sitegroup',
-				array(
+			array(
 				'fields'     => 'all',
 				'hide_empty' => false,
 				'orderby'    => 'name',
@@ -64,6 +83,19 @@ class Post_Edit_Screen {
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+			return;
+		}
+
+		/**
+		 * Filters the selectable Site Groups in the 'Syndicate' meta box.
+		 *
+		 * @param array $sitegroups Array of found 'syn_sitegroup' \WP_Term objects.
+		 * @param \WP_Post $post Post object for the post being edited.
+		 */
+		$sitegroups = apply_filters( 'syn_syndicate_metabox_sitegroups', $sitegroups, $post );
+
+		if ( empty( $sitegroups ) ) {
+			echo '<p>' . esc_html__( 'No Site Groups found.', 'push-syndication' ) . '</p>';
 			return;
 		}
 
@@ -88,6 +120,13 @@ class Post_Edit_Screen {
 
 		echo '</ul>';
 
+		/**
+		 * Fires after the 'Syndicate' meta box content renders.
+		 *
+		 * @param \WP_Post $post Post object for the post being edited.
+		 * @param array $sitegroups \WP_Term objects for the sitegroups that were selectable.
+		 */
+		do_action( 'syn_after_syndicate_metabox', $post, $sitegroups );
 	}
 
 	public function save_syndicate_settings() {
