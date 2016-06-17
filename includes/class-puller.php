@@ -187,7 +187,7 @@ abstract class Puller {
 			 */
 			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
 
-			if ( true === $pull_new_shortcircuit ) {
+			if ( true === $edit_shortcircuit ) {
 				Syndication_Logger::log_post_info(
 					$site_id,
 					$status = 'syn_pre_pull_edit_post_shortcircuit',
@@ -239,7 +239,7 @@ abstract class Puller {
 			 * @param obj    $client              The syndication client class instance.
 			 */
 			$insert_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
-			if ( true === $pull_new_shortcircuit ) {
+			if ( true === $insert_shortcircuit ) {
 				Syndication_Logger::log_post_info(
 					$site_id,
 					$status = 'syn_pre_pull_edit_post_shortcircuit',
