@@ -180,10 +180,11 @@ abstract class Puller {
 			 *
 			 * Return true to short circuit the processing of this post update.
 			 *
-			 * @param bool   $edit_shortcircuit Whether to short-circuit the updating of a post.
-			 * @param int    $site_id           The id of the site being processed.
-			 * @param string $transport_type    The client transport type.
-			 * @param obj    $client            The syndication client class instance.
+			 * @param bool       $edit_shortcircuit Whether to short-circuit the updating of a post.
+			 * @param Types\Post $post              The post being processed.
+			 * @param int        $site_id           The id of the site being processed.
+			 * @param string     $transport_type    The client transport type.
+			 * @param obj        $client            The syndication client class instance.
 			 */
 			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
 
