@@ -180,13 +180,13 @@ abstract class Puller {
 			 *
 			 * Return true to short circuit the processing of this post update.
 			 *
-			 * @param bool       $edit_shortcircuit Whether to short-circuit the updating of a post.
-			 * @param Types\Post $post              The post being processed.
-			 * @param int        $site_id           The id of the site being processed.
-			 * @param string     $transport_type    The client transport type.
-			 * @param obj        $client            The syndication client class instance.
+			 * @param bool       $edit_shortcircuit     Whether to short-circuit the updating of a post.
+			 * @param Types\Post $post                  The post being processed.
+			 * @param int        $site_id               The id of the site being processed.
+			 * @param string     $client_transport_type The client transport type.
+			 * @param obj        $client                The syndication client class instance.
 			 */
-			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
+			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $client_transport_type, $client );
 
 			if ( true === $edit_shortcircuit ) {
 				Syndication_Logger::log_post_info(
@@ -219,13 +219,13 @@ abstract class Puller {
 			/**
 			 * Fires just after updating a post during pull post processing.
 			 *
-			 * @param int        $post_id        The result of `wp_update_post` (0 if update failed, otherwise post id).
-			 * @param Types\Post $post           The Post object containing the post update data.
-			 * @param int        $site_id        The id of the site being processed.
-			 * @param string     $transport_type The client transport type.
-			 * @param obj        $client         The syndication client class instance.
+			 * @param int        $post_id               The result of `wp_update_post` (0 if update failed, otherwise post id).
+			 * @param Types\Post $post                  The Post object containing the post update data.
+			 * @param int        $site_id               The id of the site being processed.
+			 * @param string     $client_transport_type The client transport type.
+			 * @param obj        $client                The syndication client class instance.
 			 */
-			do_action( 'syn_post_pull_edit_post', $post_id, $post, $site_id, $transport_type, $client );
+			do_action( 'syn_post_pull_edit_post', $post_id, $post, $site_id, $client_transport_type, $client );
 
 		} else {
 
@@ -234,12 +234,12 @@ abstract class Puller {
 			 *
 			 * Return true to short circuit the processing of this post insert.
 			 *
-			 * @param bool   $insert_shortcircuit Whether to short-circuit the inserting of a post.
-			 * @param int    $site_id             The id of the site being processed.
-			 * @param string $transport_type      The client transport type.
-			 * @param obj    $client              The syndication client class instance.
+			 * @param bool   $insert_shortcircuit   Whether to short-circuit the inserting of a post.
+			 * @param int    $site_id               The id of the site being processed.
+			 * @param string $client_transport_type The client transport type.
+			 * @param obj    $client                The syndication client class instance.
 			 */
-			$insert_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site_id, $transport_type, $client );
+			$insert_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site_id, $client_transport_type, $client );
 			if ( true === $insert_shortcircuit ) {
 				Syndication_Logger::log_post_info(
 					$site_id,
@@ -272,13 +272,13 @@ abstract class Puller {
 			/**
 			 * Fires just after inserting a new post during pull post processing.
 			 *
-			 * @param int        $post_id        The result of `wp_update_post` (0 if update failed, otherwise post id).
-			 * @param Types\Post $post           The Post object containing the post insert data.
-			 * @param int        $site_id        The id of the site being processed.
-			 * @param string     $transport_type The client transport type.
-			 * @param obj        $client         The syndication client class instance.
+			 * @param int        $post_id               The result of `wp_update_post` (0 if update failed, otherwise post id).
+			 * @param Types\Post $post                  The Post object containing the post insert data.
+			 * @param int        $site_id               The id of the site being processed.
+			 * @param string     $client_transport_type The client transport type.
+			 * @param obj        $client                The syndication client class instance.
 			 */
-			do_action( 'syn_post_pull_new_post', $post_id, $post, $site, $transport_type, $client );
+			do_action( 'syn_post_pull_new_post', $post_id, $post, $site, $client_transport_type, $client );
 
 		}
 		wp_reset_postdata();
