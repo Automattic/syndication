@@ -278,7 +278,7 @@ abstract class Puller {
 			 * @param string     $client_transport_type The client transport type.
 			 * @param obj        $client                The syndication client class instance.
 			 */
-			do_action( 'syn_post_pull_new_post', $post_id, $post, $site, $client_transport_type, $client );
+			do_action( 'syn_post_pull_new_post', $post_id, $post, $site_id, $client_transport_type, $client );
 
 		}
 		wp_reset_postdata();
