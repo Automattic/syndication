@@ -1,4 +1,4 @@
-== Contributing ==
+## Contributing ##
 
 If you are interested in contributing, we need help with two main areas:
 
