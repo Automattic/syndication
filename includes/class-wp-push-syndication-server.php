@@ -191,7 +191,7 @@ class WP_Push_Syndication_Server {
 				break;
 			case 'site_status':
 				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
-				if ( ! $site_status ) {
+				if ( ! filter_var( $site_status, FILTER_VALIDATE_BOOLEAN ) ) {
 					esc_html_e( 'disabled', 'push-syndication' );
 				} else {
 					esc_html_e( 'enabled', 'push-syndication' );
