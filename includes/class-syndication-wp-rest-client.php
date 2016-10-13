@@ -221,7 +221,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		<p>
 			<?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
-			<a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php echo esc_html__( 'settings page', 'push-syndication' ); ?></a>
+			<a href="<?php echo esc_url( get_admin_url() ); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php esc_html_e( 'settings page', 'push-syndication' ); ?></a>
 		</p>
 		<p>
 			<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>

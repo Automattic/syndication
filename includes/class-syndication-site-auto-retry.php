@@ -91,7 +91,7 @@ class Failed_Syndication_Auto_Retry {
 					// Run in one minute by default
 					$auto_retry_interval = apply_filters( 'syndication_failure_auto_retry_interval', $time_now + MINUTE_IN_SECONDS );
 
-					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), $log_time, $extra = array() );
+					Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( esc_html__( 'Connection retry %d of %d to %s in %s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), $log_time, $extra = array() );
 
 					// Schedule a pull retry for one minute in the future
 					wp_schedule_single_event(
@@ -125,7 +125,7 @@ class Failed_Syndication_Auto_Retry {
 				// Remove the auto retry if there was one
 				delete_post_meta( $site->ID, 'syn_failed_auto_retry_attempts' );
 
-				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %d times to reconnect to %s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
+				Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( esc_html__( 'Failed %d times to reconnect to %s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
 			}
 		}
 	}

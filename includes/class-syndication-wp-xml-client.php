@@ -121,7 +121,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
-			$this->error_message = sprintf( __( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
+			$this->error_message = sprintf( esc_html__( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
 		}
 	}
 
@@ -238,14 +238,14 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures
 		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
 
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( esc_html__( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
@@ -255,7 +255,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
 
 		if ( false === $xml ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -294,10 +294,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = printf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_info( $this->site_ID, $status = 'simplexml_load_string', $message = sprintf( esc_html__( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
 		}
 
 		foreach ( $items as $item ) {
@@ -375,7 +375,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$post_position++;
 		}
 
-		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
+		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( esc_html__( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
 
 		return $posts;
 
@@ -492,7 +492,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php esc_attr_e( $feed_url ); ?>" />
+			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_url( $feed_url ); ?>" />
 		</p>
 		<p>
 			<label for="default_post_type"><?php esc_html_e( 'Select post type', 'push-syndication' ); ?></label>
@@ -504,7 +504,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_types as $post_type ) {
 				?>
-				<option value="<?php esc_attr_e( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php esc_html_e( $post_type ); ?></option>
+				<option value="<?php echo esc_attr( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php echo esc_html( $post_type ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -518,7 +518,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_statuses as $key => $value ) {
 				?>
-				<option value="<?php esc_attr_e( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php esc_html_e( $key ); ?></option>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php echo esc_html( $key ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -527,8 +527,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p>
 			<select name="default_comment_status" id="default_comment_status">
-			<option value="open" <?php selected( 'open', $default_comment_status ); ?>><?php _e( 'open', 'push-syndication' ); ?></option>
-			<option value="closed" <?php selected( 'closed', $default_comment_status ); ?>><?php _e( 'closed', 'push-syndication' ); ?></option>
+			<option value="open" <?php selected( 'open', $default_comment_status ); ?>><?php esc_html_e( 'open', 'push-syndication' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $default_comment_status ); ?>><?php esc_html_e( 'closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 		<p>
@@ -536,8 +536,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p>
 			<select name="default_ping_status" id="default_ping_status">
-			<option value="open" <?php selected( 'open', $default_ping_status ); ?>><?php _e( 'open', 'push-syndication' ); ?></option>
-			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?>><?php _e( 'closed', 'push-syndication' ); ?></option>
+			<option value="open" <?php selected( 'open', $default_ping_status ); ?>><?php esc_html_e( 'open', 'push-syndication' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?>><?php esc_html_e( 'closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 
@@ -545,35 +545,35 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="namespace"><?php esc_html_e( 'Enter XML namespace', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" size="75" name="namespace" id="namespace" value="<?php esc_attr_e( $namespace ); ?>" />
+			<input type="text" size="75" name="namespace" id="namespace" value="<?php echo esc_attr( $namespace ); ?>" />
 		</p>
 
 		<p>
 			<label for="post_root"><?php esc_html_e( 'Enter XPath to post root', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="post_root" id="post_root" value="<?php esc_attr_e( $post_root ); ?>" />
+			<input type="text" name="post_root" id="post_root" value="<?php echo esc_attr( $post_root ); ?>" />
 		</p>
 
 		<p>
 			<label for="id_field"><?php esc_html_e( 'Enter post meta key for unique post identifier', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="id_field" id="id_field" value="<?php esc_attr_e( $id_field ); ?>" />
+			<input type="text" name="id_field" id="id_field" value="<?php echo esc_attr( $id_field ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_parent"><?php esc_html_e( 'Enter parent element for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_parent" id="enc_parent" value="<?php esc_attr_e( $enc_parent ); ?>" />
+			<input type="text" name="enc_parent" id="enc_parent" value="<?php echo esc_attr( $enc_parent ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_field"><?php esc_html_e( 'Enter meta name for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_field" id="enc_field" value="<?php esc_attr_e( $enc_field ); ?>" />
+			<input type="text" name="enc_field" id="enc_field" value="<?php echo esc_attr( $enc_field ); ?>" />
 		</p>
 
 		<p>
@@ -601,9 +601,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			?>
 		</p>
 
-		<h2><?php _e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
+		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
 
-		<p><?php printf( __( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s is required. To include a static string, enclose the string as "%s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ); ?></p>
+		<p><?php printf( esc_html__( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s is required. To include a static string, enclose the string as "%s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ); ?></p>
 
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
 			<li class="text">
@@ -650,7 +650,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					<li class="text">
 						<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" value="<?php echo stripcslashes( $storage_location['field'] ); ?>" />
 					</li>
-					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php _e( 'Delete', 'push-syndication' ); ?></a>
+					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
 				<?php endforeach; ?>
 				</ul>
 				<?php
@@ -678,10 +678,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<li class="text">
 				<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" />
 			</li>
-			<a href="#" class="syn-delete syn-pull-xpath-delete"><?php _e( 'Delete', 'push-syndication' ); ?></a>
+			<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
 		</ul>
 
-		<a href="#" class="syn-pull-xpath-add-new button"><?php _e( 'Add new', 'push-syndication' ); ?></a>
+		<a href="#" class="syn-pull-xpath-add-new button"><?php esc_html_e( 'Add new', 'push-syndication' ); ?></a>
 
 		<script>
 			jQuery( document ).ready( function ( $ ) {
