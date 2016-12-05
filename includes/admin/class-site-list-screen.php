@@ -32,7 +32,7 @@ class Site_List_Screen {
 
 		$new_columns                  = array();
 		$new_columns['cb']            = '<input type="checkbox" />';
-		$new_columns['title']         = _x( 'Site Name', 'column name' );
+		$new_columns['title']         = _x( 'Syndication Endpoint', 'column name' );
 		$new_columns['client-type']   = _x( 'Client Type', 'column name' );
 		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
 		$new_columns['date']          = _x( 'Date', 'column name' );
