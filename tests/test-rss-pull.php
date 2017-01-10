@@ -24,6 +24,7 @@ class RSS_Pull extends WP_UnitTestCase {
 		// Create a site
 		$this->site = $this->factory->post->create_and_get( array(
 			'post_title' => 'VIP! VIP! VIP!',
+			'post_type' => 'syn_site',
 		) );
 
 		// RSS Pull is the "WP_RSS" transport type
@@ -34,9 +35,28 @@ class RSS_Pull extends WP_UnitTestCase {
 		add_post_meta( $this->site->ID, 'syn_default_comment_status', 'open' );
 		add_post_meta( $this->site->ID, 'syn_default_ping_status', 'open' );
 		add_post_meta( $this->site->ID, 'syn_default_cat_status', 'yes' );
+		add_post_meta( $this->site->ID, 'syn_site_enabled', "on" );
 
 		// Add the site to the sitegroup
 		wp_set_object_terms( $this->site->ID, $this->sitegroup->term_id, 'syn_sitegroup' );
+
+	}
+
+	/**
+	 * Clean up after yourself.
+	 */
+	function tearDown() {
+
+		$q = new WP_Query( array(
+			'post_type' => 'syn_site',
+			'posts_per_page' => -1, // mwahaha
+		) );
+
+		$post_ids = wp_list_pluck( $q->posts, 'ID' );
+
+		foreach( $post_ids as $post_id ) {
+			wp_delete_post( $post_id );
+		}
 
 	}
 
