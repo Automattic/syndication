@@ -1,6 +1,6 @@
 <?php
 /**
- * Class SiteGroups
+* Class SiteGroups
  *
  * @package Syndication
  */
@@ -18,12 +18,10 @@ class SiteGroups extends WP_UnitTestCase {
 		$sitegroup_taxonomy = 'syn_sitegroup';
 		$sitegroup_name = 'Site Group A';
 
-		$this->factory->term->create_object( array(
+		$term = $this->factory->term->create_and_get( array(
 			'taxonomy' => $sitegroup_taxonomy,
 			'name' => $sitegroup_name,
 		) );
-
-		$term = get_term_by( 'name', $sitegroup_name, $sitegroup_taxonomy );
 
 		$this->assertInstanceOf( 'WP_Term', $term );
 	}
@@ -33,12 +31,10 @@ class SiteGroups extends WP_UnitTestCase {
 		$sitegroup_taxonomy = 'syn_sitegroup';
 		$sitegroup_name = 'Site Group B';
 
-		$this->factory->term->create_object( array(
+		$term = $this->factory->term->create_and_get( array(
 			'taxonomy' => $sitegroup_taxonomy,
 			'name' => $sitegroup_name,
 		) );
-
-		$term = get_term_by( 'name', $sitegroup_name, $sitegroup_taxonomy );
 
 		$deleted = wp_delete_term( $term->term_id, $term->taxonomy );
 
@@ -51,12 +47,10 @@ class SiteGroups extends WP_UnitTestCase {
 		$sitegroup_taxonomy = 'syn_sitegroup';
 		$sitegroup_name = 'Site Group C';
 
-		$this->factory->term->create_object( array(
+		$term = $this->factory->term->create_and_get( array(
 			'taxonomy' => $sitegroup_taxonomy,
 			'name' => $sitegroup_name,
 		) );
-
-		$term = get_term_by( 'name', $sitegroup_name, $sitegroup_taxonomy );
 
 		$deleted = wp_update_term( $term->term_id, $term->taxonomy, array(
 			'name' => 'Site Group C1',
