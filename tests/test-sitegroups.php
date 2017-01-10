@@ -1,6 +1,6 @@
 <?php
 /**
- * Class SampleTest
+ * Class SiteGroups
  *
  * @package Syndication
  */
