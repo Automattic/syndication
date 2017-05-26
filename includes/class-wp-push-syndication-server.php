@@ -847,7 +847,7 @@ class WP_Push_Syndication_Server {
 		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '' ;
 		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
 
-		if ( '' == get_post_meta( $post->ID, 'post_uniqueid', true ) ) {
+		if ( '' === get_post_meta( $post->ID, 'post_uniqueid', true ) ) {
 			update_post_meta( $post->ID, 'post_uniqueid', uniqid() );
 		}
 
