@@ -847,6 +847,10 @@ class WP_Push_Syndication_Server {
 		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '' ;
 		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
 
+		if ( '' == get_post_meta( $post->ID, 'post_uniqueid', true ) ) {
+			update_post_meta( $post->ID, 'post_uniqueid', uniqid() );
+		}
+
 	}
 
 	public function add_syndication_status_metabox() {
@@ -910,6 +914,18 @@ class WP_Push_Syndication_Server {
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
 				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+
+				// Check post if available or not, if transport type is WP_REST or WP_XMLRPC.
+				if ( in_array( $transport_type , array( 'WP_REST', 'WP_XMLRPC' ), true ) ) {
+
+					// Get the post unique ID.
+					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
+
+					// Check if this post is already exists on taget site.
+					if ( $client->is_source_site_post( 'post_uniqueid', $unique_id ) ) {
+						continue;
+					}
+				}
 
 				if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
 
