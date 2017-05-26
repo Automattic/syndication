@@ -438,6 +438,36 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return $this->getResponse();
 	}
 
+	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+
+		// If meta key or value are empty.
+		if ( empty( $meta_key ) || empty( $meta_value ) ) {
+			return false;
+		}
+
+		$result = $this->query(
+			'wp.getPosts',
+			'1',
+			$this->username,
+			$this->password
+		);
+
+		if ( ! $result )
+			return false;
+
+		$posts_list = $this->getResponse();
+
+		if ( ! empty( $posts_list ) ) {
+			foreach ( $posts_list as $p ) {
+				if ( $meta_key === $p['custom_fields'][0]['key'] && $meta_value === $p['custom_fields'][0]['value'] && !empty( $p['custom_fields'] ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function is_post_exists( $remote_post_id ) {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
