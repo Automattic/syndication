@@ -2,7 +2,7 @@
 Contributors: automattic, nprasath002, batmoo, betzster, nickdaugherty
 Tags: XMLRPC, WordPress.com REST
 Requires at least: 3.4
-Tested up to: 4.7
+Tested up to: 4.8
 Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
