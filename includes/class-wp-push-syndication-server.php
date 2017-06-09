@@ -87,16 +87,16 @@ class WP_Push_Syndication_Server {
 
 		register_post_type( 'syn_site', array(
 			'labels' => array(
-				'name'              => __( 'Sites' ),
-				'singular_name'     => __( 'Site' ),
-				'add_new'           => __( 'Add Site' ),
-				'add_new_item'      => __( 'Add New Site' ),
-				'edit_item'         => __( 'Edit Site' ),
-				'new_item'          => __( 'New Site' ),
-				'view_item'         => __( 'View Site' ),
-				'search_items'      => __( 'Search Sites' ),
+				'name'              => __( 'Syndication Endpoints' ),
+				'singular_name'     => __( 'Syndication Endpoint' ),
+				'add_new'           => __( 'Add Syndication Endpoint' ),
+				'add_new_item'      => __( 'Add New Syndication Endpoint' ),
+				'edit_item'         => __( 'Edit Syndication Endpoint' ),
+				'new_item'          => __( 'New Syndication Endpoint' ),
+				'view_item'         => __( 'View Syndication Endpoint' ),
+				'search_items'      => __( 'Search Syndication Endpoint' ),
 			),
-			'description'           => __( 'Sites in the network' ),
+			'description'           => __( 'Syndication Endpoints in the network' ),
 			'public'                => false,
 			'show_ui'               => true,
 			'publicly_queryable'    => false,
@@ -114,17 +114,17 @@ class WP_Push_Syndication_Server {
 
 		register_taxonomy( 'syn_sitegroup', 'syn_site', array(
 				'labels' => array(
-					'name'              => __( 'Site Groups' ),
-					'singular_name'     => __( 'Site Group' ),
-					'search_items'      => __( 'Search Site Groups' ),
-					'popular_items'     => __( 'Popular Site Groups' ),
-					'all_items'         => __( 'All Site Groups' ),
-					'parent_item'       => __( 'Parent Site Group' ),
-					'parent_item_colon' => __( 'Parent Site Group' ),
-					'edit_item'         => __( 'Edit Site Group' ),
-					'update_item'       => __( 'Update Site Group' ),
-					'add_new_item'      => __( 'Add New Site Group' ),
-					'new_item_name'     => __( 'New Site Group Name' ),
+					'name'              => __( 'Syndication Endpoint Groups' ),
+					'singular_name'     => __( 'Syndication Endpoint Group' ),
+					'search_items'      => __( 'Search Syndication Endpoint Groups' ),
+					'popular_items'     => __( 'Popular Syndication Endpoint Groups' ),
+					'all_items'         => __( 'All Syndication Endpoint Groups' ),
+					'parent_item'       => __( 'Parent Syndication Endpoint Group' ),
+					'parent_item_colon' => __( 'Parent Syndication Endpoint Group' ),
+					'edit_item'         => __( 'Edit Syndication Endpoint Group' ),
+					'update_item'       => __( 'Update Syndication Endpoint Group' ),
+					'add_new_item'      => __( 'Add New Syndication Endpoint Group' ),
+					'new_item_name'     => __( 'New Syndication Endpoint Group Name' ),
 
 				),
 				'public'                => false,
@@ -266,8 +266,8 @@ class WP_Push_Syndication_Server {
 
 	public function display_syndicate_settings() {
 
-		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Syndication Endpoint Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select Syndication Endpoint Group', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
@@ -321,7 +321,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_pull_sitegroups_description() {
-		echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+		echo esc_html__( 'Select the syndication endpoint groups to pull content', 'push-syndication' );
 	}
 
 	public function display_pull_sitegroups_selection() {
@@ -535,7 +535,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_sitegroups_selection() {
 
-		echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Select Syndication Endpoint groups', 'push-syndication' ) . '</h3>';
 
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
@@ -573,9 +573,9 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function site_metaboxes() {
-		add_meta_box('sitediv', __(' Site Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
+		add_meta_box('sitediv', __(' Syndication Endpoint Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
 		remove_meta_box('submitdiv', 'syn_site', 'side');
-		add_meta_box( 'submitdiv', __(' Site Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'submitdiv', __(' Syndication Endpoint Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -628,8 +628,8 @@ class WP_Push_Syndication_Server {
 					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
 					<?php
 					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
-						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Syndication Endpoint') ?>" />
+						<?php submit_button( __( 'Add Syndication Endpoint', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
 					<?php } else { ?>
 						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
 						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
