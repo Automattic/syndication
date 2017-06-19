@@ -22,6 +22,10 @@ class WP_Push_Syndication_Server {
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
 		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
 
+		// custom columns in posts list
+		add_filter( 'manage_posts_columns', array( $this, 'posts_add_new_columns' ) );
+		add_action( 'manage_posts_custom_column', array( $this, 'posts_manage_columns' ), 10, 2 );
+
 		// submenus
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
 
@@ -199,6 +203,59 @@ class WP_Push_Syndication_Server {
 				break;
 			default:
 				break;
+		}
+	}
+
+	/**
+	 * Add custom column to the Posts list table.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $post_columns An array of column names.
+	 *
+	 * @return array An array of new column names.
+	 */
+	public function posts_add_new_columns( $post_columns ) {
+		$post_columns['syn_post_sitegroup'] = _x( 'Syndication Groups', 'column name', 'push-syndication' );
+
+		return $post_columns;
+	}
+
+	/**
+	 * Display site group links in the Posts list table.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string $column_name The name of the column to display.
+	 * @param int    $post_id     The current post ID.
+	 */
+	public function posts_manage_columns( $column_name, $post_id ) {
+		if ( 'syn_post_sitegroup' === $column_name ) {
+
+			// Get post site groups
+			$selected_sitegroups = get_post_meta( $post_id, '_syn_selected_sitegroups', true );
+
+			if ( empty( $selected_sitegroups ) ) {
+				echo '<span aria-hidden="true">—</span>';
+			} else {
+
+				// Get post's site groups
+				$sitegroups = get_terms( 'syn_sitegroup', array(
+					'fields'     => 'all',
+					'slug'       => $selected_sitegroups,
+					'hide_empty' => false,
+					'orderby'    => 'name'
+				) );
+
+				// Build links
+				$links = array();
+				foreach ( $sitegroups as $sitegroup ) {
+					$url     = get_admin_url() . 'edit.php?post_type=syn_site&syn_sitegroup=' . $sitegroup->slug;
+					$links[] = '<a href="' . esc_url( $url ) . '">' . esc_html( $sitegroup->name ) . '</a>';
+				}
+
+				echo implode( ', ', $links );
+			}
 		}
 	}
 
