@@ -87,16 +87,16 @@ class WP_Push_Syndication_Server {
 
 		register_post_type( 'syn_site', array(
 			'labels' => array(
-				'name'              => __( 'Syndication Endpoints' ),
-				'singular_name'     => __( 'Syndication Endpoint' ),
-				'add_new'           => __( 'Add Syndication Endpoint' ),
-				'add_new_item'      => __( 'Add New Syndication Endpoint' ),
-				'edit_item'         => __( 'Edit Syndication Endpoint' ),
-				'new_item'          => __( 'New Syndication Endpoint' ),
-				'view_item'         => __( 'View Syndication Endpoint' ),
-				'search_items'      => __( 'Search Syndication Endpoint' ),
+				'name'              => __( 'Syndication Endpoints', 'push-syndication' ),
+				'singular_name'     => __( 'Syndication Endpoint', 'push-syndication' ),
+				'add_new'           => __( 'Add Syndication Endpoint', 'push-syndication' ),
+				'add_new_item'      => __( 'Add New Syndication Endpoint', 'push-syndication' ),
+				'edit_item'         => __( 'Edit Syndication Endpoint', 'push-syndication' ),
+				'new_item'          => __( 'New Syndication Endpoint', 'push-syndication' ),
+				'view_item'         => __( 'View Syndication Endpoint', 'push-syndication' ),
+				'search_items'      => __( 'Search Syndication Endpoint', 'push-syndication' ),
 			),
-			'description'           => __( 'Syndication Endpoints in the network' ),
+			'description'           => __( 'Syndication Endpoints in the network', 'push-syndication' ),
 			'public'                => false,
 			'show_ui'               => true,
 			'publicly_queryable'    => false,
@@ -114,17 +114,17 @@ class WP_Push_Syndication_Server {
 
 		register_taxonomy( 'syn_sitegroup', 'syn_site', array(
 				'labels' => array(
-					'name'              => __( 'Syndication Endpoint Groups' ),
-					'singular_name'     => __( 'Syndication Endpoint Group' ),
-					'search_items'      => __( 'Search Syndication Endpoint Groups' ),
-					'popular_items'     => __( 'Popular Syndication Endpoint Groups' ),
-					'all_items'         => __( 'All Syndication Endpoint Groups' ),
-					'parent_item'       => __( 'Parent Syndication Endpoint Group' ),
-					'parent_item_colon' => __( 'Parent Syndication Endpoint Group' ),
-					'edit_item'         => __( 'Edit Syndication Endpoint Group' ),
-					'update_item'       => __( 'Update Syndication Endpoint Group' ),
-					'add_new_item'      => __( 'Add New Syndication Endpoint Group' ),
-					'new_item_name'     => __( 'New Syndication Endpoint Group Name' ),
+					'name'              => __( 'Syndication Endpoint Groups', 'push-syndication' ),
+					'singular_name'     => __( 'Syndication Endpoint Group', 'push-syndication' ),
+					'search_items'      => __( 'Search Syndication Endpoint Groups', 'push-syndication' ),
+					'popular_items'     => __( 'Popular Syndication Endpoint Groups', 'push-syndication' ),
+					'all_items'         => __( 'All Syndication Endpoint Groups', 'push-syndication' ),
+					'parent_item'       => __( 'Parent Syndication Endpoint Group', 'push-syndication' ),
+					'parent_item_colon' => __( 'Parent Syndication Endpoint Group', 'push-syndication' ),
+					'edit_item'         => __( 'Edit Syndication Endpoint Group', 'push-syndication' ),
+					'update_item'       => __( 'Update Syndication Endpoint Group', 'push-syndication' ),
+					'add_new_item'      => __( 'Add New Syndication Endpoint Group', 'push-syndication' ),
+					'new_item_name'     => __( 'New Syndication Endpoint Group Name', 'push-syndication' ),
 
 				),
 				'public'                => false,
@@ -165,11 +165,11 @@ class WP_Push_Syndication_Server {
 	public function add_new_columns( $columns ) {
 		$new_columns = array();
 		$new_columns['cb'] = '<input type="checkbox" />';
-		$new_columns['title'] = _x( 'Site Name', 'column name' );
-		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['site_status'] = _x( 'Status', 'column name' );
-		$new_columns['date'] = _x('Date', 'column name');
+		$new_columns['title'] = _x( 'Syndication Endpoint Name', 'push-syndication' );
+		$new_columns['client-type'] = _x( 'Client Type', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Groups', 'push-syndication' );
+		$new_columns['site_status'] = _x( 'Status', 'push-syndication' );
+		$new_columns['date'] = _x( 'Date', 'push-syndication' );
 		return $new_columns;
 	}
 
