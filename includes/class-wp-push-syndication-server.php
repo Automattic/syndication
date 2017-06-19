@@ -331,9 +331,9 @@ class WP_Push_Syndication_Server {
 			'orderby'       => 'name'
 		) );
 
-		// if there are no sitegroups defined return
+		// if there are no Syndication Endpoint Groups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -370,7 +370,7 @@ class WP_Push_Syndication_Server {
 	public function display_max_pull_attempts() {
 		?>
 		<input type="text" size="10" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
-		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
+		<p><?php echo esc_html__( 'Syndication Endpoint will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
 		<?php
 	}
 
@@ -527,7 +527,7 @@ class WP_Push_Syndication_Server {
 
 		<?php
 
-		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
+		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'Syndication Endpoint', 'push-syndication' ) . '</p>';
 
 	}
 
@@ -547,7 +547,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -733,15 +733,15 @@ class WP_Push_Syndication_Server {
 		// general error messages
 		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
 		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
-		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
+		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the Syndication Endpoint. Syndication Endpoint disabled.', 'push-syndication' );
 
 		// xmlrpc error messages.
 		$messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
 		$messages['syn_site'][302] = __( 'You do not have sufficient capability to perform this action.', 'push-syndication' );
 		$messages['syn_site'][303] = __( 'Bad login/pass combination.', 'push-syndication' );
-		$messages['syn_site'][304] = __( 'XML-RPC services are disabled on this site.', 'push-syndication' );
+		$messages['syn_site'][304] = __( 'XML-RPC services are disabled on this Syndication Endpoint.', 'push-syndication' );
 		$messages['syn_site'][305] = __( 'Transport error. Invalid endpoint', 'push-syndication' );
-		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.', 'push-syndication' );
+		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the Syndication Endpoint.', 'push-syndication' );
 
 		// WordPress.com REST error messages
 		$messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
@@ -785,7 +785,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -1330,9 +1330,9 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( count( $posts ) > 0 ) {
-				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for Syndication Endpoint id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
-				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for Syndication Endpoint id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
 			foreach( $posts as $post ) {
