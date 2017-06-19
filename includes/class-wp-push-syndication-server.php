@@ -13,14 +13,13 @@ class WP_Push_Syndication_Server {
 	private $version;
 
 	function __construct() {
-
 		// initialization
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 		// custom columns
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
-		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
+		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 
 		// submenus
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
@@ -64,7 +63,6 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function init() {
-
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
 		$post_type_capabilities = array(
@@ -75,7 +73,7 @@ class WP_Push_Syndication_Server {
 					'edit_posts'         => $capability,
 					'edit_others_posts'  => $capability,
 					'publish_posts'      => $capability,
-					'read_private_posts' => $capability
+					'read_private_posts' => $capability,
 		);
 
 		$taxonomy_capabilities = array(
@@ -143,7 +141,7 @@ class WP_Push_Syndication_Server {
 			'pull_time_interval'        => '3600',
 			'update_pulled_posts'       => 'off',
 			'client_id'                 => '',
-			'client_secret'             => ''
+			'client_secret'             => '',
 		);
 
 		$this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
