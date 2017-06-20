@@ -533,7 +533,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_sitegroups_selection() {
 
-		echo '<h3>' . esc_html__( 'Select Syndication Endpoint groups', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Select Syndication Endpoint Groups', 'push-syndication' ) . '</h3>';
 
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
