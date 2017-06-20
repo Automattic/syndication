@@ -13,14 +13,13 @@ class WP_Push_Syndication_Server {
 	private $version;
 
 	function __construct() {
-
 		// initialization
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 		// custom columns
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
-		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2);
+		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 
 		// submenus
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
@@ -64,7 +63,6 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function init() {
-
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
 		$post_type_capabilities = array(
@@ -75,7 +73,7 @@ class WP_Push_Syndication_Server {
 					'edit_posts'         => $capability,
 					'edit_others_posts'  => $capability,
 					'publish_posts'      => $capability,
-					'read_private_posts' => $capability
+					'read_private_posts' => $capability,
 		);
 
 		$taxonomy_capabilities = array(
@@ -87,16 +85,16 @@ class WP_Push_Syndication_Server {
 
 		register_post_type( 'syn_site', array(
 			'labels' => array(
-				'name'              => __( 'Sites' ),
-				'singular_name'     => __( 'Site' ),
-				'add_new'           => __( 'Add Site' ),
-				'add_new_item'      => __( 'Add New Site' ),
-				'edit_item'         => __( 'Edit Site' ),
-				'new_item'          => __( 'New Site' ),
-				'view_item'         => __( 'View Site' ),
-				'search_items'      => __( 'Search Sites' ),
+				'name'              => __( 'Syndication Endpoints', 'push-syndication' ),
+				'singular_name'     => __( 'Syndication Endpoint', 'push-syndication' ),
+				'add_new'           => __( 'Add Syndication Endpoint', 'push-syndication' ),
+				'add_new_item'      => __( 'Add New Syndication Endpoint', 'push-syndication' ),
+				'edit_item'         => __( 'Edit Syndication Endpoint', 'push-syndication' ),
+				'new_item'          => __( 'New Syndication Endpoint', 'push-syndication' ),
+				'view_item'         => __( 'View Syndication Endpoint', 'push-syndication' ),
+				'search_items'      => __( 'Search Syndication Endpoint', 'push-syndication' ),
 			),
-			'description'           => __( 'Sites in the network' ),
+			'description'           => __( 'Syndication Endpoints in the network', 'push-syndication' ),
 			'public'                => false,
 			'show_ui'               => true,
 			'publicly_queryable'    => false,
@@ -114,17 +112,17 @@ class WP_Push_Syndication_Server {
 
 		register_taxonomy( 'syn_sitegroup', 'syn_site', array(
 				'labels' => array(
-					'name'              => __( 'Site Groups' ),
-					'singular_name'     => __( 'Site Group' ),
-					'search_items'      => __( 'Search Site Groups' ),
-					'popular_items'     => __( 'Popular Site Groups' ),
-					'all_items'         => __( 'All Site Groups' ),
-					'parent_item'       => __( 'Parent Site Group' ),
-					'parent_item_colon' => __( 'Parent Site Group' ),
-					'edit_item'         => __( 'Edit Site Group' ),
-					'update_item'       => __( 'Update Site Group' ),
-					'add_new_item'      => __( 'Add New Site Group' ),
-					'new_item_name'     => __( 'New Site Group Name' ),
+					'name'              => __( 'Syndication Endpoint Groups', 'push-syndication' ),
+					'singular_name'     => __( 'Syndication Endpoint Group', 'push-syndication' ),
+					'search_items'      => __( 'Search Syndication Endpoint Groups', 'push-syndication' ),
+					'popular_items'     => __( 'Popular Syndication Endpoint Groups', 'push-syndication' ),
+					'all_items'         => __( 'All Syndication Endpoint Groups', 'push-syndication' ),
+					'parent_item'       => __( 'Parent Syndication Endpoint Group', 'push-syndication' ),
+					'parent_item_colon' => __( 'Parent Syndication Endpoint Group', 'push-syndication' ),
+					'edit_item'         => __( 'Edit Syndication Endpoint Group', 'push-syndication' ),
+					'update_item'       => __( 'Update Syndication Endpoint Group', 'push-syndication' ),
+					'add_new_item'      => __( 'Add New Syndication Endpoint Group', 'push-syndication' ),
+					'new_item_name'     => __( 'New Syndication Endpoint Group Name', 'push-syndication' ),
 
 				),
 				'public'                => false,
@@ -143,7 +141,7 @@ class WP_Push_Syndication_Server {
 			'pull_time_interval'        => '3600',
 			'update_pulled_posts'       => 'off',
 			'client_id'                 => '',
-			'client_secret'             => ''
+			'client_secret'             => '',
 		);
 
 		$this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
@@ -165,11 +163,11 @@ class WP_Push_Syndication_Server {
 	public function add_new_columns( $columns ) {
 		$new_columns = array();
 		$new_columns['cb'] = '<input type="checkbox" />';
-		$new_columns['title'] = _x( 'Site Name', 'column name' );
-		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['site_status'] = _x( 'Status', 'column name' );
-		$new_columns['date'] = _x('Date', 'column name');
+		$new_columns['title'] = _x( 'Syndication Endpoint Name', 'push-syndication' );
+		$new_columns['client-type'] = _x( 'Client Type', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Groups', 'push-syndication' );
+		$new_columns['site_status'] = _x( 'Status', 'push-syndication' );
+		$new_columns['date'] = _x( 'Date', 'push-syndication' );
 		return $new_columns;
 	}
 
@@ -266,8 +264,8 @@ class WP_Push_Syndication_Server {
 
 	public function display_syndicate_settings() {
 
-		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Syndication Endpoint Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select Syndication Endpoint Group', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
@@ -321,7 +319,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_pull_sitegroups_description() {
-		echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+		echo esc_html__( 'Select the syndication endpoint groups to pull content', 'push-syndication' );
 	}
 
 	public function display_pull_sitegroups_selection() {
@@ -333,9 +331,9 @@ class WP_Push_Syndication_Server {
 			'orderby'       => 'name'
 		) );
 
-		// if there are no sitegroups defined return
+		// if there are no Syndication Endpoint Groups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -372,7 +370,7 @@ class WP_Push_Syndication_Server {
 	public function display_max_pull_attempts() {
 		?>
 		<input type="text" size="10" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
-		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
+		<p><?php echo esc_html__( 'Syndication Endpoint will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
 		<?php
 	}
 
@@ -529,13 +527,13 @@ class WP_Push_Syndication_Server {
 
 		<?php
 
-		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
+		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ). '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'Syndication Endpoint', 'push-syndication' ) . '</p>';
 
 	}
 
 	public function display_sitegroups_selection() {
 
-		echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Select Syndication Endpoint Groups', 'push-syndication' ) . '</h3>';
 
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = !empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
@@ -549,7 +547,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -573,9 +571,9 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function site_metaboxes() {
-		add_meta_box('sitediv', __(' Site Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
+		add_meta_box('sitediv', __(' Syndication Endpoint Settings '), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high');
 		remove_meta_box('submitdiv', 'syn_site', 'side');
-		add_meta_box( 'submitdiv', __(' Site Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'submitdiv', __(' Syndication Endpoint Status '), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -628,8 +626,8 @@ class WP_Push_Syndication_Server {
 					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
 					<?php
 					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
-						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Syndication Endpoint') ?>" />
+						<?php submit_button( __( 'Add Syndication Endpoint', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
 					<?php } else { ?>
 						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
 						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
@@ -735,15 +733,15 @@ class WP_Push_Syndication_Server {
 		// general error messages
 		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
 		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
-		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
+		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the Syndication Endpoint. Syndication Endpoint disabled.', 'push-syndication' );
 
 		// xmlrpc error messages.
 		$messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
 		$messages['syn_site'][302] = __( 'You do not have sufficient capability to perform this action.', 'push-syndication' );
 		$messages['syn_site'][303] = __( 'Bad login/pass combination.', 'push-syndication' );
-		$messages['syn_site'][304] = __( 'XML-RPC services are disabled on this site.', 'push-syndication' );
+		$messages['syn_site'][304] = __( 'XML-RPC services are disabled on this Syndication Endpoint.', 'push-syndication' );
 		$messages['syn_site'][305] = __( 'Transport error. Invalid endpoint', 'push-syndication' );
-		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.', 'push-syndication' );
+		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the Syndication Endpoint.', 'push-syndication' );
 
 		// WordPress.com REST error messages
 		$messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
@@ -787,7 +785,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return
 		if( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -1332,9 +1330,9 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( count( $posts ) > 0 ) {
-				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for Syndication Endpoint id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
-				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for Syndication Endpoint id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
 			foreach( $posts as $post ) {
