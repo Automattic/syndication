@@ -24,7 +24,7 @@ class Site_Edit_Screen {
 
 		global $typenow;
 
-		if ( 'syn_site' == $typenow ) {
+		if ( 'syn_site' === $typenow ) {
 			if ( 'post.php' === $hook || 'post-new.php' === $hook ) {
 				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-sites-list.css', array(), SYNDICATION_VERSION );
 				//@todo verify below working, maybe need `wp_deregister_script` here
@@ -35,9 +35,9 @@ class Site_Edit_Screen {
 
 	public function site_metaboxes() {
 
-		add_meta_box( 'sitediv', __( ' Site Settings ' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
+		add_meta_box( 'sitediv', __( ' Syndication Endpoint Settings ' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
 		remove_meta_box( 'submitdiv', 'syn_site', 'side' );
-		add_meta_box( 'submitdiv', __( ' Site Status ' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'submitdiv', __( ' Syndication Endpoint Status ' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -90,8 +90,8 @@ class Site_Edit_Screen {
 					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
 					<?php
 					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
-						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Syndication Endpoint') ?>" />
+						<?php submit_button( __( 'Add Syndication Endpoint', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
 					<?php } else { ?>
 						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
 						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
@@ -123,14 +123,14 @@ class Site_Edit_Screen {
 		if ( $transport_type ) {
 
 			/**
-			 * Fires when rendering the Syndication site settings metabox.
+			 * Fires when rendering the Syndication settings metabox.
 			 *
 			 * @param string     $transport_type The client transport type.
-			 * @param int        $post_id        The post_id of the site being rendered.
+			 * @param int        $post_id        The post_id of the Syndication Endpoint being rendered.
 			 */
 			do_action( 'syndication/render_site_options/' . $transport_type, $post->ID );
 		} else {
-			echo '<p>' . __( 'No client configured for this site.' ) . '</p>';
+			echo '<p>' . __( 'No client configured for this Syndication Endpoint.' ) . '</p>';
 		}
 
 		?>

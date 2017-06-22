@@ -15,7 +15,7 @@ class Bootstrap {
 	public function __construct() {
 
 		// Load our helper functions which autoload can't..load
-		require_once( SYNDICATION_PATH . 'includes/functions-helpers.php');
+		require_once( SYNDICATION_PATH . 'includes/functions-helpers.php' );
 
 		// Always load.
 		new Cron();
@@ -98,19 +98,18 @@ class Bootstrap {
 			'syn_sitegroup',
 			'syn_site', array(
 				'labels' => array(
-					'name'              => __( 'Site Groups' ),
-					'singular_name'     => __( 'Site Group' ),
-					'search_items'      => __( 'Search Site Groups' ),
-					'popular_items'     => __( 'Popular Site Groups' ),
-					'all_items'         => __( 'All Site Groups' ),
-					'parent_item'       => __( 'Parent Site Group' ),
-					'parent_item_colon' => __( 'Parent Site Group' ),
-					'edit_item'         => __( 'Edit Site Group' ),
-					'update_item'       => __( 'Update Site Group' ),
-					'add_new_item'      => __( 'Add New Site Group' ),
-					'new_item_name'     => __( 'New Site Group Name' ),
-					'search_items'      => __( 'Search Site Groups' ),
-					'not_found'         => __( 'No Site Groups Found' ),
+					'name'              => __( 'Syndication Endpoint Groups' ),
+					'singular_name'     => __( 'Syndication Endpoint Group' ),
+					'search_items'      => __( 'Search Syndication Endpoint Groups' ),
+					'popular_items'     => __( 'Popular Syndication Endpoint Groups' ),
+					'all_items'         => __( 'All Syndication Endpoint Groups' ),
+					'parent_item'       => __( 'Parent Syndication Endpoint Group' ),
+					'parent_item_colon' => __( 'Parent Syndication Endpoint Group' ),
+					'edit_item'         => __( 'Edit Syndication Endpoint Group' ),
+					'update_item'       => __( 'Update Syndication Endpoint Group' ),
+					'add_new_item'      => __( 'Add New Syndication Endpoint Group' ),
+					'new_item_name'     => __( 'New Syndication Endpoint Group Name' ),
+					'not_found'         => __( 'No Syndication Endpoint Groups Found' ),
 				),
 				'public'                => false,
 				'show_ui'               => true,
@@ -144,25 +143,25 @@ class Bootstrap {
 		register_post_type(
 			'syn_site', array(
 				'labels'                => array(
-					'name'                => __( 'Sites' ),
-					'singular_name'       => __( 'Site' ),
-					'add_new'             => __( 'Add Site' ),
-					'add_new_item'        => __( 'Add New Site' ),
-					'edit_item'           => __( 'Edit Site' ),
-					'new_item'            => __( 'New Site' ),
-					'view_item'           => __( 'View Site' ),
-					'search_items'        => __( 'Search Sites' ),
-					'not_found'           => __( 'No sites found' ),
-					'not_found_in_trash'  => __( 'No sites found in trash' ),
+					'name'                => __( 'Syndication Endpoints', 'push-syndication' ),
+					'singular_name'       => __( 'Syndication Endpoint', 'push-syndication' ),
+					'add_new'             => __( 'Add Syndication Endpoint', 'push-syndication' ),
+					'add_new_item'        => __( 'Add New Syndication Endpoint', 'push-syndication' ),
+					'edit_item'           => __( 'Edit Syndication Endpoint', 'push-syndication' ),
+					'new_item'            => __( 'New Syndication Endpoint', 'push-syndication' ),
+					'view_item'           => __( 'View Syndication Endpoint', 'push-syndication' ),
+					'search_items'        => __( 'Search Syndication Endpoints', 'push-syndication' ),
+					'not_found'           => __( 'No Syndication Endpoints found', 'push-syndication' ),
+					'not_found_in_trash'  => __( 'No Syndication Endpoints found in trash', 'push-syndication' ),
 				),
-				'description'           => __( 'Sites in the network' ),
+				'description'           => __( 'Syndication Endpoints in the network', 'push-syndication' ),
 				'public'                => false,
 				'show_ui'               => true,
 				'publicly_queryable'    => false,
 				'exclude_from_search'   => true,
 				'menu_position'         => 100,
 				'menu_icon'             => 'dashicons-networking',
-				'hierarchical'          => false, // @TODO check this
+				'hierarchical'          => false, // @todo check this
 				'query_var'             => false,
 				'rewrite'               => false,
 				'supports'              => array( 'title' ),

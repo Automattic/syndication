@@ -21,22 +21,20 @@ class Site_List_Screen {
 	public function load_scripts_and_styles( $hook ) {
 		global $typenow;
 
-		if ( 'syn_site' == $typenow ) {
-			if ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
+		if ( 'syn_site' === $typenow ) {
+			if ( in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 				wp_enqueue_style( 'syn-edit-sites', SYNDICATION_URL . 'assets/css/admin-edit-site.css', array(), SYNDICATION_VERSION );
 			}
 		}
 	}
 
 	public function add_new_columns( $columns ) {
-
 		$new_columns                  = array();
 		$new_columns['cb']            = '<input type="checkbox" />';
-		$new_columns['title']         = _x( 'Site Name', 'column name' );
-		$new_columns['client-type']   = _x( 'Client Type', 'column name' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['date']          = _x( 'Date', 'column name' );
-
+		$new_columns['title']         = _x( 'Syndication Endpoint Name', 'column name', 'push-syndication' );
+		$new_columns['client-type']   = _x( 'Client Type', 'column name', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name', 'push-syndication' );
+		$new_columns['date']          = _x( 'Date', 'column name', 'push-syndication' );
 		return $new_columns;
 	}
 
