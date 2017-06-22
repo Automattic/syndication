@@ -1,9 +1,15 @@
 <?php
+/**
+ * Handles the Syndication plugin settings
+ *
+ * @since 2.1
+ * @package Automattic\Syndication
+ */
 
 namespace Automattic\Syndication;
 
 /**
- * Syndication Settings
+ * Class Syndication_Settings
  *
  * The role of the syndication settings class is to initialize and
  * retrieve all syndication settings.
@@ -11,7 +17,6 @@ namespace Automattic\Syndication;
  * @package Automattic\Syndication
  */
 class Syndication_Settings {
-
 	protected $push_syndicate_default_settings;
 	protected $push_syndicate_settings;
 
@@ -23,10 +28,13 @@ class Syndication_Settings {
 	}
 
 	/**
+	 * Init
+	 *
 	 * Set up the syndication settings, combining defaults with stored options.
+	 *
+	 * @return void
 	 */
 	public function init() {
-
 		$this->push_syndicate_default_settings = array(
 			'selected_pull_sitegroups'  => array(),
 			'selected_post_types'       => array( 'post' ),
@@ -54,13 +62,13 @@ class Syndication_Settings {
 	 *
 	 * @return mixed             The setting value, or false if unset.
 	 */
-	public function get_setting( $setting_id, $default =false ) {
+	public function get_setting( $setting_id, $default = false ) {
 		return isset( $this->push_syndicate_settings[ $setting_id ] ) ? $this->push_syndicate_settings[ $setting_id ] : $default;
 	}
 
 	static function syndicate_encrypt( $data ) {
-
 		$data = serialize( $data );
+
 		return base64_encode(
 			mcrypt_encrypt(
 				MCRYPT_RIJNDAEL_256,
@@ -91,7 +99,6 @@ class Syndication_Settings {
 		}
 
 		return @unserialize( $data );
-
 	}
 
 	// checking user capability
