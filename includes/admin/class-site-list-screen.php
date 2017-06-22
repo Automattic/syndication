@@ -1,23 +1,44 @@
 <?php
 /**
  * Site List Screen
+ *
+ * Functionality added to the list of Syndication Endpoints screen.
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
  */
 
 namespace Automattic\Syndication\Admin;
 
+/**
+ * Class Site_List_Screen
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
+ */
 class Site_List_Screen {
-
+	/**
+	 * Site_List_Screen constructor.
+	 */
 	public function __construct() {
-
-		// loading necessary styles and scripts
+		// Loading necessary styles and scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts_and_styles' ) );
 
-		// custom columns
+		// Custom columns.
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
 		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 	}
 
-
+	/**
+	 * Load Scripts and Styles
+	 *
+	 * Enqueues CSS and JS to the Syndication Endpoint listing screen.
+	 *
+	 * @since 2.1
+	 * @see admin_enqueue_scripts
+	 * @param string $hook Current admin page.
+	 * @return void
+	 */
 	public function load_scripts_and_styles( $hook ) {
 		global $typenow;
 
@@ -28,6 +49,14 @@ class Site_List_Screen {
 		}
 	}
 
+	/**
+	 * Add New Columns
+	 *
+	 * Add new columns to the Syndication Endpoint listing screen.
+	 *
+	 * @param array $columns The existing columns.
+	 * @return array
+	 */
 	public function add_new_columns( $columns ) {
 		$new_columns                  = array();
 		$new_columns['cb']            = '<input type="checkbox" />';
@@ -39,20 +68,18 @@ class Site_List_Screen {
 	}
 
 	public function manage_columns( $column_name, $id ) {
-
 		global $client_manager;
+
 		switch ( $column_name ) {
-
-			// Output the client label
+			// Output the client label.
 			case 'client-type':
-
-				// Fetch the site transport type
+				// Fetch the site transport type.
 				$transport_type = get_post_meta( $id, 'syn_transport_type', true );
 
-				// Fetch the corresponding client
+				// Fetch the corresponding client.
 				$pull_client = $client_manager->get_pull_or_push_client( $transport_type );
 
-				// Output the client name
+				// Output the client name.
 				if ( isset( $pull_client['label'] ) ) {
 					echo esc_html( $pull_client['label'] );
 				}

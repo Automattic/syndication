@@ -1,20 +1,26 @@
 <?php
 /**
  * Plugin Bootstrap
+ *
+ * @since 2.1
+ * @package Automattic\Syndication
  */
 
 namespace Automattic\Syndication;
 
+/**
+ * Class Bootstrap
+ *
+ * @package Automattic\Syndication
+ */
 class Bootstrap {
-
 	/**
 	 * Fire up the Syndication plugin
 	 *
 	 * Note: Class Autoloading is in use
 	 */
 	public function __construct() {
-
-		// Load our helper functions which autoload can't..load
+		// Load our helper functions which autoload can't load.
 		require_once( SYNDICATION_PATH . 'includes/functions-helpers.php' );
 
 		// Always load.
@@ -62,7 +68,6 @@ class Bootstrap {
 		add_action( 'init', [ $this, 'init' ] );
 	}
 
-
 	/**
 	 * Initialize the plugin!
 	 */
@@ -83,9 +88,15 @@ class Bootstrap {
 		 * Legacy hook.
 		 */
 		do_action( 'syn_after_init_server' );
-
 	}
 
+	/**
+	 * Register Taxonomy
+	 *
+	 * Registers the Syndication Endpoint Groups taxonomy.
+	 *
+	 * @return void
+	 */
 	public function register_taxonomy() {
 		$taxonomy_capabilities = array(
 			'manage_terms' => 'manage_categories',
@@ -123,10 +134,16 @@ class Bootstrap {
 	}
 
 	/**
+	 * Register Post Type
+	 *
 	 * Set up the `syn_site` custom post type.
+	 *
+	 * @return void
 	 */
 	public function register_post_type() {
-		/* This filter is documented in includes/admin/class-settings-screen.php */
+		/*
+		 * This filter is documented in includes/admin/class-settings-screen.php
+		 */
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
 		$post_type_capabilities = array(
@@ -166,7 +183,6 @@ class Bootstrap {
 				'rewrite'               => false,
 				'supports'              => array( 'title' ),
 				'can_export'            => true,
-				// 'register_meta_box_cb'  => array( $this, 'site_metaboxes' ),
 				'capabilities'          => $post_type_capabilities,
 			)
 		);

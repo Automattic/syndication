@@ -3,10 +3,19 @@
  * Settings Screen
  *
  * Responsible for plugin-level settings screens.
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
  */
 
 namespace Automattic\Syndication\Admin;
 
+/**
+ * Class Settings_Screen
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
+ */
 class Settings_Screen {
 	/**
 	 * Settings_Screen constructor.
@@ -49,7 +58,6 @@ class Settings_Screen {
 	}
 
 	public function register_syndicate_settings() {
-
 		add_submenu_page(
 			'options-general.php',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
@@ -61,6 +69,14 @@ class Settings_Screen {
 		);
 	}
 
+	/**
+	 * Display Syndicate Settings
+	 *
+	 * Registers the setting sections and fields and outputs the markup for the
+	 * settings page.
+	 *
+	 * @return void
+	 */
 	public function display_syndicate_settings() {
 		// @todo all validation and sanitization should be moved to a separate object.
 		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Syndication Endpoint Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
@@ -80,6 +96,7 @@ class Settings_Screen {
 			array( $this, 'display_delete_pushed_posts_description' ),
 			'delete_pushed_posts'
 		);
+
 		add_settings_field(
 			'delete_post_check',
 			esc_html__( 'Delete pushed posts', 'push-syndication' ),
@@ -87,17 +104,13 @@ class Settings_Screen {
 			'delete_pushed_posts',
 			'delete_pushed_posts'
 		);
-
 		?>
-
 		<div class="wrap" xmlns="http://www.w3.org/1999/html">
-
 			<?php screen_icon(); // @todo custom screen icon ?>
 
 			<h2><?php esc_html_e( 'Syndication Settings', 'push-syndication' ); ?></h2>
 
 			<form action="options.php" method="post">
-
 				<?php settings_fields( 'push_syndicate_settings' ); ?>
 
 				<?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
@@ -111,22 +124,33 @@ class Settings_Screen {
 				<?php do_settings_sections( 'delete_pushed_posts' ); ?>
 
 				<?php submit_button(); ?>
-
 			</form>
-
 		</div>
-
 	<?php
-
 	}
 
+	/**
+	 * Display Pull Sitegroups Description
+	 *
+	 * Displays a description under the group selection heading on the settings page.
+	 *
+	 * @return void
+	 */
 	public function display_pull_sitegroups_description() {
 		echo esc_html__( 'Select the Syndication Endpoint Groups to pull content', 'push-syndication' );
 	}
 
+	/**
+	 * Display Pull Sitegroups Selection
+	 *
+	 * Displays a checkbox form item to select Syndication Endpoint Groups to enable.
+	 *
+	 * @return void
+	 */
 	public function display_pull_sitegroups_selection() {
 		global $settings_manager;
-		// get all sitegroups
+
+		// Get all sitegroups.
 		$sitegroups = get_terms(
 			'syn_sitegroup',
 			array(
@@ -144,21 +168,16 @@ class Settings_Screen {
 		}
 
 		foreach ( $sitegroups as $sitegroup ) {
-
-			?>
-
-			<p>
-				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $settings_manager->get_setting( 'selected_pull_sitegroups' ) ) ?> />
-					<?php echo esc_html( $sitegroup->name ); ?>
-				</label>
-				<?php echo esc_html( $sitegroup->description ); ?>
-			</p>
-
+		?>
+		<p>
+			<label>
+				<input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $settings_manager->get_setting( 'selected_pull_sitegroups' ) ) ?> />
+				<?php echo esc_html( $sitegroup->name ); ?>
+			</label>
+			<?php echo esc_html( $sitegroup->description ); ?>
+		</p>
 		<?php
-
 		}
-
 	}
 
 	public  function display_pull_options_description() {
@@ -171,14 +190,18 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Display Max Pull Attempts
+	 *
 	 * Display the form field for the push_syndication_max_pull_attempts option.
+	 *
+	 * @return void
 	 */
 	public function display_max_pull_attempts() {
 		global $settings_manager;
 		?>
 		<input type="text" size="10" name="push_syndicate_settings[push_syndication_max_pull_attempts]" value="<?php echo esc_attr( $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
 		<p><?php echo esc_html__( 'Syndication Endpoint will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
-	<?php
+		<?php
 	}
 
 	/**
@@ -261,6 +284,16 @@ class Settings_Screen {
 		echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_attr( $settings_manager->get_setting( 'client_secret' ) ) . '"/>';
 	}
 
+	/**
+	 * Checked Array
+	 *
+	 * Checks is a value exists in an array, and if it does outputs markup to
+	 * mark a checkbox as checked. Used for checkbox inputs on forms.
+	 *
+	 * @param string $value The needle.
+	 * @param array  $group The haystack.
+	 * @return void
+	 */
 	public function checked_array( $value, $group ) {
 		if ( ! empty( $group ) ) {
 			if ( in_array( $value, $group, true ) ) {
