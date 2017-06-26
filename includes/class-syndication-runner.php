@@ -295,7 +295,7 @@ class Syndication_Runner {
 	/**
 	 * Schedule a single event to pull sites "now"
 	 */
-	public function pull_now_job() {
+	public static function pull_now_job() {
 		global $site_manager;
 		// Prime the caches.
 		$site_manager->prime_site_cache();
@@ -303,13 +303,13 @@ class Syndication_Runner {
 		$sites         = $site_manager->pull_get_selected_sites();
 		$enabled_sites = $site_manager->get_sites_by_status( 'enabled' );
 		$sites         = array_intersect( $sites, $enabled_sites );
-		\Automattic\Syndication\Syndication_Runner::schedule_pull_content( $sites, 'now' );
+		self::schedule_pull_content( $sites, 'now' );
 	}
 
 	/**
 	 * Reschedule all scheduled pull jobs.
 	 */
-	public function refresh_pull_jobs()	{
+	public static function refresh_pull_jobs() {
 		global $site_manager;
 		// Prime the caches.
 		$site_manager->prime_site_cache();
@@ -317,7 +317,7 @@ class Syndication_Runner {
 		$sites         = $site_manager->pull_get_selected_sites();
 		$enabled_sites = $site_manager->get_sites_by_status( 'enabled' );
 		$sites         = array_intersect( $sites, $enabled_sites );
-		\Automattic\Syndication\Syndication_Runner::schedule_pull_content( $sites );
+		self::schedule_pull_content( $sites );
 	}
 
 	/**
@@ -325,7 +325,7 @@ class Syndication_Runner {
 	 *
 	 * @param $sites Array Sites that need to be scheduled
 	 */
-	public function schedule_pull_content( $sites, $schedule = 'syn_pull_time_interval' ) {
+	public static function schedule_pull_content( $sites, $schedule = 'syn_pull_time_interval' ) {
 
 		// to unschedule a cron we need the original arguments passed to schedule the cron
 		// we are saving it as a site option
