@@ -28,15 +28,17 @@ class Syndication_Settings {
 	public function init() {
 
 		$this->push_syndicate_default_settings = array(
-			'selected_pull_sitegroups'  => array(),
-			'selected_post_types'       => array( 'post' ),
-			'notification_methods'      => array(),
-			'notification_types'        => array(),
-			'delete_pushed_posts'       => 'off',
-			'pull_time_interval'        => '3600',
-			'update_pulled_posts'       => 'off',
-			'client_id'                 => '',
-			'client_secret'             => '',
+			'selected_pull_sitegroups'   => array(),
+			'selected_post_types'        => array( 'post' ),
+			'notification_methods'       => array(),
+			'notification_types'         => array(),
+			'notification_email'         => '',
+			'notification_slack_webhook' => '',
+			'delete_pushed_posts'        => 'off',
+			'pull_time_interval'         => '3600',
+			'update_pulled_posts'        => 'off',
+			'client_id'                  => '',
+			'client_secret'              => '',
 		);
 
 		/**

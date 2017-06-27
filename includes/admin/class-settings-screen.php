@@ -43,6 +43,8 @@ class Settings_Screen {
 		$settings['selected_post_types']                = ! empty( $raw_settings['selected_post_types'] ) ? $this->sanitize_array( $raw_settings['selected_post_types'] ) : array() ;
 		$settings['notification_methods']               = ! empty( $raw_settings['notification_methods'] ) ? $this->sanitize_array( $raw_settings['notification_methods'] ) : array();
 		$settings['notification_types']                 = ! empty( $raw_settings['notification_types'] ) ? $this->sanitize_array( $raw_settings['notification_types'] ) : array();
+		$settings['notification_email']                 = ! empty( $raw_settings['notification_email'] ) ? sanitize_email( $raw_settings['notification_email'] ) : '';
+		$settings['notification_slack_webhook']         = ! empty( $raw_settings['notification_slack_webhook'] ) ? esc_url_raw( $raw_settings['notification_slack_webhook'] ) : '';
 		$settings['delete_pushed_posts']                = ! empty( $raw_settings['delete_pushed_posts'] ) ? sanitize_text_field( $raw_settings['delete_pushed_posts'] ) : 'off' ;
 		$settings['selected_pull_sitegroups']           = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $this->sanitize_array( $raw_settings['selected_pull_sitegroups'] ) : array() ;
 		$settings['pull_time_interval']                 = ! empty( $raw_settings['pull_time_interval'] ) ? intval( max( $raw_settings['pull_time_interval'] ), 300 ) : '3600';
@@ -62,7 +64,7 @@ class Settings_Screen {
 	 *
 	 * @since 2.1
 	 * @param mixed $data The data to be sanitized.
-	 * @return array|string
+	 * @return array|string The sanitized datsa.
 	 */
 	public function sanitize_array( $data ) {
 		if ( ! is_array( $data ) ) {
@@ -139,13 +141,28 @@ class Settings_Screen {
 		);
 
 		add_settings_field(
+			'notification_email',
+			esc_html__( 'Notification email', 'push-syndication' ),
+			array( $this, 'display_notification_email' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_webhook',
+			esc_html__( 'Slack webhook URL', 'push-syndication' ),
+			array( $this, 'display_notification_slack_webhook' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
 			'notification_types',
 			esc_html__( 'Send notification on', 'push-syndication' ),
 			array( $this, 'display_notification_type_selection' ),
 			'notifications',
 			'notifications'
 		);
-
 		?>
 
 		<div class="wrap" xmlns="http://www.w3.org/1999/html">
@@ -299,7 +316,6 @@ class Settings_Screen {
 	 * Displays the description for the notification settings section.
 	 *
 	 * @since 2.1
-	 * @return void
 	 */
 	public function display_notifications_description() {
 		echo esc_html__( 'Setup email and Slack notifications.', 'push-syndication' );
@@ -312,7 +328,6 @@ class Settings_Screen {
 	 * enable.
 	 *
 	 * @since 2.1
-	 * @return void
 	 */
 	public function display_notification_method_selection() {
 		$this->form_checkbox(
@@ -335,28 +350,45 @@ class Settings_Screen {
 	 * notified.
 	 *
 	 * @since 2.1
-	 * @return void
 	 */
 	public function display_notification_type_selection() {
 		$this->form_checkbox(
 			array(
-				'push-new-post'    => array(
-					'name' => 'Push new post',
+				'new'    => array(
+					'name' => 'New post',
 				),
-				'pull-new-post'    => array(
-					'name' => 'Pull new post',
+				'edit'   => array(
+					'name' => 'Edit post',
 				),
-				'push-edit-post'   => array(
-					'name' => 'Push edit post',
-				),
-				'pull-edit-post'   => array(
-					'name' => 'Pull edit post',
-				),
-				'push-delete-post' => array(
-					'name' => 'Push delete post',
+				'delete' => array(
+					'name' => 'Delete post',
 				),
 			),
 			'notification_types'
+		);
+	}
+
+	/**
+	 *
+	 */
+	public function display_notification_email() {
+		$this->form_input(
+			'notification_email',
+			array(
+				'description' => __( 'The email address where alerts should be sent', 'push-syndication' ),
+			)
+		);
+	}
+
+	/**
+	 *
+	 */
+	public function display_notification_slack_webhook() {
+		$this->form_input(
+			'notification_slack_webhook',
+			array(
+				'description' => sprintf( __( 'Setup a new Slack webhook URL %s', 'push-syndication' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">' . __( 'here', 'push-syndication' ) . '</a>' ),
+			)
 		);
 	}
 
@@ -417,6 +449,7 @@ class Settings_Screen {
 	 *
 	 * Generates a checkbox form item.
 	 *
+	 * @since 2.1
 	 * @param array  $setting_options The options for the checkboxes.
 	 * @param string $setting_key The settings key which stores the values of the form item.
 	 */
@@ -434,7 +467,7 @@ class Settings_Screen {
 				</label>
 				<?php
 				if ( ! empty( $option['description'] ) ) :
-					echo esc_html( $option['description'] );
+					echo wp_kses_post( $option['description'] );
 				endif;
 				?>
 			</p>
@@ -443,11 +476,45 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Form Input
+	 *
+	 * Generates a form input box. Has the following arguments which should be
+	 * passed as the second method argument.
+	 *
+	 * `default` Sets the default value for the form input box
+	 * `class` Override the default class value for the input element
+	 *
+	 * @since 2.1
+	 * @param string $setting_key The settings key which stores the values of the form item.
+	 * @param array  $args Options for the form output (see above).
+	 */
+	public function form_input( $setting_key, $args ) {
+		global $settings_manager;
+
+		if ( ! empty( $args['default'] ) ) {
+			$default = $args['default'];
+		} else {
+			$default = '';
+		}
+
+		if ( ! empty( $args['class'] ) ) {
+			$class = $args['class'];
+		} else {
+			$class = 'regular-text';
+		}
+		?>
+		<input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" />
+		<?php if ( ! empty( $args['description'] ) ) : ?>
+		<p><?php echo wp_kses_post( $args['description'] ); ?></p>
+		<?php
+		endif;
+	}
+
+	/**
 	 * Checked Array
 	 *
 	 * @param string $value The needle.
 	 * @param array  $group The haystack.
-	 * @return null
 	 */
 	public function checked_array( $value, $group ) {
 		if ( ! empty( $group ) ) {
