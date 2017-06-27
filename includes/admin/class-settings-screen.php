@@ -3,23 +3,29 @@
  * Settings Screen
  *
  * Responsible for plugin-level settings screens.
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
  */
 
 namespace Automattic\Syndication\Admin;
 
-use \Automattic\Syndication\Syndication_Runner;
-
+/**
+ * Class Settings_Screen
+ *
+ * @since 2.1
+ * @package Automattic\Syndication\Admin
+ */
 class Settings_Screen {
-
-
+	/**
+	 * Settings_Screen constructor.
+	 */
 	public function __construct() {
-
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
 	}
 
 	public function admin_init() {
-
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 		register_setting( 'push_syndicate_settings', 'push_syndication_max_pull_attempts', array( $this, 'validate_max_pull_attempts' ) );
 	}
@@ -82,7 +88,6 @@ class Settings_Screen {
 	}
 
 	public function register_syndicate_settings() {
-
 		add_submenu_page(
 			'options-general.php',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
@@ -94,31 +99,36 @@ class Settings_Screen {
 		);
 	}
 
+	/**
+	 * Display Syndicate Settings
+	 *
+	 * Registers the setting sections and fields and outputs the markup for the
+	 * settings page.
+	 */
 	public function display_syndicate_settings() {
-
 		// @todo all validation and sanitization should be moved to a separate object.
-		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Syndication Endpoint Groups' , 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select Syndication Endpoint Groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options' , 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 		add_settings_field( 'max_pull_attempts', esc_html__( 'Maximum pull attempts', 'push-syndication' ), array( $this, 'display_max_pull_attempts' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-		add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+		add_settings_field( 'update_pulled_posts', esc_html__( 'Update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
 
 		add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
-		add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
+		add_settings_field( 'post_type_selection', esc_html__( 'Select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
 		// Delete Pushed Posts section.
 		add_settings_section(
 			'delete_pushed_posts',
-			esc_html__( ' Delete Pushed Posts ', 'push-syndication' ),
+			esc_html__( 'Delete Pushed Posts', 'push-syndication' ),
 			array( $this, 'display_delete_pushed_posts_description' ),
 			'delete_pushed_posts'
 		);
 
 		add_settings_field(
 			'delete_post_check',
-			esc_html__( ' delete pushed posts ', 'push-syndication' ),
+			esc_html__( 'Delete pushed posts', 'push-syndication' ),
 			array( $this, 'display_delete_pushed_posts_selection' ),
 			'delete_pushed_posts',
 			'delete_pushed_posts'
@@ -164,15 +174,12 @@ class Settings_Screen {
 			'notifications'
 		);
 		?>
-
 		<div class="wrap" xmlns="http://www.w3.org/1999/html">
-
-			<?php screen_icon(); // @TODO custom screen icon ?>
+			<?php screen_icon(); // @todo custom screen icon ?>
 
 			<h2><?php esc_html_e( 'Syndication Settings', 'push-syndication' ); ?></h2>
 
 			<form action="options.php" method="post">
-
 				<?php settings_fields( 'push_syndicate_settings' ); ?>
 
 				<?php do_settings_sections( 'push_syndicate_pull_sitegroups' ); ?>
@@ -188,21 +195,29 @@ class Settings_Screen {
 				<?php do_settings_sections( 'notifications' ); ?>
 
 				<?php submit_button(); ?>
-
 			</form>
-
 		</div>
-
 	<?php
-
 	}
 
+	/**
+	 * Display Pull Sitegroups Description
+	 *
+	 * Displays a description under the group selection heading on the settings page.
+	 */
 	public function display_pull_sitegroups_description() {
-		echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+		echo esc_html__( 'Select the Syndication Endpoint Groups to pull content', 'push-syndication' );
 	}
 
+	/**
+	 * Display Pull Sitegroups Selection
+	 *
+	 * Displays a checkbox form item to select Syndication Endpoint Groups to enable.
+	 */
 	public function display_pull_sitegroups_selection() {
-		// get all sitegroups
+		global $settings_manager;
+
+		// Get all sitegroups.
 		$sitegroups = get_terms(
 			'syn_sitegroup',
 			array(
@@ -212,9 +227,9 @@ class Settings_Screen {
 			)
 		);
 
-		// if there are no sitegroups defined return
+		// If there are no Syndication Endpoint Groups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No Syndication Endpoint Groups defined yet. You must group your Syndication Endpoints into Syndication Endpoint Groups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -241,14 +256,16 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Display Max Pull Attempts
+	 *
 	 * Display the form field for the push_syndication_max_pull_attempts option.
 	 */
 	public function display_max_pull_attempts() {
 		global $settings_manager;
 		?>
 		<input type="text" size="10" name="push_syndicate_settings[push_syndication_max_pull_attempts]" value="<?php echo esc_attr( $settings_manager->get_setting( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
-		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
-	<?php
+		<p><?php echo esc_html__( 'Syndication Endpoint will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
+		<?php
 	}
 
 	/**
@@ -402,48 +419,6 @@ class Settings_Screen {
 		echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_attr( $settings_manager->get_setting( 'client_secret' ) ) . '"/>';
 	}
 
-	public function display_sitegroups_selection() {
-
-		echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
-
-		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
-		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array() ;
-
-		// get all sitegroups
-		$sitegroups = get_terms(
-			'syn_sitegroup',
-			array(
-				'fields'        => 'all',
-				'hide_empty'    => false,
-				'orderby'       => 'name',
-			)
-		);
-
-		// if there are no sitegroups defined return
-		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
-			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
-			return;
-		}
-
-		foreach ( $sitegroups as $sitegroup ) {
-
-			?>
-
-			<p>
-				<label>
-					<input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
-					<?php echo esc_html( $sitegroup->name ); ?>
-				</label>
-				<?php echo esc_html( $sitegroup->description ); ?>
-			</p>
-
-		<?php
-
-		}
-
-	}
-
 	/**
 	 * Form Checkbox
 	 *
@@ -513,13 +488,16 @@ class Settings_Screen {
 	/**
 	 * Checked Array
 	 *
+	 * Checks if a value exists in an array, and if it does outputs markup to
+	 * mark a checkbox as checked. Used for checkbox inputs on forms.
+	 *
 	 * @param string $value The needle.
 	 * @param array  $group The haystack.
 	 */
 	public function checked_array( $value, $group ) {
 		if ( ! empty( $group ) ) {
 			if ( in_array( $value, $group, true ) ) {
-				echo ' checked="checked"';
+				echo 'checked="checked"';
 			}
 		}
 	}
