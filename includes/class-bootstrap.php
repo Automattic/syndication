@@ -94,8 +94,6 @@ class Bootstrap {
 	 * Register Taxonomy
 	 *
 	 * Registers the Syndication Endpoint Groups taxonomy.
-	 *
-	 * @return void
 	 */
 	public function register_taxonomy() {
 		$taxonomy_capabilities = array(
@@ -137,8 +135,6 @@ class Bootstrap {
 	 * Register Post Type
 	 *
 	 * Set up the `syn_site` custom post type.
-	 *
-	 * @return void
 	 */
 	public function register_post_type() {
 		/*

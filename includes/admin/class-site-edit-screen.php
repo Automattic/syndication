@@ -43,7 +43,6 @@ class Site_Edit_Screen {
 	 * @since 2.1
 	 * @see admin_enqueue_scripts
 	 * @param string $hook Current admin page.
-	 * @return void
 	 */
 	public function load_scripts_and_styles( $hook ) {
 		global $typenow;
@@ -61,8 +60,6 @@ class Site_Edit_Screen {
 	 * Site Metaboxes
 	 *
 	 * Adds and removes metaboxes from the Syndication Endpoint edit screen.
-	 *
-	 * @return void
 	 */
 	public function site_metaboxes() {
 		add_meta_box( 'sitediv', __( ' Syndication Endpoint Settings ' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
@@ -78,7 +75,6 @@ class Site_Edit_Screen {
 	 *
 	 * @see site_metaboxes()
 	 * @param \WP_Post $site Object of the current Syndication Endpoint being viewed.
-	 * @return void
 	 */
 	public function add_site_status_metabox( $site ) {
 		$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
@@ -123,7 +119,7 @@ class Site_Edit_Screen {
 			<div id="major-publishing-actions">
 
 				<div id="delete-action">
-					<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $site->ID ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
+					<a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $site->ID ) ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
 				</div>
 
 				<div id="publishing-action">
@@ -152,7 +148,6 @@ class Site_Edit_Screen {
 	 *
 	 * @see site_metaboxes()
 	 * @param \WP_Post $post Post object of the current post being viewed.
-	 * @return void
 	 */
 	public function add_site_settings_metabox( $post ) {
 		global $post;

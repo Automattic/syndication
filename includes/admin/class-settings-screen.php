@@ -74,8 +74,6 @@ class Settings_Screen {
 	 *
 	 * Registers the setting sections and fields and outputs the markup for the
 	 * settings page.
-	 *
-	 * @return void
 	 */
 	public function display_syndicate_settings() {
 		// @todo all validation and sanitization should be moved to a separate object.
@@ -133,8 +131,6 @@ class Settings_Screen {
 	 * Display Pull Sitegroups Description
 	 *
 	 * Displays a description under the group selection heading on the settings page.
-	 *
-	 * @return void
 	 */
 	public function display_pull_sitegroups_description() {
 		echo esc_html__( 'Select the Syndication Endpoint Groups to pull content', 'push-syndication' );
@@ -144,8 +140,6 @@ class Settings_Screen {
 	 * Display Pull Sitegroups Selection
 	 *
 	 * Displays a checkbox form item to select Syndication Endpoint Groups to enable.
-	 *
-	 * @return void
 	 */
 	public function display_pull_sitegroups_selection() {
 		global $settings_manager;
@@ -193,8 +187,6 @@ class Settings_Screen {
 	 * Display Max Pull Attempts
 	 *
 	 * Display the form field for the push_syndication_max_pull_attempts option.
-	 *
-	 * @return void
 	 */
 	public function display_max_pull_attempts() {
 		global $settings_manager;
@@ -287,12 +279,11 @@ class Settings_Screen {
 	/**
 	 * Checked Array
 	 *
-	 * Checks is a value exists in an array, and if it does outputs markup to
+	 * Checks if a value exists in an array, and if it does outputs markup to
 	 * mark a checkbox as checked. Used for checkbox inputs on forms.
 	 *
 	 * @param string $value The needle.
 	 * @param array  $group The haystack.
-	 * @return void
 	 */
 	public function checked_array( $value, $group ) {
 		if ( ! empty( $group ) ) {

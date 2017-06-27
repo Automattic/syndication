@@ -52,7 +52,7 @@ class Test_Syndication_Settings extends \WP_UnitTestCase {
 	 * @covers Syndication_Settings::get_setting()
 	 */
 	public function test_get_setting_returns_false_if_doesnt_exists() {
-		$this->assertFalse( $this->instance->get_setting( 'non_existant_setting' ) );
+		$this->assertFalse( $this->instance->get_setting( 'non_existent_setting' ) );
 	}
 
 	/**
@@ -63,7 +63,7 @@ class Test_Syndication_Settings extends \WP_UnitTestCase {
 	 * @covers Syndication_Settings::get_setting()
 	 */
 	public function test_get_setting_returns_custom_value_if_doesnt_exists() {
-		$this->assertEquals( 'empty', $this->instance->get_setting( 'non_existant_setting', 'empty' ) );
+		$this->assertEquals( 'empty', $this->instance->get_setting( 'non_existent_setting', 'empty' ) );
 	}
 
 	/**

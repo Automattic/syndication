@@ -37,7 +37,6 @@ class Site_List_Screen {
 	 * @since 2.1
 	 * @see admin_enqueue_scripts
 	 * @param string $hook Current admin page.
-	 * @return void
 	 */
 	public function load_scripts_and_styles( $hook ) {
 		global $typenow;

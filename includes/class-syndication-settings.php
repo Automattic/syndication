@@ -31,8 +31,6 @@ class Syndication_Settings {
 	 * Init
 	 *
 	 * Set up the syndication settings, combining defaults with stored options.
-	 *
-	 * @return void
 	 */
 	public function init() {
 		$this->push_syndicate_default_settings = array(
