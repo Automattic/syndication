@@ -40,7 +40,7 @@ class Settings_Screen {
 	 */
 	public function push_syndicate_settings_validate( $raw_settings ) {
 		if ( isset( $_POST['push_syndicate_pull_now'] ) && 'Pull Now & Save Changes' === $_POST['push_syndicate_pull_now'] ) {
-			Syndication_Runner::pull_now_job();
+			\Automattic\Syndication\Syndication_Runner::pull_now_job();
 		}
 
 		$settings                                       = array();
@@ -57,7 +57,7 @@ class Settings_Screen {
 		$settings['update_pulled_posts']                = ! empty( $raw_settings['update_pulled_posts'] ) ? sanitize_text_field( $raw_settings['update_pulled_posts'] ) : 'off' ;
 		$settings['push_syndication_max_pull_attempts'] = ! empty( $raw_settings['push_syndication_max_pull_attempts'] ) ? intval( $raw_settings['push_syndication_max_pull_attempts'] ) : 0 ;
 
-		Syndication_Runner::refresh_pull_jobs();
+		\Automattic\Syndication\Syndication_Runner::refresh_pull_jobs();
 		return $settings;
 
 	}
@@ -350,10 +350,10 @@ class Settings_Screen {
 		$this->form_checkbox(
 			array(
 				'email' => array(
-					'name' => 'Email notifications',
+					'name' => __( 'Email notifications', 'push-syndication' ),
 				),
 				'slack' => array(
-					'name' => 'Slack notifications',
+					'name' => __( 'Slack notifications', 'push-syndication' ),
 				),
 			),
 			'notification_methods'
@@ -371,14 +371,17 @@ class Settings_Screen {
 	public function display_notification_type_selection() {
 		$this->form_checkbox(
 			array(
-				'new'    => array(
-					'name' => 'New post',
+				'processed' => array(
+					'name' => __( 'Endpoint processed', 'push-syndication' ),
 				),
-				'edit'   => array(
-					'name' => 'Edit post',
+				'create'       => array(
+					'name' => __( 'New post created', 'push-syndication' ),
 				),
-				'delete' => array(
-					'name' => 'Delete post',
+				'update'      => array(
+					'name' => __( 'Existing post updated', 'push-syndication' ),
+				),
+				'delete'    => array(
+					'name' => __( 'Existing post deleted', 'push-syndication' ),
 				),
 			),
 			'notification_types'

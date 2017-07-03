@@ -28,6 +28,7 @@ class Syndication_Notifier {
 		add_action( 'syn_post_push_delete_post', array( $this, 'notify_delete' ), 10, 6 );
 		add_action( 'syn_post_push_new_post', array( $this, 'notify_new' ), 10, 5 );
 		add_action( 'syn_post_push_edit_post', array( $this, 'notify_update' ), 10, 5 );
+		add_action( 'syn_post_pull_endpoint_processed', array( $this, 'notify_processed' ), 10, 5 );
 	}
 
 	/**
@@ -41,12 +42,12 @@ class Syndication_Notifier {
 	 * @since 2.1
 	 * @param mixed  $result         Result object of previous wp_insert_post action
 	 * @param mixed  $post           Post object or post_id
-	 * @param object $site           Post object for the site doing the syndication
+	 * @param object $site_id        ID of the site doing the syndication
 	 * @param string $transport_type Post meta syn_transport_type for site
 	 * @param object $client         Syndication_Client class
 	 */
-	public function notify_new( $result, $post, $site, $transport_type, $client ) {
-		$this->notify_post_event( 'new', $result, $post, $site, $transport_type, $client );
+	public function notify_new( $result, $post, $site_id, $transport_type, $client ) {
+		$this->notify_post_event( 'create', $result, $post, $site_id, $transport_type, $client );
 	}
 
 	/**
@@ -55,14 +56,15 @@ class Syndication_Notifier {
 	 * do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
 	 * do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 	 *
+	 * @since 2.1
 	 * @param  mixed  $result         Result object of previous wp_insert_post action
 	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
+	 * @param  object $site_id        ID of the site doing the syndication
 	 * @param  string $transport_type Post meta syn_transport_type for site
 	 * @param  object $client         Syndication_Client class
 	 */
-	public function notify_update( $result, $post, $site, $transport_type, $client ) {
-		$this->notify_post_event( 'update', $result, $post, $site, $transport_type, $client );
+	public function notify_update( $result, $post, $site_id, $transport_type, $client ) {
+		$this->notify_post_event( 'update', $result, $post, $site_id, $transport_type, $client );
 	}
 
 	/**
@@ -70,15 +72,40 @@ class Syndication_Notifier {
 	 * usually implemented via action hook
 	 * do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 	 *
+	 * @since 2.1
 	 * @param  mixed  $result         Result object of previous wp_insert_post action
 	 * @param  mixed  $external_id    External post post_id
 	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
+	 * @param  object $site_id        ID of the site doing the syndication
 	 * @param  string $transport_type Post meta syn_transport_type for site
 	 * @param  object $client         Syndication_Client class
 	 */
-	public function notify_delete( $result, $external_id, $post, $site, $transport_type, $client ) {
-		$this->notify_post_event( 'delete', $result, $post, $site, $transport_type, $client );
+	public function notify_delete( $result, $external_id, $post, $site_id, $transport_type, $client ) {
+		$this->notify_post_event( 'delete', $result, $post, $site_id, $transport_type, $client );
+	}
+
+	/**
+	 * Notification for when an endpoint is finished being processed.
+	 *
+	 * @since 2.1
+	 * @param integer $site_id          The site ID that was processed.
+	 * @param array   $processed_posts  An array of post ID's that were processed.
+	 * @return bool
+	 */
+	public function notify_processed( $site_id, $processed_posts ) {
+		if ( ! $this->should_notify( 'processed' ) ) {
+			return false;
+		}
+
+		if ( count( $processed_posts ) > 0 ) {
+			$message = sprintf(
+				_n( '%1$d post was', '%1$d posts were', count( $processed_posts ), 'push-syndication' ) . ' ' . __( 'successfully processed on %2$s.', 'push-syndication' ),
+				count( $processed_posts ),
+				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
+			);
+
+			$this->send_notification( __( 'Syndication Endpoint Processed', 'push-syndication' ), $message );
+		}
 	}
 
 	/**
@@ -87,29 +114,23 @@ class Syndication_Notifier {
 	 * @param  string $event          Type of event new/update/delete
 	 * @param  mixed  $result         Result object of previous wp_insert_post action
 	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
+	 * @param  object $site_id        ID of the site doing the syndication
 	 * @param  string $transport_type Post meta syn_transport_type for site
 	 * @param  object $client         Syndication_Client class
 	 * @return mixed
 	 */
-	private function notify_post_event( $event, $result, $post, $site, $transport_type, $client ) {
+	private function notify_post_event( $event, $result, $post, $site_id, $transport_type, $client ) {
 		if ( ! $this->should_notify( $event ) ) {
 			return false;
 		}
 
 		if ( is_int( $post ) ) {
-			$post = get_post( $post, ARRAY_A );
-		}
-
-		if ( isset( $post['postmeta'] ) && isset( $post['postmeta']['is_update'] ) ) {
-			$log_time = $post['postmeta']['is_update'];
-		} else {
-			$log_time = null;
+			$post = get_post( $post );
 		}
 
 		if ( false === $result || is_wp_error( $result ) ) {
 			if ( is_wp_error( $result ) ) {
-				$message = __( 'Syndication on %s failed. The following error occured:', 'push-syndication' );
+				$message = __( 'Syndication on %s failed. The following error occurred:', 'push-syndication' );
 				$message .= "\n" . $result->get_error_message();
 			} else {
 				$message = __( 'Syndication on %s failed.', 'push-syndication' );
@@ -117,36 +138,41 @@ class Syndication_Notifier {
 
 			$message = sprintf(
 				$message,
-				'<a href="' . admin_url( 'post.php?post=' . $site->ID . '&action=edit' ) . '">' . __( 'Endpoint ID:', 'push-syndication' ) . $site->ID . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
 			);
 
-			$this->send_notification( false, $message );
+			$this->send_notification( __( 'Syndication Failure Notification', 'push-syndication' ), $message );
 		} else {
 			$message = sprintf(
 				__( 'Syndication on %s succeeded.', 'push-syndication' ),
-				'<a href="' . admin_url( 'post.php?post=' . $site->ID . '&action=edit' ) . '">' . __( 'Endpoint ID:', 'push-syndication' ) . $site->ID . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
 			);
-
-			$message .= ucwords( $this->action_verb( $event ) );
 
 			$message .= sprintf(
-				' %s at %s',
-				'<a href="' . admin_url( 'post.php?post=' . $post->ID . '&action=edit' ) . '">' . $post->post_title . '</a>',
-				$log_time
+				' %s %s.',
+				ucwords( $this->action_verb( $event ) ),
+				'<a href="' . admin_url( 'post.php?post=' . $post->ID . '&action=edit' ) . '">' . $post->post_title . '</a>'
 			);
 
-			$this->send_notification( true, $message );
+			$this->send_notification( __( 'Syndication Success Notification', 'push-syndication' ), $message );
 		}
 	}
 
-	protected function action_verb( $event ) {
+	/**
+	 * Converts and event action in to it's verb counterpart.
+	 *
+	 * @since 2.1
+	 * @param string $event The event name.
+	 * @return mixed
+	 */
+	private function action_verb( $event ) {
 		switch ( $event ) {
-			case 'new':
+			case 'create':
 				return __( 'created', 'push-syndication' );
-			case 'delete':
-				return __( 'deleted', 'push-syndication' );
 			case 'update':
 				return __( 'updated', 'push-syndication' );
+			case 'delete':
+				return __( 'deleted', 'push-syndication' );
 		}
 
 		return '';
@@ -162,7 +188,7 @@ class Syndication_Notifier {
 	 * @param string $event The event that is currently being run.
 	 * @return bool
 	 */
-	protected function should_notify( $event ) {
+	private function should_notify( $event ) {
 		global $settings_manager;
 
 		$notification_methods = $settings_manager->get_setting( 'notification_methods' );
@@ -182,10 +208,10 @@ class Syndication_Notifier {
 	 * Send notification
 	 *
 	 * @since 2.1
-	 * @param string $result   status entry.
-	 * @param string $message  log message.
+	 * @param string $subject The message subject.
+	 * @param string $message The actual message.
 	 */
-	protected function send_notification( $result, $message ) {
+	private function send_notification( $subject, $message ) {
 		global $settings_manager;
 
 		$notification_methods = $settings_manager->get_setting( 'notification_methods' );
@@ -194,22 +220,29 @@ class Syndication_Notifier {
 			foreach ( $notification_methods as $method ) {
 				switch ( $method ) {
 					case 'email':
-						$this->email_notification( $result, $message );
+						$this->email_notification( $subject, $message );
 						break;
 					case 'slack':
-						$this->slack_notification( $result, $message );
+						$this->slack_notification( $subject, $message );
 						break;
 				}
 			}
 		}
 	}
 
-	protected function email_notification( $result, $message ) {
+	/**
+	 * Sends an email nofication if an email is set in the settings.
+	 *
+	 * @since 2.1
+	 * @param string $subject The subject of the email.
+	 * @param string $message The message to send.
+	 */
+	private function email_notification( $subject, $message ) {
 		global $settings_manager;
 
 		$email = $settings_manager->get_setting( 'notification_email' );
 
-		if ( empty( $email ) ) {
+		if ( empty( $email ) || ! is_email( $email ) ) {
 			return;
 		}
 
@@ -217,36 +250,51 @@ class Syndication_Notifier {
 
 		wp_mail(
 			$email,
-			$this->get_notification_subject( $result ),
+			$subject,
 			$message,
 			$headers
 		);
 	}
 
-	protected function slack_notificaiton( $result, $message ) {
+	/**
+	 * Sends a Slack notification if a webhook address is set.
+	 *
+	 * @since 2.1
+	 * @param string $subject The subject of the message.
+	 * @param string $message The message to send.
+	 */
+	private function slack_notification( $subject, $message ) {
 		global $settings_manager;
 
 		$slack_webhook = $settings_manager->get_setting( 'notification_slack_webhook' );
 
-		if ( empty( $slack_webhook ) ) {
+		if ( empty( $slack_webhook ) || ! filter_var( $slack_webhook, FILTER_VALIDATE_URL ) ) {
 			return;
 		}
 
 		$payload = wp_json_encode(
 			array(
 				'username' => 'Syndication',
-				'text'     => $this->get_notification_subject( $result ) . "\n" . $message,
+				'text'     => $subject . "\n" . $this->format_slack_message( $message ),
 			)
 		);
 
 		wp_remote_post( $slack_webhook, array( 'body' => $payload ) );
 	}
 
-	protected function get_notification_subject( $result ) {
-		if ( $result ) {
-			return __( 'Syndication Success Notification', 'push-syndication' );
-		}
-
-		return __( 'Syndication Failure Notification', 'push-syndication' );
+	/**
+	 * Parses a message and converts HTML links to correct format for Slack.
+	 *
+	 * @see https://api.slack.com/docs/message-formatting#linking_to_urls
+	 *
+	 * @since 2.1
+	 * @param string $message The message to parse.
+	 * @return mixed
+	 */
+	private function format_slack_message( $message ) {
+		$message = str_replace( 'a href="', '', $message );
+		$message = str_replace( '">', '|', $message );
+		$message = str_replace( '</a>', '>', $message );
+		return $message;
 	}
 }
