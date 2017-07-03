@@ -30,6 +30,15 @@ class Post_Edit_Screen {
 		add_action( 'manage_posts_custom_column', array( $this, 'posts_manage_columns' ), 10, 2 );
 	}
 
+	/**
+	 * Checked Array
+	 *
+	 * Checks if a value exists in an array, and if it does outputs markup to
+	 * mark a checkbox as checked. Used for checkbox inputs on forms.
+	 *
+	 * @param string $value The needle.
+	 * @param array  $group The haystack.
+	 */
 	public function checked_array( $value, $group ) {
 		if ( ! empty( $group ) ) {
 			if ( in_array( $value, $group, true ) ) {
