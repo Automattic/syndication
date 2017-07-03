@@ -84,7 +84,7 @@ abstract class Puller {
 			throw new \Exception( '$posts must be array' );
 		}
 
-		$processed_posts = 0;
+		$processed_posts = array();
 
 		foreach ( $posts as $the_post ) {
 			$post_id = $this->process_post( $the_post, $site_id, $client );
