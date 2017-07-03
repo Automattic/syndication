@@ -389,7 +389,9 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Creates an input for the notification email setting.
 	 *
+	 * @since 2.1
 	 */
 	public function display_notification_email() {
 		$this->form_input(
@@ -401,7 +403,9 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Creates an input for the notification Slack webhook settings.
 	 *
+	 * @since 2.1
 	 */
 	public function display_notification_slack_webhook() {
 		$this->form_input(

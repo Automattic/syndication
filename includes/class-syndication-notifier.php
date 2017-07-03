@@ -23,12 +23,12 @@ class Syndication_Notifier {
 	 * @since 2.1
 	 */
 	public function __construct() {
-		add_action( 'syn_post_pull_new_post', array( $this, 'notify_new' ), 10, 5 );
-		add_action( 'syn_post_pull_edit_post', array( $this, 'notify_update' ), 10, 5 );
-		add_action( 'syn_post_push_delete_post', array( $this, 'notify_delete' ), 10, 6 );
-		add_action( 'syn_post_push_new_post', array( $this, 'notify_new' ), 10, 5 );
-		add_action( 'syn_post_push_edit_post', array( $this, 'notify_update' ), 10, 5 );
-		add_action( 'syn_post_pull_endpoint_processed', array( $this, 'notify_processed' ), 10, 5 );
+		add_action( 'syn_post_pull_new_post', array( $this, 'notify_new' ), 10, 3 );
+		add_action( 'syn_post_pull_edit_post', array( $this, 'notify_update' ), 10, 3 );
+		add_action( 'syn_post_push_delete_post', array( $this, 'notify_delete' ), 10, 4 );
+		add_action( 'syn_post_push_new_post', array( $this, 'notify_new' ), 10, 3 );
+		add_action( 'syn_post_push_edit_post', array( $this, 'notify_update' ), 10, 3 );
+		add_action( 'syn_post_pull_endpoint_processed', array( $this, 'notify_processed' ), 10, 2 );
 	}
 
 	/**
@@ -40,14 +40,12 @@ class Syndication_Notifier {
 	 * `do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );`
 	 *
 	 * @since 2.1
-	 * @param mixed  $result         Result object of previous wp_insert_post action
-	 * @param mixed  $post           Post object or post_id
-	 * @param object $site_id        ID of the site doing the syndication
-	 * @param string $transport_type Post meta syn_transport_type for site
-	 * @param object $client         Syndication_Client class
+	 * @param mixed  $result         Result object of previous wp_insert_post action.
+	 * @param mixed  $post           Post object or post_id.
+	 * @param object $site_id        ID of the site doing the syndication.
 	 */
-	public function notify_new( $result, $post, $site_id, $transport_type, $client ) {
-		$this->notify_post_event( 'create', $result, $post, $site_id, $transport_type, $client );
+	public function notify_new( $result, $post, $site_id ) {
+		$this->notify_post_event( 'create', $result, $post, $site_id );
 	}
 
 	/**
@@ -57,14 +55,12 @@ class Syndication_Notifier {
 	 * do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 	 *
 	 * @since 2.1
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site_id        ID of the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site_id        ID of the site doing the syndication.
 	 */
-	public function notify_update( $result, $post, $site_id, $transport_type, $client ) {
-		$this->notify_post_event( 'update', $result, $post, $site_id, $transport_type, $client );
+	public function notify_update( $result, $post, $site_id ) {
+		$this->notify_post_event( 'update', $result, $post, $site_id );
 	}
 
 	/**
@@ -73,15 +69,13 @@ class Syndication_Notifier {
 	 * do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 	 *
 	 * @since 2.1
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $external_id    External post post_id
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site_id        ID of the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $external_id    External post post_id.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site_id        ID of the site doing the syndication.
 	 */
-	public function notify_delete( $result, $external_id, $post, $site_id, $transport_type, $client ) {
-		$this->notify_post_event( 'delete', $result, $post, $site_id, $transport_type, $client );
+	public function notify_delete( $result, $external_id, $post, $site_id ) {
+		$this->notify_post_event( 'delete', $result, $post, $site_id );
 	}
 
 	/**
@@ -111,21 +105,15 @@ class Syndication_Notifier {
 	/**
 	 * Prepares data for the post level notify events
 	 *
-	 * @param  string $event          Type of event new/update/delete
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site_id        ID of the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  string $event          Type of event new/update/delete.
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site_id        ID of the site doing the syndication.
 	 * @return mixed
 	 */
-	private function notify_post_event( $event, $result, $post, $site_id, $transport_type, $client ) {
+	private function notify_post_event( $event, $result, $post, $site_id ) {
 		if ( ! $this->should_notify( $event ) ) {
 			return false;
-		}
-
-		if ( is_int( $post ) ) {
-			$post = get_post( $post );
 		}
 
 		if ( false === $result || is_wp_error( $result ) ) {
@@ -151,7 +139,7 @@ class Syndication_Notifier {
 			$message .= sprintf(
 				' %s %s.',
 				ucwords( $this->action_verb( $event ) ),
-				'<a href="' . admin_url( 'post.php?post=' . $post->ID . '&action=edit' ) . '">' . $post->post_title . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . $post->post_data['ID'] . '&action=edit' ) . '">' . $post->post_data['post_title'] . '</a>'
 			);
 
 			$this->send_notification( __( 'Syndication Success Notification', 'push-syndication' ), $message );
