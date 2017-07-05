@@ -34,7 +34,7 @@ class Syndication_Notifier {
 	/**
 	 * Notify New
 	 *
-	 * Notify about a new post creation event usually implemented via action hook
+	 * Notify about a new post creation event usually implemented via action hook.
 	 *
 	 * `do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );`
 	 * `do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );`
@@ -49,8 +49,7 @@ class Syndication_Notifier {
 	}
 
 	/**
-	 * Notify about a post update event
-	 * usually implemented via action hook
+	 * Notify about a post update event usually implemented via action hook.
 	 * do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
 	 * do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 	 *
@@ -64,8 +63,7 @@ class Syndication_Notifier {
 	}
 
 	/**
-	 * Notify about a post delete event
-	 * usually implemented via action hook
+	 * Notify about a post delete event usually implemented via action hook.
 	 * do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 	 *
 	 * @since 2.1
@@ -103,7 +101,7 @@ class Syndication_Notifier {
 	}
 
 	/**
-	 * Prepares data for the post level notify events
+	 * Prepares data for the post level notify events.
 	 *
 	 * @param  string $event          Type of event new/update/delete.
 	 * @param  mixed  $result         Result object of previous wp_insert_post action.
