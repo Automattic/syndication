@@ -95,7 +95,7 @@ class Syndication_Notifier {
 			$message = sprintf(
 				_n( '%1$d post was', '%1$d posts were', count( $processed_posts ), 'push-syndication' ) . ' ' . __( 'successfully processed on %2$s.', 'push-syndication' ),
 				count( $processed_posts ),
-				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . intval( $site_id ) . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . intval( $site_id ) . '</a>'
 			);
 
 			$this->send_notification( __( 'Syndication Endpoint Processed', 'push-syndication' ), $message );
@@ -126,20 +126,20 @@ class Syndication_Notifier {
 
 			$message = sprintf(
 				$message,
-				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . intval( $site_id ) . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . intval( $site_id ) . '</a>'
 			);
 
 			$this->send_notification( __( 'Syndication Failure Notification', 'push-syndication' ), $message );
 		} else {
 			$message = sprintf(
 				__( 'Syndication on %s succeeded.', 'push-syndication' ),
-				'<a href="' . admin_url( 'post.php?post=' . $site_id . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . $site_id . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . intval( $site_id ) . '&action=edit' ) . '">' . __( 'Endpoint ID: ', 'push-syndication' ) . intval( $site_id ) . '</a>'
 			);
 
 			$message .= sprintf(
 				' %s %s.',
 				ucwords( $this->action_verb( $event ) ),
-				'<a href="' . admin_url( 'post.php?post=' . $post->post_data['ID'] . '&action=edit' ) . '">' . $post->post_data['post_title'] . '</a>'
+				'<a href="' . admin_url( 'post.php?post=' . intval( $post->post_data['ID'] ) . '&action=edit' ) . '">' . esc_html( $post->post_data['post_title'] ) . '</a>'
 			);
 
 			$this->send_notification( __( 'Syndication Success Notification', 'push-syndication' ), $message );
