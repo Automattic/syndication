@@ -90,9 +90,9 @@ class Settings_Screen {
 
 	public function register_syndicate_settings() {
 		add_submenu_page(
-			'options-general.php',
+			'edit.php?post_type=syn_site',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
-			esc_html__( 'Syndication', 'push-syndication' ),
+			esc_html__( 'Settings', 'push-syndication' ),
 			/* This filter is documented in includes/admin/class-settings-screen.php */
 			apply_filters( 'syn_syndicate_cap', 'manage_options' ),
 			'push-syndicate-settings',
