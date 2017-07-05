@@ -153,7 +153,7 @@ class Syndication_Notifier {
 	 * @param string $event The event name.
 	 * @return mixed
 	 */
-	private function action_verb( $event ) {
+	public function action_verb( $event ) {
 		switch ( $event ) {
 			case 'create':
 				return __( 'created', 'push-syndication' );
@@ -176,7 +176,7 @@ class Syndication_Notifier {
 	 * @param string $event The event that is currently being run.
 	 * @return bool
 	 */
-	private function should_notify( $event ) {
+	public function should_notify( $event ) {
 		global $settings_manager;
 
 		$notification_methods = $settings_manager->get_setting( 'notification_methods' );
@@ -228,7 +228,7 @@ class Syndication_Notifier {
 	}
 
 	/**
-	 * Sends an email nofication if an email is set in the settings.
+	 * Sends an email notification if an email is set in the settings.
 	 *
 	 * @since 2.1
 	 * @param string $subject The subject of the email.
@@ -288,7 +288,7 @@ class Syndication_Notifier {
 	 * @param string $message The message to parse.
 	 * @return mixed
 	 */
-	private function format_slack_message( $message ) {
+	public function format_slack_message( $message ) {
 		$message = str_replace( 'a href="', '', $message );
 		$message = str_replace( '">', '|', $message );
 		$message = str_replace( '</a>', '>', $message );
