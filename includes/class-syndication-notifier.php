@@ -245,12 +245,16 @@ class Syndication_Notifier {
 
 		$headers[] = 'Content-Type: text/html; charset=UTF-8';
 
-		wp_mail(
+		$sent = wp_mail(
 			$email,
 			$subject,
 			$message,
 			$headers
 		);
+
+		if ( ! $sent ) {
+			Syndication_Logger::log_post_info( false, 'posts_processed', __( 'Failed to send email notification. Please ensure your server is setup to send email using wp_mail()', 'push-syndication' ), null, array() );
+		}
 	}
 
 	/**
@@ -276,7 +280,11 @@ class Syndication_Notifier {
 			)
 		);
 
-		wp_remote_post( $slack_webhook, array( 'body' => $payload ) );
+		$response = wp_remote_post( $slack_webhook, array( 'body' => $payload ) );
+
+		if ( is_wp_error( $response ) || 200 !== $response['response']['code'] ) {
+			Syndication_Logger::log_post_info( false, 'posts_processed', __( 'Failed to send Slack notification. Please ensure that the webhook URL entered in the settings is correct', 'push-syndication' ), null, array() );
+		}
 	}
 
 	/**
