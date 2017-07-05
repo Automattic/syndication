@@ -182,10 +182,19 @@ class Syndication_Notifier {
 		$notification_methods = $settings_manager->get_setting( 'notification_methods' );
 
 		if ( ! empty( $notification_methods ) ) {
-			$notification_types = $settings_manager->get_setting( 'notification_types' );
+			foreach ( $notification_methods as $method ) {
+				switch ( $method ) {
+					case 'email':
+						$notification_types = $settings_manager->get_setting( 'notification_email_types' );
+						break;
+					case 'slack':
+						$notification_types = $settings_manager->get_setting( 'notification_slack_types' );
+						break;
+				}
 
-			if ( is_array( $notification_types ) && in_array( $event, $notification_types, true ) ) {
-				return true;
+				if ( ! empty( $notification_types ) && is_array( $notification_types ) && in_array( $event, $notification_types, true ) ) {
+					return true;
+				}
 			}
 		}
 
@@ -228,7 +237,7 @@ class Syndication_Notifier {
 	private function email_notification( $subject, $message ) {
 		global $settings_manager;
 
-		$email = $settings_manager->get_setting( 'notification_email' );
+		$email = $settings_manager->get_setting( 'notification_email_address' );
 
 		if ( empty( $email ) || ! is_email( $email ) ) {
 			return;

@@ -48,9 +48,10 @@ class Settings_Screen {
 		$settings['client_secret']                      = ! empty( $raw_settings['client_secret'] ) ? sanitize_text_field( $raw_settings['client_secret'] ) : '';
 		$settings['selected_post_types']                = ! empty( $raw_settings['selected_post_types'] ) ? $this->sanitize_array( $raw_settings['selected_post_types'] ) : array() ;
 		$settings['notification_methods']               = ! empty( $raw_settings['notification_methods'] ) ? $this->sanitize_array( $raw_settings['notification_methods'] ) : array();
-		$settings['notification_types']                 = ! empty( $raw_settings['notification_types'] ) ? $this->sanitize_array( $raw_settings['notification_types'] ) : array();
-		$settings['notification_email']                 = ! empty( $raw_settings['notification_email'] ) ? sanitize_email( $raw_settings['notification_email'] ) : '';
+		$settings['notification_email_address']         = ! empty( $raw_settings['notification_email_address'] ) ? sanitize_email( $raw_settings['notification_email_address'] ) : '';
+		$settings['notification_email_types']           = ! empty( $raw_settings['notification_email_types'] ) ? $this->sanitize_array( $raw_settings['notification_email_types'] ) : array();
 		$settings['notification_slack_webhook']         = ! empty( $raw_settings['notification_slack_webhook'] ) ? esc_url_raw( $raw_settings['notification_slack_webhook'] ) : '';
+		$settings['notification_slack_types']           = ! empty( $raw_settings['notification_slack_types'] ) ? $this->sanitize_array( $raw_settings['notification_slack_types'] ) : array();
 		$settings['delete_pushed_posts']                = ! empty( $raw_settings['delete_pushed_posts'] ) ? sanitize_text_field( $raw_settings['delete_pushed_posts'] ) : 'off' ;
 		$settings['selected_pull_sitegroups']           = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $this->sanitize_array( $raw_settings['selected_pull_sitegroups'] ) : array() ;
 		$settings['pull_time_interval']                 = ! empty( $raw_settings['pull_time_interval'] ) ? intval( max( $raw_settings['pull_time_interval'] ), 300 ) : '3600';
@@ -143,25 +144,49 @@ class Settings_Screen {
 		);
 
 		add_settings_field(
-			'notification_email',
+			'notification_email_enabled',
 			esc_html__( 'Email notifications', 'push-syndication' ),
-			array( $this, 'display_notification_email' ),
+			array( $this, 'display_notification_email_enabled' ),
 			'notifications',
 			'notifications'
 		);
 
 		add_settings_field(
-			'notification_slack',
+			'notification_email_address',
+			false,
+			array( $this, 'display_notification_email_address' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_email_types',
+			false,
+			array( $this, 'display_notification_email_types' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_enabled',
 			esc_html__( 'Slack notifications', 'push-syndication' ),
-			array( $this, 'display_notification_slack' ),
+			array( $this, 'display_notification_slack_enabled' ),
 			'notifications',
 			'notifications'
 		);
 
 		add_settings_field(
-			'notification_types',
-			esc_html__( 'Send notification on', 'push-syndication' ),
-			array( $this, 'display_notification_type_selection' ),
+			'notification_slack_webhook',
+			false,
+			array( $this, 'display_notification_slack_webhook' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_types',
+			false,
+			array( $this, 'display_notification_slack_types' ),
 			'notifications',
 			'notifications'
 		);
@@ -331,14 +356,44 @@ class Settings_Screen {
 	}
 
 	/**
-	 * Display Notification Type Selection
-	 *
-	 * Allows the user to select on what type of events they would like to get
-	 * notified.
+	 * Displays a checkbox selector to enabling/disabling email notifications
 	 *
 	 * @since 2.1
 	 */
-	public function display_notification_type_selection() {
+	public function display_notification_email_enabled() {
+		$this->form_checkbox(
+			array(
+				'email' => array(
+					'name' => __( 'Enable email notifications', 'push-syndication' ),
+				),
+			),
+			'notification_methods'
+		);
+	}
+
+	/**
+	 * Displays an input box for saving a notification email address
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_email_address() {
+		$this->form_input(
+			'notification_email_address',
+			array(
+				'placeholder' => __( 'Email address', 'push-syndication' ),
+				'description' => __( 'The email address where alerts should be sent', 'push-syndication' ),
+			)
+		);
+	}
+
+	/**
+	 * Displays a checkbox to enabled different email notification types
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_email_types() {
+		echo '<p><strong>' . esc_html__( 'Send notification when', 'push-syndication' ) . '</strong></p>';
+
 		$this->form_checkbox(
 			array(
 				'processed' => array(
@@ -354,40 +409,16 @@ class Settings_Screen {
 					'name' => __( 'Existing post deleted', 'push-syndication' ),
 				),
 			),
-			'notification_types'
+			'notification_email_types'
 		);
 	}
 
 	/**
-	 * Creates an input for the notification email setting.
+	 * Displays a checkbox selector to enabling/disabling Slack notifications
 	 *
 	 * @since 2.1
 	 */
-	public function display_notification_email() {
-		$this->form_checkbox(
-			array(
-				'email' => array(
-					'name' => __( 'Enable email notifications', 'push-syndication' ),
-				),
-			),
-			'notification_methods'
-		);
-
-		$this->form_input(
-			'notification_email',
-			array(
-				'placeholder' => __( 'Email address', 'push-syndication' ),
-				'description' => __( 'The email address where alerts should be sent', 'push-syndication' ),
-			)
-		);
-	}
-
-	/**
-	 * Creates an input for the notification Slack webhook settings.
-	 *
-	 * @since 2.1
-	 */
-	public function display_notification_slack() {
+	public function display_notification_slack_enabled() {
 		$this->form_checkbox(
 			array(
 				'slack' => array(
@@ -396,13 +427,47 @@ class Settings_Screen {
 			),
 			'notification_methods'
 		);
+	}
 
+	/**
+	 * Displays an input box for saving a notification Slack webhook
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_slack_webhook() {
 		$this->form_input(
 			'notification_slack_webhook',
 			array(
 				'placeholder' => __( 'Slack Webhook URL', 'push-syndication' ),
 				'description' => sprintf( __( 'Setup a new Slack webhook URL %s', 'push-syndication' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">' . __( 'here', 'push-syndication' ) . '</a>' ),
 			)
+		);
+	}
+
+	/**
+	 * Displays a checkbox to enabled different Slack notification types
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_slack_types() {
+		echo '<p><strong>' . esc_html__( 'Send notification when', 'push-syndication' ) . '</strong></p>';
+
+		$this->form_checkbox(
+			array(
+				'processed' => array(
+					'name' => __( 'Endpoint processed', 'push-syndication' ),
+				),
+				'create'       => array(
+					'name' => __( 'New post created', 'push-syndication' ),
+				),
+				'update'      => array(
+					'name' => __( 'Existing post updated', 'push-syndication' ),
+				),
+				'delete'    => array(
+					'name' => __( 'Existing post deleted', 'push-syndication' ),
+				),
+			),
+			'notification_slack_types'
 		);
 	}
 
@@ -479,9 +544,9 @@ class Settings_Screen {
 			$placeholder = $args['placeholder'];
 		}
 		?>
-		<input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" />
+		<p><input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" /></p>
 		<?php if ( ! empty( $args['description'] ) ) : ?>
-		<p><?php echo wp_kses_post( $args['description'] ); ?></p>
+		<p class="description"><?php echo wp_kses_post( $args['description'] ); ?></p>
 		<?php
 		endif;
 	}
