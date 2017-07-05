@@ -143,25 +143,17 @@ class Settings_Screen {
 		);
 
 		add_settings_field(
-			'notification_methods',
-			esc_html__( 'Enable notifications', 'push-syndication' ),
-			array( $this, 'display_notification_method_selection' ),
-			'notifications',
-			'notifications'
-		);
-
-		add_settings_field(
 			'notification_email',
-			esc_html__( 'Notification email', 'push-syndication' ),
+			esc_html__( 'Email notifications', 'push-syndication' ),
 			array( $this, 'display_notification_email' ),
 			'notifications',
 			'notifications'
 		);
 
 		add_settings_field(
-			'notification_slack_webhook',
-			esc_html__( 'Slack webhook URL', 'push-syndication' ),
-			array( $this, 'display_notification_slack_webhook' ),
+			'notification_slack',
+			esc_html__( 'Slack notifications', 'push-syndication' ),
+			array( $this, 'display_notification_slack' ),
 			'notifications',
 			'notifications'
 		);
@@ -339,28 +331,6 @@ class Settings_Screen {
 	}
 
 	/**
-	 * Display Notification Method Selection
-	 *
-	 * Allows the user to select if what notification methods they would like to
-	 * enable.
-	 *
-	 * @since 2.1
-	 */
-	public function display_notification_method_selection() {
-		$this->form_checkbox(
-			array(
-				'email' => array(
-					'name' => __( 'Email notifications', 'push-syndication' ),
-				),
-				'slack' => array(
-					'name' => __( 'Slack notifications', 'push-syndication' ),
-				),
-			),
-			'notification_methods'
-		);
-	}
-
-	/**
 	 * Display Notification Type Selection
 	 *
 	 * Allows the user to select on what type of events they would like to get
@@ -394,9 +364,19 @@ class Settings_Screen {
 	 * @since 2.1
 	 */
 	public function display_notification_email() {
+		$this->form_checkbox(
+			array(
+				'email' => array(
+					'name' => __( 'Enable email notifications', 'push-syndication' ),
+				),
+			),
+			'notification_methods'
+		);
+
 		$this->form_input(
 			'notification_email',
 			array(
+				'placeholder' => __( 'Email address', 'push-syndication' ),
 				'description' => __( 'The email address where alerts should be sent', 'push-syndication' ),
 			)
 		);
@@ -407,10 +387,20 @@ class Settings_Screen {
 	 *
 	 * @since 2.1
 	 */
-	public function display_notification_slack_webhook() {
+	public function display_notification_slack() {
+		$this->form_checkbox(
+			array(
+				'slack' => array(
+					'name' => __( 'Enable Slack notifications', 'push-syndication' ),
+				),
+			),
+			'notification_methods'
+		);
+
 		$this->form_input(
 			'notification_slack_webhook',
 			array(
+				'placeholder' => __( 'Slack Webhook URL', 'push-syndication' ),
 				'description' => sprintf( __( 'Setup a new Slack webhook URL %s', 'push-syndication' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">' . __( 'here', 'push-syndication' ) . '</a>' ),
 			)
 		);
@@ -473,19 +463,23 @@ class Settings_Screen {
 	public function form_input( $setting_key, $args ) {
 		global $settings_manager;
 
+		$default     = '';
+		$class       = 'regular-text';
+		$placeholder = '';
+
 		if ( ! empty( $args['default'] ) ) {
 			$default = $args['default'];
-		} else {
-			$default = '';
 		}
 
 		if ( ! empty( $args['class'] ) ) {
 			$class = $args['class'];
-		} else {
-			$class = 'regular-text';
+		}
+
+		if ( ! empty( $args['placeholder'] ) ) {
+			$placeholder = $args['placeholder'];
 		}
 		?>
-		<input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" />
+		<input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" />
 		<?php if ( ! empty( $args['description'] ) ) : ?>
 		<p><?php echo wp_kses_post( $args['description'] ); ?></p>
 		<?php
