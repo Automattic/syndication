@@ -1,40 +1,50 @@
 <?php
+/**
+ * Puller abstract base class.
+ *
+ * @since 2.1
+ * @package Automattic\Syndication
+ */
 
 namespace Automattic\Syndication;
 
 /**
- * Syndication Puller
+ * Class Puller
  *
  * The role of this class is to be a base/parent for all pull client classes.
- * This parent class contains methods to process a site using this client
+ * This parent class contains methods to process a site using this client.
  *
  * @package Automattic\Syndication
  */
 abstract class Puller {
-
+	/**
+	 * Puller constructor.
+	 */
 	public function __construct(){}
 
 	/**
 	 * Process a site and pull all it's posts
 	 *
-	 * @param int $site_id The ID of the site for which to pull it's posts
-	 * @param obj $client  The syndication client class instance
-	 * @return array|bool  Array of posts on success, false on failure
+	 * @param int    $site_id The ID of the site for which to pull it's posts.
+	 * @param object $client  The syndication client class instance.
+	 * @return array|bool  Array of posts on success, false on failure.
 	 */
 	public function process_site( $site_id, $client ) {
-		global $site_manager, $client_manager;
+		global $site_manager;
 
-		// Fetch the site status
-		if ( ! in_array( $site_manager->get_site_status( $site_id ), array( 'idle', '' ) ) ) {
+		// Fetch the site status.
+		if ( ! in_array( $site_manager->get_site_status( $site_id ), array( 'idle', '' ), true ) ) {
 			return false;
 		}
 
-		// Mark site as in progress
+		// Mark site as in progress.
 		$site_manager->update_site_status( 'pulling' );
 
 		try {
-			// Fetch the site's posts by calling the class located at the
-			// namespace given during registration
+			/*
+			 * Fetch the site's posts by calling the class located at the
+			 * namespace given during registration.
+			 */
 			$posts = $client->get_posts( $site_id );
 
 			/**
@@ -46,9 +56,8 @@ abstract class Puller {
 			 */
 			$posts = apply_filters( 'syn_pre_pull_posts', $posts, $site_id, $client );
 
-			// Process the posts we fetched
+			// Process the posts we fetched.
 			$this->process_posts( $posts, $site_id, $client );
-
 		} catch ( \Exception $e ) {
 			Syndication_Logger::log_post_error(
 				$site_id,
@@ -59,10 +68,10 @@ abstract class Puller {
 			);
 		}
 
-		// Update site status
+		// Update site status.
 		$site_manager->update_site_status( 'idle' );
 
-		if ( is_array( $posts ) && ! empty( $posts ) ) {
+		if ( ! empty( $posts ) && is_array( $posts ) ) {
 			return $posts;
 		} else {
 			return false;
@@ -72,9 +81,9 @@ abstract class Puller {
 	/**
 	 * Process new posts fetched for a feed.
 	 *
-	 * @param array $posts   An array of new posts fetched.
-	 * @param int   $site_id The id of the site being processed.
-	 * @param obj   $client  The syndication client class instance.
+	 * @param array  $posts   An array of new posts fetched.
+	 * @param int    $site_id The id of the site being processed.
+	 * @param object $client  The syndication client class instance.
 	 * @throws \Exception.
 	 */
 	public function process_posts( $posts, $site_id, $client ) {
@@ -107,8 +116,7 @@ abstract class Puller {
 	 *
 	 * @param Types\Post $post    The post for processing.
 	 * @param int        $site_id The id of the site being processed.
-	 * @param obj        $client  The syndication client class instance.
-	 *
+	 * @param object     $client  The syndication client class instance.
 	 * @return int       $post_id The ID of the newly inserted post, or false if processing skipped.
 	 */
 	public function process_post( Types\Post $post, $site_id, $client ) {
@@ -147,8 +155,9 @@ abstract class Puller {
 			'meta_key'      => 'syn_post_guid',
 			'meta_value'    => $syndicated_guid,
 			'post_status'   => 'any',
-			'post_per_page' => 1
+			'post_per_page' => 1,
 		);
+
 		$existing_post_query = new \WP_Query( $query_args );
 
 		// Get the client transport type, passed to some hooks.
@@ -163,7 +172,9 @@ abstract class Puller {
 					$status = 'skip_update_pulled_posts',
 					$message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ),
 					$log_time = null,
-					$extra = array( 'post' => $post ) );
+					$extra = array( 'post' => $post )
+				);
+
 				return false;
 			}
 
@@ -184,7 +195,7 @@ abstract class Puller {
 			 * @param Types\Post $post                  The post being processed.
 			 * @param int        $site_id               The id of the site being processed.
 			 * @param string     $client_transport_type The client transport type.
-			 * @param obj        $client                The syndication client class instance.
+			 * @param object     $client                The syndication client class instance.
 			 */
 			$edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site_id, $client_transport_type, $client );
 
@@ -209,7 +220,7 @@ abstract class Puller {
 			 *
 			 * @param Types\Post $post    The Post object containing the post update data.
 			 * @param int        $site_id The id of the site being processed.
-			 * @param obj        $client  The syndication client class instance.
+			 * @param object     $client  The syndication client class instance.
 			 */
 			$post = apply_filters( 'syn_pull_edit_post', $post, $site_id, $client );
 
@@ -223,12 +234,10 @@ abstract class Puller {
 			 * @param Types\Post $post                  The Post object containing the post update data.
 			 * @param int        $site_id               The id of the site being processed.
 			 * @param string     $client_transport_type The client transport type.
-			 * @param obj        $client                The syndication client class instance.
+			 * @param object     $client                The syndication client class instance.
 			 */
 			do_action( 'syn_post_pull_edit_post', $post_id, $post, $site_id, $client_transport_type, $client );
-
 		} else {
-
 			/**
 			 * Filter to short circuit the processing of a pulled post insert.
 			 *
@@ -237,9 +246,10 @@ abstract class Puller {
 			 * @param bool   $insert_shortcircuit   Whether to short-circuit the inserting of a post.
 			 * @param int    $site_id               The id of the site being processed.
 			 * @param string $client_transport_type The client transport type.
-			 * @param obj    $client                The syndication client class instance.
+			 * @param object $client                The syndication client class instance.
 			 */
 			$insert_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site_id, $client_transport_type, $client );
+
 			if ( true === $insert_shortcircuit ) {
 				Syndication_Logger::log_post_info(
 					$site_id,
@@ -251,7 +261,6 @@ abstract class Puller {
 				return false;
 			}
 
-
 			//  Include the syndicated_guid so we can update this post later.
 			$post->post_meta['syn_post_guid'] = $post->post_data['post_guid'];
 
@@ -262,7 +271,7 @@ abstract class Puller {
 			 *
 			 * @param Types\Post $post    The Post object containing the post insert data.
 			 * @param int        $site_id The id of the site being processed.
-			 * @param obj        $client  The syndication client class instance.
+			 * @param object     $client  The syndication client class instance.
 			 */
 			$post = apply_filters( 'syn_pull_new_post', $post, $site_id, $client );
 
@@ -276,11 +285,11 @@ abstract class Puller {
 			 * @param Types\Post $post                  The Post object containing the post insert data.
 			 * @param int        $site_id               The id of the site being processed.
 			 * @param string     $client_transport_type The client transport type.
-			 * @param obj        $client                The syndication client class instance.
+			 * @param object     $client                The syndication client class instance.
 			 */
 			do_action( 'syn_post_pull_new_post', $post_id, $post, $site_id, $client_transport_type, $client );
-
 		}
+
 		wp_reset_postdata();
 
 		if ( ! is_wp_error_do_throw( $post_id ) ) {
@@ -296,10 +305,10 @@ abstract class Puller {
 	/**
 	 * Add meta to a post
 	 *
-	 * @param int   $post_id   The ID of the post for which to insert the given meta
-	 * @param array $post_meta Associative array of meta to add to the post
+	 * @param int   $post_id   The ID of the post for which to insert the given meta.
+	 * @param array $post_meta Associative array of meta to add to the post.
 	 * @throws \Exception
-	 * @return mixed           False on failure
+	 * @return mixed           False on failure.
 	 */
 	public function process_post_meta( $post_id, $post_meta ) {
 		// @todo Validate again if this method remains public.
@@ -311,26 +320,28 @@ abstract class Puller {
 		 * @param int   $post_id   The ID of the post for which to insert the given meta.
 		 */
 		$post_meta = apply_filters( 'syn_before_update_post_meta', $post_meta, $post_id );
-		//handle enclosures separately first
-		$enc_field = isset( $post_meta['enc_field'] ) ? $post_meta['enc_field'] : null;
+
+		// Handle enclosures separately first.
+		$enc_field  = isset( $post_meta['enc_field'] ) ? $post_meta['enc_field'] : null;
 		$enclosures = isset( $post_meta['enclosures'] ) ? $post_meta['enclosures'] : null;
-		if ( isset( $enclosures ) && isset ( $enc_field ) ) {
-			// first remove all enclosures for the post (for updates) if any
-			delete_post_meta( $post_id, $enc_field);
-			foreach( $enclosures as $enclosure ) {
-				if (defined('ENCLOSURES_AS_STRINGS') && constant('ENCLOSURES_AS_STRINGS')) {
-					$enclosure = implode("\n", $enclosure);
+
+		if ( isset( $enclosures ) && isset( $enc_field ) ) {
+			// First remove all enclosures for the post (for updates) if any.
+			delete_post_meta( $post_id, $enc_field );
+
+			foreach ( $enclosures as $enclosure ) {
+				if ( defined( 'ENCLOSURES_AS_STRINGS' ) && constant( 'ENCLOSURES_AS_STRINGS' ) ) {
+					$enclosure = implode( "\n", $enclosure );
 				}
 
 				add_post_meta( $post_id, $enc_field, $enclosure, false );
 			}
 
-			// now remove them from the rest of the metadata before saving the rest
-			unset($post_meta['enclosures']);
+			// Now remove them from the rest of the metadata before saving the rest.
+			unset( $post_meta['enclosures'] );
 		}
 
 		if ( is_array( $post_meta ) && ! empty( $post_meta ) ) {
-
 			foreach ( $post_meta as $key => $value ) {
 				update_post_meta( $post_id, $key, $value );
 			}
@@ -342,12 +353,11 @@ abstract class Puller {
 	/**
 	 * Add taxonomy terms to a post
 	 *
-	 * @param int   $post_id    The ID of the post for which to insert the given meta
-	 * @param array $post_terms Associative array of taxonomy|terms to add to the post
+	 * @param int   $post_id    The ID of the post for which to insert the given meta.
+	 * @param array $post_terms Associative array of taxonomy|terms to add to the post.
 	 * @throws \Exception
 	 */
 	public function process_post_terms( $post_id, $post_terms ) {
-
 		// @todo Validate again if this method remains public.
 
 		/**
@@ -371,7 +381,7 @@ abstract class Puller {
 	/**
 	 * Test the connection with the slave site.
 	 *
-	 * @param string $remote_url The remote URL
+	 * @param string $remote_url The remote URL.
 	 * @return bool True on success; false on failure.
 	 */
 	public function test_connection( $remote_url = '' ) {
@@ -381,7 +391,7 @@ abstract class Puller {
 	/**
 	 * Fetch a remote url.
 	 *
-	 * @param string $remote_url The remote URL
+	 * @param string $remote_url The remote URL.
 	 * @return string|\WP_Error The content of the remote feed, or error if there's a problem.
 	 */
 	public function remote_get( $remote_url = '' ) {
@@ -409,12 +419,12 @@ abstract class Puller {
 	 * @param array $feed_enclosures Optional.
 	 * @param array $enc_nodes Optional.
 	 * @param bool  $enc_is_photo
-	 * @return array The list of enclosures in the feed.
+	 * @return bool|array The list of enclosures in the feed.
 	 */
 	public function get_enclosures( $feed_enclosures = array(), $enc_nodes = array(), $enc_is_photo = false ) {
 		$enclosures = array();
 		foreach ( $feed_enclosures as $count => $enc ) {
-			if ( isset( $enc_is_photo ) && 1 == $enc_is_photo ) {
+			if ( isset( $enc_is_photo ) && 1 === $enc_is_photo ) {
 				$enc_array = array(
 					'caption'     => '',
 					'credit'      => '',
@@ -432,24 +442,25 @@ abstract class Puller {
 
 			foreach ( $enc_nodes as $post_value ) {
 				try {
-					if ( 'string(' == substr( $post_value['xpath'], 0, 7 ) ) {
+					if ( 'string(' === substr( $post_value['xpath'], 0, 7 ) ) {
 						$enc_value[0] = substr( $post_value['xpath'], 7, strlen( $post_value['xpath'] ) - 8 );
 					} else {
 						$enc_value = $enc->xpath( stripslashes( $post_value['xpath'] ) );
 					}
 					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
-				}
-				catch ( Exception $e ) {
+				} catch ( \Exception $e ) {
 					return false;
 				}
 			}
-			// if position is not provided in the feed, use the order in which they appear in the feed
+
+			// If position is not provided in the feed, use the order in which they appear in the feed.
 			if ( empty( $enc_array['position'] ) ) {
 				$enc_array['position'] = $count;
 			}
+
 			$enclosures[] = $enc_array;
 		}
+
 		return $enclosures;
 	}
 }
-
