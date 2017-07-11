@@ -151,6 +151,12 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 		$this->assertEquals( 'Test post content (updated)', $posts->post->post_content );
 	}
 
+	/**
+	 * Test that a post gets deleted on the other side.
+	 *
+	 * @since 2.1
+	 * @covers Push_Client::delete_post()
+	 */
 	public function test_delete_post() {
 		// Create a new post.
 		$post_id = wp_insert_post( array( 'post_title' => 'Test Post', 'post_content' => 'Test post content', 'post_status' => 'publish' ) );
