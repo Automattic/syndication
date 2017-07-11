@@ -511,14 +511,14 @@ class Push_Client extends \WP_HTTP_IXR_Client {
 
 	protected function convert_date_gmt( $date_gmt, $date ) {
 		if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
-			return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
+			return new \IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
 		}
 		return $this->convert_date( $date_gmt );
 	}
 
 	protected function convert_date( $date ) {
 		if ( $date === '0000-00-00 00:00:00' ) {
-			return new IXR_Date( '00000000T00:00:00Z' );
+			return new \IXR_Date( '00000000T00:00:00Z' );
 		}
 		return new \IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
 	}
