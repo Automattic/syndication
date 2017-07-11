@@ -207,7 +207,6 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 	public function setup_XMLRPC_inteceptor() {
 		// Mock remote HTTP calls made by XMLRPC
 		add_action( 'pre_http_request', function( $short_circuit, $args, $url ) {
-			//print_r($args);
 			if ( 'http://localhost/xmlrpc/xmlrpc.php' === $url ) {
 				switch_to_blog( $this->blog_id );
 
