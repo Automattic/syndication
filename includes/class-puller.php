@@ -84,17 +84,26 @@ abstract class Puller {
 			throw new \Exception( '$posts must be array' );
 		}
 
-		$inserted_posts = 0;
+		$processed_posts = array();
 
 		foreach ( $posts as $the_post ) {
 			$post_id = $this->process_post( $the_post, $site_id, $client );
 
 			if ( false !== $post_id ) {
-				$inserted_posts++;
+				$processed_posts[] = $post_id;
 			}
 		};
 
-		Syndication_Logger::log_post_info( $site_id, $status = 'posts_processed', $message = sprintf( __( '%d posts were successfully processed', 'push-syndication' ), $inserted_posts ), $log_time = null, $extra = array() );
+		Syndication_Logger::log_post_info( $site_id, $status = 'posts_processed', $message = sprintf( __( '%d posts were successfully processed', 'push-syndication' ), count( $processed_posts ) ), $log_time = null, $extra = array() );
+
+		/**
+		 * Fires just after processing all the items in an site/endpoint.
+		 *
+		 * @since 2.1
+		 * @param int $site_id         The id of the site being processed.
+		 * @param int $processed_count The amount of items that were processed.
+		 */
+		do_action( 'syn_post_pull_endpoint_processed', $site_id, $processed_posts );
 
 		// @todo remove actions to improve performance
 	}
