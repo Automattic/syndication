@@ -31,10 +31,11 @@ class Settings_Screen {
 	}
 
 	/**
+	 * Push Syndicate Settings Validate
+	 *
 	 * Validate the push syndication settings.
 	 *
 	 * @param $raw_settings array Settings to validate.
-	 *
 	 * @return array              Validated settings.
 	 */
 	public function push_syndicate_settings_validate( $raw_settings ) {
@@ -45,23 +46,53 @@ class Settings_Screen {
 		$settings                                       = array();
 		$settings['client_id']                          = ! empty( $raw_settings['client_id'] ) ? sanitize_text_field( $raw_settings['client_id'] ) : '';
 		$settings['client_secret']                      = ! empty( $raw_settings['client_secret'] ) ? sanitize_text_field( $raw_settings['client_secret'] ) : '';
-		$settings['selected_post_types']                = ! empty( $raw_settings['selected_post_types'] ) ? $raw_settings['selected_post_types'] : array() ;
-		$settings['delete_pushed_posts']                = ! empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off' ;
-		$settings['selected_pull_sitegroups']           = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array() ;
-		$settings['pull_time_interval']                 = ! empty( $raw_settings['pull_time_interval'] ) ? max( $raw_settings['pull_time_interval'], 300 ) : '3600';
-		$settings['update_pulled_posts']                = ! empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off' ;
-		$settings['push_syndication_max_pull_attempts'] = ! empty( $raw_settings['push_syndication_max_pull_attempts'] ) ? $raw_settings['push_syndication_max_pull_attempts'] : 0 ;
+		$settings['selected_post_types']                = ! empty( $raw_settings['selected_post_types'] ) ? $this->sanitize_array( $raw_settings['selected_post_types'] ) : array() ;
+		$settings['notification_methods']               = ! empty( $raw_settings['notification_methods'] ) ? $this->sanitize_array( $raw_settings['notification_methods'] ) : array();
+		$settings['notification_email_address']         = ! empty( $raw_settings['notification_email_address'] ) ? sanitize_email( $raw_settings['notification_email_address'] ) : '';
+		$settings['notification_email_types']           = ! empty( $raw_settings['notification_email_types'] ) ? $this->sanitize_array( $raw_settings['notification_email_types'] ) : array();
+		$settings['notification_slack_webhook']         = ! empty( $raw_settings['notification_slack_webhook'] ) ? esc_url_raw( $raw_settings['notification_slack_webhook'] ) : '';
+		$settings['notification_slack_types']           = ! empty( $raw_settings['notification_slack_types'] ) ? $this->sanitize_array( $raw_settings['notification_slack_types'] ) : array();
+		$settings['delete_pushed_posts']                = ! empty( $raw_settings['delete_pushed_posts'] ) ? sanitize_text_field( $raw_settings['delete_pushed_posts'] ) : 'off' ;
+		$settings['selected_pull_sitegroups']           = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $this->sanitize_array( $raw_settings['selected_pull_sitegroups'] ) : array() ;
+		$settings['pull_time_interval']                 = ! empty( $raw_settings['pull_time_interval'] ) ? intval( max( $raw_settings['pull_time_interval'] ), 300 ) : '3600';
+		$settings['update_pulled_posts']                = ! empty( $raw_settings['update_pulled_posts'] ) ? sanitize_text_field( $raw_settings['update_pulled_posts'] ) : 'off' ;
+		$settings['push_syndication_max_pull_attempts'] = ! empty( $raw_settings['push_syndication_max_pull_attempts'] ) ? intval( $raw_settings['push_syndication_max_pull_attempts'] ) : 0 ;
 
 		\Automattic\Syndication\Syndication_Runner::refresh_pull_jobs();
 		return $settings;
 
 	}
 
+	/**
+	 * Sanitize Array
+	 *
+	 * Takes an array of raw data and runs through each element, sanitizing the
+	 * raw data on the way.
+	 *
+	 * @since 2.1
+	 * @param mixed $data The data to be sanitized.
+	 * @return array|string The sanitized datsa.
+	 */
+	public function sanitize_array( $data ) {
+		if ( ! is_array( $data ) ) {
+			return sanitize_text_field( $data );
+		} else {
+			foreach ( $data as $key => $item ) {
+				if ( is_array( $item ) ) {
+					$data[ $key ] = $this->sanitize_array( $item );
+				} else {
+					$data[ $key ] = sanitize_text_field( $item );
+				}
+				return $data;
+			}
+		}
+	}
+
 	public function register_syndicate_settings() {
 		add_submenu_page(
-			'options-general.php',
+			'edit.php?post_type=syn_site',
 			esc_html__( 'Syndication Settings', 'push-syndication' ),
-			esc_html__( 'Syndication', 'push-syndication' ),
+			esc_html__( 'Settings', 'push-syndication' ),
 			/* This filter is documented in includes/admin/class-settings-screen.php */
 			apply_filters( 'syn_syndicate_cap', 'manage_options' ),
 			'push-syndicate-settings',
@@ -88,6 +119,7 @@ class Settings_Screen {
 		add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types' , 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
 		add_settings_field( 'post_type_selection', esc_html__( 'Select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
+		// Delete Pushed Posts section.
 		add_settings_section(
 			'delete_pushed_posts',
 			esc_html__( 'Delete Pushed Posts', 'push-syndication' ),
@@ -101,6 +133,62 @@ class Settings_Screen {
 			array( $this, 'display_delete_pushed_posts_selection' ),
 			'delete_pushed_posts',
 			'delete_pushed_posts'
+		);
+
+		// Notifications section.
+		add_settings_section(
+			'notifications',
+			esc_html__( 'Notifications', 'push-syndication' ),
+			array( $this, 'display_notifications_description' ),
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_email_enabled',
+			esc_html__( 'Email notifications', 'push-syndication' ),
+			array( $this, 'display_notification_email_enabled' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_email_address',
+			false,
+			array( $this, 'display_notification_email_address' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_email_types',
+			false,
+			array( $this, 'display_notification_email_types' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_enabled',
+			esc_html__( 'Slack notifications', 'push-syndication' ),
+			array( $this, 'display_notification_slack_enabled' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_webhook',
+			false,
+			array( $this, 'display_notification_slack_webhook' ),
+			'notifications',
+			'notifications'
+		);
+
+		add_settings_field(
+			'notification_slack_types',
+			false,
+			array( $this, 'display_notification_slack_types' ),
+			'notifications',
+			'notifications'
 		);
 		?>
 		<div class="wrap" xmlns="http://www.w3.org/1999/html">
@@ -120,6 +208,8 @@ class Settings_Screen {
 				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
 				<?php do_settings_sections( 'delete_pushed_posts' ); ?>
+
+				<?php do_settings_sections( 'notifications' ); ?>
 
 				<?php submit_button(); ?>
 			</form>
@@ -161,17 +251,16 @@ class Settings_Screen {
 			return;
 		}
 
+		$options = array();
+
 		foreach ( $sitegroups as $sitegroup ) {
-		?>
-		<p>
-			<label>
-				<input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $settings_manager->get_setting( 'selected_pull_sitegroups' ) ) ?> />
-				<?php echo esc_html( $sitegroup->name ); ?>
-			</label>
-			<?php echo esc_html( $sitegroup->description ); ?>
-		</p>
-		<?php
+			$options[ $sitegroup->slug ] = array(
+				'name'        => $sitegroup->name,
+				'description' => $sitegroup->description,
+			);
 		}
+
+		$this->form_checkbox( $options, 'selected_pull_sitegroups' );
 	}
 
 	public  function display_pull_options_description() {
@@ -230,29 +319,17 @@ class Settings_Screen {
 	}
 
 	public function display_post_types_selection() {
-		global $settings_manager;
-		// @TODO add more suitable filters
+		// @todo: Add more suitable filters.
 		$post_types = get_post_types( array( 'public' => true ) );
+		$options    = array();
 
-		echo '<ul>';
-
-		foreach ( $post_types as $post_type  ) {
-
-			?>
-
-			<li>
-				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $settings_manager->get_setting( 'selected_post_types' ) ); ?> />
-					<?php echo esc_html( $post_type ); ?>
-				</label>
-			</li>
-
-		<?php
-
+		foreach ( $post_types as $post_type ) {
+			$options[ $post_type ] = array(
+				'name' => $post_type,
+			);
 		}
 
-		echo '</ul>';
-
+		$this->form_checkbox( $options, 'selected_post_types' );
 	}
 
 	public function display_delete_pushed_posts_description() {
@@ -261,9 +338,137 @@ class Settings_Screen {
 
 	public function display_delete_pushed_posts_selection() {
 		global $settings_manager;
-		// @TODO refractor this
+
+		// @todo Refractor this.
 		echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
 		echo checked( $settings_manager->get_setting( 'delete_pushed_posts' ), 'on' ) . ' />';
+	}
+
+	/**
+	 * Display Nofication Description
+	 *
+	 * Displays the description for the notification settings section.
+	 *
+	 * @since 2.1
+	 */
+	public function display_notifications_description() {
+		echo esc_html__( 'Setup email and Slack notifications.', 'push-syndication' );
+	}
+
+	/**
+	 * Displays a checkbox selector to enabling/disabling email notifications
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_email_enabled() {
+		$this->form_checkbox(
+			array(
+				'email' => array(
+					'name' => __( 'Enable email notifications', 'push-syndication' ),
+				),
+			),
+			'notification_methods'
+		);
+	}
+
+	/**
+	 * Displays an input box for saving a notification email address
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_email_address() {
+		$this->form_input(
+			'notification_email_address',
+			array(
+				'placeholder' => __( 'Email address', 'push-syndication' ),
+				'description' => __( 'The email address where alerts should be sent', 'push-syndication' ),
+			)
+		);
+	}
+
+	/**
+	 * Displays a checkbox to enabled different email notification types
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_email_types() {
+		echo '<p><strong>' . esc_html__( 'Send notification when', 'push-syndication' ) . '</strong></p>';
+
+		$this->form_checkbox(
+			array(
+				'processed' => array(
+					'name' => __( 'Endpoint processed', 'push-syndication' ),
+				),
+				'create'       => array(
+					'name' => __( 'New post created', 'push-syndication' ),
+				),
+				'update'      => array(
+					'name' => __( 'Existing post updated', 'push-syndication' ),
+				),
+				'delete'    => array(
+					'name' => __( 'Existing post deleted', 'push-syndication' ),
+				),
+			),
+			'notification_email_types'
+		);
+	}
+
+	/**
+	 * Displays a checkbox selector to enabling/disabling Slack notifications
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_slack_enabled() {
+		$this->form_checkbox(
+			array(
+				'slack' => array(
+					'name' => __( 'Enable Slack notifications', 'push-syndication' ),
+				),
+			),
+			'notification_methods'
+		);
+	}
+
+	/**
+	 * Displays an input box for saving a notification Slack webhook
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_slack_webhook() {
+		$this->form_input(
+			'notification_slack_webhook',
+			array(
+				'placeholder' => __( 'Slack Webhook URL', 'push-syndication' ),
+				'description' => sprintf( __( 'Setup a new Slack webhook URL %s', 'push-syndication' ), '<a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">' . __( 'here', 'push-syndication' ) . '</a>' ),
+			)
+		);
+	}
+
+	/**
+	 * Displays a checkbox to enabled different Slack notification types
+	 *
+	 * @since 2.1
+	 */
+	public function display_notification_slack_types() {
+		echo '<p><strong>' . esc_html__( 'Send notification when', 'push-syndication' ) . '</strong></p>';
+
+		$this->form_checkbox(
+			array(
+				'processed' => array(
+					'name' => __( 'Endpoint processed', 'push-syndication' ),
+				),
+				'create'       => array(
+					'name' => __( 'New post created', 'push-syndication' ),
+				),
+				'update'      => array(
+					'name' => __( 'Existing post updated', 'push-syndication' ),
+				),
+				'delete'    => array(
+					'name' => __( 'Existing post deleted', 'push-syndication' ),
+				),
+			),
+			'notification_slack_types'
+		);
 	}
 
 	public function display_client_id() {
@@ -274,6 +479,76 @@ class Settings_Screen {
 	public function display_client_secret() {
 		global $settings_manager;
 		echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_attr( $settings_manager->get_setting( 'client_secret' ) ) . '"/>';
+	}
+
+	/**
+	 * Form Checkbox
+	 *
+	 * Generates a checkbox form item.
+	 *
+	 * @since 2.1
+	 * @param array  $setting_options The options for the checkboxes.
+	 * @param string $setting_key The settings key which stores the values of the form item.
+	 */
+	public function form_checkbox( $setting_options = array(), $setting_key ) {
+		global $settings_manager;
+
+		$saved_option = $settings_manager->get_setting( $setting_key );
+
+		foreach ( $setting_options as $option_key => $option ) {
+			?>
+			<p>
+				<label>
+					<input type="checkbox" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>][]" value="<?php echo esc_attr( $option_key ); ?>" <?php $this->checked_array( $option_key, $saved_option ); ?> />
+					<?php echo esc_html( $option['name'] ); ?>
+				</label>
+				<?php
+				if ( ! empty( $option['description'] ) ) :
+					echo wp_kses_post( $option['description'] );
+				endif;
+				?>
+			</p>
+			<?php
+		}
+	}
+
+	/**
+	 * Form Input
+	 *
+	 * Generates a form input box. Has the following arguments which should be
+	 * passed as the second method argument.
+	 *
+	 * `default` Sets the default value for the form input box
+	 * `class` Override the default class value for the input element
+	 *
+	 * @since 2.1
+	 * @param string $setting_key The settings key which stores the values of the form item.
+	 * @param array  $args Options for the form output (see above).
+	 */
+	public function form_input( $setting_key, $args ) {
+		global $settings_manager;
+
+		$default     = '';
+		$class       = 'regular-text';
+		$placeholder = '';
+
+		if ( ! empty( $args['default'] ) ) {
+			$default = $args['default'];
+		}
+
+		if ( ! empty( $args['class'] ) ) {
+			$class = $args['class'];
+		}
+
+		if ( ! empty( $args['placeholder'] ) ) {
+			$placeholder = $args['placeholder'];
+		}
+		?>
+		<p><input type="text" name="push_syndicate_settings[<?php echo esc_attr( $setting_key ); ?>]" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="<?php echo esc_attr( $class ); ?>" value="<?php echo esc_attr( $settings_manager->get_setting( $setting_key, $default ) ); ?>" /></p>
+		<?php if ( ! empty( $args['description'] ) ) : ?>
+		<p class="description"><?php echo wp_kses_post( $args['description'] ); ?></p>
+		<?php
+		endif;
 	}
 
 	/**

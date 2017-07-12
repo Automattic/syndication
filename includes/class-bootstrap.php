@@ -37,6 +37,7 @@ class Bootstrap {
 		$site_manager = new Site_Manager();
 
 		Syndication_Logger::init();
+		new Syndication_Notifier();
 		new Syndication_Event_Counter();
 		new Syndication_Site_Failure_Monitor();
 		new Syndication_Fail_Auto_Retry();
