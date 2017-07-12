@@ -92,8 +92,7 @@ class Pull_Client extends Puller {
 				$taxonomy = $this->set_taxonomy( $item );
 			}
 
-			$new_post = new Types\Post();
-
+			$new_post                              = new Types\Post();
 			$new_post->post_data['post_title']     = $item->get_title();
 			$new_post->post_data['post_content']   = $item->get_content();
 			$new_post->post_data['post_excerpt']   = $item->get_description();
@@ -105,10 +104,8 @@ class Pull_Client extends Puller {
 			$new_post->post_data['post_guid']      = $item->get_id();
 			$new_post->post_data['post_category']  = isset( $taxonomy['cats'] ) ? $taxonomy['cats'] : '';
 			$new_post->post_data['tags_input']     = isset( $taxonomy['tags'] ) ? $taxonomy['tags'] : '';
+			$new_post->post_meta['site_id']        = $site_id;
 
-			$new_post->post_meta['site_id'] = $site->ID;
-
-			// This filter can be used to exclude or alter posts during a pull import
 			/**
 			 * Filter the post used by the RSS pull client when pulling an update.
 			 *
@@ -119,13 +116,16 @@ class Pull_Client extends Puller {
 			 * @param int     $post_ID The id of the post originating this request.
 			 */
 			$new_post = apply_filters( 'syn_rss_pull_filter_post', $new_post, array(), $item );
+
 			if ( false === $new_post ) {
 				continue;
 			}
+
 			$posts[] = $new_post;
 		}
+
 		/* This action is documented in includes/clients/rss-pull/class-pull-client.php */
-		do_action( 'push_syndication_event', 'pull_success', $site->ID );
+		do_action( 'push_syndication_event', 'pull_success', $site_id );
 
 		return $posts;
 	}
@@ -133,12 +133,12 @@ class Pull_Client extends Puller {
 	public function set_taxonomy( $item ) {
 		$cats = $item->get_categories();
 		$ids = array(
-			'cats'    => array(),
-			'tags'            => array()
+			'cats' => array(),
+			'tags' => array(),
 		);
 
 		foreach ( $cats as $cat ) {
-			// checks if term exists
+			// Checks if term exists.
 			if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
 				if ( isset( $result->term_id ) ) {
 					$ids['cats'][] = $result->term_id;
@@ -148,7 +148,7 @@ class Pull_Client extends Puller {
 					$ids['tags'][] = $result->term_id;
 				}
 			} else {
-				// creates if not
+				// Creates if not.
 				$result = wp_insert_term( $cat->term, 'category' );
 				if ( isset( $result->term_id ) ) {
 					$ids['cats'][] = $result->term_id;
@@ -156,7 +156,7 @@ class Pull_Client extends Puller {
 			}
 		}
 
-		// returns array ready for post creation
+		// Returns array ready for post creation.
 		return $ids;
 	}
 

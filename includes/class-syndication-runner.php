@@ -1,14 +1,19 @@
 <?php
-
-namespace Automattic\Syndication;
-
 /**
- * Syndication
+ * Syndication_Runner
  *
  * The role of the syndication runner is to manage the site pull/push processes.
  * Sets up cron schedule whenever pull sites are added
  * or removed and handles management of individual cron jobs per site.
  * Automatically disables feed with multiple failures.
+ *
+ * @package Automattic\Syndication
+ */
+
+namespace Automattic\Syndication;
+
+/**
+ * Class Syndication_Runner
  *
  * @package Automattic\Syndication
  */
