@@ -160,7 +160,7 @@ class Push_Client extends Pusher {
 	}
 
 	/**
-	 *  Update an existing post on the remote endpoint.
+	 * Update an existing post on the remote endpoint.
 	 *
 	 * @since 2.1
 	 * @param int $post_id        The ID of the post to be pushed.
@@ -237,6 +237,44 @@ class Push_Client extends Pusher {
 
 			return new \WP_Error( 'rest-push-edit-fail', $message );
 		}
+	}
+
+	/**
+	 * When we delete a local post, delete the remote as well.
+	 *
+	 * @since 2.1
+	 * @param int $remote_post_id The ID of the remote post to delete.
+	 * @return int|\WP_Error The ID of the remote post or error.
+	 */
+	public function delete_post( $remote_post_id ) {
+		$response = wp_remote_post(
+			$this->endpoint_url . '/wp-json/wp/v2/posts/' . $remote_post_id,
+			array(
+				'method'     => 'DELETE',
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+					'Content-Type'  => 'application/json',
+				),
+			)
+		);
+
+		$body = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( ! is_wp_error( $response ) && in_array( $response['response']['code'], array( 200, 201 ), true ) ) {
+			return true;
+		} else {
+			if ( ! empty( $body->message ) ) {
+				$message = $body->message;
+			} else {
+				$message = __( 'Failed to push update post', 'push-syndication' );
+			}
+
+			return new \WP_Error( 'rest-push-delete-fail', $message );
+		}
+
 	}
 
 	/**
