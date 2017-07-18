@@ -85,7 +85,7 @@ class Push_Client extends Pusher {
 	 *
 	 * @since 2.1
 	 * @param int $post_id The ID of the post to be pushed.
-	 * @return int|WP_Error The ID of the remote post or error.
+	 * @return int|\WP_Error The ID of the remote post or error.
 	 */
 	public function new_post( $post_id ) {
 		$post = (array) get_post( $post_id );
@@ -157,6 +157,119 @@ class Push_Client extends Pusher {
 
 			return new \WP_Error( 'rest-push-new-fail', $message );
 		}
+	}
+
+	/**
+	 *  Update an existing post on the remote endpoint.
+	 *
+	 * @since 2.1
+	 * @param int $post_id        The ID of the post to be pushed.
+	 * @param int $remote_post_id The ID of the remote post.
+	 * @return int|\WP_Error The ID of the remote post or error.
+	 */
+	public function edit_post( $post_id, $remote_post_id ) {
+		$post = (array) get_post( $post_id );
+
+		/**
+		 * Filter the post used by the REST push client when pushing an update.
+		 *
+		 * This filter can be used to exclude or alter posts during a content update to an
+		 * existing post on the remote. Return false to short circuit the post push update.
+		 *
+		 * @since 2.1
+		 * @param \WP_Post $post    The post the be pushed.
+		 * @param int      $post_ID The id of the post originating this request.
+		 */
+		$post = apply_filters( 'syn_rest_push_filter_edit_post', $post, $post_id );
+
+		if ( false === $post ) {
+			return true;
+		}
+
+		$body = array(
+			'title'      => $post['post_title'],
+			'content'    => $post['post_content'],
+			'excerpt'    => $post['post_excerpt'],
+			'status'     => $post['post_status'],
+			'password'   => $post['post_password'],
+			'date'       => $post['post_date_gmt'],
+		);
+
+		/**
+		 * Filter the REST push client body before pushing a new post.
+		 *
+		 * @since 2.1
+		 * @param string $body    The body to send to the REST API endpoint.
+		 * @param int    $post_id The id of the post being pushed.
+		 */
+		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_id );
+
+		$response = wp_remote_post(
+			$this->endpoint_url . '/wp-json/wp/v2/posts/' . $remote_post_id,
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+					'Content-Type'  => 'application/json',
+				),
+				'body' => wp_json_encode( $body ),
+			)
+		);
+
+		$body = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( ! is_wp_error( $response ) && in_array( $response['response']['code'], array( 200, 201 ), true ) ) {
+			// Add Categories.
+			$this->sync_taxonomy( 'category', $post_id, $body->id );
+
+			// Add tags.
+			$this->sync_taxonomy( 'post_tag', $post_id, $body->id );
+
+			return $body->id;
+		} else {
+			if ( ! empty( $body->message ) ) {
+				$message = $body->message;
+			} else {
+				$message = __( 'Failed to push update post', 'push-syndication' );
+			}
+
+			return new \WP_Error( 'rest-push-edit-fail', $message );
+		}
+	}
+
+	/**
+	 * Check if a posts exists via the WordPress REST API.
+	 *
+	 * @since 2.1
+	 * @param  int  $remote_post_id The remote post ID to check
+	 * @return boolean              True if the post exists, otherwise false.
+	 */
+	public function is_post_exists( $remote_post_id ) {
+		$response = wp_remote_post(
+			$this->endpoint_url . '/wp-json/wp/v2/posts/' . $remote_post_id,
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+					'Content-Type'  => 'application/json',
+				),
+				'body' => wp_json_encode( $body ),
+			)
+		);
+
+		if ( ! is_wp_error( $response ) && in_array( $response['response']['code'], array( 200, 201 ), true ) ) {
+			$post = json_decode( wp_remote_retrieve_body( $response ) );
+
+			if ( ! empty( $post ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
