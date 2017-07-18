@@ -11,15 +11,47 @@
 
 namespace Automattic\Syndication\Clients\REST_Push_New;
 
-use Automattic\Syndication;
 use Automattic\Syndication\Pusher;
-use Automattic\Syndication\Types;
 
 class Push_Client extends Pusher {
+	/**
+	 * Access token.
+	 *
+	 * @since 2.1
+	 * @var string
+	 */
 	private $access_token;
+
+	/**
+	 * Endpoint URL.
+	 *
+	 * @since 2.1
+	 * @var string
+	 */
 	private $endpoint_url;
+
+	/**
+	 * Port.
+	 *
+	 * @since 2.1
+	 * @var int
+	 */
 	private $port;
+
+	/**
+	 * User Agent.
+	 *
+	 * @since 2.1
+	 * @var string
+	 */
 	private $useragent;
+
+	/**
+	 * Timeout.
+	 *
+	 * @since 2.1
+	 * @var integer
+	 */
 	private $timeout;
 
 	/**
@@ -49,7 +81,11 @@ class Push_Client extends Pusher {
 	}
 
 	/**
-	 * Push a new post to the remote.
+	 * Push a new post to the remote endpoint.
+	 *
+	 * @since 2.1
+	 * @param int $post_id The ID of the post to be pushed.
+	 * @return int|WP_Error The ID of the remote post or error.
 	 */
 	public function new_post( $post_id ) {
 		$post = (array) get_post( $post_id );
@@ -60,8 +96,9 @@ class Push_Client extends Pusher {
 		 * This filter can be used to exclude or alter posts during a content push. Return false
 		 * to short circuit the post push.
 		 *
+		 * @since 2.1
 		 * @param WP_Post $post    The post the be pushed.
-		 * @param int     $post_ID The id of the post originating this request.
+		 * @param int     $post_id The id of the post originating this request.
 		 */
 		$post = apply_filters( 'syn_rest_push_filter_new_post', $post, $post_id );
 
@@ -81,8 +118,9 @@ class Push_Client extends Pusher {
 		/**
 		 * Filter the REST push client body before pushing a new post.
 		 *
+		 * @since 2.1
 		 * @param string $body    The body to send to the REST API endpoint.
-		 * @param int    $post_ID The id of the post being pushed.
+		 * @param int    $post_id The id of the post being pushed.
 		 */
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_id );
 
@@ -121,6 +159,16 @@ class Push_Client extends Pusher {
 		}
 	}
 
+	/**
+	 * Syncs the taxonomies between the local post and remote post. Adds
+	 * taxonomies where need be.
+	 *
+	 * @since 2.1
+	 * @param string $taxonomy The taxonomy name to sync.
+	 * @param int    $post_id The ID of the local post.
+	 * @param int    $remote_post_id The ID of the remote post.
+	 * @return bool
+	 */
 	public function sync_taxonomy( $taxonomy, $post_id, $remote_post_id ) {
 		// Make sure we support the taxonomy being called.
 		switch ( $taxonomy ) {
