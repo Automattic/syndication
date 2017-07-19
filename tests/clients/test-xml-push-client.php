@@ -23,7 +23,7 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->setup_XMLRPC_inteceptor();
+		$this->setup_XMLRPC_interceptor();
 
 		// Create a site group.
 		$sitegroup = $this->factory->term->create_and_get( array(
@@ -204,7 +204,7 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 	 *
 	 * @since 2.1
 	 */
-	public function setup_XMLRPC_inteceptor() {
+	public function setup_XMLRPC_interceptor() {
 		// Mock remote HTTP calls made by XMLRPC
 		add_action( 'pre_http_request', function( $short_circuit, $args, $url ) {
 			if ( 'http://localhost/xmlrpc/xmlrpc.php' === $url ) {

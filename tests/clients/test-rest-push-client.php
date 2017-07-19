@@ -23,7 +23,7 @@ class Test_Push_Client extends \WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->setup_REST_inteceptor();
+		$this->setup_REST_interceptor();
 
 		// Create a site group.
 		$sitegroup = $this->factory->term->create_and_get( array(
@@ -167,6 +167,87 @@ class Test_Push_Client extends \WP_UnitTestCase {
 	}
 
 	/**
+	 * Test that a when updating a post it gets updated on the other side.
+	 *
+	 * @since 2.1
+	 * @covers Push_Client::edit_post()
+	 */
+	public function test_edit_post() {
+		// Create a new post.
+		$post_id = wp_insert_post( array( 'post_title' => 'Test Post', 'post_content' => 'Test post content', 'post_status' => 'publish' ) );
+
+		// Send the new post to the other side.
+		$remote_post_id = $this->client->new_post( $post_id );
+
+		// Update our post.
+		wp_update_post( array( 'ID' => $post_id, 'post_title' => 'Test Post (Updated)', 'post_content' => 'Test post content (updated)' ) );
+
+		// Send the update across the wire.
+		$this->client->edit_post( $post_id, $remote_post_id );
+
+		// Switch to the other blog and fetch it's posts.
+		switch_to_blog( $this->blog_id );
+
+		$posts = new \WP_Query( array(
+			'post_type'      => 'post',
+			'posts_per_page' => 1,
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+		) );
+
+		restore_current_blog();
+
+		// Test that the post was updated as expected.
+		$this->assertEquals( 'Test Post (Updated)', $posts->post->post_title );
+		$this->assertEquals( 'Test post content (updated)', $posts->post->post_content );
+	}
+
+	/**
+	 * Test that a post gets deleted on the other side.
+	 *
+	 * @since 2.1
+	 * @covers Push_Client::delete_post()
+	 */
+	public function test_delete_post() {
+		// Create a new post.
+		$post_id = wp_insert_post( array( 'post_title' => 'Test Post', 'post_content' => 'Test post content', 'post_status' => 'publish' ) );
+
+		// Send the new post to the other side.
+		$remote_post_id = $this->client->new_post( $post_id );
+
+		// Make sure it exists.
+		switch_to_blog( $this->blog_id );
+
+		$posts = new \WP_Query( array(
+			'post_type'      => 'post',
+			'posts_per_page' => 1,
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+		) );
+
+		restore_current_blog();
+
+		$this->assertEquals( 'Test Post', $posts->post->post_title );
+
+		// Delete it on the other site and test it was deleted.
+		$this->client->delete_post( $remote_post_id );
+
+		switch_to_blog( $this->blog_id );
+
+		$posts = new \WP_Query( array(
+			'post_type'      => 'post',
+			'posts_per_page' => 1,
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+		) );
+
+		restore_current_blog();
+
+		$this->assertNotEquals( 'Test Post', $posts->post->post_title );
+		$this->assertNotEquals( 'Test post content', $posts->post->post_content );
+	}
+
+	/**
 	 * This method intercepts our XML RPC calls and sends them to a multisite
 	 * blog that was created above. It handles new posts, updating posts and
 	 * deleting posts. Once the request is fulfilled, it retuns a valid HTTP
@@ -174,7 +255,7 @@ class Test_Push_Client extends \WP_UnitTestCase {
 	 *
 	 * @since 2.1
 	 */
-	public function setup_REST_inteceptor() {
+	public function setup_REST_interceptor() {
 		global $wp_rest_server;
 		$this->server = $wp_rest_server = new \Spy_REST_Server;
 		do_action( 'rest_api_init' );
@@ -185,7 +266,7 @@ class Test_Push_Client extends \WP_UnitTestCase {
 			wp_set_current_user( $this->user_id );
 
 			if ( 'http://localhost/wp-json/wp/v2/posts' === substr( $url, 0, 36 ) ) {
-				$request = new \WP_REST_Request( 'POST', str_replace( 'http://localhost/wp-json', '', $url ) );
+				$request = new \WP_REST_Request( $args['method'], str_replace( 'http://localhost/wp-json', '', $url ) );
 				$request->set_body_params( (array) json_decode( $args['body'] ) );
 				$response = $this->server->dispatch( $request );
 				$short_circuit = array(

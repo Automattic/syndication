@@ -118,8 +118,8 @@ class Test_Pull_Client extends \WP_UnitTestCase {
 		// Test log was added.
 		$logs = Syndication_Logger::get_messages();
 
-		$this->assertEquals( 'success', $logs[ $this->site->ID ][ $posts->posts[1]->ID ]['msg_type'] );
-		$this->assertEquals( 'new', $logs[ $this->site->ID ][ $posts->posts[1]->ID ]['status'] );
+		$this->assertEquals( 'success', $logs[ $this->site->ID ][0]['msg_type'] );
+		$this->assertEquals( 'new', $logs[ $this->site->ID ][0]['status'] );
 	}
 
 	public function test_processing_invalid_feed_returns_false() {
