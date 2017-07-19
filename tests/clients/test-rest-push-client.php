@@ -60,6 +60,16 @@ class Test_Push_Client extends \WP_UnitTestCase {
 
 		// Create a new multisite blog to send the request to.
 		$this->blog_id = $this->factory->blog->create();
+
+		// Create a user.
+		switch_to_blog( $this->blog_id );
+
+		$this->user_id = $this->factory->user->create( array(
+			'role'       => 'administrator',
+			'user_login' => 'superadmin',
+		) );
+
+		restore_current_blog();
 	}
 
 	/**
@@ -125,26 +135,65 @@ class Test_Push_Client extends \WP_UnitTestCase {
 	 * @since 2.1
 	 */
 	public function setup_REST_inteceptor() {
+		global $wp_rest_server;
+		$this->server = $wp_rest_server = new \Spy_REST_Server;
+		do_action( 'rest_api_init' );
+
 		// Mock remote HTTP calls made by XMLRPC
 		add_action( 'pre_http_request', function( $short_circuit, $args, $url ) {
-			if ( 'http://localhost/' === $url ) {
+			if ( 'http://localhost/wp-json/wp/v2/posts' === $url ) {
 				switch_to_blog( $this->blog_id );
+				wp_set_current_user( $this->user_id );
 
-				global $wp_rest_server;
-				$this->server = $wp_rest_server = new Spy_REST_Server;
-				do_action( 'rest_api_init' );
-
-
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/posts' );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
 
 				restore_current_blog();
 
 				return array(
-					'headers'  => array(),
+					'headers'  => $response->get_headers(),
 					'response' => array(
-						'code'    => 200,
+						'code'    => $response->get_status(),
 						'message' => 'OK',
 					),
-					'body'     => $xml,
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/categories' === $url ) {
+				switch_to_blog( $this->blog_id );
+				wp_set_current_user( $this->user_id );
+
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/categories' );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
+
+				restore_current_blog();
+
+				return array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/tags' === $url ) {
+				switch_to_blog( $this->blog_id );
+				wp_set_current_user( $this->user_id );
+
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/categories' );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
+
+				restore_current_blog();
+
+				return array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
 				);
 			}
 
