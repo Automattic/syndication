@@ -127,6 +127,46 @@ class Test_Push_Client extends \WP_UnitTestCase {
 	}
 
 	/**
+	 * Test that a new post taxonomies gets synced on the other side.
+	 *
+	 * @since 2.1
+	 * @covers Push_Client::new_post()
+	 */
+	public function test_new_post_taxonomies() {
+		// Create a new post.
+		$post_id  = wp_insert_post( array( 'post_title' => 'Test Post', 'post_content' => 'Test post content', 'post_status' => 'publish' ) );
+		$category = $this->factory()->category->create_and_get( array( 'name' => 'Test' ) );
+		$tag      = $this->factory()->tag->create_and_get( array( 'name' => 'Test' ) );
+
+		wp_set_post_categories( $post_id, array( $category->term_id ), false );
+		wp_set_post_tags( $post_id, array( $tag->term_id ), false );
+
+		// Send the new post to the other side.
+		$this->client->new_post( $post_id );
+
+		// Switch to the other blog and fetch it's posts.
+		switch_to_blog( $this->blog_id );
+
+		$posts = new \WP_Query( array(
+			'post_type'      => 'post',
+			'posts_per_page' => 1,
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+		) );
+
+		$categories = wp_get_object_terms( $posts->post->ID, 'category', array( 'fields' => 'names' ) );
+		$tags       = wp_get_object_terms( $posts->post->ID, 'post_tag', array( 'fields' => 'names' ) );
+
+		restore_current_blog();
+
+		// Test that the post was created as expected.
+		$this->assertEquals( 'Test Post', $posts->post->post_title );
+		$this->assertEquals( 'Test post content', $posts->post->post_content );
+		$this->assertContains( 'Test', $categories );
+		$this->assertContains( 'Test', $tags );
+	}
+
+	/**
 	 * This method intercepts our XML RPC calls and sends them to a multisite
 	 * blog that was created above. It handles new posts, updating posts and
 	 * deleting posts. Once the request is fulfilled, it retuns a valid HTTP
@@ -141,17 +181,14 @@ class Test_Push_Client extends \WP_UnitTestCase {
 
 		// Mock remote HTTP calls made by XMLRPC
 		add_action( 'pre_http_request', function( $short_circuit, $args, $url ) {
-			if ( 'http://localhost/wp-json/wp/v2/posts' === $url ) {
-				switch_to_blog( $this->blog_id );
-				wp_set_current_user( $this->user_id );
+			switch_to_blog( $this->blog_id );
+			wp_set_current_user( $this->user_id );
 
-				$request = new \WP_REST_Request( 'POST', '/wp/v2/posts' );
+			if ( 'http://localhost/wp-json/wp/v2/posts' === substr( $url, 0, 36 ) ) {
+				$request = new \WP_REST_Request( 'POST', str_replace( 'http://localhost/wp-json', '', $url ) );
 				$request->set_body_params( (array) json_decode( $args['body'] ) );
 				$response = $this->server->dispatch( $request );
-
-				restore_current_blog();
-
-				return array(
+				$short_circuit = array(
 					'headers'  => $response->get_headers(),
 					'response' => array(
 						'code'    => $response->get_status(),
@@ -160,16 +197,21 @@ class Test_Push_Client extends \WP_UnitTestCase {
 					'body'     => wp_json_encode( $response->get_data() ),
 				);
 			} elseif ( 'http://localhost/wp-json/wp/v2/categories' === $url ) {
-				switch_to_blog( $this->blog_id );
-				wp_set_current_user( $this->user_id );
-
 				$request = new \WP_REST_Request( 'POST', '/wp/v2/categories' );
 				$request->set_body_params( (array) json_decode( $args['body'] ) );
 				$response = $this->server->dispatch( $request );
-
-				restore_current_blog();
-
-				return array(
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/categories?slug=Test' === $url ) {
+				$request = new \WP_REST_Request( 'GET', '/wp/v2/categories' );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
 					'headers'  => $response->get_headers(),
 					'response' => array(
 						'code'    => $response->get_status(),
@@ -178,16 +220,21 @@ class Test_Push_Client extends \WP_UnitTestCase {
 					'body'     => wp_json_encode( $response->get_data() ),
 				);
 			} elseif ( 'http://localhost/wp-json/wp/v2/tags' === $url ) {
-				switch_to_blog( $this->blog_id );
-				wp_set_current_user( $this->user_id );
-
-				$request = new \WP_REST_Request( 'POST', '/wp/v2/categories' );
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/tags' );
 				$request->set_body_params( (array) json_decode( $args['body'] ) );
 				$response = $this->server->dispatch( $request );
-
-				restore_current_blog();
-
-				return array(
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/tags?slug=Test' === $url ) {
+				$request = new \WP_REST_Request( 'GET', '/wp/v2/tags' );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
 					'headers'  => $response->get_headers(),
 					'response' => array(
 						'code'    => $response->get_status(),
@@ -196,6 +243,8 @@ class Test_Push_Client extends \WP_UnitTestCase {
 					'body'     => wp_json_encode( $response->get_data() ),
 				);
 			}
+
+			restore_current_blog();
 
 			return $short_circuit;
 		}, 10, 3 );
