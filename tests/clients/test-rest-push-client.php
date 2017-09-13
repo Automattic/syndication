@@ -1,12 +1,12 @@
 <?php
 /**
- * Tests for the XML Push Client.
+ * Tests for the REST Push Client.
  *
  * @since 2.1
  * @package Automattic\Syndication
  */
 
-namespace Automattic\Syndication\Clients\XML_Push;
+namespace Automattic\Syndication\Clients\REST_Push_New;
 
 /**
  * Class Test_Push_Client.
@@ -14,16 +14,16 @@ namespace Automattic\Syndication\Clients\XML_Push;
  * @since 2.1
  * @package Automattic\Syndication
  */
-class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
+class Test_Push_Client extends \WP_UnitTestCase {
 	/**
-	 * Setup a sample XML Push site.
+	 * Setup a sample REST Push site.
 	 *
 	 * @since 2.1
 	 */
 	public function setUp() {
 		parent::setUp();
 
-		$this->setup_XMLRPC_interceptor();
+		$this->setup_REST_interceptor();
 
 		// Create a site group.
 		$sitegroup = $this->factory->term->create_and_get( array(
@@ -38,11 +38,12 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 		) );
 
 		/*
-		 * Setup a fake XML RPC service, we actually intercept the XMLRPC
-		 * call below and send the request to a multisite install in our tests.
+		 * Setup a fake REST service, we actually intercept the REST call below
+		 * and send the request to a multisite install in our tests.
 		 */
 		add_post_meta( $this->site->ID, 'syn_transport_type', 'WP_RSS' );
-		add_post_meta( $this->site->ID, 'syn_site_url', 'http://localhost/xmlrpc/xmlrpc.php' );
+		add_post_meta( $this->site->ID, 'syn_site_token', '123' );
+		add_post_meta( $this->site->ID, 'syn_site_url', 'http://localhost/' );
 		add_post_meta( $this->site->ID, 'syn_default_post_type', 'post' );
 		add_post_meta( $this->site->ID, 'syn_default_post_status', 'publish' );
 		add_post_meta( $this->site->ID, 'syn_default_comment_status', 'open' );
@@ -59,6 +60,16 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 
 		// Create a new multisite blog to send the request to.
 		$this->blog_id = $this->factory->blog->create();
+
+		// Create a user.
+		switch_to_blog( $this->blog_id );
+
+		$this->user_id = $this->factory->user->create( array(
+			'role'       => 'administrator',
+			'user_login' => 'superadmin',
+		) );
+
+		restore_current_blog();
 	}
 
 	/**
@@ -113,6 +124,46 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 		// Test that the post was created as expected.
 		$this->assertEquals( 'Test Post', $posts->post->post_title );
 		$this->assertEquals( 'Test post content', $posts->post->post_content );
+	}
+
+	/**
+	 * Test that a new post taxonomies gets synced on the other side.
+	 *
+	 * @since 2.1
+	 * @covers Push_Client::new_post()
+	 */
+	public function test_new_post_taxonomies() {
+		// Create a new post.
+		$post_id  = wp_insert_post( array( 'post_title' => 'Test Post', 'post_content' => 'Test post content', 'post_status' => 'publish' ) );
+		$category = $this->factory()->category->create_and_get( array( 'name' => 'Test' ) );
+		$tag      = $this->factory()->tag->create_and_get( array( 'name' => 'Test' ) );
+
+		wp_set_post_categories( $post_id, array( $category->term_id ), false );
+		wp_set_post_tags( $post_id, array( $tag->term_id ), false );
+
+		// Send the new post to the other side.
+		$this->client->new_post( $post_id );
+
+		// Switch to the other blog and fetch it's posts.
+		switch_to_blog( $this->blog_id );
+
+		$posts = new \WP_Query( array(
+			'post_type'      => 'post',
+			'posts_per_page' => 1,
+			'orderby'        => 'ID',
+			'order'          => 'DESC',
+		) );
+
+		$categories = wp_get_object_terms( $posts->post->ID, 'category', array( 'fields' => 'names' ) );
+		$tags       = wp_get_object_terms( $posts->post->ID, 'post_tag', array( 'fields' => 'names' ) );
+
+		restore_current_blog();
+
+		// Test that the post was created as expected.
+		$this->assertEquals( 'Test Post', $posts->post->post_title );
+		$this->assertEquals( 'Test post content', $posts->post->post_content );
+		$this->assertContains( 'Test', $categories );
+		$this->assertContains( 'Test', $tags );
 	}
 
 	/**
@@ -204,61 +255,77 @@ class Test_Push_Client extends \WP_XMLRPC_UnitTestCase {
 	 *
 	 * @since 2.1
 	 */
-	public function setup_XMLRPC_interceptor() {
+	public function setup_REST_interceptor() {
+		global $wp_rest_server;
+		$this->server = $wp_rest_server = new \Spy_REST_Server;
+		do_action( 'rest_api_init' );
+
 		// Mock remote HTTP calls made by XMLRPC
 		add_action( 'pre_http_request', function( $short_circuit, $args, $url ) {
-			if ( 'http://localhost/xmlrpc/xmlrpc.php' === $url ) {
-				switch_to_blog( $this->blog_id );
+			switch_to_blog( $this->blog_id );
+			wp_set_current_user( $this->user_id );
 
-				// Create user.
-				$this->make_user_by_role( 'author' );
-
-				// Parse message.
-				$message = new \IXR_Message( $args['body'] );
-				$message->parse();
-
-				// Set username and password.
-				$message->params[1] = 'author';
-				$message->params[2] = 'author';
-
-				// Add method callback.
-				$this->myxmlrpcserver->callbacks['wp.getPost']    = 'this:wp_getPost';
-				$this->myxmlrpcserver->callbacks['wp.newPost']    = 'this:wp_newPost';
-				$this->myxmlrpcserver->callbacks['wp.editPost']   = 'this:wp_editPost';
-				$this->myxmlrpcserver->callbacks['wp.deletePost'] = 'this:wp_deletePost';
-
-				// Post.
-				$result = $this->myxmlrpcserver->call( $message->methodName, $message->params );
-
-				// Encode the result
-				$r = new \IXR_Value( $result );
-				$resultxml = $r->getXml();
-
-				$xml = <<<EOD
-<?xml version="1.0"?>
-<methodResponse>
-  <params>
-    <param>
-      <value>
-      $resultxml
-      </value>
-    </param>
-  </params>
-</methodResponse>
-
-EOD;
-
-				restore_current_blog();
-
-				return array(
-					'headers'  => array(),
+			if ( 'http://localhost/wp-json/wp/v2/posts' === substr( $url, 0, 36 ) ) {
+				$request = new \WP_REST_Request( $args['method'], str_replace( 'http://localhost/wp-json', '', $url ) );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
 					'response' => array(
-						'code'    => 200,
+						'code'    => $response->get_status(),
 						'message' => 'OK',
 					),
-					'body'     => $xml,
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/categories' === $url ) {
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/categories' );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/categories?slug=Test' === $url ) {
+				$request = new \WP_REST_Request( 'GET', '/wp/v2/categories' );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/tags' === $url ) {
+				$request = new \WP_REST_Request( 'POST', '/wp/v2/tags' );
+				$request->set_body_params( (array) json_decode( $args['body'] ) );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
+				);
+			} elseif ( 'http://localhost/wp-json/wp/v2/tags?slug=Test' === $url ) {
+				$request = new \WP_REST_Request( 'GET', '/wp/v2/tags' );
+				$response = $this->server->dispatch( $request );
+				$short_circuit = array(
+					'headers'  => $response->get_headers(),
+					'response' => array(
+						'code'    => $response->get_status(),
+						'message' => 'OK',
+					),
+					'body'     => wp_json_encode( $response->get_data() ),
 				);
 			}
+
+			restore_current_blog();
 
 			return $short_circuit;
 		}, 10, 3 );

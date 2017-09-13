@@ -58,6 +58,7 @@ class Bootstrap {
 		new Clients\RSS_Pull\Bootstrap();
 		new Clients\XML_Push\Bootstrap();
 		new Clients\REST_Push\Bootstrap();
+		new Clients\REST_Push_New\Bootstrap();
 
 		// Command line stuff.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
