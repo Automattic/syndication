@@ -251,8 +251,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 		}
 
+		$old_setting = libxml_use_internal_errors( true );
 		/** @var SimpleXMLElement $xml */
 		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
+		libxml_use_internal_errors( $old_setting );
 
 		if ( false === $xml ) {
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
