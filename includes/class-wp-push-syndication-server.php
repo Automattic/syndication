@@ -165,11 +165,11 @@ class WP_Push_Syndication_Server {
 	public function add_new_columns( $columns ) {
 		$new_columns = array();
 		$new_columns['cb'] = '<input type="checkbox" />';
-		$new_columns['title'] = _x( 'Site Name', 'column name' );
-		$new_columns['client-type'] = _x( 'Client Type', 'column name' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['site_status'] = _x( 'Status', 'column name' );
-		$new_columns['date'] = _x('Date', 'column name');
+		$new_columns['title'] = esc_html_x( 'Site Name', 'column name' );
+		$new_columns['client-type'] = esc_html_x( 'Client Type', 'column name' );
+		$new_columns['syn_sitegroup'] = esc_html_x( 'Groups', 'column name' );
+		$new_columns['site_status'] = esc_html_x( 'Status', 'column name' );
+		$new_columns['date'] = esc_html_x('Date', 'column name');
 		return $new_columns;
 	}
 
