@@ -32,7 +32,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		$this->site_ID = $site_ID;
 
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
-		
+
 		$this->set_cache_class( 'WP_Feed_Cache' );
 
 		$this->default_post_type        = get_post_meta( $site_ID, 'syn_default_post_type', true );
@@ -234,25 +234,27 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	public function set_taxonomy( $item ) {
 		$cats = $item->get_categories();
 		$ids = array(
-			'cats'    => array(),
-			'tags'            => array()
+			'cats' => array(),
+			'tags' => array()
 		);
 
-		foreach ( $cats as $cat ) {
-			// checks if term exists
-			if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
-				}
-			} elseif ( $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
-				if ( isset( $result->term_id ) ) {
-					$ids['tags'][] = $result->term_id;
-				}
-			} else {
-				// creates if not
-				$result = wp_insert_term( $cat->term, 'category' );
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
+		if ( ! empty( $cats ) ) {
+			foreach ( $cats as $cat ) {
+				// checks if term exists
+				if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
+					if ( isset( $result->term_id ) ) {
+						$ids['cats'][] = $result->term_id;
+					}
+				} elseif ( $result = get_term_by( 'name', $cat->term, 'post_tag' ) ) {
+					if ( isset( $result->term_id ) ) {
+						$ids['tags'][] = $result->term_id;
+					}
+				} else {
+					// creates if not
+					$result = wp_insert_term( $cat->term, 'category' );
+					if ( isset( $result->term_id ) ) {
+						$ids['cats'][] = $result->term_id;
+					}
 				}
 			}
 		}
