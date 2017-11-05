@@ -238,14 +238,28 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures
 		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_error(
+				$this->site_ID,
+				$status = 'error',
+				$message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ),
+				$this->feed_url,
+				$feed->get_error_message() ),
+				$log_time = null,
+				$extra = array()
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
 
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_info(
+				$this->site_ID,
+				$status = 'fetch_feed',
+				$message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ),
+				$log_time = null,
+				$extra = array()
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
@@ -257,7 +271,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		libxml_use_internal_errors( $old_setting );
 
 		if ( false === $xml ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error(
+				$this->site_ID,
+				$status = 'error',
+				$message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ),
+				$log_time = $site_post->postmeta['is_update'],
+				$extra = array()
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
