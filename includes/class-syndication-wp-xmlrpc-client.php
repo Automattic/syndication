@@ -41,7 +41,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
 
-		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id ); 
+		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id );
 
 		foreach ( $thumbnail_meta_keys as $thumbnail_meta ) {
 			$thumbnail_id = get_post_meta( $post_id, $thumbnail_meta, true );
@@ -65,7 +65,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 						$thumbnail_meta
 					);
 
-					unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); 
+					unset( $syndicated_thumbnails_by_site[ $this->site_ID ] );
 					update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
 
 				}
@@ -81,7 +81,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			//has to be this way since mw_newMediaObject doesn't allow to pass description and caption along
 			$thumbnail_post_data = get_post( $thumbnail_id );
 			$thumbnail_alt_text = get_post_meta( $thumbnail_id, '_wp_attachment_image_alt', true );
-			
+
 			$result = $this->query(
 				'syndication.addThumbnail',
 				'1',
@@ -104,7 +104,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	public static function get_client_data() {
 		return array( 'id' => 'WP_XMLRPC', 'modes' => array( 'push' ), 'name' => 'WordPress XMLRPC' );
 	}
-	
+
 	public function new_post( $post_ID ) {
 
 		$post = (array)get_post( $post_ID );
@@ -114,7 +114,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		if ( false === $post ) {
 			return true;
 		}
-		
+
 		//Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
 
@@ -175,7 +175,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// Delete existing metadata to avoid duplicates
 		$args['custom_fields'] = array();
 		foreach ( $remote_post['custom_fields'] as $custom_field ) {
-			$args['custom_fields'][] = array( 
+			$args['custom_fields'][] = array(
 				'id' => $custom_field['id'],
 				'meta_key_lookup' => $custom_field['key'],
 			);
@@ -260,9 +260,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$image_ids = array();
 		$new_image_ids = array();
-		 
+
 		if ( preg_match_all( '/' . $pattern . '/s', $post_content, $matches ) ) {
-		  $count=count( $matches[3] );		  
+		  $count=count( $matches[3] );
 		  for ( $i = 0; $i < $count; $i++ ) {
 		    $atts = shortcode_parse_atts( $matches[3][$i] );
 		    if ( isset( $atts['ids'] ) ) {
@@ -275,7 +275,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		if( ! empty( $image_ids ) ) {
 			foreach ( $image_ids as $key => $gallery_ids ) {
 				foreach ( $gallery_ids as $index => $id ) {
-					//do upload, get new ID back
+					// Do upload, get new ID back.
 					list( $thumbnail_url ) = wp_get_attachment_image_src( $id, 'full' );
 					$thumbnail_post_data = get_post($id);
 					$thumbnail_alt_text = trim( get_post_meta( $id, '_wp_attachment_image_alt', true ) );
@@ -298,12 +298,12 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			}
 		}
 
-		//new IDs needs to be injected into the post content
-		//replace old gallery code with a new one
+		// New IDs needs to be injected into the post content.
+		// Replace old gallery code with a new one.
 		$lenght = count( $matches[0] );
 		for ( $i = 0; $i < $lenght; $i++ ) {
 			$shortcode = $matches[0][$i];
-			//WP regex matches attribute with leading space, required here
+			// WP regex matches attribute with leading space, required here.
 			$attribute = ' ids="' . implode( ',', $image_ids[$i] ) . '"';
 			$new_attribute = ' ids="' . implode( ',', $new_image_ids[$i] ) . '"';
 			$new_shortcode = str_replace( $attribute, $new_attribute, $shortcode );
@@ -492,7 +492,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		<?php
 
-		do_action( 'syn_after_site_form', $site ); 
+		do_action( 'syn_after_site_form', $site );
 	}
 
 	public static function save_settings( $site_ID ) {
@@ -591,7 +591,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		if ( ! $thumbnail_set )
 			return new IXR_Error( 403, __( 'Could not attach post thumbnail.' ) );
-		
+
 		$args = array(
 			$blog_id,
 			$username,
@@ -692,7 +692,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		if ( empty( $thumbnail_id ) ) {
 			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
 		}
-		
+
 		$args = array(
 			$blog_id,
 			$username,
