@@ -2,7 +2,7 @@
 Contributors: automattic, nprasath002, batmoo, betzster, nickdaugherty
 Tags: XMLRPC, WordPress.com REST
 Requires at least: 3.4
-Tested up to: 4.8
+Tested up to: 4.8.3
 Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -20,6 +20,9 @@ define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
 ```
 
 == Changelog ==
+
+= 2.1 =
+* 
 
 = 1.0 =
 * Initial release
