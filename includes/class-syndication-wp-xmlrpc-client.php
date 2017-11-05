@@ -664,7 +664,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -690,7 +690,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'syndication' ) );
 		}
 
 		$args = array(
@@ -710,7 +710,11 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		if ( $result !== true ) {
 			//failed to update atatchment post details
 			//handle it th way you want it (log it, message it)
-			error_log('Syndication. xmlrpc_post_gallery_images Failed to update remote post attachments');
+			Syndication_Logger::log_post_error(
+				$thumbnail_id,
+				'error',
+				esc_html__( 'Failed to update remote post attachments', 'syndication' )
+			);
 		}
 		//update alt text of the image
 		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );
