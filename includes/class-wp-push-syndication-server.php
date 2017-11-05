@@ -71,7 +71,7 @@ class WP_Push_Syndication_Server {
 					'edit_post'          => $capability,
 					'read_post'          => $capability,
 					'delete_post'        => $capability,
-					'delete_posts'		 => $capability, // only added to address notice caused by https://core.trac.wordpress.org/ticket/30991
+					'delete_posts'	     => $capability, // only added to address notice caused by https://core.trac.wordpress.org/ticket/30991
 					'edit_posts'         => $capability,
 					'edit_others_posts'  => $capability,
 					'publish_posts'      => $capability,
