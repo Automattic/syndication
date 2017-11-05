@@ -121,7 +121,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
-			$this->error_message = sprintf( __( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
+			$this->error_message = sprintf( esc_html__( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
 		}
 	}
 
