@@ -316,10 +316,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = printf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error(
+				$this->site_ID,
+				$status = 'error',
+				$message = printf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root ),
+				$log_time = $site_post->postmeta['is_update'],
+				$extra = array()
+			);
 			return array();
 		} else {
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_info(
+				$this->site_ID,
+				$status = 'simplexml_load_string',
+				$message = sprintf( esc_html__( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ),
+				$log_time = null,
+				$extra = array()
+			);
 		}
 
 		foreach ( $items as $item ) {
@@ -397,7 +409,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$post_position++;
 		}
 
-		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
+		Syndication_Logger::log_post_info(
+			$this->site_ID,
+			$status = 'posts_received',
+			$message = sprintf( esc_html__( '%d posts were prepared', 'push-syndication' ), count( $posts ) ),
+			$log_time = null,
+			$extra = array()
+		);
 
 		return $posts;
 
