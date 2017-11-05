@@ -733,20 +733,20 @@ class WP_Push_Syndication_Server {
 	public function push_syndicate_admin_messages( $messages ) {
 
 		// general error messages
-		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
-		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
-		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
+		$messages['syn_site'][250] = esc_html__( 'Transport class not found!', 'push-syndication' );
+		$messages['syn_site'][251] = esc_html__( 'Connection Successful!', 'push-syndication' );
+		$messages['syn_site'][252] = esc_html__( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
 
 		// xmlrpc error messages.
-		$messages['syn_site'][301] = __( 'Invalid URL.', 'push-syndication' );
-		$messages['syn_site'][302] = __( 'You do not have sufficient capability to perform this action.', 'push-syndication' );
-		$messages['syn_site'][303] = __( 'Bad login/pass combination.', 'push-syndication' );
-		$messages['syn_site'][304] = __( 'XML-RPC services are disabled on this site.', 'push-syndication' );
-		$messages['syn_site'][305] = __( 'Transport error. Invalid endpoint', 'push-syndication' );
-		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.', 'push-syndication' );
+		$messages['syn_site'][301] = esc_html__( 'Invalid URL.', 'push-syndication' );
+		$messages['syn_site'][302] = esc_html__( 'You do not have sufficient capability to perform this action.', 'push-syndication' );
+		$messages['syn_site'][303] = esc_html__( 'Bad login/pass combination.', 'push-syndication' );
+		$messages['syn_site'][304] = esc_html__( 'XML-RPC services are disabled on this site.', 'push-syndication' );
+		$messages['syn_site'][305] = esc_html__( 'Transport error. Invalid endpoint', 'push-syndication' );
+		$messages['syn_site'][306] = esc_html__( 'Something went wrong when connecting to the site.', 'push-syndication' );
 
 		// WordPress.com REST error messages
-		$messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
+		$messages['site'][301] = esc_html__( 'Invalid URL', 'push-syndication' );
 
 		// RSS error messages
 
