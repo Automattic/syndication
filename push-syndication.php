@@ -25,7 +25,7 @@ require_once( dirname( __FILE__ ) . '/includes/class-wp-push-syndication-server.
 if ( defined( 'WP_CLI' ) && WP_CLI )
 	require_once( dirname( __FILE__ ) . '/includes/class-wp-cli.php' );
 
-$push_syndication_server = new WP_Push_Syndication_Server;
+$GLOBALS['push_syndication_server'] = new WP_Push_Syndication_Server;
 
 // Create the event counter.
 require __DIR__ . '/includes/class-syndication-event-counter.php';
