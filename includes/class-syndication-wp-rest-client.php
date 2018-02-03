@@ -25,7 +25,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	public static function get_client_data() {
 		return array( 'id' => 'WP_REST', 'modes' => array( 'push' ), 'name' => 'WordPress.com REST' );
 	}
-	
+
 	public function new_post( $post_ID ) {
 
 		$post = (array)get_post( $post_ID );
@@ -45,7 +45,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
-
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );
 
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/', array(
@@ -92,7 +91,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
-
 		$body = apply_filters( 'syn_rest_push_filter_edit_post_body', $body, $post_ID );
 
 		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(

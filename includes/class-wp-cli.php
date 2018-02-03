@@ -132,7 +132,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			return;
 
 		$this->enabled_verbosity = true;
-
+		
 		add_filter( 'syn_pre_push_post_sites', function( $sites, $post_id, $slave_states ) {
 			WP_CLI::line( sprintf( "Processing post_id #%d (%s)", $post_id, get_the_title( $post_id ) ) );
 			WP_CLI::line( sprintf( "-- pushing to %s sites and deleting from %s sites", number_format( count( $sites['selected_sites'] ) ), number_format( count( $sites['removed_sites'] ) ) ) );
@@ -151,7 +151,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	private function _get_syndication_server() {
-		return $GLOBALS['push_syndication_server'];
+		global $push_syndication_server;
+		return $push_syndication_server;
 	}
 
 	protected function stop_the_insanity() {
