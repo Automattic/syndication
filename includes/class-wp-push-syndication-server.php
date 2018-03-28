@@ -840,12 +840,13 @@ class WP_Push_Syndication_Server {
 	// cron job function to syndicate content
 	public function push_content( $sites ) {
 
-		// if another process running on it return
-		if( get_transient( 'syn_syndicate_lock' ) == 'locked' )
+		// if another process is running on this Post exit
+		if( get_transient( 'syn_syndicate_lock_' . $sites['post_ID'] ) == 'locked' ) {
 			return;
+		}
 
 		// set value as locked, valid for 5 mins
-		set_transient( 'syn_syndicate_lock', 'locked', 60*5 );
+		set_transient( 'syn_syndicate_lock_' . $sites['post_ID'], 'locked', 60*5 );
 
 		/** start of critical section **/
 
@@ -917,11 +918,10 @@ class WP_Push_Syndication_Server {
 
 		}
 
-
 		/** end of critical section **/
 
 		// release the lock.
-		delete_transient( 'syn_syndicate_lock' );
+		delete_transient( 'syn_syndicate_lock_' . $sites['post_ID'] );
 
 	}
 
