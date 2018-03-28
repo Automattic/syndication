@@ -794,20 +794,36 @@ class WP_Push_Syndication_Server {
 	public function pre_schedule_push_content( $new_status, $old_status, $post ) {
 
 		// autosave verification
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
+		}
 
 		// if our nonce isn't there, or we can't verify it return
-		if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) )
+		if( !isset( $_POST['syndicate_noncename'] ) || !wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
 			return;
+		}
 
-		if( !$this->current_user_can_syndicate() )
+		// Current user can't syndicate
+		if( !$this->current_user_can_syndicate() ) {
 			return;
+		}
 
+		// No Sites to Syndicate to
 		$sites = $this->get_sites_by_post_ID( $post->ID );
-
 		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
 			return;
+		}
+
+		// Post has not been previously Syndicated to
+		$slave_post_states = get_post_meta( $post->ID, '_syn_slave_post_states', true );
+		$slave_post_states = !empty( $slave_post_states ) ? $slave_post_states : array() ;
+		if( empty( $slave_post_states ) ) {
+			// Post is not transitioning to or from a Syndication approved post status
+			// Note the "from" transition will be caught by the above meta check but is here for full coverage.
+			$syndication_post_statuses = apply_filters( 'syndication_post_statuses', [ 'publish' ] );
+			if( ! in_array( $new_status, $syndication_post_statuses, true ) && ! in_array( $old_status, $syndication_post_statuses, true ) ) {
+				return;
+			}
 		}
 
 		do_action( 'syn_schedule_push_content', $post->ID, $sites );
