@@ -716,14 +716,20 @@ class WP_Push_Syndication_Server {
 			$client = Syndication_Client_Factory::get_client( $transport_type, $post->ID );
 
 			if ( $client->test_connection()  ) {
-				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 251, $location);' ) );
+				add_filter('redirect_post_location', function ($location) {
+					return add_query_arg("message", 251, $location);
+				});
 			} else {
-				add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 252, $location);' ) );
+				add_filter('redirect_post_location', function ($location) {
+					return add_query_arg("message", 252, $location);
+				});
 				$site_enabled = 'off';
 			}
 
 		} catch( Exception $e ) {
-			add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 250, $location);' ) );
+			add_filter('redirect_post_location', function ($location) {
+				return add_query_arg("message", 250, $location);
+			});
 		}
 
 		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );
