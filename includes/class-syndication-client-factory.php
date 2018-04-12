@@ -14,8 +14,8 @@ class Syndication_Client_Factory {
 			return new $class( $site_ID );
 		}
 
-		throw new Exception(' transport class not found' );
-
+		error_log( 'Transport class not found: ' . $class );
+		return;
 	}
 
 	public static function display_client_settings( $site, $transport_type ) {
