@@ -1122,7 +1122,7 @@ class WP_Push_Syndication_Server {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true);
 				$client         = Syndication_Client_Factory::get_client( $transport_type , $site_ID );
 
-				if( $client->is_post_exists( $ext_ID ) ) {
+				if( $client && $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 					if ( true === $push_delete_shortcircuit )
 						continue;
