@@ -1327,6 +1327,7 @@ class WP_Push_Syndication_Server {
 
 			$transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
 			$client         = Syndication_Client_Factory::get_client( $transport_type, $site_id );
+			$client         = apply_filters( 'syn_client', $client );
 			$posts          = apply_filters( 'syn_pre_pull_posts', $client->get_posts(), $site, $client );
 
 			$post_types_processed = array();
