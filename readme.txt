@@ -16,7 +16,7 @@ Documentation: https://vip.wordpress.com/plugins/syndication/
 Enable push syndication plugin through the plugins page in the WordPress admin area. You also need to define an encryption key which will be used to encrypt user credentials and save to the database securely.
 
 ```
-define('PUSH_SYNDICATION_KEY', 'this-is-a-randon-key')
+define('PUSH_SYNDICATE_KEY', 'this-is-a-random-key')
 ```
 
 == Changelog ==
