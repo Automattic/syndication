@@ -21,6 +21,9 @@ define('PUSH_SYNDICATE_KEY', 'this-is-a-random-key')
 
 == Changelog ==
 
+= 2.0 =
+* Miscellaneous bug fixes and improvements
+
 = 1.0 =
 * Initial release
 
