@@ -1337,69 +1337,71 @@ class WP_Push_Syndication_Server {
 
 			$post_types_processed = array();
 
-			if ( count( $posts ) > 0 ) {
+			if ( is_array( $posts ) && count( $posts ) > 0 ) {
 				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
-			foreach( $posts as $post ) {
+			if ( is_array( $posts ) && ! empty( $posts) ) {
+				foreach( $posts as $post ) {
 
-				if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
-					remove_post_type_support( $post['post_type'], 'revisions' );
-					$post_types_processed[] = $post['post_type'];
-				}
+					if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
+						remove_post_type_support( $post['post_type'], 'revisions' );
+						$post_types_processed[] = $post['post_type'];
+					}
 
-				if ( empty( $post['post_guid'] ) ) {
-					Syndication_Logger::log_post_error( $site_id, $status = 'no_post_guid', $message = sprintf( __( 'skipping post no guid', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-					continue;
-				}
-				$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
-
-				if ( $post_id ) {
-					$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_edit_shortcircuit ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+					if ( empty( $post['post_guid'] ) ) {
+						Syndication_Logger::log_post_error( $site_id, $status = 'no_post_guid', $message = sprintf( __( 'skipping post no guid', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 						continue;
 					}
-					// if updation is disabled continue
-					if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-						continue;
+					$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
+
+					if ( $post_id ) {
+						$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
+						if ( true === $pull_edit_shortcircuit ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						// if updation is disabled continue
+						if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						$post['ID'] = $post_id;
+
+						$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
+
+						$result = wp_update_post( $post, true );
+
+						do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
+
+						$updated_post_ids[] = (int) $result;
+
+					} else {
+						$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
+						if ( true === $pull_new_shortcircuit ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'syn_pre_pull_new_post_shortcircuit', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
+
+						$result = wp_insert_post( $post, true );
+
+						do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
+
+						if( !is_wp_error( $result ) ) {
+							update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
+							update_post_meta( $result, 'syn_source_site_id', $site_id );
+						}
+
+						$updated_post_ids[] = (int) $result;
 					}
-					$post['ID'] = $post_id;
-
-					$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
-
-					$result = wp_update_post( $post, true );
-
-					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
-
-					$updated_post_ids[] = (int) $result;
-
-				} else {
-					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_new_shortcircuit ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'syn_pre_pull_new_post_shortcircuit', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-						continue;
-					}
-					$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
-
-					$result = wp_insert_post( $post, true );
-
-					do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
-
-					if( !is_wp_error( $result ) ) {
-						update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
-						update_post_meta( $result, 'syn_source_site_id', $site_id );
-					}
-
-					$updated_post_ids[] = (int) $result;
 				}
-			}
 
-			foreach ( $post_types_processed as $post_type ) {
-				add_post_type_support( $post_type, 'revisions' );
+				foreach ( $post_types_processed as $post_type ) {
+					add_post_type_support( $post_type, 'revisions' );
+				}
 			}
 
 			update_post_meta( $site_id, 'syn_last_pull_time', current_time( 'timestamp', 1 ) );

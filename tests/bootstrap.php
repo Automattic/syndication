@@ -69,4 +69,5 @@ if ( $is_integration ) {
 	 * Load test dependencies.
 	 */
 	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
+	require_once __DIR__ . '/Integration/Syndication_Mock_Client.php';
 }
