@@ -398,19 +398,43 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 			switch( $error_code ) {
 				case 32301:
-					add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 305, $location);' ) );
+					add_filter(
+						'redirect_post_location', 
+						function( $location ) {
+							return add_query_arg("message", 305, $location);
+						}
+					);
 					break;
 				case 401:
-					add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 302, $location);' ) );
+					add_filter(
+						'redirect_post_location',
+						function( $location ) {
+							return add_query_arg("message", 302, $location);
+						}
+					);
 					break;
 				case 403:
-					add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 303, $location);' ) );
+					add_filter(
+						'redirect_post_location',
+						function( $location ) {
+							return add_query_arg("message", 303, $location);
+						}
+					);
 					break;
 				case 405:
-					add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 304, $location);' ) );
+					add_filter(
+						'redirect_post_location',
+						function( $location ) {
+							return add_query_arg("message", 304, $location);
+						}
+					);
 					break;
 				default:
-					add_filter('redirect_post_location', create_function( '$location', 'return add_query_arg("message", 306, $location);' ) );
+					add_filter('redirect_post_location',
+						function ( $location ) {
+							return add_query_arg("message", 306, $location);
+						}
+					)
 					break;
 			}
 
