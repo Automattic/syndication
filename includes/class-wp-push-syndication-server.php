@@ -14,6 +14,18 @@ class WP_Push_Syndication_Server {
 
 	function __construct() {
 
+		$this->push_syndicate_default_settings = array(
+			'selected_pull_sitegroups'  => array(),
+			'selected_post_types'       => array( 'post' ),
+			'delete_pushed_posts'       => 'off',
+			'pull_time_interval'        => '3600',
+			'update_pulled_posts'       => 'off',
+			'client_id'                 => '',
+			'client_secret'             => ''
+		);
+
+		$this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
+
 		// initialization
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
@@ -135,18 +147,6 @@ class WP_Push_Syndication_Server {
 				'rewrite'               => false,
 				'capabilities'          => $taxonomy_capabilities,
 		));
-
-		$this->push_syndicate_default_settings = array(
-			'selected_pull_sitegroups'  => array(),
-			'selected_post_types'       => array( 'post' ),
-			'delete_pushed_posts'       => 'off',
-			'pull_time_interval'        => '3600',
-			'update_pulled_posts'       => 'off',
-			'client_id'                 => '',
-			'client_secret'             => ''
-		);
-
-		$this->push_syndicate_settings = wp_parse_args( (array) get_option( 'push_syndicate_settings' ), $this->push_syndicate_default_settings );
 
 		$this->version = get_option( 'syn_version' );
 
@@ -1222,7 +1222,6 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function cron_add_pull_time_interval( $schedules ) {
-
 		// Adds the custom time interval to the existing schedules.
 		$schedules['syn_pull_time_interval'] = array(
 			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
