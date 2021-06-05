@@ -81,7 +81,7 @@ class Failed_Syndication_Auto_Retry {
 				// and hence order better in the log viewer
 				// without this, sometimes when the pull occurs quickly
 				// these log items appear to occur at the same time as the failure
-				$log_time = date( 'Y-m-d H:i:s', $time_now + 1 );
+				$log_time = gmdate( 'Y-m-d H:i:s', $time_now + 1 );
 
 				// Are we still below the auto retry limit?
 				if ( $site_auto_retry_count < $auto_retry_limit ) {

@@ -183,7 +183,7 @@ class WP_Push_Syndication_Server {
 					$client_data = $client->get_client_data();
 					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
-					printf( __( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
+					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
 				}
 				break;
 			case 'syn_sitegroup':
@@ -346,7 +346,7 @@ class WP_Push_Syndication_Server {
 
 			<p>
 				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $this->push_syndicate_settings['selected_pull_sitegroups'] ) ?> />
+					<input type="checkbox" name="push_syndicate_settings[selected_pull_sitegroups][]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $this->push_syndicate_settings['selected_pull_sitegroups'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
 					<?php echo esc_html( $sitegroup->name ); ?>
 				</label>
 				<?php echo esc_html( $sitegroup->description ); ?>
@@ -421,7 +421,7 @@ class WP_Push_Syndication_Server {
 
 			<li>
 				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
+					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
 					<?php echo esc_html( $post_type ); ?>
 				</label>
 			</li>
@@ -560,7 +560,7 @@ class WP_Push_Syndication_Server {
 
 			<p>
 				<label>
-					<input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
+					<input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
 					<?php echo esc_html( $sitegroup->name ); ?>
 				</label>
 				<?php echo esc_html( $sitegroup->description ); ?>
@@ -621,7 +621,7 @@ class WP_Push_Syndication_Server {
 			<div id="major-publishing-actions">
 
 				<div id="delete-action">
-					<a class="submitdelete deletion" href="<?php echo get_delete_post_link($site->ID); ?>"><?php echo __( 'Move to Trash', 'push-syndication' ); ?></a>
+					<a class="submitdelete deletion" href="<?php echo get_delete_post_link($site->ID); ?>"><?php echo esc_html__( 'Move to Trash', 'push-syndication' ); ?></a>
 				</div>
 
 				<div id="publishing-action">
@@ -663,7 +663,7 @@ class WP_Push_Syndication_Server {
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
 		} catch( Exception $e ) {
-			echo $e;
+			echo $e; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
 		?>
@@ -684,7 +684,7 @@ class WP_Push_Syndication_Server {
 		$max_len = 0;
 		foreach( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
-			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>';
+			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		echo '</select>';
 
@@ -702,12 +702,12 @@ class WP_Push_Syndication_Server {
 		if( !isset( $_POST['site_settings_noncename'] ) || !wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) )
 			return;
 
-		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists
+		$transport_type = sanitize_text_field( isset( $_POST['transport_type'] ) ? $_POST['transport_type'] : '' );
 
 		// @TODO validate that type and mode are valid
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 
-		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
+		$site_enabled = sanitize_text_field( isset( $_POST['site_enabled'] ) ? $_POST['site_enabled'] : '' );
 
 		try {
 			$save = Syndication_Client_Factory::save_client_settings( $post->ID, $transport_type );
@@ -808,7 +808,7 @@ class WP_Push_Syndication_Server {
 			?>
 			<li>
 				<label>
-					<input type="checkbox" name="selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ) ?> />
+					<input type="checkbox" name="selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
 					<?php echo esc_html( $sitegroup->name ); ?>
 				</label>
 				<p> <?php echo esc_html( $sitegroup->description ); ?> </p>
@@ -1484,9 +1484,11 @@ class WP_Push_Syndication_Server {
 			foreach ( $inserted_posts_by_site as $site_id ) {
 				$inserted_posts = get_post_meta( $site_id, 'syn_inserted_posts', true );
 
-				foreach ( $inserted_posts as $inserted_post_id => $inserted_post_guid ) {
-					update_post_meta( $inserted_post_id, 'syn_post_guid', $inserted_post_guid );
-					update_post_meta( $inserted_post_id, 'syn_source_site_id', $site_id );
+				if ( is_array( $inserted_posts ) ) {
+					foreach ( $inserted_posts as $inserted_post_id => $inserted_post_guid ) {
+						update_post_meta( $inserted_post_id, 'syn_post_guid', $inserted_post_guid );
+						update_post_meta( $inserted_post_id, 'syn_source_site_id', $site_id );
+					}
 				}
 			}
 
