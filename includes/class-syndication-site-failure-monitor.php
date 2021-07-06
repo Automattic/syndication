@@ -19,8 +19,8 @@ class Syndication_Site_Failure_Monitor {
 	/**
 	 * Handle the pull failure event. If the number of failures exceeds the maximum attempts set in the options, then disable the site.
 	 *
-	 * @param $site_id
-	 * @param $count
+	 * @param int $site_id The site id.
+	 * @param int $count   The number of attempts.
 	 */
 	public function handle_pull_failure_event( $site_id, $count ) {
 		$site_id = (int) $site_id;
@@ -36,10 +36,20 @@ class Syndication_Site_Failure_Monitor {
 			update_post_meta( $site_id, 'syn_site_enabled', false );
 
 			// Reset the event counter.
+
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
-			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
+			Syndication_Logger::log_post_error(
+				$site_id,
+				'error',
+				sprintf(
+					__( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ),
+					(int) $site_id,
+					(int) $count
+				)
+			);
+
 
 			do_action( 'push_syndication_site_disabled', $site_id, $count );
 		}
