@@ -1225,7 +1225,7 @@ class WP_Push_Syndication_Server {
 
 		// Adds the custom time interval to the existing schedules.
 		$schedules['syn_pull_time_interval'] = array(
-			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
+			'interval' => isset( $this->push_syndicate_settings ) ? intval( $this->push_syndicate_settings['pull_time_interval'] ) : 0,
 			'display' => __( 'Pull Time Interval', 'push-syndication' )
 		);
 
