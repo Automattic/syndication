@@ -106,7 +106,14 @@ class EncryptionTest extends WP_UnitTestCase {
 		$decrypted_complex_array = push_syndicate_decrypt( $encrypted_complex );
 
 		$this->assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
-		$this->assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array ' );
+
+		// Because older WP versions might use older phpunit versions, assertIsArray() might not be available.
+		if ( method_exists( $this, 'assertIsArray' ) ) {
+			$this->assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
+		} else {
+			$this->assertTrue( is_array( $decrypted_complex_array ), 'asserts if the decrypted complex data was decrypted as an array (is_array)' );
+		}
+
 		$this->assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
 	}
 
