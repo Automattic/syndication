@@ -90,8 +90,14 @@ class EncryptionTest extends WP_UnitTestCase {
 		$encrypted_simple_different = push_syndicate_encrypt( $this->simple_string . '1' );
 		$encrypted_complex          = push_syndicate_encrypt( $this->complex_array );
 
-		$this->assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
-		$this->assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
+		// Because older WP versions might use older phpunit versions, assertIsString() might not be available.
+		if ( method_exists( $this, 'assertIsString' ) ) {
+			$this->assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
+			$this->assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
+		} else {
+			$this->assertTrue( is_string( $encrypted_simple ), 'assert if the string is encrypted (is_string)' );
+			$this->assertTrue( is_string( $encrypted_complex ), 'assert if the array is encrypted (is_string)' );
+		}
 
 		$this->assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
 		$this->assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
