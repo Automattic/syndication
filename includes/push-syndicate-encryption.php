@@ -43,7 +43,7 @@ function push_syndicate_encrypt( $data ) {
 
 }
 
-function push_syndicate_decrypt( $data ) {
+function push_syndicate_decrypt( $data, $associative = true ) {
 
 	// Backwards compatibility with PHP < 7.2.
 	if ( function_exists( 'mcrypt_encrypt' ) ) {
@@ -68,5 +68,5 @@ function push_syndicate_decrypt( $data ) {
 		return false;
 	}
 
-	return json_decode( $data );
+	return json_decode( $data, $associative );
 }
