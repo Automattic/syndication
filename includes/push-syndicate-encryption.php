@@ -3,7 +3,7 @@
 function push_syndicate_get_cipher() {
 	$cipher = 'aes-256-cbc';
 
-	if ( function_exists( 'mcrypt_encrypt' ) ) {
+	if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
 		return MCRYPT_RIJNDAEL_256;
 	}
 
@@ -23,8 +23,8 @@ function push_syndicate_encrypt( $data ) {
 	// Will most likely break backwards compatibility with older keys
 	// https://stackoverflow.com/questions/49997338/mcrypt-rijndael-256-to-openssl-aes-256-ecb-conversion
 
-	// Backwards compatibility with PHP < 7.2.
-	if ( function_exists( 'mcrypt_encrypt' ) ) {
+	// Backwards compatibility with PHP < 7.1. Use mcrypt instead.
+	if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
 		// @codingStandardsIgnoreStart
 		$data = serialize( $data );
 		return base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5(PUSH_SYNDICATE_KEY), $data, MCRYPT_MODE_CBC, md5(md5(PUSH_SYNDICATE_KEY))));
@@ -45,8 +45,8 @@ function push_syndicate_encrypt( $data ) {
 
 function push_syndicate_decrypt( $data, $associative = true ) {
 
-	// Backwards compatibility with PHP < 7.2.
-	if ( function_exists( 'mcrypt_encrypt' ) ) {
+	// Backwards compatibility with PHP < 7.1. Use mcrypt instead.
+	if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
 		// @codingStandardsIgnoreStart
 		$data = rtrim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, md5( PUSH_SYNDICATE_KEY ), base64_decode( $data ), MCRYPT_MODE_CBC, md5( md5( PUSH_SYNDICATE_KEY ) ) ), "\0" );
 		if ( ! $data ) {
