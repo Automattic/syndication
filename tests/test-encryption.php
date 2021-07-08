@@ -35,11 +35,11 @@ class EncryptionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the cipher is available on PHP < 7.2 and if the function is returning the correct cipher.
+	 * Tests if the cipher is available on PHP < 7.1 and if the function is returning the correct cipher.
 	 *
-	 * If using a PHP version older than 7.2, it will expect a mcrypt cipher.
+	 * If using a PHP version older than 7.1, it will expect a mcrypt cipher.
 	 *
-	 * @requires PHP < 7.2
+	 * @requires PHP < 7.1
 	 */
 	public function test_cypher_pre_72() {
 		// phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
@@ -51,11 +51,11 @@ class EncryptionTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the cipher is available on PHP >= 7.2 and if the function is returning the correct cipher.
+	 * Tests if the cipher is available on PHP >= 7.1 and if the function is returning the correct cipher.
 	 *
-	 * If using a PHP 7.2 or later, it should use openssl instead of mcrypt.
+	 * If using a PHP 7.1 or later, it should use openssl instead of mcrypt.
 	 *
-	 * @requires PHP >= 7.2
+	 * @requires PHP >= 7.1
 	 */
 	public function test_cypher() {
 		// Test the cipher.
