@@ -504,7 +504,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<label for=site_url><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_url_raw( $site_url ); ?>" />
+			<input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_attr( $site_url ); ?>" />
 		</p>
 		<p>
 			<label for="site_username"><?php echo esc_html__( 'Enter Username', 'push-syndication' ); ?></label>

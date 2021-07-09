@@ -532,7 +532,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_url_raw( $feed_url ); ?>" />
+			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
 		</p>
 		<p>
 			<label for="default_post_type"><?php esc_html_e( 'Select post type', 'push-syndication' ); ?></label>

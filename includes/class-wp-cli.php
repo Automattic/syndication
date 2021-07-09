@@ -32,10 +32,10 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$query = new WP_Query( $query_args );
 
 		while ( $query->post_count ) {
-			WP_CLI::line( sprintf( 'Processing page %d', $query_args['paged'] ) );
+			WP_CLI::line( sprintf( 'Processing page %d', $query_args['paged'] ) ); // @TODO: change to WP_CLI::log
 
 			foreach ( $query->posts as $post ) {
-				WP_CLI::line( sprintf( 'Processing post %d (%s)', $post->ID, $post->post_title ) );
+				WP_CLI::line( sprintf( 'Processing post %d (%s)', $post->ID, $post->post_title ) ); // @TODO: change to WP_CLI::log
 
 				$this->push_post( array(), array( 'post_id' => $post->ID ) );
 			}
@@ -128,6 +128,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		$this->enabled_verbosity = true;
 
+		// @TODO: change WP_CLI::line to WP_CLI::log
+
 		// output when a post is new or updated.
 		add_filter(
 			'syn_pre_pull_posts',
@@ -166,6 +168,8 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		}
 
 		$this->enabled_verbosity = true;
+
+		// @TODO: change WP_CLI::line to WP_CLI::log
 
 		add_filter(
 			'syn_pre_push_post_sites',

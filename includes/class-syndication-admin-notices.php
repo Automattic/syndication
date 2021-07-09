@@ -165,7 +165,7 @@ class Syndication_Logger_Admin_Notice {
  *
  * @return string|void
  */
-function syn_handle_multiple_error_notices( $message, $message_data ) { //phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals
+function syn_handle_multiple_error_notices( $message, $message_data ) {
 	return esc_html__( 'There have been multiple errors. Please validate your syndication logs', 'push-syndication' );
 }
 add_filter( 'syn_message_text_multiple', 'syn_handle_multiple_error_notices', 10, 2 );
