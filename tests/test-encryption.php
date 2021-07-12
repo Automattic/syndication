@@ -1,9 +1,12 @@
 <?php
+namespace Syndication\Tests;
+
+use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 /**
  * Class EncryptionTest
  */
-class EncryptionTest extends WP_UnitTestCase {
+class EncryptionTest extends WPIntegrationTestCase {
 	private $simple_string;
 	private $complex_array;
 
@@ -47,7 +50,7 @@ class EncryptionTest extends WP_UnitTestCase {
 
 		// Test the cipher.
 		$cipher = push_syndicate_get_cipher();
-		$this->assertSame( $expected_cipher, $cipher );
+		self::assertSame( $expected_cipher, $cipher );
 	}
 
 	/**
@@ -62,8 +65,8 @@ class EncryptionTest extends WP_UnitTestCase {
 		$cipher_data = push_syndicate_get_cipher();
 
 		// Test if is an array.
-		$this->assertIsArray( $cipher_data, 'assert if the cipher data is array' );
-		$this->assertCount( 3, $cipher_data, 'assert if cipher data have three elements' );
+		self::assertIsArray( $cipher_data, 'assert if the cipher data is array' );
+		self::assertCount( 3, $cipher_data, 'assert if cipher data have three elements' );
 
 		$cipher = $cipher_data['cipher'];
 		$iv     = $cipher_data['iv'];
@@ -71,15 +74,15 @@ class EncryptionTest extends WP_UnitTestCase {
 
 		// test cipher.
 		$expected_cipher = 'aes-256-cbc';
-		$this->assertEquals( $expected_cipher, $cipher, 'assert if cipher is available' );
+		self::assertEquals( $expected_cipher, $cipher, 'assert if cipher is available' );
 
 		// test key.
-		$this->assertEquals( $key, md5( PUSH_SYNDICATE_KEY ), 'assert if the key is generated as expected' );
+		self::assertEquals( $key, md5( PUSH_SYNDICATE_KEY ), 'assert if the key is generated as expected' );
 
 		// test iv.
-		$this->assertEquals( 16, strlen( $iv ), 'assert iv size (must be 16)' );
+		self::assertEquals( 16, strlen( $iv ), 'assert iv size (must be 16)' );
 		$generated_iv = substr( md5( md5( PUSH_SYNDICATE_KEY ) ), 0, 16 );
-		$this->assertEquals( $generated_iv, $iv, 'assert if generated iv is as expected' );
+		self::assertEquals( $generated_iv, $iv, 'assert if generated iv is as expected' );
 	}
 
 	/**
@@ -90,31 +93,19 @@ class EncryptionTest extends WP_UnitTestCase {
 		$encrypted_simple_different = push_syndicate_encrypt( $this->simple_string . '1' );
 		$encrypted_complex          = push_syndicate_encrypt( $this->complex_array );
 
-		// Because older WP versions might use older phpunit versions, assertIsString() might not be available.
-		if ( method_exists( $this, 'assertIsString' ) ) {
-			$this->assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
-			$this->assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
-		} else {
-			$this->assertTrue( is_string( $encrypted_simple ), 'assert if the string is encrypted (is_string)' );
-			$this->assertTrue( is_string( $encrypted_complex ), 'assert if the array is encrypted (is_string)' );
-		}
+		self::assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
+		self::assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
 
-		$this->assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
-		$this->assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
+		self::assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
+		self::assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
 
 		$decrypted_simple        = push_syndicate_decrypt( $encrypted_simple );
 		$decrypted_complex_array = push_syndicate_decrypt( $encrypted_complex );
 
-		$this->assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
+		self::assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
 
-		// Because older WP versions might use older phpunit versions, assertIsArray() might not be available.
-		if ( method_exists( $this, 'assertIsArray' ) ) {
-			$this->assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
-		} else {
-			$this->assertTrue( is_array( $decrypted_complex_array ), 'asserts if the decrypted complex data was decrypted as an array (is_array)' );
-		}
-
-		$this->assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
+		self::assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
+		self::assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
 	}
 
 
