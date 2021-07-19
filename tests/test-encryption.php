@@ -121,9 +121,12 @@ class EncryptionTest extends WPIntegrationTestCase {
 	 * @requires extension mcrypt
 	 */
 	public function test_encryptor_mcrypt() {
+		// Disable deprecation warning for this test, as it will run on PHP 7.1. This test will only ensure functionality of the
+		// Syndication_Encryptor_MCrypt class.
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
+		$error_reporting = error_reporting( error_reporting() & ~E_DEPRECATED );
+
 		$encryptor = new \Syndication_Encryptor_MCrypt();
-
-
 
 		// Test the cipher.
 		$expected_cipher = MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
@@ -136,6 +139,9 @@ class EncryptionTest extends WPIntegrationTestCase {
 
 		$decrypted = $encryptor->decrypt( $encrypted );
 		self::assertEquals( $this->simple_string, $decrypted );
+
+		// Restore original error reporting.
+		error_reporting( $error_reporting ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
 	}
 
 

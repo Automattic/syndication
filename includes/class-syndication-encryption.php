@@ -26,8 +26,9 @@ class Syndication_Encryption {
 			return self::$encryptor;
 		}
 
-		// If mcrypt is available ( PHP < 7.1 ), use it instead.
-		if ( defined( 'MCRYPT_RIJNDAEL_256' ) ) {
+		// On PHP 7.1 mcrypt is available, but will throw a deprecated error if its used. Therefore, checking for the
+		// PHP version, instead of checking for mcrypt is a better approach.
+		if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
 			self::$encryptor = new Syndication_Encryptor_MCrypt();
 			return self::$encryptor;
 		}
