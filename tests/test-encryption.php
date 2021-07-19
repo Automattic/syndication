@@ -10,6 +10,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 	private $simple_string;
 	private $complex_array;
 
+
 	/**
 	 * Runs before the test, set-up.
 	 */
@@ -31,38 +32,60 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Runs after the test, clean-up
-	 */
-	public function tearDown() {
-		// Nothing yet.
-	}
-
-	/**
-	 * Tests if the cipher is available on PHP < 7.1 and if the function is returning the correct cipher.
-	 *
-	 * If using a PHP version older than 7.1, it will expect a mcrypt cipher.
+	 * Test if the encryptor being used with PHP 7.1 or older is the mcrypt encryptor.
 	 *
 	 * @requires PHP < 7.1
 	 */
-	public function test_cypher_pre_72() {
-		// phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
-		$expected_cipher = MCRYPT_RIJNDAEL_256;
+	public function test_get_encryptor_before_php_71() {
+		$encryptor = \Syndication_Encryption::get_encryptor();
 
-		// Test the cipher.
-		$cipher = push_syndicate_get_cipher();
-		self::assertSame( $expected_cipher, $cipher );
+		// If PHP < 7.1, it should be using the mcrypt encryptor.
+		self::assertInstanceOf( \Syndication_Encryptor_MCrypt::class, $encryptor );
 	}
 
 	/**
-	 * Tests if the cipher is available on PHP >= 7.1 and if the function is returning the correct cipher.
-	 *
-	 * If using a PHP 7.1 or later, it should use openssl instead of mcrypt.
+	 * Test if the encryptor being used with newer PHP is OpenSSL encryptor.
 	 *
 	 * @requires PHP >= 7.1
 	 */
-	public function test_cypher() {
+	public function test_get_encryptor_after_php_71() {
+		$encryptor = \Syndication_Encryption::get_encryptor();
+
+		// Test if the Encryptor being used is the OpenSSL.
+		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor );
+	}
+
+	/**
+	 * Tests the encryption and decryption functions
+	 */
+	public function test_encryption() {
+		$encrypted_simple           = push_syndicate_encrypt( $this->simple_string );
+		$encrypted_simple_different = push_syndicate_encrypt( $this->simple_string . '1' );
+		$encrypted_complex          = push_syndicate_encrypt( $this->complex_array );
+
+		self::assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
+		self::assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
+
+		self::assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
+		self::assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
+
+		$decrypted_simple        = push_syndicate_decrypt( $encrypted_simple );
+		$decrypted_complex_array = push_syndicate_decrypt( $encrypted_complex );
+
+		self::assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
+
+		self::assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
+		self::assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
+	}
+
+	/**
+	 * Tests the Syndication_Encryptor_OpenSSL encryptor.
+	 */
+	public function test_encryptor_openssl() {
+		$encryptor = new \Syndication_Encryptor_OpenSSL();
+
 		// Test the cipher.
-		$cipher_data = push_syndicate_get_cipher();
+		$cipher_data = $encryptor->getCipher();
 
 		// Test if is an array.
 		self::assertIsArray( $cipher_data, 'assert if the cipher data is array' );
@@ -83,29 +106,36 @@ class EncryptionTest extends WPIntegrationTestCase {
 		self::assertEquals( 16, strlen( $iv ), 'assert iv size (must be 16)' );
 		$generated_iv = substr( md5( md5( PUSH_SYNDICATE_KEY ) ), 0, 16 );
 		self::assertEquals( $generated_iv, $iv, 'assert if generated iv is as expected' );
+
+		// Test simple encryption and decryption.
+		$encrypted = $encryptor->encrypt( $this->simple_string );
+		self::assertIsString( $encrypted );
+
+		$decrypted = $encryptor->decrypt( $encrypted );
+		self::assertEquals( $this->simple_string, $decrypted );
 	}
 
 	/**
-	 * Tests the encryption and decryption methods.
+	 * Tests the Syndication_Encryptor_MCrypt encryptor, only if the module is present (usually PHP < 7.1)
+	 *
+	 * @requires extension mcrypt
 	 */
-	public function test_encryption() {
-		$encrypted_simple           = push_syndicate_encrypt( $this->simple_string );
-		$encrypted_simple_different = push_syndicate_encrypt( $this->simple_string . '1' );
-		$encrypted_complex          = push_syndicate_encrypt( $this->complex_array );
+	public function test_encryptor_mcrypt() {
+		$encryptor = new \Syndication_Encryptor_MCrypt();
 
-		self::assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
-		self::assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
 
-		self::assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
-		self::assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
 
-		$decrypted_simple        = push_syndicate_decrypt( $encrypted_simple );
-		$decrypted_complex_array = push_syndicate_decrypt( $encrypted_complex );
+		// Test the cipher.
+		$expected_cipher = MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
+		$cipher          = $encryptor->getCipher();
+		self::assertSame( $expected_cipher, $cipher );
 
-		self::assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
+		// Test simple encryption and decryption.
+		$encrypted = $encryptor->encrypt( $this->simple_string );
+		self::assertIsString( $encrypted );
 
-		self::assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
-		self::assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
+		$decrypted = $encryptor->decrypt( $encrypted );
+		self::assertEquals( $this->simple_string, $decrypted );
 	}
 
 
