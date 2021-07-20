@@ -1,7 +1,5 @@
 <?php
 
-require_once dirname( __FILE__ ) . '/class-syndication-encryption.php';
-
 /**
  * Encrypts data.
  *
