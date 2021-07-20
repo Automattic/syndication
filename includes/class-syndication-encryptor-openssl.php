@@ -1,7 +1,5 @@
 <?php
 
-require_once dirname( __FILE__ ) . '/class-syndication-encryptor.php';
-
 /**
  * Class Syndication_Encryptor_OpenSSL
  */

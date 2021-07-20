@@ -1,9 +1,5 @@
 <?php
 
-require_once dirname( __FILE__ ) . '/class-syndication-encryptor.php';
-require_once dirname( __FILE__ ) . '/class-syndication-encryptor-openssl.php';
-require_once dirname( __FILE__ ) . '/class-syndication-encryptor-mcrypt.php';
-
 /**
  * Class Syndication_Encryption
  */
@@ -19,21 +15,26 @@ class Syndication_Encryption {
 	/**
 	 * Returns the best possible Encryptor, given the current environment.
 	 *
-	 * @return Syndication_Encryptor
+	 * @return Syndication_Encryptor|false
 	 */
 	public static function get_encryptor() {
 		if ( isset( self::$encryptor ) && self::$encryptor instanceof Syndication_Encryptor ) {
 			return self::$encryptor;
 		}
 
-		// On PHP 7.1 mcrypt is available, but will throw a deprecated error if its used. Therefore, checking for the
-		// PHP version, instead of checking for mcrypt is a better approach.
-		if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
-			self::$encryptor = new Syndication_Encryptor_MCrypt();
-			return self::$encryptor;
-		}
+		return false;
+	}
 
-		self::$encryptor = new Syndication_Encryptor_OpenSSL();
+	/**
+	 * Set the Encryptor that will be used for the encryption and decryption operations.
+	 *
+	 * @param Syndication_Encryptor $encryptor Encryptor to be used in the encryption.
+	 *
+	 * @return Syndication_Encryptor Returns the encryptor
+	 */
+	public static function set_encryptor( $encryptor ) {
+		self::$encryptor = $encryptor;
+
 		return self::$encryptor;
 	}
 
