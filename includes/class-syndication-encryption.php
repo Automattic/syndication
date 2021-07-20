@@ -30,12 +30,15 @@ class Syndication_Encryption {
 	 *
 	 * @param Syndication_Encryptor $encryptor Encryptor to be used in the encryption.
 	 *
-	 * @return Syndication_Encryptor Returns the encryptor
+	 * @return Syndication_Encryptor|false Returns the encryptor
 	 */
 	public static function set_encryptor( $encryptor ) {
-		self::$encryptor = $encryptor;
+		if ( $encryptor instanceof Syndication_Encryptor ) {
+			self::$encryptor = $encryptor;
+			return self::$encryptor;
+		}
 
-		return self::$encryptor;
+		return false;
 	}
 
 	/**

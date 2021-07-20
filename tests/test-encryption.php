@@ -56,7 +56,18 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Tests the encryption and decryption functions
+	 * Test if setting the encryptor works as expected
+	 */
+	public function test_set_encryptor() {
+		$encryptor = \Syndication_Encryption::set_encryptor( new \Syndication_Encryptor_OpenSSL() );
+		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor, 'assert if the encryptor is set' );
+
+		$encryptor = \Syndication_Encryption::set_encryptor( new \stdClass() );
+		self::assertFalse( $encryptor, 'assert if invalid encryptor returns false' );
+	}
+
+	/**
+	 * Tests the encryption functions
 	 */
 	public function test_encryption() {
 		$encrypted_simple           = push_syndicate_encrypt( $this->simple_string );
@@ -69,80 +80,24 @@ class EncryptionTest extends WPIntegrationTestCase {
 		self::assertNotEquals( $encrypted_simple, $encrypted_complex, 'assert that the two different objects have different results' );
 		self::assertNotEquals( $encrypted_simple, $encrypted_simple_different, 'assert that the two different strings have different results' );
 
-		$decrypted_simple        = push_syndicate_decrypt( $encrypted_simple );
-		$decrypted_complex_array = push_syndicate_decrypt( $encrypted_complex );
+		return array( $encrypted_simple, $encrypted_complex );
+	}
+
+	/**
+	 * Tests the decryption functions
+	 *
+	 * @param array[2] $array_encrypted Array with the encrypted data. First element is a string, second element is array.
+	 *
+	 * @depends test_encryption
+	 */
+	public function test_decryption( $array_encrypted ) {
+		$decrypted_simple        = push_syndicate_decrypt( $array_encrypted[0] );
+		$decrypted_complex_array = push_syndicate_decrypt( $array_encrypted[1] );
 
 		self::assertEquals( $this->simple_string, $decrypted_simple, 'asserts if the decrypted string is the same as the original' );
 
 		self::assertIsArray( $decrypted_complex_array, 'asserts if the decrypted complex data was decrypted as an array' );
 		self::assertEquals( $this->complex_array, $decrypted_complex_array, 'check if the decrypted array is the same as the original' );
 	}
-
-	/**
-	 * Tests the Syndication_Encryptor_OpenSSL encryptor.
-	 */
-	public function test_encryptor_openssl() {
-		$encryptor = new \Syndication_Encryptor_OpenSSL();
-
-		// Test the cipher.
-		$cipher_data = $encryptor->getCipher();
-
-		// Test if is an array.
-		self::assertIsArray( $cipher_data, 'assert if the cipher data is array' );
-		self::assertCount( 3, $cipher_data, 'assert if cipher data have three elements' );
-
-		$cipher = $cipher_data['cipher'];
-		$iv     = $cipher_data['iv'];
-		$key    = $cipher_data['key'];
-
-		// test cipher.
-		$expected_cipher = 'aes-256-cbc';
-		self::assertEquals( $expected_cipher, $cipher, 'assert if cipher is available' );
-
-		// test key.
-		self::assertEquals( $key, md5( PUSH_SYNDICATE_KEY ), 'assert if the key is generated as expected' );
-
-		// test iv.
-		self::assertEquals( 16, strlen( $iv ), 'assert iv size (must be 16)' );
-		$generated_iv = substr( md5( md5( PUSH_SYNDICATE_KEY ) ), 0, 16 );
-		self::assertEquals( $generated_iv, $iv, 'assert if generated iv is as expected' );
-
-		// Test simple encryption and decryption.
-		$encrypted = $encryptor->encrypt( $this->simple_string );
-		self::assertIsString( $encrypted );
-
-		$decrypted = $encryptor->decrypt( $encrypted );
-		self::assertEquals( $this->simple_string, $decrypted );
-	}
-
-	/**
-	 * Tests the Syndication_Encryptor_MCrypt encryptor, only if the module is present (usually PHP < 7.1)
-	 *
-	 * @requires extension mcrypt
-	 */
-	public function test_encryptor_mcrypt() {
-		// Disable deprecation warning for this test, as it will run on PHP 7.1. This test will only ensure functionality of the
-		// Syndication_Encryptor_MCrypt class.
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
-		$error_reporting = error_reporting( error_reporting() & ~E_DEPRECATED );
-
-		$encryptor = new \Syndication_Encryptor_MCrypt();
-
-		// Test the cipher.
-		$expected_cipher = MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
-		$cipher          = $encryptor->getCipher();
-		self::assertSame( $expected_cipher, $cipher );
-
-		// Test simple encryption and decryption.
-		$encrypted = $encryptor->encrypt( $this->simple_string );
-		self::assertIsString( $encrypted );
-
-		$decrypted = $encryptor->decrypt( $encrypted );
-		self::assertEquals( $this->simple_string, $decrypted );
-
-		// Restore original error reporting.
-		error_reporting( $error_reporting ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
-	}
-
 
 }
