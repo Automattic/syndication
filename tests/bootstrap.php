@@ -26,3 +26,9 @@ require $_tests_dir . '/includes/bootstrap.php';
  */
 require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
 WPIntegration\bootstrap_it();
+
+/*
+ * Load tests dependencies
+ */
+
+require_once dirname( __FILE__ ) . '/class-encryptor-test-case.php';

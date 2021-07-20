@@ -8,32 +8,14 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  *
  * @requires extension mcrypt
  */
-class EncryptorMCryptTest extends WPIntegrationTestCase {
-	private $simple_string;
-	private $complex_array;
-	private $encryptor;
+class EncryptorMCryptTest extends EncryptorTestCase {
 	private $error_reporting;
-
 
 	/**
 	 * Runs before the test, set-up.
 	 */
 	public function setUp() {
-		$this->simple_string = 'this is a simple string!';
-		$this->complex_array = array(
-			'element' => 'this is a element',
-			'group'   => array(
-				'another',
-				'sub',
-				'array',
-				'info' => 'test',
-			),
-			'',
-			145,
-			1         => 20.04,
-			3         => true,
-		);
-
+		parent::setUp();
 		$this->encryptor = new \Syndication_Encryptor_MCrypt();
 
 		// Disable deprecation warning for this test, as it will run on PHP 7.1. This test will only ensure functionality of the
@@ -52,39 +34,10 @@ class EncryptorMCryptTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Test a simple string encryption
-	 */
-	public function test_simple_encryption() {
-		$encrypted = $this->encryptor->encrypt( $this->simple_string );
-
-		self::assertIsString( $encrypted, 'assert if the string encryption returns string' );
-		self::assertEquals( base64_encode( base64_decode( $encrypted ) ), $encrypted, 'assert if the encrypted data is encoded in base64' );
-
-		return $encrypted;
-	}
-
-	/**
-	 * Test a simple string decryption.
-	 *
-	 * @param string $encrypted The encrypted string from the previous test.
-	 *
-	 * @depends test_simple_encryption
-	 */
-	public function test_simple_decryption( $encrypted ) {
-		$decrypted = $this->encryptor->decrypt( $encrypted );
-		self::assertEquals( $this->simple_string, $decrypted );
-	}
-
-	/**
 	 * Test a complex (array) encryption.
 	 */
 	public function test_complex_encryption() {
-		$encrypted = $this->encryptor->encrypt( $this->complex_array );
-
-		self::assertIsString( $encrypted, 'assert if the array encryption returns string' );
-		self::assertEquals( base64_encode( base64_decode( $encrypted ) ), $encrypted, 'assert if the encrypted data is encoded in base64' );
-
-		return $encrypted;
+		return parent::test_complex_encryption();
 	}
 
 	/**

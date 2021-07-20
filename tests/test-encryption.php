@@ -5,6 +5,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 /**
  * Class EncryptionTest
+ *
  */
 class EncryptionTest extends WPIntegrationTestCase {
 	private $simple_string;
