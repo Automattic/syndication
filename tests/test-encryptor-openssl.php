@@ -22,7 +22,7 @@ class EncryptorOpenSSLTest extends EncryptorTestCase {
 	 */
 	public function test_cipher() {
 		// Test the cipher.
-		$cipher_data = $this->encryptor->getCipher();
+		$cipher_data = $this->encryptor->get_cipher();
 
 		// Test if is an array.
 		self::assertIsArray( $cipher_data, 'assert if the cipher data is array' );

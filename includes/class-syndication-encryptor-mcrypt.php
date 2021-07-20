@@ -3,7 +3,7 @@
 /**
  * Class Syndication_Encryptor_OpenSSL
  */
-class Syndication_Encryptor_MCrypt extends Syndication_Encryptor {
+class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 
 	/**
 	 * @inheritDoc
@@ -30,7 +30,7 @@ class Syndication_Encryptor_MCrypt extends Syndication_Encryptor {
 	/**
 	 * @inheritDoc
 	 */
-	public function getCipher() {
+	public function get_cipher() {
 		return MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
 	}
 }

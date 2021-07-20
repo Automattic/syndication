@@ -41,9 +41,9 @@ new Syndication_Site_Failure_Monitor();
 require __DIR__ . '/includes/class-syndication-site-auto-retry.php';
 new Failed_Syndication_Auto_Retry();
 
-// Load encryption class
+// Load encryption classes
 require_once dirname( __FILE__ ) . '/includes/class-syndication-encryption.php';
-require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor.php';
+require_once dirname( __FILE__ ) . '/includes/interface-syndication-encryptor.php';
 require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor-mcrypt.php';
 require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor-openssl.php';
 

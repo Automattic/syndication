@@ -3,7 +3,7 @@
 /**
  * Class Syndication_Encryptor_OpenSSL
  */
-class Syndication_Encryptor_OpenSSL extends Syndication_Encryptor {
+class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 
 	/**
 	 * The cipher to be used for encryption.
@@ -17,7 +17,7 @@ class Syndication_Encryptor_OpenSSL extends Syndication_Encryptor {
 	 */
 	public function encrypt( $data ) {
 		$data   = wp_json_encode( $data );
-		$cipher = $this->getCipher();
+		$cipher = $this->get_cipher();
 
 		if ( ! $cipher ) {
 			return $data;
@@ -31,7 +31,7 @@ class Syndication_Encryptor_OpenSSL extends Syndication_Encryptor {
 	 * @inheritDoc
 	 */
 	public function decrypt( $data, $associative = true ) {
-		$cipher = $this->getCipher();
+		$cipher = $this->get_cipher();
 
 		if ( ! $cipher ) {
 			return $data;
@@ -49,7 +49,7 @@ class Syndication_Encryptor_OpenSSL extends Syndication_Encryptor {
 	/**
 	 * @inheritDoc
 	 */
-	public function getCipher() {
+	public function get_cipher() {
 		if ( in_array( $this->cipher, openssl_get_cipher_methods(), true ) ) {
 			return array(
 				'cipher' => $this->cipher,

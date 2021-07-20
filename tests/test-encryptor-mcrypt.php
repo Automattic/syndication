@@ -59,7 +59,7 @@ class EncryptorMCryptTest extends EncryptorTestCase {
 	 */
 	public function test_cipher() {
 		$expected_cipher = MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved
-		$cipher          = $this->encryptor->getCipher();
+		$cipher          = $this->encryptor->get_cipher();
 
 		self::assertSame( $expected_cipher, $cipher );
 	}
