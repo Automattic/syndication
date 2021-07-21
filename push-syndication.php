@@ -49,7 +49,7 @@ require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor-openss
 
 // On PHP 7.1 mcrypt is available, but will throw a deprecated error if its used. Therefore, checking for the
 // PHP version, instead of checking for mcrypt is a better approach.
-if ( PHP_VERSION_ID < 70100 ) {
+if ( ! defined( 'PHP_VERSION_ID' ) || PHP_VERSION_ID < 70100 ) {
 	$syndication_encryption = new Syndication_Encryption( new Syndication_Encryptor_MCrypt() );
 } else {
 	$syndication_encryption = new Syndication_Encryption( new Syndication_Encryptor_OpenSSL() );
