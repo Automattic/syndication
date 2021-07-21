@@ -8,7 +8,8 @@
  * @return false|string
  */
 function push_syndicate_encrypt( $data ) {
-	return Syndication_Encryption::encrypt( $data );
+	global $push_syndication_encryption; // @todo: move from global to WP_Push_Syndication_Server attribute
+	return $push_syndication_encryption->encrypt( $data );
 }
 
 /**
@@ -20,5 +21,6 @@ function push_syndicate_encrypt( $data ) {
  * @return array|false|object
  */
 function push_syndicate_decrypt( $data, $associative = true ) {
-	return Syndication_Encryption::decrypt( $data, $associative );
+	global $push_syndication_encryption; // @todo: move from global to WP_Push_Syndication_Server attribute
+	return $push_syndication_encryption->decrypt( $data, $associative );
 }

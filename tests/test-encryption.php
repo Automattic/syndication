@@ -11,6 +11,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 	private $simple_string;
 	private $complex_array;
 
+	private $syndication_encryption;
 
 	/**
 	 * Runs before the test, set-up.
@@ -30,6 +31,9 @@ class EncryptionTest extends WPIntegrationTestCase {
 			1         => 20.04,
 			3         => true,
 		);
+
+		global $push_syndication_encryption;
+		$this->syndication_encryption = $push_syndication_encryption;
 	}
 
 	/**
@@ -38,7 +42,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 	 * @requires PHP < 7.1
 	 */
 	public function test_get_encryptor_before_php_71() {
-		$encryptor = \Syndication_Encryption::get_encryptor();
+		$encryptor = $this->syndication_encryption->get_encryptor();
 
 		// If PHP < 7.1, it should be using the mcrypt encryptor.
 		self::assertInstanceOf( \Syndication_Encryptor_MCrypt::class, $encryptor );
@@ -50,7 +54,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 	 * @requires PHP >= 7.1
 	 */
 	public function test_get_encryptor_after_php_71() {
-		$encryptor = \Syndication_Encryption::get_encryptor();
+		$encryptor = $this->syndication_encryption->get_encryptor();
 
 		// Test if the Encryptor being used is the OpenSSL.
 		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor );
@@ -60,11 +64,12 @@ class EncryptionTest extends WPIntegrationTestCase {
 	 * Test if setting the encryptor works as expected
 	 */
 	public function test_set_encryptor() {
-		$encryptor = \Syndication_Encryption::set_encryptor( new \Syndication_Encryptor_OpenSSL() );
-		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor, 'assert if the encryptor is set' );
+		$new_encryptor = $this->syndication_encryption->set_encryptor( new \Syndication_Encryptor_OpenSSL() );
+		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $new_encryptor, 'assert if the encryptor is set' );
 
-		$encryptor = \Syndication_Encryption::set_encryptor( new \stdClass() );
-		self::assertFalse( $encryptor, 'assert if invalid encryptor returns false' );
+		$encryptor = $this->syndication_encryption->get_encryptor();
+		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor, 'assert if the encryptor is set' );
+		self::assertEquals( $new_encryptor, $encryptor, 'assert if the set encryptor is the same as the one retrieved' );
 	}
 
 	/**

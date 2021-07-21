@@ -41,7 +41,7 @@ new Syndication_Site_Failure_Monitor();
 require __DIR__ . '/includes/class-syndication-site-auto-retry.php';
 new Failed_Syndication_Auto_Retry();
 
-// Load encryption classes
+// Load encryption classes.
 require_once dirname( __FILE__ ) . '/includes/class-syndication-encryption.php';
 require_once dirname( __FILE__ ) . '/includes/interface-syndication-encryptor.php';
 require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor-mcrypt.php';
@@ -49,8 +49,11 @@ require_once dirname( __FILE__ ) . '/includes/class-syndication-encryptor-openss
 
 // On PHP 7.1 mcrypt is available, but will throw a deprecated error if its used. Therefore, checking for the
 // PHP version, instead of checking for mcrypt is a better approach.
-if ( version_compare( PHP_VERSION, '7.1', '<' ) ) {
-	Syndication_Encryption::set_encryptor( new Syndication_Encryptor_MCrypt() );
+if ( PHP_VERSION_ID < 70100 ) {
+	$syndication_encryption = new Syndication_Encryption( new Syndication_Encryptor_MCrypt() );
 } else {
-	Syndication_Encryption::set_encryptor( new Syndication_Encryptor_OpenSSL() );
+	$syndication_encryption = new Syndication_Encryption( new Syndication_Encryptor_OpenSSL() );
 }
+
+// @TODO: instead of saving this as a global, have it as an attribute of WP_Push_Syndication_Server
+$GLOBALS['push_syndication_encryption'] = $syndication_encryption;

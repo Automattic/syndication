@@ -10,19 +10,24 @@ class Syndication_Encryption {
 	 *
 	 * @var Syndication_Encryptor
 	 */
-	private static $encryptor;
+	private $encryptor;
+
+	/**
+	 * Syndication_Encryption constructor.
+	 *
+	 * @param Syndication_Encryptor $encryptor Encryptor to be used.
+	 */
+	public function __construct( Syndication_Encryptor $encryptor ) {
+		$this->encryptor = $encryptor;
+	}
 
 	/**
 	 * Returns the best possible Encryptor, given the current environment.
 	 *
-	 * @return Syndication_Encryptor|false
+	 * @return Syndication_Encryptor
 	 */
-	public static function get_encryptor() {
-		if ( isset( self::$encryptor ) && self::$encryptor instanceof Syndication_Encryptor ) {
-			return self::$encryptor;
-		}
-
-		return false;
+	public function get_encryptor() {
+		return $this->encryptor;
 	}
 
 	/**
@@ -30,15 +35,11 @@ class Syndication_Encryption {
 	 *
 	 * @param Syndication_Encryptor $encryptor Encryptor to be used in the encryption.
 	 *
-	 * @return Syndication_Encryptor|false Returns the encryptor
+	 * @return Syndication_Encryptor Returns the encryptor
 	 */
-	public static function set_encryptor( $encryptor ) {
-		if ( $encryptor instanceof Syndication_Encryptor ) {
-			self::$encryptor = $encryptor;
-			return self::$encryptor;
-		}
-
-		return false;
+	public function set_encryptor( Syndication_Encryptor $encryptor ) {
+		$this->encryptor = $encryptor;
+		return $encryptor;
 	}
 
 	/**
@@ -48,8 +49,8 @@ class Syndication_Encryption {
 	 *
 	 * @return false|string
 	 */
-	public static function encrypt( $data ) {
-		$encryptor = self::get_encryptor();
+	public function encrypt( $data ) {
+		$encryptor = $this->get_encryptor();
 		return $encryptor->encrypt( $data );
 	}
 
@@ -61,8 +62,8 @@ class Syndication_Encryption {
 	 *
 	 * @return false|array|object
 	 */
-	public static function decrypt( $data, $associative = true ) {
-		$encryptor = self::get_encryptor();
+	public function decrypt( $data, $associative = true ) {
+		$encryptor = $this->get_encryptor();
 		return $encryptor->decrypt( $data, $associative );
 	}
 
