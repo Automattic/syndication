@@ -5,13 +5,11 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 /**
  * Class EncryptionTest
- *
  */
 class EncryptionTest extends WPIntegrationTestCase {
 	private $simple_string;
 	private $complex_array;
 
-	private $syndication_encryption;
 
 	/**
 	 * Runs before the test, set-up.
@@ -31,45 +29,42 @@ class EncryptionTest extends WPIntegrationTestCase {
 			1         => 20.04,
 			3         => true,
 		);
-
-		global $push_syndication_encryption;
-		$this->syndication_encryption = $push_syndication_encryption;
 	}
 
 	/**
 	 * Test if the encryptor being used with PHP 7.1 or older is the mcrypt encryptor.
 	 *
-	 * @requires PHP < 7.1
+	 * @requires module mcrypt
 	 */
-	public function test_get_encryptor_before_php_71() {
-		$encryptor = $this->syndication_encryption->get_encryptor();
+	public function test_new_encryption_instance_with_mcrypt() {
+		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_MCrypt() );
 
-		// If PHP < 7.1, it should be using the mcrypt encryptor.
-		self::assertInstanceOf( \Syndication_Encryptor_MCrypt::class, $encryptor );
+		// Disable deprecated warnings for PHP 7..
+		$original_error_reporting = error_reporting( error_reporting() & ~E_DEPRECATED ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
+
+		// Quick encryption/decryption test.
+		$quick_test_string = 'This is a quick test.';
+		$encrypted         = $syndication_encryption->encrypt( $quick_test_string );
+		$decrypted         = $syndication_encryption->decrypt( $encrypted );
+		self::assertEquals( $encrypted, $syndication_encryption->encrypt( $quick_test_string ), 'assert that encryption results are consistent' );
+		self::assertEquals( $quick_test_string, $decrypted, 'assert that decrypted string is the same as original' );
+
+		// Restore original error reporting.
+		error_reporting( $original_error_reporting ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
 	}
 
 	/**
 	 * Test if the encryptor being used with newer PHP is OpenSSL encryptor.
-	 *
-	 * @requires PHP >= 7.1
 	 */
-	public function test_get_encryptor_after_php_71() {
-		$encryptor = $this->syndication_encryption->get_encryptor();
+	public function test_new_encryption_instance_with_openssl() {
+		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_OpenSSL() );
 
-		// Test if the Encryptor being used is the OpenSSL.
-		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor );
-	}
-
-	/**
-	 * Test if setting the encryptor works as expected
-	 */
-	public function test_set_encryptor() {
-		$new_encryptor = $this->syndication_encryption->set_encryptor( new \Syndication_Encryptor_OpenSSL() );
-		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $new_encryptor, 'assert if the encryptor is set' );
-
-		$encryptor = $this->syndication_encryption->get_encryptor();
-		self::assertInstanceOf( \Syndication_Encryptor_OpenSSL::class, $encryptor, 'assert if the encryptor is set' );
-		self::assertEquals( $new_encryptor, $encryptor, 'assert if the set encryptor is the same as the one retrieved' );
+		// Quick encryption/decryption test.
+		$quick_test_string = 'This is a quick test.';
+		$encrypted         = $syndication_encryption->encrypt( $quick_test_string );
+		$decrypted         = $syndication_encryption->decrypt( $encrypted );
+		self::assertEquals( $encrypted, $syndication_encryption->encrypt( $quick_test_string ), 'assert that encryption results are consistent' );
+		self::assertEquals( $quick_test_string, $decrypted, 'assert that decrypted string is the same as original' );
 	}
 
 	/**
