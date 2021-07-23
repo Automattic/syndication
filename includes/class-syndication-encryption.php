@@ -22,27 +22,6 @@ class Syndication_Encryption {
 	}
 
 	/**
-	 * Returns the best possible Encryptor, given the current environment.
-	 *
-	 * @return Syndication_Encryptor
-	 */
-	public function get_encryptor() {
-		return $this->encryptor;
-	}
-
-	/**
-	 * Set the Encryptor that will be used for the encryption and decryption operations.
-	 *
-	 * @param Syndication_Encryptor $encryptor Encryptor to be used in the encryption.
-	 *
-	 * @return Syndication_Encryptor Returns the encryptor
-	 */
-	public function set_encryptor( Syndication_Encryptor $encryptor ) {
-		$this->encryptor = $encryptor;
-		return $encryptor;
-	}
-
-	/**
 	 * Given $data, encrypt it using a Syndication_Encryptor and return the encrypted string.
 	 *
 	 * @param string|array|object $data the data to be encrypted.
@@ -50,8 +29,7 @@ class Syndication_Encryption {
 	 * @return false|string
 	 */
 	public function encrypt( $data ) {
-		$encryptor = $this->get_encryptor();
-		return $encryptor->encrypt( $data );
+		return $this->encryptor->encrypt( $data );
 	}
 
 	/**
@@ -63,8 +41,7 @@ class Syndication_Encryption {
 	 * @return false|array|object
 	 */
 	public function decrypt( $data, $associative = true ) {
-		$encryptor = $this->get_encryptor();
-		return $encryptor->decrypt( $data, $associative );
+		return $this->encryptor->decrypt( $data, $associative );
 	}
 
 }
