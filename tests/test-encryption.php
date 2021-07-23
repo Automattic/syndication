@@ -32,9 +32,9 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Test if the encryptor being used with PHP 7.1 or older is the mcrypt encryptor.
+	 * Test new instance of Syndication_Encryption with the MCrypt strategy.
 	 *
-	 * @requires module mcrypt
+	 * @requires extension mcrypt
 	 */
 	public function test_new_encryption_instance_with_mcrypt() {
 		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_MCrypt() );
@@ -54,7 +54,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Test if the encryptor being used with newer PHP is OpenSSL encryptor.
+	 * Test new instance of Syndication_Encryption with the OpenSSL strategy.
 	 */
 	public function test_new_encryption_instance_with_openssl() {
 		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_OpenSSL() );
