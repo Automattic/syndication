@@ -32,39 +32,31 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Test new instance of Syndication_Encryption with the MCrypt strategy.
-	 *
-	 * @requires extension mcrypt
+	 * Test if the `encrypt` method on Syndication_Encryption calls the `encrypt` method on the specific Syndication_Encryptor
 	 */
-	public function test_new_encryption_instance_with_mcrypt() {
-		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_MCrypt() );
+	public function test_encrypt_method_is_called_on_encryptor_object() {
+		$fake_encrypted_string = 'I\'m an encrypted string.';
 
-		// Disable deprecated warnings for PHP 7..
-		$original_error_reporting = error_reporting( error_reporting() & ~E_DEPRECATED ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
+		$mock_encryptor = $this->createMock( \Syndication_Encryptor::class );
+		$mock_encryptor->method( 'encrypt' )->will( $this->returnValue( $fake_encrypted_string ) );
 
-		// Quick encryption/decryption test.
-		$quick_test_string = 'This is a quick test.';
-		$encrypted         = $syndication_encryption->encrypt( $quick_test_string );
-		$decrypted         = $syndication_encryption->decrypt( $encrypted );
-		self::assertEquals( $encrypted, $syndication_encryption->encrypt( $quick_test_string ), 'assert that encryption results are consistent' );
-		self::assertEquals( $quick_test_string, $decrypted, 'assert that decrypted string is the same as original' );
+		$syndication_encryption = new \Syndication_Encryption( $mock_encryptor );
 
-		// Restore original error reporting.
-		error_reporting( $original_error_reporting ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
+		self::assertSame( $fake_encrypted_string, $syndication_encryption->encrypt( 'I am a plain-text string' ) );
 	}
 
 	/**
-	 * Test new instance of Syndication_Encryption with the OpenSSL strategy.
+	 * Test if the `decrypt` method on Syndication_Encryption calls the `decrypt` method on the specific Syndication_Encryptor
 	 */
-	public function test_new_encryption_instance_with_openssl() {
-		$syndication_encryption = new \Syndication_Encryption( new \Syndication_Encryptor_OpenSSL() );
+	public function test_decrypt_method_is_called_on_encryptor_object() {
+		$fake_plain_text_string = 'I am a plain-text string.';
 
-		// Quick encryption/decryption test.
-		$quick_test_string = 'This is a quick test.';
-		$encrypted         = $syndication_encryption->encrypt( $quick_test_string );
-		$decrypted         = $syndication_encryption->decrypt( $encrypted );
-		self::assertEquals( $encrypted, $syndication_encryption->encrypt( $quick_test_string ), 'assert that encryption results are consistent' );
-		self::assertEquals( $quick_test_string, $decrypted, 'assert that decrypted string is the same as original' );
+		$mock_encryptor = $this->createMock( \Syndication_Encryptor::class );
+		$mock_encryptor->method( 'decrypt' )->will( $this->returnValue( $fake_plain_text_string ) );
+
+		$syndication_encryption = new \Syndication_Encryption( $mock_encryptor );
+
+		self::assertSame( $fake_plain_text_string, $syndication_encryption->decrypt( 'I\'m an encrypted string.' ) );
 	}
 
 	/**
