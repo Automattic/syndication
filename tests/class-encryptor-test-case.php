@@ -16,7 +16,7 @@ abstract class EncryptorTestCase extends WPIntegrationTestCase {
 	/**
 	 * Runs before the test, set-up.
 	 */
-	public function setUp() {
+	public function set_up() {
 		$this->simple_string = 'this is a simple string!';
 		$this->complex_array = array(
 			'element' => 'this is a element',

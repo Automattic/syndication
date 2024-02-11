@@ -11,8 +11,8 @@ class EncryptorOpenSSLTest extends EncryptorTestCase {
 	/**
 	 * Runs before the test, set-up.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->encryptor = new \Syndication_Encryptor_OpenSSL();
 	}

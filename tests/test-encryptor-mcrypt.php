@@ -14,8 +14,8 @@ class EncryptorMCryptTest extends EncryptorTestCase {
 	/**
 	 * Runs before the test, set-up.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 		$this->encryptor = new \Syndication_Encryptor_MCrypt();
 
 		// Disable deprecation warning for this test, as it will run on PHP 7.1. This test will only ensure functionality of the
@@ -27,10 +27,10 @@ class EncryptorMCryptTest extends EncryptorTestCase {
 	/**
 	 * Runs after the test.
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		// Restore original error reporting.
 		error_reporting( $this->error_reporting ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_error_reporting
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

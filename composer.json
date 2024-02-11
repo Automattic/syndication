@@ -49,7 +49,7 @@
 			"bash bin/install-wp-tests.sh wordpress_test root root localhost"
 		],
 		"test": [
-			"@php ./vendor/bin/phpunit --testsuite WP_Tests"
+			"@php ./vendor/bin/phpunit --testsuite WP_Tests --no-coverage"
 		],
 		"test-ms": [
 			"@putenv WP_MULTISITE=1",
