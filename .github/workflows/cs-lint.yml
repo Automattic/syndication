@@ -22,7 +22,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "7.4"
+          php-version: "latest"
           coverage: none
           tools: cs2pr
 
@@ -37,7 +37,7 @@ jobs:
         uses: korelstar/xmllint-problem-matcher@v1
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # Validate the composer.json file.
       # @link https://getcomposer.org/doc/03-cli.md#validate
