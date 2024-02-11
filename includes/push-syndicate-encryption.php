@@ -1,18 +1,26 @@
 <?php
 
+/**
+ * Encrypts data.
+ *
+ * @param string $data The data to encrypt.
+ *
+ * @return false|string
+ */
 function push_syndicate_encrypt( $data ) {
-
-	$data = serialize( $data );
-	return base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5(PUSH_SYNDICATE_KEY), $data, MCRYPT_MODE_CBC, md5(md5(PUSH_SYNDICATE_KEY))));
-
+	global $push_syndication_encryption; // @todo: move from global to WP_Push_Syndication_Server attribute
+	return $push_syndication_encryption->encrypt( $data );
 }
 
-function push_syndicate_decrypt( $data ) {
-
-	$data = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5(PUSH_SYNDICATE_KEY), base64_decode($data), MCRYPT_MODE_CBC, md5(md5(PUSH_SYNDICATE_KEY))), "\0");
-	if ( !$data )
-		return false;
-
-	return @unserialize( $data );
-
+/**
+ * Decrypts data.
+ *
+ * @param string $data        The encrypted data to decrypt.
+ * @param bool   $associative If true, returns as an associative array. Otherwise returns as a class.
+ *
+ * @return array|false|object
+ */
+function push_syndicate_decrypt( $data, $associative = true ) {
+	global $push_syndication_encryption; // @todo: move from global to WP_Push_Syndication_Server attribute
+	return $push_syndication_encryption->decrypt( $data, $associative );
 }
