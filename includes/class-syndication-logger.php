@@ -233,7 +233,7 @@ class Syndication_Logger {
  	 * @param  array  $extra    additional data
 	 */
 	private function log_post( $msg_type, $post_id, $status, $message, $log_time, $extra ) {
-		$this->log( $storage_type = 'object', $msg_type, $object_type = 'post', $object_id = $post_id, $status, $message, $log_time, $extra );
+		$this->log( $storage_type = 'object', $msg_type, 'post', $post_id, $status, $message, $log_time, $extra );
 	}
 
 	/**
@@ -248,7 +248,7 @@ class Syndication_Logger {
   	 * @param  array  $extra    	additional data
 	 * @return mixed                true or WP_Error
 	 */
-	private function log( $storage_type, $msg_type, $object_type = 'post', $object_id = '', $status, $message, $log_time, $extra ) {
+	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
 		// Don't log infos depending on debug level
 		if ( 'info' == $msg_type && 'info' != $this->debug_level ) {
 			return;
