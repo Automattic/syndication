@@ -13,33 +13,25 @@ on:
 jobs:
   test:
     name: WP ${{ matrix.wordpress }} on PHP ${{ matrix.php }}
-    # Ubuntu-20.x includes MySQL 8.0, which causes `caching_sha2_password` issues with PHP < 7.4
-    # https://www.php.net/manual/en/mysqli.requirements.php
-    # TODO: change to ubuntu-latest when we no longer support PHP < 7.4
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     env:
       WP_VERSION: ${{ matrix.wordpress }}
 
     strategy:
       matrix:
-        wordpress: ["5.5", "5.6", "5.7"]
-        php: ["5.6", "7.0", "7.1", "7.2", "7.3", "7.4"]
+        wordpress: ["5.9", "6.4"]
+        php: ["7.4", "8.3"]
         include:
-          - php: "8.0"
-            # Ignore platform requirements, so that PHPUnit 7.5 can be installed on PHP 8.0 (and above).
-            composer-options: "--ignore-platform-reqs"
+          - php: "8.3"
             extensions: pcov
             ini-values: pcov.directory=., "pcov.exclude=\"~(vendor|tests)~\""
             coverage: pcov
-        exclude:
-          - php: "8.0"
-            wordpress: "5.5"
       fail-fast: false
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
@@ -51,15 +43,6 @@ jobs:
 
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-
-      # Setup PCOV since we're using PHPUnit < 8 which has it integrated. Requires PHP 7.1.
-      # Ignore platform reqs to make it install on PHP 8.
-      # https://github.com/krakjoe/pcov-clobber
-      - name: Setup PCOV
-        if: ${{ matrix.php == 8.0 }}
-        run: |
-          composer require pcov/clobber --ignore-platform-reqs
-          vendor/bin/pcov clobber
 
       - name: Setup Problem Matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
@@ -76,10 +59,10 @@ jobs:
         run: composer prepare-ci
 
       - name: Run integration tests (single site)
-        if: ${{ matrix.php != 8.0 }}
+        if: ${{ matrix.php != 8.2 }}
         run: composer test
       - name: Run integration tests (single site with code coverage)
-        if: ${{ matrix.php == 8.0 }}
+        if: ${{ matrix.php == 8.2 }}
         run: composer coverage-ci
       - name: Run integration tests (multisite)
         run: composer test-ms
