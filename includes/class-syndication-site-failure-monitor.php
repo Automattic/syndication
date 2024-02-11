@@ -39,7 +39,7 @@ class Syndication_Site_Failure_Monitor {
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
-			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
+			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( esc_html__( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
 
 			do_action( 'push_syndication_site_disabled', $site_id, $count );
 		}

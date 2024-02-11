@@ -20,9 +20,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		global $status, $page;
 
 		parent::__construct( array(
-			'singular'  => __( 'log', 'push-syndication' ),
-			'plural'    => __( 'logs', 'push-syndication' ),
-			'ajax'      => false
+			'singular' => esc_html__( 'log', 'push-syndication' ),
+			'plural'   => esc_html__( 'logs', 'push-syndication' ),
+			'ajax'     => false
 		) );
 
 		add_action( 'admin_head', array( $this, 'admin_header' ) );
@@ -46,7 +46,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	}
 
 	public function no_items() {
-		_e( 'No log entries found.' );
+		esc_html_e( 'No log entries found.', 'push-syndication' );
 	}
 
 	public function column_default( $item, $column_name ) {
@@ -78,12 +78,12 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 	public function get_columns(){
 		$columns = array(
-			'object_id'	=> __( 'Object ID', 'push-syndication' ),
-			'log_id'	=> __( 'Log ID', 	'push-syndication' ),
-			'time'		=> __( 'Time', 		'push-syndication' ),
-			'msg_type'	=> __( 'Type', 		'push-syndication' ),
-			'status'	=> __( 'Status', 	'push-syndication' ),
-			'message'	=> __( 'Message', 	'push-syndication' ),
+			'object_id' => esc_html__( 'Object ID', 'push-syndication' ),
+			'log_id'    => esc_html__( 'Log ID', 'push-syndication' ),
+			'time'      => esc_html__( 'Time', 'push-syndication' ),
+			'msg_type'  => esc_html__( 'Type', 'push-syndication' ),
+			'status'    => esc_html__( 'Status', 'push-syndication' ),
+			'message'   => esc_html__( 'Message', 'push-syndication' ),
 			);
 		return $columns;
 	}
@@ -195,7 +195,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				$this->_create_months_dropdown();
 				$this->_create_types_dropdown();
 
-				submit_button( __( 'Filter' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+				submit_button( esc_html__( 'Filter', 'push-syndication' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
 			}
 
 			?>
@@ -206,9 +206,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	private function create_log_id_dropdown() {
 		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
 		?>
-		<label class="screen-reader-text" for="filter-by-log-id"><?php _e( 'Filter by Log ID' ); ?></label>
+		<label class="screen-reader-text" for="filter-by-log-id"><?php esc_html_e( 'Filter by Log ID', 'push-syndication' ); ?></label>
 		<select name="log_id" id="filter-by-log-id">
-			<option<?php selected( $requested_log_id, 0 ); ?> value="0"><?php _e( 'All logs' ); ?></option>
+			<option<?php selected( $requested_log_id, 0 ); ?> value="0"><?php esc_html_e( 'All logs', 'push-syndication' ); ?></option>
 			<?php
 			$log_ids = array();
 			foreach ( $this->prepared_data as $row ) {
@@ -294,7 +294,7 @@ class Syndication_Logger_Viewer {
 
 	public function render_list_page(){
 		?>
-		<div class="wrap"><h2><?php _e( "Syndication Logs", "syndication" ); ?></h2>
+		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>

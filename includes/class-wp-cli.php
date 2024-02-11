@@ -52,7 +52,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$post_id = intval( $assoc_args[ 'post_id' ] );
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			WP_CLI::error( __( 'Invalid post_id', 'push-syndication' ) );
+			WP_CLI::error( esc_html__( 'Invalid post_id', 'push-syndication' ) );
 		}
 
 		$this->_make_em_talk_push();
@@ -61,7 +61,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$sites = $server->get_sites_by_post_ID( $post_id );
 
 		if ( empty( $sites ) ) {
-			WP_CLI::error( __( 'Post has no selected sitegroups / sites', 'push-syndication' ) );
+			WP_CLI::error( esc_html__( 'Post has no selected sitegroups / sites', 'push-syndication' ) );
 		}
 
 		$server->push_content( $sites );

@@ -180,10 +180,10 @@ class Syndication_Logger {
 			} else {
 				$message = 'fail';
 			}
-			Syndication_Logger::log_post_error( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			Syndication_Logger::log_post_error( $site->ID, $status = esc_attr( $event ), $message, $log_time, $extra );
 		} else {
 			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
-			Syndication_Logger::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			Syndication_Logger::log_post_success( $site->ID, $status = esc_attr( $event ), $message, $log_time, $extra );
 		}
 	}
 
@@ -297,12 +297,12 @@ class Syndication_Logger {
 			if ( 'post' == $object_type ) {
 
 				if ( ! is_integer( $object_id ) ) {
-					return new WP_Error( 'logger_no_post_id', __( 'You need to provide a valid post_id or use log_option instead', 'push-syndication' ) );
+					return new WP_Error( 'logger_no_post_id', esc_html__( 'You need to provide a valid post_id or use log_option instead', 'push-syndication' ) );
 				}
 
 				$post = get_post( $object_id );
 				if ( ! $post ) {
-					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
+					return new WP_Error( 'logger_no_post', esc_html__( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
 				$log = get_post_meta( $post->ID, 'syn_log', true);

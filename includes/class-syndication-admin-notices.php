@@ -96,7 +96,7 @@ class Syndication_Logger_Admin_Notice {
 			foreach( $message_values as $message_key => $message_data ) {
 				$dismiss_nonce = wp_create_nonce( esc_attr( $message_key ) );
 				printf( '<div class="%s"><p>', esc_attr( $message_data['class'] ) );
-				printf( __('%1$s : %2$s <a href="%3$s">Hide Notice</a>'), esc_html( $message_type ), wp_kses_post( $message_data['message_text'] ), add_query_arg( array( self::$dismiss_parameter => esc_attr( $message_key ), 'syn_dismiss_nonce' => esc_attr( $dismiss_nonce ) ) ) );
+				printf( __( '%1$s : %2$s <a href="%3$s">Hide Notice</a>', 'push-syndication' ), esc_html( $message_type ), wp_kses_post( $message_data['message_text'] ), esc_url( add_query_arg( array( self::$dismiss_parameter => esc_attr( $message_key ), 'syn_dismiss_nonce' => esc_attr( $dismiss_nonce ) ) ) ) );
 				printf( '</p></div>' );
 			}
 		}
@@ -114,7 +114,7 @@ class Syndication_Logger_Admin_Notice {
 			$dismiss_key = esc_attr( $_GET[self::$dismiss_parameter] );
 			$dismiss_nonce = esc_attr( $_GET['syn_dismiss_nonce'] );
 			if ( ! wp_verify_nonce( $dismiss_nonce, $dismiss_key ) ) {
-				wp_die( __( "Invalid security check" ) );
+				wp_die( esc_html__( 'Invalid security check', 'push-syndication' ) );
 			}
 			$messages = get_option( self::$notice_option );
 			$notice_bundles = get_option( self::$notice_bundles_option );
@@ -147,10 +147,10 @@ class Syndication_Logger_Admin_Notice {
 
 add_filter( 'syn_message_text_multiple', 'syn_handle_multiple_error_notices', 10, 2 );
 function syn_handle_multiple_error_notices( $message, $message_data ) {
-	return __( 'There have been multiple errors. Please validate your syndication logs' );
+	return esc_html__( 'There have been multiple errors. Please validate your syndication logs', 'push-syndication' );
 }
 
 add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10, 2 );
 function syn_add_site_disabled_notice( $site_id, $count ) {
-	Syndication_Logger_Admin_Notice::add_notice( $message_text = sprintf( __( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ), $message_type = 'Syndication site disabled', $class = 'error', $summarize_multiple = false );
+	Syndication_Logger_Admin_Notice::add_notice( $message_text = sprintf( esc_html__( 'Site %d disabled after %d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ), $message_type = 'Syndication site disabled', $class = 'error', $summarize_multiple = false );
 }
