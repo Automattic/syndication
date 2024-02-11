@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class Syndication_Encryptor_OpenSSL
+ * Class Syndication_Encryptor_MCrypt
  */
 class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 
