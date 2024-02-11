@@ -60,5 +60,11 @@
 	"support": {
 		"issues": "https://github.com/Automattic/syndication/issues",
 		"source": "https://github.com/Automattic/syndication"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	}
 }
