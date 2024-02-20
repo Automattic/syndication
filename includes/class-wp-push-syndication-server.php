@@ -819,6 +819,13 @@ class WP_Push_Syndication_Server {
 
 		echo '</ul>';
 
+		$post_source = get_post_meta( $post->ID, 'syn_source_url', true );
+		if ( isset( $post_source ) && '' !== $post_source ) {
+			echo '<div class="syn-post-source">';
+			echo esc_html( sprintf( 'Source: %s', parse_url( $post_source, PHP_URL_HOST ) ), 'push-syndication' );
+			echo '</div>';
+		}
+
 	}
 
 	public function checked_array( $value, $group ) {
