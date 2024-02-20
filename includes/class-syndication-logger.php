@@ -305,7 +305,7 @@ class Syndication_Logger {
 					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
-				$log = get_post_meta( $post->ID, 'syn_log', true);
+				$log = get_post_meta( $post->ID, 'syn_log' );
 
 				if ( empty( $log ) ) {
 					$log[0] = $log_entry;
