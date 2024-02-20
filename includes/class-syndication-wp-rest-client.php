@@ -48,7 +48,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		$body = apply_filters( 'syn_rest_push_filter_new_post_body', $body, $post_ID );
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/new/', array(
+		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1.2/sites/' . $this->blog_ID . '/posts/new/', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
 			'sslverify'	 => false,
@@ -95,7 +95,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		$body = apply_filters( 'syn_rest_push_filter_edit_post_body', $body, $post_ID );
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(
+		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1.2/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
 			'sslverify'	 => false,
@@ -135,7 +135,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 	public function delete_post( $ext_ID ) {
 
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/delete', array(
+		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1.2/sites/' . $this->blog_ID . '/posts/' . $ext_ID . '/delete', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
 			'sslverify'	 => false,
@@ -160,7 +160,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 	public function test_connection() {
 		// @TODo find a better method
-		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1/me/?pretty=1', array(
+		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1.2/me/?pretty=1', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
 			'sslverify'	 => false,
@@ -186,7 +186,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 	public function is_post_exists( $post_ID ) {
 
-		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/' . $post_ID . '/?pretty=1', array(
+		$response = wp_remote_get( 'https://public-api.wordpress.com/rest/v1.2/sites/' . $this->blog_ID . '/posts/' . $post_ID . '/?pretty=1', array(
 			'timeout'	   => $this->timeout,
 			'user-agent'	=> $this->useragent,
 			'sslverify'	 => false,
