@@ -276,7 +276,7 @@ class Syndication_Logger {
 		}
 
 		if ( ! empty( $log_time ) ) {
-			$log_entry['time'] = date('Y-m-d H:i:s', strtotime( $log_time ) );
+			$log_entry['time'] = gmdate('Y-m-d H:i:s', strtotime( $log_time ) );
 		} else {
 			$log_entry['time'] = current_time('mysql');
 		}
@@ -288,6 +288,7 @@ class Syndication_Logger {
 
 
 		if ( true === $this->use_php_error_logging ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( $this->format_log_message( $msg_type, $log_entry ) );
 		}
 
