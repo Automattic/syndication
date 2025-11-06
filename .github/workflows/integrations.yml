@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        wordpress: ["5.9", "6.4"]
+        wordpress: ["6.4", "latest"]
         php: ["7.4", "8.3"]
         include:
           - php: "8.3"

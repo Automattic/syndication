@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: automattic, nprasath002, batmoo, betzster, nickdaugherty
 Tags: XMLRPC, WordPress.com REST
-Requires at least: 3.4
+Requires at least: 6.4
 Tested up to: 5.0
 Stable tag: 2.0
 License: GPLv2 or later

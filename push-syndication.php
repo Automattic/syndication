@@ -4,6 +4,8 @@
  * Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
  * Description:  Syndicate content to and from your sites
  * Version:      2.0
+ * Requires at least: 6.4
+ * Requires PHP: 7.4
  * Author:       Automattic
  * Author URI:   http://automattic.com
  * License:      GPLv2 or later
