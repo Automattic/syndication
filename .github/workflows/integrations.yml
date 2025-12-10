@@ -40,7 +40,7 @@ jobs:
 
     strategy:
       matrix:
-        wordpress: ['6.4', 'latest']
+        wordpress: ['6.4', 'master']
         php: ['7.4', '8.3']
       fail-fast: false
 
