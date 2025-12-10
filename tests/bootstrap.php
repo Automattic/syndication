@@ -1,34 +1,59 @@
 <?php
+/**
+ * PHPUnit bootstrap file for Syndication plugin tests.
+ *
+ * @package Automattic\Syndication
+ */
+
+declare( strict_types=1 );
+
+namespace Syndication\Tests;
+
 use Yoast\WPTestUtils\WPIntegration;
 
-$_tests_dir = getenv( 'WP_TESTS_DIR' );
-if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
-	putenv( 'WP_TESTS_DIR=' . $_tests_dir );
-}
-
-if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	exit( 1 );
-}
-
-require_once $_tests_dir . '/includes/functions.php';
-
-function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../push-syndication.php';
-}
-tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
-
-require $_tests_dir . '/includes/bootstrap.php';
-
-/*
- * Load WordPress, which will load the Composer autoload file, and load the MockObject autoloader after that.
- */
 require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
-WPIntegration\bootstrap_it();
 
-/*
- * Load tests dependencies
- */
+// Check for a `--testsuite integration` or `--testsuite=integration` arg when calling phpunit,
+// and use it to conditionally load up WordPress.
+$argv_local     = $GLOBALS['argv'] ?? [];
+$key            = (int) array_search( '--testsuite', $argv_local, true );
+$is_integration = false;
 
-require_once dirname( __FILE__ ) . '/class-encryptor-test-case.php';
+// Check for --testsuite integration (two separate args).
+if ( $key && isset( $argv_local[ $key + 1 ] ) && 'integration' === $argv_local[ $key + 1 ] ) {
+	$is_integration = true;
+}
+
+// Check for --testsuite=integration (single arg with equals).
+foreach ( $argv_local as $arg ) {
+	if ( '--testsuite=integration' === $arg ) {
+		$is_integration = true;
+		break;
+	}
+}
+
+if ( $is_integration ) {
+	$_tests_dir = WPIntegration\get_path_to_wp_test_dir();
+
+	// Give access to tests_add_filter() function.
+	require_once $_tests_dir . '/includes/functions.php';
+
+	// Manually load the plugin being tested.
+	\tests_add_filter(
+		'muplugins_loaded',
+		function (): void {
+			require dirname( __DIR__ ) . '/push-syndication.php';
+		}
+	);
+
+	/*
+	 * Bootstrap WordPress. This will also load the Composer autoload file, the PHPUnit Polyfills
+	 * and the custom autoloader for the TestCase and the mock object classes.
+	 */
+	WPIntegration\bootstrap_it();
+
+	/*
+	 * Load test dependencies.
+	 */
+	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
+}
