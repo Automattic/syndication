@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
-         bootstrap="tests/bootstrap.php"
-         cacheResultFile=".phpunit.cache/test-results"
+		 xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+		 bootstrap="tests/bootstrap.php"
+		 cacheResultFile=".phpunit.cache/test-results"
+		 executionOrder="depends,defects"
+		 forceCoversAnnotation="false"
+		 beStrictAboutCoversAnnotation="false"
+		 beStrictAboutOutputDuringTests="true"
+		 beStrictAboutTodoAnnotatedTests="true"
+		 convertDeprecationsToExceptions="true"
 		 colors="true"
-         executionOrder="depends,defects"
-         forceCoversAnnotation="false"
-         beStrictAboutCoversAnnotation="true"
-         beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
-         convertDeprecationsToExceptions="true"
-         failOnRisky="true"
-         failOnWarning="true"
-         verbose="true">
-	<php>
-		<const name="WP_TESTS_MULTISITE" value="1" />
-	</php>
-    <testsuites>
-        <testsuite name="WP_Tests">
-            <directory prefix="test-" suffix=".php">tests</directory>
-        </testsuite>
-    </testsuites>
+		 failOnRisky="true"
+		 failOnWarning="true"
+		 testdox="true"
+		 verbose="true">
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix="Test.php">./tests/Integration/</directory>
+		</testsuite>
+	</testsuites>
 
-    <coverage cacheDirectory=".phpunit.cache/code-coverage"
-              processUncoveredFiles="true">
-        <include>
+	<coverage cacheDirectory=".phpunit.cache/code-coverage"
+			  processUncoveredFiles="true">
+		<include>
 			<file>push-syndication.php</file>
-            <directory suffix=".php">includes</directory>
-        </include>
-    </coverage>
+			<directory suffix=".php">includes</directory>
+		</include>
+		<report>
+			<text outputFile="php://stdout"/>
+			<clover outputFile=".phpunit.cache/clover.xml"/>
+		</report>
+	</coverage>
 </phpunit>
