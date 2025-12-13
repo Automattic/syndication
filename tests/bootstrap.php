@@ -13,23 +13,36 @@ use Yoast\WPTestUtils\WPIntegration;
 
 require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
 
-// Check for a `--testsuite integration` or `--testsuite=integration` arg when calling phpunit,
-// and use it to conditionally load up WordPress.
+// Check for a `--testsuite` arg when calling phpunit.
 $argv_local     = $GLOBALS['argv'] ?? [];
 $key            = (int) array_search( '--testsuite', $argv_local, true );
-$is_integration = false;
+$testsuite      = '';
 
-// Check for --testsuite integration (two separate args).
-if ( $key && isset( $argv_local[ $key + 1 ] ) && 'integration' === $argv_local[ $key + 1 ] ) {
-	$is_integration = true;
+// Check for --testsuite <name> (two separate args).
+if ( $key && isset( $argv_local[ $key + 1 ] ) ) {
+	$testsuite = $argv_local[ $key + 1 ];
 }
 
-// Check for --testsuite=integration (single arg with equals).
+// Check for --testsuite=<name> (single arg with equals).
 foreach ( $argv_local as $arg ) {
-	if ( '--testsuite=integration' === $arg ) {
-		$is_integration = true;
+	if ( str_starts_with( $arg, '--testsuite=' ) ) {
+		$testsuite = substr( $arg, strlen( '--testsuite=' ) );
 		break;
 	}
+}
+
+$is_unit        = 'Unit' === $testsuite;
+$is_integration = 'integration' === $testsuite;
+
+// Unit tests - load Brain Monkey and classes without WordPress.
+if ( $is_unit ) {
+	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+	// Load classes needed for unit tests (those without WordPress dependencies).
+	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
+	require_once __DIR__ . '/Unit/TestCase.php';
+
+	return;
 }
 
 if ( $is_integration ) {
