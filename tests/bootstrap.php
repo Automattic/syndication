@@ -25,7 +25,7 @@ if ( $key && isset( $argv_local[ $key + 1 ] ) ) {
 
 // Check for --testsuite=<name> (single arg with equals).
 foreach ( $argv_local as $arg ) {
-	if ( str_starts_with( $arg, '--testsuite=' ) ) {
+	if ( 0 === strpos( $arg, '--testsuite=' ) ) {
 		$testsuite = substr( $arg, strlen( '--testsuite=' ) );
 		break;
 	}
