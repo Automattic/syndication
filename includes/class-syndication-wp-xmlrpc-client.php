@@ -448,6 +448,66 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return $this->getResponse();
 	}
 
+	/**
+	 * Check if a post with the given meta key/value exists on the target site.
+	 *
+	 * Used to prevent syndication loops when syndicating back to source.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $meta_key   The meta key to search for.
+	 * @param string $meta_value The meta value to match.
+	 * @return bool True if post exists on target site, false otherwise.
+	 */
+	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+
+		// If meta key or value are empty.
+		if ( empty( $meta_key ) || empty( $meta_value ) ) {
+			return false;
+		}
+
+		// Use filter to limit posts returned and request custom_fields.
+		$filter = array(
+			'number' => 100,
+		);
+
+		$result = $this->query(
+			'wp.getPosts',
+			'1',
+			$this->username,
+			$this->password,
+			$filter,
+			array( 'post_id', 'custom_fields' )
+		);
+
+		if ( ! $result ) {
+			return false;
+		}
+
+		$posts_list = $this->getResponse();
+
+		if ( empty( $posts_list ) ) {
+			return false;
+		}
+
+		foreach ( $posts_list as $post ) {
+			if ( empty( $post['custom_fields'] ) ) {
+				continue;
+			}
+
+			foreach ( $post['custom_fields'] as $field ) {
+				if ( isset( $field['key'], $field['value'] ) &&
+					$meta_key === $field['key'] &&
+					$meta_value === $field['value']
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function is_post_exists( $remote_post_id ) {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
