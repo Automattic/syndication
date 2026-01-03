@@ -38,6 +38,11 @@ $is_integration = 'integration' === $testsuite;
 if ( $is_unit ) {
 	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
+	// Define WordPress time constants used in unit tests.
+	if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+		define( 'MINUTE_IN_SECONDS', 60 );
+	}
+
 	// Load classes needed for unit tests (those without WordPress dependencies).
 	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
 	require_once __DIR__ . '/Unit/TestCase.php';
