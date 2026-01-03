@@ -26,6 +26,17 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		return array( 'id' => 'WP_REST', 'modes' => array( 'push' ), 'name' => 'WordPress.com REST' );
 	}
 
+	/**
+	 * Check if a post with the given meta key/value exists on the target site.
+	 *
+	 * Used to prevent syndication loops when syndicating back to source.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $meta_key   The meta key to search for.
+	 * @param string $meta_value The meta value to match.
+	 * @return bool True if post exists on target site, false otherwise.
+	 */
 	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
 
 		// If meta key or value are empty.
@@ -33,24 +44,33 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return false;
 		}
 
-		// Get the all of the posts from the target website through meta key and value.
-		$response = wp_remote_post( 'https://public-api.wordpress.com/rest/v1/sites/' . $this->blog_ID . '/posts/?meta_key=' . $key . '&meta_value=' . $value, array(
-			'timeout'    => $this->timeout,
-			'user-agent' => $this->useragent,
-			'sslverify'  => false,
-			'headers'    => array(
-				'authorization' => 'Bearer ' . $this->access_token,
-				'Content-Type'  => 'application/x-www-form-urlencoded'
-            ),
-        ));
+		// Get posts from the target website matching the meta key and value.
+		$url = sprintf(
+			'https://public-api.wordpress.com/rest/v1/sites/%s/posts/?meta_key=%s&meta_value=%s',
+			$this->blog_ID,
+			rawurlencode( $meta_key ),
+			rawurlencode( $meta_value )
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+				),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
-			return $response;
+			return false;
 		}
 
 		$response = json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( empty( $response->error ) && $response->found > 0 ) {
+		if ( empty( $response->error ) && ! empty( $response->found ) && $response->found > 0 ) {
 			return true;
 		}
 
