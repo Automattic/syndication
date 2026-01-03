@@ -1223,10 +1223,18 @@ class WP_Push_Syndication_Server {
 
 	public function cron_add_pull_time_interval( $schedules ) {
 
+		// Only add custom interval if syndication settings are defined.
+		if (
+			empty( $this->push_syndicate_settings )
+			|| ! array_key_exists( 'pull_time_interval', $this->push_syndicate_settings )
+		) {
+			return $schedules;
+		}
+
 		// Adds the custom time interval to the existing schedules.
 		$schedules['syn_pull_time_interval'] = array(
-			'interval' => isset( $this->push_syndicate_settings ) ? intval( $this->push_syndicate_settings['pull_time_interval'] ) : 0,
-			'display' => __( 'Pull Time Interval', 'push-syndication' )
+			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
+			'display'  => esc_html__( 'Pull Time Interval', 'push-syndication' ),
 		);
 
 		return $schedules;
