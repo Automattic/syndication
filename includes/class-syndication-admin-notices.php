@@ -114,7 +114,7 @@ class Syndication_Logger_Admin_Notice {
 			$dismiss_key = esc_attr( $_GET[self::$dismiss_parameter] );
 			$dismiss_nonce = esc_attr( $_GET['syn_dismiss_nonce'] );
 			if ( ! wp_verify_nonce( $dismiss_nonce, $dismiss_key ) ) {
-				wp_die( __( "Invalid security check" ) );
+				wp_die( esc_html__( 'Invalid security check', 'push-syndication' ) );
 			}
 			$messages = get_option( self::$notice_option );
 			$notice_bundles = get_option( self::$notice_bundles_option );
