@@ -820,10 +820,20 @@ class WP_Push_Syndication_Server {
 		echo '</ul>';
 
 		$post_source = get_post_meta( $post->ID, 'syn_source_url', true );
-		if ( isset( $post_source ) && '' !== $post_source ) {
-			echo '<div class="syn-post-source">';
-			echo esc_html( sprintf( 'Source: %s', parse_url( $post_source, PHP_URL_HOST ) ), 'push-syndication' );
-			echo '</div>';
+		if ( ! empty( $post_source ) ) {
+			$source_host = wp_parse_url( $post_source, PHP_URL_HOST );
+			if ( $source_host ) {
+				printf(
+					'<div class="syn-post-source"><p>%s</p></div>',
+					esc_html(
+						sprintf(
+							/* translators: %s: source site hostname */
+							__( 'Source: %s', 'push-syndication' ),
+							$source_host
+						)
+					)
+				);
+			}
 		}
 
 	}
