@@ -183,7 +183,7 @@ class WP_Push_Syndication_Server {
 					$client_data = $client->get_client_data();
 					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
-					printf( __( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
+					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
 				}
 				break;
 			case 'syn_sitegroup':
@@ -421,7 +421,7 @@ class WP_Push_Syndication_Server {
 
 			<li>
 				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
+					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
 					<?php echo esc_html( $post_type ); ?>
 				</label>
 			</li>
@@ -585,30 +585,30 @@ class WP_Push_Syndication_Server {
 			<div id="minor-publishing">
 				<div id="misc-publishing-actions">
 					<div class="misc-pub-section">
-						<label for="post_status"><?php _e( 'Status:', 'push-syndication' ) ?></label>
+						<label for="post_status"><?php esc_html_e( 'Status:', 'push-syndication' ); ?></label>
 						<span id="post-status-display">
 						<?php
 						switch( $site_enabled ) {
 							case 'on':
-								_e( 'Enabled', 'push-syndication' );
+								esc_html_e( 'Enabled', 'push-syndication' );
 								break;
 							case 'off':
 							default:
-								_e( 'Disabled', 'push-syndication' );
+								esc_html_e( 'Disabled', 'push-syndication' );
 								break;
 						}
 						?>
 						</span>
 
-						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php _e( 'Edit', 'push-syndication' ) ?></a>
+						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php esc_html_e( 'Edit', 'push-syndication' ); ?></a>
 
 						<div id="post-status-select" class="hide-if-js">
 							<input type="hidden" name="post_status" value="publish" />
 							<select name='site_enabled' id='post_status' tabindex='4'>
-								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php _e('Enabled', 'push-syndication' ) ?></option>
-								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php _e('Disabled', 'push-syndication' ) ?></option>
+								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php esc_html_e( 'Enabled', 'push-syndication' ); ?></option>
+								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php esc_html_e( 'Disabled', 'push-syndication' ); ?></option>
 							</select>
-							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php _e( 'OK', 'push-syndication' ); ?></a>
+							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php esc_html_e( 'OK', 'push-syndication' ); ?></a>
 						</div>
 
 					</div>
@@ -621,18 +621,18 @@ class WP_Push_Syndication_Server {
 			<div id="major-publishing-actions">
 
 				<div id="delete-action">
-					<a class="submitdelete deletion" href="<?php echo get_delete_post_link($site->ID); ?>"><?php echo __( 'Move to Trash', 'push-syndication' ); ?></a>
+					<a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $site->ID ) ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
 				</div>
 
 				<div id="publishing-action">
 					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
 					<?php
 					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Add Site', 'push-syndication' ); ?>" />
 						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
 					<?php } else { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
-						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
+						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
 					<?php } ?>
 				</div>
 
@@ -662,8 +662,8 @@ class WP_Push_Syndication_Server {
 
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
-		} catch( Exception $e ) {
-			echo $e;
+		} catch ( Exception $e ) {
+			echo esc_html( $e->getMessage() );
 		}
 
 		?>
@@ -682,9 +682,9 @@ class WP_Push_Syndication_Server {
 
 		$values = array();
 		$max_len = 0;
-		foreach( $this->push_syndicate_transports as $key => $value ) {
+		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
-			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>';
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%s (%s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
 		}
 		echo '</select>';
 

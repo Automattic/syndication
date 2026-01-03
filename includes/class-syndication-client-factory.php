@@ -25,7 +25,7 @@ class Syndication_Client_Factory {
 			return call_user_func( array( $class, 'display_settings' ), $site );
 		}
 
-		throw new Exception( 'transport class not found: '. $class );
+		throw new Exception( 'transport class not found: ' . esc_html( $class ) );
 
 	}
 
