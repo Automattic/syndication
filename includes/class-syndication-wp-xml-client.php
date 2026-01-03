@@ -8,7 +8,7 @@
  *
  * @link https://wordpress.org/plugins/push-syndication/
  * @link https://github.com/Automattic/syndication/
- * @since 2.1.0
+ * @since 2.2.0
  *
  * @package WordPress
  * @subpackage Syndication
