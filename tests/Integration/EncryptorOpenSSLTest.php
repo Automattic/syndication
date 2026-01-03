@@ -1,5 +1,5 @@
 <?php
-namespace Syndication\Tests;
+namespace Automattic\Syndication\Tests;
 
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 

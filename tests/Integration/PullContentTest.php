@@ -5,7 +5,7 @@
  * @package Automattic\Syndication\Tests
  */
 
-namespace Syndication\Tests;
+namespace Automattic\Syndication\Tests;
 
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 

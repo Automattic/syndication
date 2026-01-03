@@ -10,7 +10,7 @@
 
 declare( strict_types=1 );
 
-namespace Syndication\Tests\Unit;
+namespace Automattic\Syndication\Tests\Unit;
 
 /**
  * Test case for client factory class name generation.
