@@ -305,7 +305,13 @@ class Syndication_Logger {
 					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
-				$log = get_post_meta( $post->ID, 'syn_log', true);
+				$log = get_post_meta( $post->ID, 'syn_log', true );
+
+				// When no meta exists, get_post_meta() with $single=true returns ''.
+				// Initialize as empty array for first log entry.
+				if ( '' === $log ) {
+					$log = array();
+				}
 
 				if ( empty( $log ) ) {
 					$log[0] = $log_entry;
@@ -339,9 +345,10 @@ class Syndication_Logger {
 			}
 
 		} else if ( 'option' == $storage_type ) {
-			// Storing the log in an option value
+			// Storing the log in an option value.
+			// Default to empty array when option doesn't exist.
+			$log = get_option( 'syn_log', array() );
 
-			$log = get_option( 'syn_log', true );
 			if ( empty( $log ) ) {
 				$log[0] = $log_entry;
 			} else {
