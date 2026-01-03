@@ -7,7 +7,7 @@
 
 declare( strict_types=1 );
 
-namespace Syndication\Tests;
+namespace Automattic\Syndication\Tests;
 
 use Yoast\WPTestUtils\WPIntegration;
 
