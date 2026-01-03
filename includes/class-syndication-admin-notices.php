@@ -96,7 +96,16 @@ class Syndication_Logger_Admin_Notice {
 			foreach( $message_values as $message_key => $message_data ) {
 				$dismiss_nonce = wp_create_nonce( esc_attr( $message_key ) );
 				printf( '<div class="%s"><p>', esc_attr( $message_data['class'] ) );
-				printf( __('%1$s : %2$s <a href="%3$s">Hide Notice</a>'), esc_html( $message_type ), wp_kses_post( $message_data['message_text'] ), add_query_arg( array( self::$dismiss_parameter => esc_attr( $message_key ), 'syn_dismiss_nonce' => esc_attr( $dismiss_nonce ) ) ) );
+				echo wp_kses(
+				sprintf(
+					/* translators: 1: message type, 2: message text, 3: dismiss URL */
+					__( '%1$s : %2$s <a href="%3$s">Hide Notice</a>', 'push-syndication' ),
+					esc_html( $message_type ),
+					wp_kses_post( $message_data['message_text'] ),
+					esc_url( add_query_arg( array( self::$dismiss_parameter => esc_attr( $message_key ), 'syn_dismiss_nonce' => esc_attr( $dismiss_nonce ) ) ) )
+				),
+				array( 'a' => array( 'href' => array() ) )
+			);
 				printf( '</p></div>' );
 			}
 		}

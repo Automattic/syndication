@@ -225,7 +225,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				}
 			}
 
-			echo implode( "\n", $log_ids ); // sanitization happens right above
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each element is escaped with esc_attr() in the loop above
+			echo implode( "\n", $log_ids );
 			?>
 		</select>
 
