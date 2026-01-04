@@ -1495,7 +1495,7 @@ class WP_Push_Syndication_Server {
 	 */
 	public function handle_site_change( $post_id ) {
 		if ( 'syn_site' === get_post_type( $post_id ) ) {
-			$this->refresh_pull_jobs();
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
 	}
 
@@ -1509,8 +1509,35 @@ class WP_Push_Syndication_Server {
 	 */
 	public function handle_site_group_change ( $term, $tt_id, $taxonomy ) {
 		if ( 'syn_sitegroup' === $taxonomy ) {
-			$this->refresh_pull_jobs();
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
+	}
+
+	/**
+	 * Schedule a deferred refresh of pull jobs.
+	 *
+	 * This prevents timeout issues when many sites are configured by deferring
+	 * the refresh to a background cron event instead of running synchronously.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return void
+	 */
+	private function schedule_deferred_pull_jobs_refresh() {
+		// Use a transient to debounce multiple requests within a short time window.
+		$debounce_key = 'syn_pull_jobs_refresh_pending';
+
+		if ( get_transient( $debounce_key ) ) {
+			// Already scheduled, don't schedule again.
+			return;
+		}
+
+		// Set transient for 2 minutes to prevent duplicate scheduling.
+		set_transient( $debounce_key, '1', 2 * MINUTE_IN_SECONDS );
+
+		// Clear any existing scheduled refresh and schedule a new one.
+		wp_clear_scheduled_hook( 'syn_refresh_pull_jobs' );
+		wp_schedule_single_event( time() + 60, 'syn_refresh_pull_jobs' );
 	}
 
 	private function upgrade() {
