@@ -299,13 +299,16 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	}
 
 	public static function save_settings( $site_ID ) {
-
-		update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( sanitize_text_field( $_POST['site_token'] ) ) );
-		update_post_meta( $site_ID, 'syn_site_id', sanitize_text_field( $_POST['site_id'] ) );
-		update_post_meta( $site_ID, 'syn_site_url', sanitize_text_field( $_POST['site_url'] ) );
+		// Use wp_strip_all_tags() for the token instead of sanitize_text_field()
+		// because sanitize_text_field() converts encoded octets (e.g., %B2) which
+		// can break OAuth tokens. The token is encrypted before storage anyway.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Token sanitized with wp_strip_all_tags.
+		$token = isset( $_POST['site_token'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_token'] ) ) : '';
+		update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( $token ) );
+		update_post_meta( $site_ID, 'syn_site_id', isset( $_POST['site_id'] ) ? sanitize_text_field( wp_unslash( $_POST['site_id'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_site_url', isset( $_POST['site_url'] ) ? esc_url_raw( wp_unslash( $_POST['site_url'] ) ) : '' );
 
 		return true;
-
 	}
 
 	public function get_post( $ext_ID )
