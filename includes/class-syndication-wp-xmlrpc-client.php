@@ -566,22 +566,31 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	}
 
 	public static function save_settings( $site_ID ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- URL sanitized with esc_url_raw below.
+		$site_url = isset( $_POST['site_url'] ) ? str_replace( '/xmlrpc.php', '', wp_unslash( $_POST['site_url'] ) ) : '';
+		$username = isset( $_POST['site_username'] ) ? sanitize_text_field( wp_unslash( $_POST['site_username'] ) ) : '';
 
-		$_POST['site_url'] = str_replace( '/xmlrpc.php', '', $_POST['site_url'] );
+		// Use wp_strip_all_tags() for the password instead of sanitize_text_field()
+		// because sanitize_text_field() converts encoded octets (e.g., %B2) which
+		// can break passwords with special characters. The password is encrypted before storage anyway.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password sanitized with wp_strip_all_tags.
+		$password = isset( $_POST['site_password'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_password'] ) ) : '';
 
-		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $_POST['site_url'] ) );
-		update_post_meta( $site_ID, 'syn_site_username', sanitize_text_field( $_POST['site_username'] ) );
-		update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( sanitize_text_field( $_POST['site_password'] ) ) );
+		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
+		update_post_meta( $site_ID, 'syn_site_username', $username );
+		update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
 
-		if( !filter_var( $_POST['site_url'], FILTER_VALIDATE_URL ) ) {
-			add_filter('redirect_post_location', function($location) {
-				return add_query_arg("message", 301, $location);
-			});
+		if ( ! filter_var( $site_url, FILTER_VALIDATE_URL ) ) {
+			add_filter(
+				'redirect_post_location',
+				function ( $location ) {
+					return add_query_arg( 'message', 301, $location );
+				}
+			);
 			return false;
 		}
 
 		return true;
-
 	}
 
 	public function get_post( $ext_ID )
