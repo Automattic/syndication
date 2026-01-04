@@ -92,7 +92,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'excerpt'	   => $post['post_excerpt'],
 			'status'		=> $post['post_status'],
 			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
+			'date'		  => $this->format_date_for_api( $post['post_date_gmt'] ),
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
@@ -139,7 +139,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'excerpt'	   => $post['post_excerpt'],
 			'status'		=> $post['post_status'],
 			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
+			'date'		  => $this->format_date_for_api( $post['post_date_gmt'] ),
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
@@ -182,6 +182,26 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		return $terms_csv;
 
+	}
+
+	/**
+	 * Format a MySQL date string for the WordPress.com REST API.
+	 *
+	 * The API expects dates in ISO 8601 format. This is especially important
+	 * for scheduled posts (status 'future') to ensure the scheduled date is
+	 * preserved on the target site.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
+	 * @return string Date in ISO 8601 format, or empty string if invalid.
+	 */
+	private function format_date_for_api( $mysql_date ) {
+		if ( empty( $mysql_date ) || '0000-00-00 00:00:00' === $mysql_date ) {
+			return '';
+		}
+
+		return mysql2date( 'c', $mysql_date, false );
 	}
 
 	public function delete_post( $ext_ID ) {
