@@ -9,6 +9,7 @@
  * Author:       Automattic
  * Author URI:   http://automattic.com
  * License:      GPLv2 or later
+ * Text Domain:  push-syndication
  */
 
 define( 'SYNDICATION_VERSION', 2.0 );
