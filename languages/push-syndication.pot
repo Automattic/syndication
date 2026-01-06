@@ -1,0 +1,605 @@
+# Copyright (C) 2026 Automattic
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Syndication 2.2.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/syndication\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-01-04T16:35:15+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: push-syndication\n"
+
+#. Plugin Name of the plugin
+#: push-syndication.php
+msgid "Syndication"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: push-syndication.php
+msgid "http://wordpress.org/extend/plugins/push-syndication/"
+msgstr ""
+
+#. Description of the plugin
+#: push-syndication.php
+msgid "Syndicate content to and from your sites"
+msgstr ""
+
+#. Author of the plugin
+#: push-syndication.php
+msgid "Automattic"
+msgstr ""
+
+#. Author URI of the plugin
+#: push-syndication.php
+msgid "http://automattic.com"
+msgstr ""
+
+#. translators: 1: message type, 2: message text, 3: dismiss URL
+#: includes/class-syndication-admin-notices.php:102
+#, php-format
+msgid "%1$s : %2$s <a href=\"%3$s\">Hide Notice</a>"
+msgstr ""
+
+#: includes/class-syndication-admin-notices.php:126
+msgid "Invalid security check"
+msgstr ""
+
+#: includes/class-syndication-admin-notices.php:164
+#: includes/class-syndication-site-failure-monitor.php:42
+#, php-format
+msgid "Site %d disabled after %d pull failure(s)."
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:23
+msgid "log"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:24
+msgid "logs"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:49
+msgid "No log entries found."
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:81
+msgid "Object ID"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:82
+msgid "Log ID"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:83
+msgid "Time"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:84
+msgid "Type"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:85
+msgid "Status"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:86
+msgid "Message"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:209
+msgid "Filter by Log ID"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:211
+msgid "All logs"
+msgstr ""
+
+#: includes/class-syndication-logger-viewer.php:298
+msgid "Syndication Logs"
+msgstr ""
+
+#: includes/class-syndication-logger.php:300
+msgid "You need to provide a valid post_id or use log_option instead"
+msgstr ""
+
+#: includes/class-syndication-logger.php:305
+msgid "The post_id provided does not exist."
+msgstr ""
+
+#: includes/class-syndication-site-auto-retry.php:106
+#, php-format
+msgid "Connection retry %d of %d to %s in %s.."
+msgstr ""
+
+#: includes/class-syndication-site-auto-retry.php:140
+#, php-format
+msgid "Failed %d times to reconnect to %s"
+msgstr ""
+
+#: includes/class-syndication-wp-rest-client.php:294
+msgid "To generate the following information automatically please visit the "
+msgstr ""
+
+#: includes/class-syndication-wp-rest-client.php:295
+msgid "settings page"
+msgstr ""
+
+#: includes/class-syndication-wp-rest-client.php:298
+msgid "Enter API Token"
+msgstr ""
+
+#: includes/class-syndication-wp-rest-client.php:304
+msgid "Enter Blog ID"
+msgstr ""
+
+#: includes/class-syndication-wp-rest-client.php:310
+msgid "Enter a valid Blog URL"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:91
+#: includes/class-syndication-wp-xml-client.php:506
+msgid "Enter feed URL"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:97
+#: includes/class-syndication-wp-xml-client.php:512
+msgid "Select post type"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:115
+#: includes/class-syndication-wp-xml-client.php:526
+msgid "Select post status"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:133
+#: includes/class-syndication-wp-xml-client.php:540
+msgid "Select comment status"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:142
+#: includes/class-syndication-wp-xml-client.php:549
+msgid "Select ping status"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:151
+msgid "Select category status"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:155
+msgid "import categories"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:156
+msgid "ignore categories"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:188
+#, php-format
+msgid "Failed to parse feed at: %s"
+msgstr ""
+
+#: includes/class-syndication-wp-rss-client.php:193
+#: includes/class-syndication-wp-xml-client.php:248
+#, php-format
+msgid "fetched feed with %d bytes"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:124
+#, php-format
+msgid "Feed URL not set for this feed: %s"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:241
+#, php-format
+msgid "Could not reach feed at: %s | Error: %s"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:272
+#, php-format
+msgid "Failed to parse feed at: %s \\nErrors: %s"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:311
+#, php-format
+msgid "No post nodes found using XPath \"%s\" in feed"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:314
+#, php-format
+msgid "parsed feed, received %d items"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:392
+#, php-format
+msgid "%d posts were prepared"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:544
+#: includes/class-syndication-wp-xml-client.php:553
+msgid "open"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:545
+#: includes/class-syndication-wp-xml-client.php:554
+msgid "closed"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:559
+msgid "Enter XML namespace"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:566
+msgid "Enter XPath to post root"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:573
+msgid "Enter post meta key for unique post identifier"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:580
+msgid "Enter parent element for enclosures"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:587
+msgid "Enter meta name for enclosures"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:596
+msgid "Enclosure is an image file"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:601
+msgid "Select category/categories"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:618
+msgid "XPath-to-Data Mapping"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:620
+#, php-format
+msgid "<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s is required. To include a static string, enclose the string as \"%s(your_string_here)\" &mdash; no quotes."
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:624
+msgid "XPath Expression"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:627
+msgid "Item"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:630
+msgid "Enc."
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:633
+msgid "Meta"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:636
+msgid "Tax"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:639
+msgid "Field in Post"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:667
+#: includes/class-syndication-wp-xml-client.php:695
+msgid "Delete"
+msgstr ""
+
+#: includes/class-syndication-wp-xml-client.php:698
+msgid "Add new"
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:172
+msgid "Remote post doesn't exist."
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:545
+msgid "Enter a valid site URL"
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:551
+msgid "Enter Username"
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:557
+msgid "Enter Password"
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:637
+msgid "Please specify a valid post_ID."
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:641
+#: includes/class-syndication-wp-xmlrpc-client.php:748
+msgid "Sorry, the image URL provided was incorrect."
+msgstr ""
+
+#: includes/class-syndication-wp-xmlrpc-client.php:666
+#: includes/class-syndication-wp-xmlrpc-client.php:774
+msgid "Sorry, looks like the image upload failed."
+msgstr ""
+
+#: includes/class-wp-cli.php:55
+msgid "Invalid post_id"
+msgstr ""
+
+#: includes/class-wp-cli.php:64
+msgid "Post has no selected sitegroups / sites"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:186
+#, php-format
+msgid "Unknown (%s)"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:195
+msgid "disabled"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:197
+msgid "enabled"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:264
+msgid "Push Syndication Settings"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:264
+msgid "Push Syndication"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:269
+msgid "Site Groups"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:270
+msgid "select sitegroups"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:272
+msgid "Pull Options"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:273
+msgid "Specify time interval in seconds"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:274
+msgid "Maximum pull attempts"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:275
+msgid "update pulled posts"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:277
+msgid "Post Types"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:278
+msgid "select post types"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:280
+msgid " Delete Pushed Posts "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:281
+msgid " delete pushed posts "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:283
+msgid " API Token Configuration "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:284
+msgid " Enter your client id "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:285
+msgid " Enter your client secret "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:293
+msgid "Push Syndicate Settings"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:324
+msgid "Select the sitegroups to pull content"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:338
+#: includes/class-wp-push-syndication-server.php:552
+#: includes/class-wp-push-syndication-server.php:796
+msgid "No sitegroups defined yet. You must group your sites into sitegroups to syndicate content"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:339
+#: includes/class-wp-push-syndication-server.php:553
+#: includes/class-wp-push-syndication-server.php:797
+msgid "Create new"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:362
+msgid "Configure options for pulling content"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:375
+msgid "Site will be disabled after failure threshold is reached. Set to 0 to disable."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:408
+msgid "Select the post types to add support for pushing content"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:438
+msgid "Tick the box to delete all the pushed posts when the master post is deleted"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:449
+msgid "To syndicate content to WordPress.com you must "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:449
+msgid "create a new application"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:450
+msgid "Enter the Redirect URI as follows"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:467
+msgid "Authorization "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:472
+msgid "Click the authorize button to generate api token"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:499
+msgid "Error retrieving API token "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:499
+msgid "Please authorize again"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:532
+msgid "Enter the above details in relevant fields when registering a "
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:532
+msgid "site"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:538
+msgid "Select Sitegroups"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:588
+msgid "Status:"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:593
+#: includes/class-wp-push-syndication-server.php:608
+msgid "Enabled"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:597
+#: includes/class-wp-push-syndication-server.php:609
+msgid "Disabled"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:603
+msgid "Edit"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:611
+msgid "OK"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:624
+msgid "Move to Trash"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:631
+#: includes/class-wp-push-syndication-server.php:632
+msgid "Add Site"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:634
+#: includes/class-wp-push-syndication-server.php:635
+msgid "Update"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:679
+msgid "Select a transport type"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:687
+#, php-format
+msgid "%s (%s)"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:742
+msgid "Transport class not found!"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:743
+msgid "Connection Successful!"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:744
+msgid "Something went wrong when connecting to the site. Site disabled."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:747
+msgid "Invalid URL."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:748
+msgid "You do not have sufficient capability to perform this action."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:749
+msgid "Bad login/pass combination."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:750
+msgid "XML-RPC services are disabled on this site."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:751
+msgid "Transport error. Invalid endpoint"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:752
+msgid "Something went wrong when connecting to the site."
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:755
+msgid "Invalid URL"
+msgstr ""
+
+#. translators: %s: source site hostname
+#: includes/class-wp-push-syndication-server.php:831
+#, php-format
+msgid "Source: %s"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1267
+msgid "Pull Time Interval"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1379
+#, php-format
+msgid "starting import for site id %d with %d posts"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1381
+#, php-format
+msgid "no posts for site id %d"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1393
+msgid "skipping post no guid"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1401
+#: includes/class-wp-push-syndication-server.php:1422
+msgid "skipping post per syn_pre_pull_edit_post_shortcircuit"
+msgstr ""
+
+#: includes/class-wp-push-syndication-server.php:1406
+msgid "skipping post update per update_pulled_posts setting"
+msgstr ""

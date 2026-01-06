@@ -233,7 +233,7 @@ class Syndication_Logger {
  	 * @param  array  $extra    additional data
 	 */
 	private function log_post( $msg_type, $post_id, $status, $message, $log_time, $extra ) {
-		$this->log( $storage_type = 'object', $msg_type, $object_type = 'post', $object_id = $post_id, $status, $message, $log_time, $extra );
+		$this->log( $storage_type = 'object', $msg_type, 'post', $post_id, $status, $message, $log_time, $extra );
 	}
 
 	/**
@@ -248,7 +248,7 @@ class Syndication_Logger {
   	 * @param  array  $extra    	additional data
 	 * @return mixed                true or WP_Error
 	 */
-	private function log( $storage_type, $msg_type, $object_type = 'post', $object_id = '', $status, $message, $log_time, $extra ) {
+	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
 		// Don't log infos depending on debug level
 		if ( 'info' == $msg_type && 'info' != $this->debug_level ) {
 			return;
@@ -305,7 +305,13 @@ class Syndication_Logger {
 					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
-				$log = get_post_meta( $post->ID, 'syn_log', true);
+				$log = get_post_meta( $post->ID, 'syn_log', true );
+
+				// When no meta exists, get_post_meta() with $single=true returns ''.
+				// Initialize as empty array for first log entry.
+				if ( '' === $log ) {
+					$log = array();
+				}
 
 				if ( empty( $log ) ) {
 					$log[0] = $log_entry;
@@ -339,9 +345,10 @@ class Syndication_Logger {
 			}
 
 		} else if ( 'option' == $storage_type ) {
-			// Storing the log in an option value
+			// Storing the log in an option value.
+			// Default to empty array when option doesn't exist.
+			$log = get_option( 'syn_log', array() );
 
-			$log = get_option( 'syn_log', true );
 			if ( empty( $log ) ) {
 				$log[0] = $log_entry;
 			} else {

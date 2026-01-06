@@ -25,7 +25,58 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	public static function get_client_data() {
 		return array( 'id' => 'WP_REST', 'modes' => array( 'push' ), 'name' => 'WordPress.com REST' );
 	}
-	
+
+	/**
+	 * Check if a post with the given meta key/value exists on the target site.
+	 *
+	 * Used to prevent syndication loops when syndicating back to source.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $meta_key   The meta key to search for.
+	 * @param string $meta_value The meta value to match.
+	 * @return bool True if post exists on target site, false otherwise.
+	 */
+	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+
+		// If meta key or value are empty.
+		if ( empty( $meta_key ) || empty( $meta_value ) ) {
+			return false;
+		}
+
+		// Get posts from the target website matching the meta key and value.
+		$url = sprintf(
+			'https://public-api.wordpress.com/rest/v1/sites/%s/posts/?meta_key=%s&meta_value=%s',
+			$this->blog_ID,
+			rawurlencode( $meta_key ),
+			rawurlencode( $meta_value )
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => $this->timeout,
+				'user-agent' => $this->useragent,
+				'sslverify'  => false,
+				'headers'    => array(
+					'authorization' => 'Bearer ' . $this->access_token,
+				),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		$response = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( empty( $response->error ) && ! empty( $response->found ) && $response->found > 0 ) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public function new_post( $post_ID ) {
 
 		$post = (array)get_post( $post_ID );
@@ -41,7 +92,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'excerpt'	   => $post['post_excerpt'],
 			'status'		=> $post['post_status'],
 			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
+			'date'		  => $this->format_date_for_api( $post['post_date_gmt'] ),
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
@@ -88,7 +139,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			'excerpt'	   => $post['post_excerpt'],
 			'status'		=> $post['post_status'],
 			'password'	  => $post['post_password'],
-			'date'		  => $post['post_date_gmt'],
+			'date'		  => $this->format_date_for_api( $post['post_date_gmt'] ),
 			'categories'	=> $this->_prepare_terms( wp_get_object_terms( $post_ID, 'category', array('fields' => 'names') ) ),
 			'tags'		  => $this->_prepare_terms( wp_get_object_terms( $post_ID, 'post_tag', array('fields' => 'names') ) )
 		);
@@ -131,6 +182,26 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		return $terms_csv;
 
+	}
+
+	/**
+	 * Format a MySQL date string for the WordPress.com REST API.
+	 *
+	 * The API expects dates in ISO 8601 format. This is especially important
+	 * for scheduled posts (status 'future') to ensure the scheduled date is
+	 * preserved on the target site.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
+	 * @return string Date in ISO 8601 format, or empty string if invalid.
+	 */
+	private function format_date_for_api( $mysql_date ) {
+		if ( empty( $mysql_date ) || '0000-00-00 00:00:00' === $mysql_date ) {
+			return '';
+		}
+
+		return mysql2date( 'c', $mysql_date, false );
 	}
 
 	public function delete_post( $ext_ID ) {
@@ -221,7 +292,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		<p>
 			<?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
-			<a href="<?php echo get_admin_url(); ?>/options-general.php?page=push-syndicate-settings" target="_blank"><?php echo esc_html__( 'settings page', 'push-syndication' ); ?></a>
+			<a href="<?php echo esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) ); ?>" target="_blank"><?php esc_html_e( 'settings page', 'push-syndication' ); ?></a>
 		</p>
 		<p>
 			<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
@@ -248,13 +319,16 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	}
 
 	public static function save_settings( $site_ID ) {
-
-		update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( sanitize_text_field( $_POST['site_token'] ) ) );
-		update_post_meta( $site_ID, 'syn_site_id', sanitize_text_field( $_POST['site_id'] ) );
-		update_post_meta( $site_ID, 'syn_site_url', sanitize_text_field( $_POST['site_url'] ) );
+		// Use wp_strip_all_tags() for the token instead of sanitize_text_field()
+		// because sanitize_text_field() converts encoded octets (e.g., %B2) which
+		// can break OAuth tokens. The token is encrypted before storage anyway.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Token sanitized with wp_strip_all_tags.
+		$token = isset( $_POST['site_token'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_token'] ) ) : '';
+		update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( $token ) );
+		update_post_meta( $site_ID, 'syn_site_id', isset( $_POST['site_id'] ) ? sanitize_text_field( wp_unslash( $_POST['site_id'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_site_url', isset( $_POST['site_url'] ) ? esc_url_raw( wp_unslash( $_POST['site_url'] ) ) : '' );
 
 		return true;
-
 	}
 
 	public function get_post( $ext_ID )

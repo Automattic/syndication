@@ -183,7 +183,7 @@ class WP_Push_Syndication_Server {
 					$client_data = $client->get_client_data();
 					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
-					printf( __( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
+					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
 				}
 				break;
 			case 'syn_sitegroup':
@@ -191,7 +191,7 @@ class WP_Push_Syndication_Server {
 				break;
 			case 'site_status':
 				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
-				if ( ! $site_status ) {
+				if ( ! filter_var( $site_status, FILTER_VALIDATE_BOOLEAN ) ) {
 					esc_html_e( 'disabled', 'push-syndication' );
 				} else {
 					esc_html_e( 'enabled', 'push-syndication' );
@@ -421,7 +421,7 @@ class WP_Push_Syndication_Server {
 
 			<li>
 				<label>
-					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php echo $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
+					<input type="checkbox" name="push_syndicate_settings[selected_post_types][]" value="<?php echo esc_attr( $post_type ); ?>" <?php $this->checked_array( $post_type, $this->push_syndicate_settings['selected_post_types'] ); ?> />
 					<?php echo esc_html( $post_type ); ?>
 				</label>
 			</li>
@@ -585,30 +585,30 @@ class WP_Push_Syndication_Server {
 			<div id="minor-publishing">
 				<div id="misc-publishing-actions">
 					<div class="misc-pub-section">
-						<label for="post_status"><?php _e( 'Status:', 'push-syndication' ) ?></label>
+						<label for="post_status"><?php esc_html_e( 'Status:', 'push-syndication' ); ?></label>
 						<span id="post-status-display">
 						<?php
 						switch( $site_enabled ) {
 							case 'on':
-								_e( 'Enabled', 'push-syndication' );
+								esc_html_e( 'Enabled', 'push-syndication' );
 								break;
 							case 'off':
 							default:
-								_e( 'Disabled', 'push-syndication' );
+								esc_html_e( 'Disabled', 'push-syndication' );
 								break;
 						}
 						?>
 						</span>
 
-						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php _e( 'Edit', 'push-syndication' ) ?></a>
+						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php esc_html_e( 'Edit', 'push-syndication' ); ?></a>
 
 						<div id="post-status-select" class="hide-if-js">
 							<input type="hidden" name="post_status" value="publish" />
 							<select name='site_enabled' id='post_status' tabindex='4'>
-								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php _e('Enabled', 'push-syndication' ) ?></option>
-								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php _e('Disabled', 'push-syndication' ) ?></option>
+								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php esc_html_e( 'Enabled', 'push-syndication' ); ?></option>
+								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php esc_html_e( 'Disabled', 'push-syndication' ); ?></option>
 							</select>
-							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php _e( 'OK', 'push-syndication' ); ?></a>
+							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php esc_html_e( 'OK', 'push-syndication' ); ?></a>
 						</div>
 
 					</div>
@@ -621,18 +621,18 @@ class WP_Push_Syndication_Server {
 			<div id="major-publishing-actions">
 
 				<div id="delete-action">
-					<a class="submitdelete deletion" href="<?php echo get_delete_post_link($site->ID); ?>"><?php echo __( 'Move to Trash', 'push-syndication' ); ?></a>
+					<a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $site->ID ) ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
 				</div>
 
 				<div id="publishing-action">
 					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
 					<?php
 					if ( !in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Add Site') ?>" />
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Add Site', 'push-syndication' ); ?>" />
 						<?php submit_button( __( 'Add Site', 'push-syndication' ), 'primary', 'enabled', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
 					<?php } else { ?>
-						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
-						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ) ?>" />
+						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
+						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
 					<?php } ?>
 				</div>
 
@@ -662,8 +662,8 @@ class WP_Push_Syndication_Server {
 
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
-		} catch( Exception $e ) {
-			echo $e;
+		} catch ( Exception $e ) {
+			echo esc_html( $e->getMessage() );
 		}
 
 		?>
@@ -682,9 +682,9 @@ class WP_Push_Syndication_Server {
 
 		$values = array();
 		$max_len = 0;
-		foreach( $this->push_syndicate_transports as $key => $value ) {
+		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
-			echo '<option value="' . esc_html( $key ) . '"' . selected( $key, $transport_type ) . '>' . sprintf( esc_html__( '%s (%s)' ), $value['name'], $mode ) . '</option>';
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%s (%s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
 		}
 		echo '</select>';
 
@@ -819,6 +819,23 @@ class WP_Push_Syndication_Server {
 
 		echo '</ul>';
 
+		$post_source = get_post_meta( $post->ID, 'syn_source_url', true );
+		if ( ! empty( $post_source ) ) {
+			$source_host = wp_parse_url( $post_source, PHP_URL_HOST );
+			if ( $source_host ) {
+				printf(
+					'<div class="syn-post-source"><p>%s</p></div>',
+					esc_html(
+						sprintf(
+							/* translators: %s: source site hostname */
+							__( 'Source: %s', 'push-syndication' ),
+							$source_host
+						)
+					)
+				);
+			}
+		}
+
 	}
 
 	public function checked_array( $value, $group ) {
@@ -846,6 +863,10 @@ class WP_Push_Syndication_Server {
 
 		$selected_sitegroups = !empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '' ;
 		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
+
+		if ( '' === get_post_meta( $post->ID, 'post_uniqueid', true ) ) {
+			update_post_meta( $post->ID, 'post_uniqueid', uniqid() );
+		}
 
 	}
 
@@ -910,6 +931,15 @@ class WP_Push_Syndication_Server {
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true);
 				$client         = Syndication_Client_Factory::get_client( $transport_type  ,$site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+
+				// Check if post already exists on target to prevent syndication loops.
+				if ( in_array( $transport_type, array( 'WP_REST', 'WP_XMLRPC' ), true ) ) {
+					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
+
+					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id ) ) {
+						continue;
+					}
+				}
 
 				if( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
 
@@ -1223,10 +1253,18 @@ class WP_Push_Syndication_Server {
 
 	public function cron_add_pull_time_interval( $schedules ) {
 
+		// Only add custom interval if syndication settings are defined.
+		if (
+			empty( $this->push_syndicate_settings )
+			|| ! array_key_exists( 'pull_time_interval', $this->push_syndicate_settings )
+		) {
+			return $schedules;
+		}
+
 		// Adds the custom time interval to the existing schedules.
 		$schedules['syn_pull_time_interval'] = array(
 			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
-			'display' => __( 'Pull Time Interval', 'push-syndication' )
+			'display'  => esc_html__( 'Pull Time Interval', 'push-syndication' ),
 		);
 
 		return $schedules;
@@ -1337,69 +1375,71 @@ class WP_Push_Syndication_Server {
 
 			$post_types_processed = array();
 
-			if ( count( $posts ) > 0 ) {
+			if ( is_array( $posts ) && count( $posts ) > 0 ) {
 				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %d with %d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
-			foreach( $posts as $post ) {
+			if ( is_array( $posts ) && ! empty( $posts) ) {
+				foreach( $posts as $post ) {
 
-				if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
-					remove_post_type_support( $post['post_type'], 'revisions' );
-					$post_types_processed[] = $post['post_type'];
-				}
+					if ( ! in_array( $post['post_type'], $post_types_processed ) ) {
+						remove_post_type_support( $post['post_type'], 'revisions' );
+						$post_types_processed[] = $post['post_type'];
+					}
 
-				if ( empty( $post['post_guid'] ) ) {
-					Syndication_Logger::log_post_error( $site_id, $status = 'no_post_guid', $message = sprintf( __( 'skipping post no guid', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-					continue;
-				}
-				$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
-
-				if ( $post_id ) {
-					$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_edit_shortcircuit ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+					if ( empty( $post['post_guid'] ) ) {
+						Syndication_Logger::log_post_error( $site_id, $status = 'no_post_guid', $message = sprintf( __( 'skipping post no guid', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 						continue;
 					}
-					// if updation is disabled continue
-					if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-						continue;
+					$post_id = $this->find_post_by_guid( $post['post_guid'], $post, $site );
+
+					if ( $post_id ) {
+						$pull_edit_shortcircuit = apply_filters( 'syn_pre_pull_edit_post_shortcircuit', false, $post, $site, $transport_type, $client );
+						if ( true === $pull_edit_shortcircuit ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						// if updation is disabled continue
+						if( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						$post['ID'] = $post_id;
+
+						$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
+
+						$result = wp_update_post( $post, true );
+
+						do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
+
+						$updated_post_ids[] = (int) $result;
+
+					} else {
+						$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
+						if ( true === $pull_new_shortcircuit ) {
+							Syndication_Logger::log_post_info( $site_id, $status = 'syn_pre_pull_new_post_shortcircuit', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
+							continue;
+						}
+						$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
+
+						$result = wp_insert_post( $post, true );
+
+						do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
+
+						if( !is_wp_error( $result ) ) {
+							update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
+							update_post_meta( $result, 'syn_source_site_id', $site_id );
+						}
+
+						$updated_post_ids[] = (int) $result;
 					}
-					$post['ID'] = $post_id;
-
-					$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
-
-					$result = wp_update_post( $post, true );
-
-					do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
-
-					$updated_post_ids[] = (int) $result;
-
-				} else {
-					$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
-					if ( true === $pull_new_shortcircuit ) {
-						Syndication_Logger::log_post_info( $site_id, $status = 'syn_pre_pull_new_post_shortcircuit', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
-						continue;
-					}
-					$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
-
-					$result = wp_insert_post( $post, true );
-
-					do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
-
-					if( !is_wp_error( $result ) ) {
-						update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
-						update_post_meta( $result, 'syn_source_site_id', $site_id );
-					}
-
-					$updated_post_ids[] = (int) $result;
 				}
-			}
 
-			foreach ( $post_types_processed as $post_type ) {
-				add_post_type_support( $post_type, 'revisions' );
+				foreach ( $post_types_processed as $post_type ) {
+					add_post_type_support( $post_type, 'revisions' );
+				}
 			}
 
 			update_post_meta( $site_id, 'syn_last_pull_time', current_time( 'timestamp', 1 ) );
@@ -1455,7 +1495,7 @@ class WP_Push_Syndication_Server {
 	 */
 	public function handle_site_change( $post_id ) {
 		if ( 'syn_site' === get_post_type( $post_id ) ) {
-			$this->refresh_pull_jobs();
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
 	}
 
@@ -1469,8 +1509,35 @@ class WP_Push_Syndication_Server {
 	 */
 	public function handle_site_group_change ( $term, $tt_id, $taxonomy ) {
 		if ( 'syn_sitegroup' === $taxonomy ) {
-			$this->refresh_pull_jobs();
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
+	}
+
+	/**
+	 * Schedule a deferred refresh of pull jobs.
+	 *
+	 * This prevents timeout issues when many sites are configured by deferring
+	 * the refresh to a background cron event instead of running synchronously.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return void
+	 */
+	private function schedule_deferred_pull_jobs_refresh() {
+		// Use a transient to debounce multiple requests within a short time window.
+		$debounce_key = 'syn_pull_jobs_refresh_pending';
+
+		if ( get_transient( $debounce_key ) ) {
+			// Already scheduled, don't schedule again.
+			return;
+		}
+
+		// Set transient for 2 minutes to prevent duplicate scheduling.
+		set_transient( $debounce_key, '1', 2 * MINUTE_IN_SECONDS );
+
+		// Clear any existing scheduled refresh and schedule a new one.
+		wp_clear_scheduled_hook( 'syn_refresh_pull_jobs' );
+		wp_schedule_single_event( time() + 60, 'syn_refresh_pull_jobs' );
 	}
 
 	private function upgrade() {

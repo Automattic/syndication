@@ -169,7 +169,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
 		if ( ! $remote_post ) {
-			return new WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'syndication' ) );
+			return new WP_Error( 'syn-remote-post-not-found', esc_html__( 'Remote post doesn\'t exist.', 'push-syndication' ) );
 		}
 
 		// Delete existing metadata to avoid duplicates
@@ -448,6 +448,66 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return $this->getResponse();
 	}
 
+	/**
+	 * Check if a post with the given meta key/value exists on the target site.
+	 *
+	 * Used to prevent syndication loops when syndicating back to source.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $meta_key   The meta key to search for.
+	 * @param string $meta_value The meta value to match.
+	 * @return bool True if post exists on target site, false otherwise.
+	 */
+	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+
+		// If meta key or value are empty.
+		if ( empty( $meta_key ) || empty( $meta_value ) ) {
+			return false;
+		}
+
+		// Use filter to limit posts returned and request custom_fields.
+		$filter = array(
+			'number' => 100,
+		);
+
+		$result = $this->query(
+			'wp.getPosts',
+			'1',
+			$this->username,
+			$this->password,
+			$filter,
+			array( 'post_id', 'custom_fields' )
+		);
+
+		if ( ! $result ) {
+			return false;
+		}
+
+		$posts_list = $this->getResponse();
+
+		if ( empty( $posts_list ) ) {
+			return false;
+		}
+
+		foreach ( $posts_list as $post ) {
+			if ( empty( $post['custom_fields'] ) ) {
+				continue;
+			}
+
+			foreach ( $post['custom_fields'] as $field ) {
+				if ( isset( $field['key'], $field['value'] ) &&
+					$meta_key === $field['key'] &&
+					$meta_value === $field['value']
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public function is_post_exists( $remote_post_id ) {
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
@@ -506,22 +566,31 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	}
 
 	public static function save_settings( $site_ID ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- URL sanitized with esc_url_raw below.
+		$site_url = isset( $_POST['site_url'] ) ? str_replace( '/xmlrpc.php', '', wp_unslash( $_POST['site_url'] ) ) : '';
+		$username = isset( $_POST['site_username'] ) ? sanitize_text_field( wp_unslash( $_POST['site_username'] ) ) : '';
 
-		$_POST['site_url'] = str_replace( '/xmlrpc.php', '', $_POST['site_url'] );
+		// Use wp_strip_all_tags() for the password instead of sanitize_text_field()
+		// because sanitize_text_field() converts encoded octets (e.g., %B2) which
+		// can break passwords with special characters. The password is encrypted before storage anyway.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password sanitized with wp_strip_all_tags.
+		$password = isset( $_POST['site_password'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_password'] ) ) : '';
 
-		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $_POST['site_url'] ) );
-		update_post_meta( $site_ID, 'syn_site_username', sanitize_text_field( $_POST['site_username'] ) );
-		update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( sanitize_text_field( $_POST['site_password'] ) ) );
+		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
+		update_post_meta( $site_ID, 'syn_site_username', $username );
+		update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
 
-		if( !filter_var( $_POST['site_url'], FILTER_VALIDATE_URL ) ) {
-			add_filter('redirect_post_location', function($location) {
-				return add_query_arg("message", 301, $location);
-			});
+		if ( ! filter_var( $site_url, FILTER_VALIDATE_URL ) ) {
+			add_filter(
+				'redirect_post_location',
+				function ( $location ) {
+					return add_query_arg( 'message', 301, $location );
+				}
+			);
 			return false;
 		}
 
 		return true;
-
 	}
 
 	public function get_post( $ext_ID )
@@ -565,11 +634,11 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		$thumbnail_alt_text  = $args[7];
 
 		if ( ! $post_ID )
-			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Please specify a valid post_ID.', 'push-syndication' ) );
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw )
-			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 
 		$thumbnail_filename = basename( $thumbnail_url );
 		$thumbnail_type = wp_check_filetype( $thumbnail_filename );
@@ -594,7 +663,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_id = (int) $image['id'];
 		if( empty( $thumbnail_id ) )
-			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 
 		if ( '_thumbnail_id' == $meta_key )
 			$thumbnail_set = set_post_thumbnail( $post_ID, $thumbnail_id );
@@ -676,7 +745,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -702,7 +771,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'syndication' ) );
+			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 		}
 		
 		$args = array(

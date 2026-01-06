@@ -26,10 +26,10 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$query = new WP_Query( $query_args );
 
 		while( $query->post_count ) {
-			WP_CLI::line( sprintf( 'Processing page %d', $query_args[ 'paged' ] ) );
+			WP_CLI::log( sprintf( 'Processing page %d', $query_args[ 'paged' ] ) );
 
 			foreach( $query->posts as $post ) {
-				WP_CLI::line( sprintf( 'Processing post %d (%s)', $post->ID, $post->post_title ) );
+				WP_CLI::log( sprintf( 'Processing post %d (%s)', $post->ID, $post->post_title ) );
 
 				$this->push_post( array(), array( 'post_id' => $post->ID ) );
 			}
@@ -112,18 +112,18 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		// output when a post is new or updated
 		add_filter( 'syn_pre_pull_posts', function( $posts, $site, $client ) {
-			WP_CLI::line( sprintf( 'Processing feed %s (%d)', $site->post_title, $site->ID ) );
-			WP_CLI::line( sprintf( '-- found %s posts', count( $posts ) ) );
+			WP_CLI::log( sprintf( 'Processing feed %s (%d)', $site->post_title, $site->ID ) );
+			WP_CLI::log( sprintf( '-- found %s posts', count( $posts ) ) );
 
 			return $posts;
 		}, 10, 3 );
 
 		add_action( 'syn_post_pull_new_post', function( $result, $post, $site, $transport_type, $client ) {
-			WP_CLI::line( sprintf( '-- New post #%d (%s)', $result, $post['post_guid'] ) );
+			WP_CLI::log( sprintf( '-- New post #%d (%s)', $result, $post['post_guid'] ) );
 		}, 10, 5 );
 
 		add_action( 'syn_post_pull_edit_post', function( $result, $post, $site, $transport_type, $client ) {
-			WP_CLI::line( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
+			WP_CLI::log( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
 		}, 10, 5 );
 	}
 
@@ -134,18 +134,18 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$this->enabled_verbosity = true;
 
 		add_filter( 'syn_pre_push_post_sites', function( $sites, $post_id, $slave_states ) {
-			WP_CLI::line( sprintf( "Processing post_id #%d (%s)", $post_id, get_the_title( $post_id ) ) );
-			WP_CLI::line( sprintf( "-- pushing to %s sites and deleting from %s sites", number_format( count( $sites['selected_sites'] ) ), number_format( count( $sites['removed_sites'] ) ) ) );
+			WP_CLI::log( sprintf( "Processing post_id #%d (%s)", $post_id, get_the_title( $post_id ) ) );
+			WP_CLI::log( sprintf( "-- pushing to %s sites and deleting from %s sites", number_format( count( $sites['selected_sites'] ) ), number_format( count( $sites['removed_sites'] ) ) ) );
 
 			return $sites;
 		}, 10, 3 );
 
 		add_action( 'syn_post_push_new_post', function( $result, $post_ID, $site, $transport_type, $client, $info ) {
-			WP_CLI::line( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
+			WP_CLI::log( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
 		}, 10, 6 );
 
 		add_action( 'syn_post_push_edit_post', function( $result, $post_ID, $site, $transport_type, $client, $info ) {
-			WP_CLI::line( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
+			WP_CLI::log( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
 		}, 10, 6 );
 
 	}

@@ -1,20 +1,78 @@
 <?php
+/**
+ * PHPUnit bootstrap file for Syndication plugin tests.
+ *
+ * @package Automattic\Syndication
+ */
 
-$_tests_dir = getenv( 'WP_TESTS_DIR' );
-if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+declare( strict_types=1 );
+
+namespace Automattic\Syndication\Tests;
+
+use Yoast\WPTestUtils\WPIntegration;
+
+require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
+
+// Check for a `--testsuite` arg when calling phpunit.
+$argv_local     = $GLOBALS['argv'] ?? [];
+$key            = (int) array_search( '--testsuite', $argv_local, true );
+$testsuite      = '';
+
+// Check for --testsuite <name> (two separate args).
+if ( $key && isset( $argv_local[ $key + 1 ] ) ) {
+	$testsuite = $argv_local[ $key + 1 ];
 }
-if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	exit( 1 );
+
+// Check for --testsuite=<name> (single arg with equals).
+foreach ( $argv_local as $arg ) {
+	if ( 0 === strpos( $arg, '--testsuite=' ) ) {
+		$testsuite = substr( $arg, strlen( '--testsuite=' ) );
+		break;
+	}
 }
 
-require_once $_tests_dir . '/includes/functions.php';
+$is_unit        = 'Unit' === $testsuite;
+$is_integration = 'integration' === $testsuite;
 
-function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../push-syndication.php';
+// Unit tests - load Brain Monkey and classes without WordPress.
+if ( $is_unit ) {
+	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+	// Define WordPress time constants used in unit tests.
+	if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+		define( 'MINUTE_IN_SECONDS', 60 );
+	}
+
+	// Load classes needed for unit tests (those without WordPress dependencies).
+	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
+	require_once __DIR__ . '/Unit/TestCase.php';
+
+	return;
 }
-tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
-require $_tests_dir . '/includes/bootstrap.php';
+if ( $is_integration ) {
+	$_tests_dir = WPIntegration\get_path_to_wp_test_dir();
 
+	// Give access to tests_add_filter() function.
+	require_once $_tests_dir . '/includes/functions.php';
+
+	// Manually load the plugin being tested.
+	\tests_add_filter(
+		'muplugins_loaded',
+		function (): void {
+			require dirname( __DIR__ ) . '/push-syndication.php';
+		}
+	);
+
+	/*
+	 * Bootstrap WordPress. This will also load the Composer autoload file, the PHPUnit Polyfills
+	 * and the custom autoloader for the TestCase and the mock object classes.
+	 */
+	WPIntegration\bootstrap_it();
+
+	/*
+	 * Load test dependencies.
+	 */
+	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
+	require_once __DIR__ . '/Integration/Syndication_Mock_Client.php';
+}

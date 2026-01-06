@@ -46,7 +46,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	}
 
 	public function no_items() {
-		_e( 'No log entries found.' );
+		esc_html_e( 'No log entries found.', 'push-syndication' );
 	}
 
 	public function column_default( $item, $column_name ) {
@@ -206,9 +206,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	private function create_log_id_dropdown() {
 		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
 		?>
-		<label class="screen-reader-text" for="filter-by-log-id"><?php _e( 'Filter by Log ID' ); ?></label>
+		<label class="screen-reader-text" for="filter-by-log-id"><?php esc_html_e( 'Filter by Log ID', 'push-syndication' ); ?></label>
 		<select name="log_id" id="filter-by-log-id">
-			<option<?php selected( $requested_log_id, 0 ); ?> value="0"><?php _e( 'All logs' ); ?></option>
+			<option<?php selected( $requested_log_id, 0 ); ?> value="0"><?php esc_html_e( 'All logs', 'push-syndication' ); ?></option>
 			<?php
 			$log_ids = array();
 			foreach ( $this->prepared_data as $row ) {
@@ -225,7 +225,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				}
 			}
 
-			echo implode( "\n", $log_ids ); // sanitization happens right above
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each element is escaped with esc_attr() in the loop above
+			echo implode( "\n", $log_ids );
 			?>
 		</select>
 
@@ -294,7 +295,7 @@ class Syndication_Logger_Viewer {
 
 	public function render_list_page(){
 		?>
-		<div class="wrap"><h2><?php _e( "Syndication Logs", "syndication" ); ?></h2>
+		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>
