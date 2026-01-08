@@ -7,6 +7,14 @@ require_once __DIR__ . '/class-syndication-wp-rss-client.php';
 
 class Syndication_Client_Factory {
 
+	/**
+	 * Get a syndication client instance for the given transport type.
+	 *
+	 * @param string $transport_type The transport type (e.g., 'WP_XMLRPC', 'WP_REST').
+	 * @param int    $site_ID        The site post ID.
+	 * @return Syndication_Client The client instance.
+	 * @throws Exception If the transport class is not found.
+	 */
 	public static function get_client( $transport_type, $site_ID ) {
 
 		$class = self::get_transport_type_class( $transport_type );
@@ -17,6 +25,14 @@ class Syndication_Client_Factory {
 		throw new Exception( ' transport class not found' );
 	}
 
+	/**
+	 * Display the settings form for a client type.
+	 *
+	 * @param WP_Post $site           The site post object.
+	 * @param string  $transport_type The transport type.
+	 * @return mixed The result of the display_settings call.
+	 * @throws Exception If the transport class is not found.
+	 */
 	public static function display_client_settings( $site, $transport_type ) {
 
 		$class = self::get_transport_type_class( $transport_type );
@@ -27,6 +43,14 @@ class Syndication_Client_Factory {
 		throw new Exception( 'transport class not found: ' . esc_html( $class ) );
 	}
 
+	/**
+	 * Save the settings for a client type.
+	 *
+	 * @param int    $site_ID        The site post ID.
+	 * @param string $transport_type The transport type.
+	 * @return mixed The result of the save_settings call.
+	 * @throws Exception If the transport class is not found.
+	 */
 	public static function save_client_settings( $site_ID, $transport_type ) {
 
 		$class = self::get_transport_type_class( $transport_type );
@@ -37,6 +61,12 @@ class Syndication_Client_Factory {
 		throw new Exception( 'transport class not found' );
 	}
 
+	/**
+	 * Get the class name for a transport type.
+	 *
+	 * @param string $transport_type The transport type.
+	 * @return string The fully qualified class name.
+	 */
 	public static function get_transport_type_class( $transport_type ) {
 		return 'Syndication_' . $transport_type . '_Client';
 	}
