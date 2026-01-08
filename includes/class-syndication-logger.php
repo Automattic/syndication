@@ -103,7 +103,7 @@ class Syndication_Logger {
 	 * Use this singleton to address non-static methods
 	 */
 	public static function instance() {
-		if ( self::$__instance == null ) {
+		if ( null === self::$__instance ) {
 			self::$__instance = new self();
 		}
 		return self::$__instance;

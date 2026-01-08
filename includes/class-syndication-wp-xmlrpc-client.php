@@ -538,14 +538,14 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	}
 
 	protected function convert_date_gmt( $date_gmt, $date ) {
-		if ( $date !== '0000-00-00 00:00:00' && $date_gmt === '0000-00-00 00:00:00' ) {
+		if ( '0000-00-00 00:00:00' !== $date && '0000-00-00 00:00:00' === $date_gmt ) {
 			return new IXR_Date( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $date, false ), 'Ymd\TH:i:s' ) );
 		}
 		return $this->convert_date( $date_gmt );
 	}
 
 	protected function convert_date( $date ) {
-		if ( $date === '0000-00-00 00:00:00' ) {
+		if ( '0000-00-00 00:00:00' === $date ) {
 			return new IXR_Date( '00000000T00:00:00Z' );
 		}
 		return new IXR_Date( mysql2date( 'Ymd\TH:i:s', $date, false ) );
@@ -707,7 +707,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		);
 		// update caption and description of the image.
 		$result = $wp_xmlrpc_server->wp_editPost( $args );
-		if ( $result !== true ) {
+		if ( true !== $result ) {
 			// failed to update atatchment post details.
 			// Handle it the way you want it (log it, message it).
 		}
@@ -813,7 +813,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		// update caption and description of the image.
 		$result = $wp_xmlrpc_server->wp_editPost( $args );
-		if ( $result !== true ) {
+		if ( true !== $result ) {
 			// failed to update atatchment post details.
 			// Handle it the way you want it (log it, message it).
 			error_log( 'Syndication. xmlrpc_post_gallery_images Failed to update remote post attachments' );

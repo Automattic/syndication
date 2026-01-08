@@ -130,7 +130,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$orderby = ( ! empty( $_GET['orderby'] ) ) ? esc_attr( $_GET['orderby'] ) : 'time';
 		$order   = ( ! empty( $_GET['order'] ) ) ? esc_attr( $_GET['order'] ) : 'desc';
 		$result  = strcmp( $a[ $orderby ], $b[ $orderby ] );
-		return ( $order === 'asc' ) ? $result : -$result;
+		return ( 'asc' === $order ) ? $result : -$result;
 	}
 
 	/**

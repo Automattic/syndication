@@ -247,7 +247,7 @@ class WP_Push_Syndication_Server {
 	public function load_scripts_and_styles( $hook ) {
 		global $typenow;
 		if ( 'syn_site' == $typenow ) {
-			if ( $hook == 'edit.php' ) {
+			if ( 'edit.php' === $hook ) {
 				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version );
 			} elseif ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
 				wp_enqueue_style( 'syn-edit-site', plugins_url( 'css/edit-site.css', __FILE__ ), array(), $this->version );
@@ -978,7 +978,7 @@ class WP_Push_Syndication_Server {
 					}
 				}
 
-				if ( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // States 'new' and 'new-error'.
+				if ( 'new' === $info['state'] || 'new-error' === $info['state'] ) { // States 'new' and 'new-error'.
 
 					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_new_shortcircuit ) {
@@ -1014,7 +1014,7 @@ class WP_Push_Syndication_Server {
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them.
-				if ( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
+				if ( 'success' === $info['state'] || 'edit-error' === $info['state'] || 'remove-error' === $info['state'] ) {
 					$result = $client->delete_post( $info['ext_ID'] );
 					if ( is_wp_error( $result ) ) {
 						$slave_post_states['remove-error'][ $site->ID ] = $result;
@@ -1057,7 +1057,7 @@ class WP_Push_Syndication_Server {
 
 				foreach ( $sites as $site ) {
 					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
-					if ( $site_enabled == 'on' ) {
+					if ( 'on' === $site_enabled ) {
 						$data['selected_sites'][] = $site;
 					}
 				}
@@ -1075,7 +1075,7 @@ class WP_Push_Syndication_Server {
 
 				foreach ( $sites as $site ) {
 					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
-					if ( $site_enabled == 'on' ) {
+					if ( 'on' === $site_enabled ) {
 						$data['removed_sites'][] = $site;
 					}
 				}
@@ -1189,7 +1189,7 @@ class WP_Push_Syndication_Server {
 
 		// if slave post deletion is not enabled return.
 		$delete_pushed_posts = ! empty( $this->push_syndicate_settings['delete_pushed_posts'] ) ? $this->push_syndicate_settings['delete_pushed_posts'] : 'off';
-		if ( $delete_pushed_posts != 'on' ) {
+		if ( 'on' !== $delete_pushed_posts ) {
 			return;
 		}
 
@@ -1222,7 +1222,7 @@ class WP_Push_Syndication_Server {
 			$site_enabled = get_post_meta( $site_ID, 'syn_site_enabled', true );
 
 			// check whether the site is enabled.
-			if ( $site_enabled == 'on' ) {
+			if ( 'on' === $site_enabled ) {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site_ID );
 
@@ -1392,7 +1392,7 @@ class WP_Push_Syndication_Server {
 			$site_id = $site->ID;
 
 			$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true );
-			if ( $site_enabled != 'on' ) {
+			if ( 'on' !== $site_enabled ) {
 				continue;
 			}
 
@@ -1428,7 +1428,7 @@ class WP_Push_Syndication_Server {
 							continue;
 						}
 						// if updation is disabled continue.
-						if ( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
+						if ( 'on' !== $this->push_syndicate_settings['update_pulled_posts'] ) {
 							Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 							continue;
 						}
