@@ -61,9 +61,9 @@ class Syndication_Logger {
 
 		if ( false === $this->debug_level ) {
 			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->debug_level = 'info';    // log everything
+				$this->debug_level = 'info';    // Log everything.
 			} else {
-				$this->debug_level = 'default'; // log only errors + success
+				$this->debug_level = 'default'; // Log only errors + success.
 			}
 		}
 
@@ -72,9 +72,9 @@ class Syndication_Logger {
 
 		if ( false === $this->use_php_error_logging ) {
 			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->use_php_error_logging = true;    // log also with error_log()
+				$this->use_php_error_logging = true;    // Log also with error_log().
 			} else {
-				$this->use_php_error_logging = false;   // log only in db
+				$this->use_php_error_logging = false;   // Log only in db.
 			}
 		}
 	}
@@ -261,7 +261,7 @@ class Syndication_Logger {
 	 * @return mixed                true or WP_Error
 	 */
 	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
-		// Don't log infos depending on debug level
+		// Don't log infos depending on debug level.
 		if ( 'info' == $msg_type && 'info' != $this->debug_level ) {
 			return;
 		}
@@ -294,7 +294,7 @@ class Syndication_Logger {
 		}
 
 		if ( ! empty( $extra ) && is_array( $extra ) ) {
-			// @TODO sanitize extra data
+			// @TODO sanitize extra data.
 			// $log_entry['extra'] = array_map( 'sanitize_text_field', $extra );
 		}
 
@@ -304,7 +304,7 @@ class Syndication_Logger {
 		}
 
 		if ( 'object' == $storage_type ) {
-			// Storing the log alongside the object
+			// Storing the log alongside the object.
 
 			if ( 'post' == $object_type ) {
 				if ( ! is_integer( $object_id ) ) {
@@ -328,7 +328,7 @@ class Syndication_Logger {
 					$log[0] = $log_entry;
 				} else {
 					if ( count( $log ) >= $this->log_entry_limit ) {
-						// Slice the array to keep the log size in the limits
+						// Slice the array to keep the log size in the limits.
 						$offset = count( $log ) - $this->log_entry_limit;
 						$log    = array_slice( $log, $offset + 1 );
 					}
@@ -340,19 +340,19 @@ class Syndication_Logger {
 				if ( 'success' == $msg_type ) {
 					update_post_meta( $post->ID, 'syn_log_errors', 0 );
 				} elseif ( 'error' == $msg_type ) {
-					// track failures since last success
+					// track failures since last success.
 					$errors = get_post_meta( $post->ID, 'syn_log_errors', true );
 					$errors = (int) $errors + 1;
 					update_post_meta( $post->ID, 'syn_log_errors', $errors );
-					// track overall failures
+					// track overall failures.
 					$errors = get_post_meta( $post->ID, 'syn_log_errors_overall', true );
 					$errors = (int) $errors + 1;
 					update_post_meta( $post->ID, 'syn_log_errors_overall', $errors );
 				}
 
-				// @TODO log error counter
+				// @TODO log error counter.
 			} elseif ( 'term' == $object_type ) {
-				// @TODO implement if needed
+				// @TODO implement if needed.
 			}
 		} elseif ( 'option' == $storage_type ) {
 			// Storing the log in an option value.
@@ -363,7 +363,7 @@ class Syndication_Logger {
 				$log[0] = $log_entry;
 			} else {
 				if ( count( $log ) >= $this->log_entry_limit ) {
-					// Slice the array to keep the log size in the limits
+					// Slice the array to keep the log size in the limits.
 					$offset = count( $log ) - $this->log_entry_limit;
 					$log    = array_slice( $log, $offset + 1 );
 				}
@@ -375,11 +375,11 @@ class Syndication_Logger {
 			if ( 'success' == $msg_type ) {
 				update_option( 'syn_log_errors', 0 );
 			} elseif ( 'error' == $msg_type ) {
-				// track failures since last success
+				// track failures since last success.
 				$errors = get_option( 'syn_log_errors' );
 				$errors = (int) $errors + 1;
 				update_option( 'syn_log_errors', $errors );
-				// track overall failures
+				// track overall failures.
 				$errors = get_option( 'syn_log_errors_overall' );
 				$errors = (int) $errors + 1;
 				update_option( 'syn_log_errors_overall', $errors );
@@ -432,7 +432,7 @@ class Syndication_Logger {
 					 *
 					 * @TODO implement walker
 					 */
-					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // cache pass (see note above)
+					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // Cache pass (see note above).
 					foreach ( $all_log_entries as $log_entry ) {
 						$log_entries[ $log_entry->post_id ] = unserialize( $log_entry->meta_value );
 					}

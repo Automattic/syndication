@@ -125,7 +125,7 @@ class Syndication_Logger_Admin_Notice {
 	public static function handle_dismiss_syndication_notice() {
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
-		// add nonce
+		// Add nonce.
 		if ( isset( $_GET[ self::$dismiss_parameter ] ) && current_user_can( $capability ) ) {
 			$dismiss_key   = esc_attr( $_GET[ self::$dismiss_parameter ] );
 			$dismiss_nonce = esc_attr( $_GET['syn_dismiss_nonce'] );

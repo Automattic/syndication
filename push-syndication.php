@@ -40,7 +40,7 @@ new Syndication_Event_Counter();
 require __DIR__ . '/includes/class-syndication-site-failure-monitor.php';
 new Syndication_Site_Failure_Monitor();
 
-// Create the site auto retry functionality
+// Create the site auto retry functionality.
 require __DIR__ . '/includes/class-syndication-site-auto-retry.php';
 new Failed_Syndication_Auto_Retry();
 
@@ -58,5 +58,5 @@ if ( ! defined( 'PHP_VERSION_ID' ) || PHP_VERSION_ID < 70100 ) {
 	$syndication_encryption = new Syndication_Encryption( new Syndication_Encryptor_OpenSSL() );
 }
 
-// @TODO: instead of saving this as a global, have it as an attribute of WP_Push_Syndication_Server
+// @TODO: instead of saving this as a global, have it as an attribute of WP_Push_Syndication_Server.
 $GLOBALS['push_syndication_encryption'] = $syndication_encryption;

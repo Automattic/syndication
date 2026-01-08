@@ -14,46 +14,46 @@ class WP_Push_Syndication_Server {
 
 	function __construct() {
 
-		// initialization
+		// initialization.
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
-		// custom columns
+		// custom columns.
 		add_filter( 'manage_edit-syn_site_columns', array( $this, 'add_new_columns' ) );
 		add_action( 'manage_syn_site_posts_custom_column', array( $this, 'manage_columns' ), 10, 2 );
 
-		// submenus
+		// submenus.
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
 
-		// defining sites
+		// defining sites.
 		add_action( 'save_post', array( $this, 'save_site_settings' ) );
 
-		// loading necessary styles and scripts
+		// loading necessary styles and scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts_and_styles' ) );
 
-		// filter admin notices in custom post types
+		// filter admin notices in custom post types.
 		add_filter( 'post_updated_messages', array( $this, 'push_syndicate_admin_messages' ) );
 
-		// syndicating content
+		// syndicating content.
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
-		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load
+		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // Use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load.
 		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 
-		// adding custom time interval
+		// adding custom time interval.
 		add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
 
-		// firing a cron job
+		// firing a cron job.
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
 		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
 
-		// Handle changes to sites and site groups
+		// Handle changes to sites and site groups.
 		add_action( 'save_post', array( $this, 'handle_site_change' ) );
 		add_action( 'delete_post', array( $this, 'handle_site_change' ) );
 		add_action( 'create_term', array( $this, 'handle_site_group_change' ), 10, 3 );
 		add_action( 'delete_term', array( $this, 'handle_site_group_change' ), 10, 3 );
 
 		// Generic hook for reprocessing all scheduled pull jobs. This allows
-		// for bulk rescheduling of jobs that were scheduled the old way (one job
+		// for bulk rescheduling of jobs that were scheduled the old way (one job.
 		// for many sites).
 		add_action( 'syn_refresh_pull_jobs', array( $this, 'refresh_pull_jobs' ) );
 
@@ -71,7 +71,7 @@ class WP_Push_Syndication_Server {
 			'edit_post'          => $capability,
 			'read_post'          => $capability,
 			'delete_post'        => $capability,
-			'delete_posts'       => $capability, // only added to address notice caused by https://core.trac.wordpress.org/ticket/30991
+			'delete_posts'       => $capability, // Only added to address notice caused by https://core.trac.wordpress.org/ticket/30991.
 			'edit_posts'         => $capability,
 			'edit_others_posts'  => $capability,
 			'publish_posts'      => $capability,
@@ -104,7 +104,7 @@ class WP_Push_Syndication_Server {
 				'publicly_queryable'   => false,
 				'exclude_from_search'  => true,
 				'menu_position'        => 100,
-				// @TODO we need a menu icon here
+				// @TODO we need a menu icon here.
 				'hierarchical'         => false, // @TODO check this
 				'query_var'            => false,
 				'rewrite'              => false,
@@ -210,7 +210,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function admin_init() {
-		// @TODO define more parameters
+		// @TODO define more parameters.
 		$name_match = '#class-syndication-(.+)-client\.php$#';
 
 		$full_path = __DIR__ . '/';
@@ -236,11 +236,11 @@ class WP_Push_Syndication_Server {
 		}
 		$this->push_syndicate_transports = apply_filters( 'syn_transports', $this->push_syndicate_transports );
 
-		// register settings
+		// register settings.
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 		register_setting( 'push_syndicate_settings', 'push_syndication_max_pull_attempts', array( $this, 'validate_max_pull_attempts' ) );
 
-		// Maybe run upgrade
+		// Maybe run upgrade.
 		$this->upgrade();
 	}
 
@@ -336,7 +336,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_pull_sitegroups_selection() {
 
-		// get all sitegroups
+		// get all sitegroups.
 		$sitegroups = get_terms(
 			'syn_sitegroup',
 			array(
@@ -346,7 +346,7 @@ class WP_Push_Syndication_Server {
 			) 
 		);
 
-		// if there are no sitegroups defined return
+		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
@@ -411,7 +411,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_update_pulled_posts_selection() {
-		// @TODO refractor this
+		// @TODO refractor this.
 		echo '<input type="checkbox" name="push_syndicate_settings[update_pulled_posts]" value="on" ';
 		echo checked( $this->push_syndicate_settings['update_pulled_posts'], 'on' ) . ' />';
 	}
@@ -422,7 +422,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_post_types_selection() {
 
-		// @TODO add more suitable filters
+		// @TODO add more suitable filters.
 		$post_types = get_post_types( array( 'public' => true ) );
 
 		echo '<ul>';
@@ -450,13 +450,13 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_delete_pushed_posts_selection() {
-		// @TODO refractor this
+		// @TODO refractor this.
 		echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
 		echo checked( $this->push_syndicate_settings['delete_pushed_posts'], 'on' ) . ' />';
 	}
 
 	public function display_apitoken_description() {
-		// @TODO add client type information
+		// @TODO add client type information.
 		echo '<p>' . esc_html__( 'To syndicate content to WordPress.com you must ', 'push-syndication' ) . '<a href="https://developer.wordpress.com/apps/new/">' . esc_html__( 'create a new application', 'push-syndication' ) . '</a></p>';
 		echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
 		echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
@@ -477,7 +477,7 @@ class WP_Push_Syndication_Server {
 
 		echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
 
-		// if code is not found return or settings updated return
+		// if code is not found return or settings updated return.
 		if ( empty( $_GET['code'] ) || ! empty( $_GET['settings-updated'] ) ) {
 			echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 
@@ -549,7 +549,7 @@ class WP_Push_Syndication_Server {
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array();
 
-		// get all sitegroups
+		// get all sitegroups.
 		$sitegroups = get_terms(
 			'syn_sitegroup',
 			array(
@@ -559,7 +559,7 @@ class WP_Push_Syndication_Server {
 			) 
 		);
 
-		// if there are no sitegroups defined return
+		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
@@ -673,12 +673,12 @@ class WP_Push_Syndication_Server {
 		$transport_type = get_post_meta( $post->ID, 'syn_transport_type', true );
 		$site_enabled   = get_post_meta( $post->ID, 'syn_site_enabled', true );
 
-		// default values
+		// default values.
 		$transport_type = ! empty( $transport_type ) ? $transport_type : 'WP_XMLRPC';
 		$transport_mode = ! empty( $transport_mode ) ? $transport_mode : 'pull';
 		$site_enabled   = ! empty( $site_enabled ) ? $site_enabled : 'off';
 
-		// nonce for verification when saving
+		// nonce for verification when saving.
 		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
 
 		$this->display_transports( $transport_type, $transport_mode );
@@ -699,7 +699,7 @@ class WP_Push_Syndication_Server {
 	public function display_transports( $transport_type, $mode ) {
 
 		echo '<p>' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</p>';
-		// TODO: add direction
+		// TODO: add direction.
 		echo '<select name="transport_type" onchange="this.form.submit()">';
 
 		$values  = array();
@@ -715,19 +715,19 @@ class WP_Push_Syndication_Server {
 
 		global $post;
 
-		// autosave verification
+		// autosave verification.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
 
-		// if our nonce isn't there, or we can't verify it return
+		// if our nonce isn't there, or we can't verify it return.
 		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
 
-		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists
+		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists.
 
-		// @TODO validate that type and mode are valid
+		// @TODO validate that type and mode are valid.
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 
 		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
@@ -769,7 +769,7 @@ class WP_Push_Syndication_Server {
 
 	public function push_syndicate_admin_messages( $messages ) {
 
-		// general error messages
+		// general error messages.
 		$messages['syn_site'][250] = __( 'Transport class not found!', 'push-syndication' );
 		$messages['syn_site'][251] = __( 'Connection Successful!', 'push-syndication' );
 		$messages['syn_site'][252] = __( 'Something went wrong when connecting to the site. Site disabled.', 'push-syndication' );
@@ -782,17 +782,17 @@ class WP_Push_Syndication_Server {
 		$messages['syn_site'][305] = __( 'Transport error. Invalid endpoint', 'push-syndication' );
 		$messages['syn_site'][306] = __( 'Something went wrong when connecting to the site.', 'push-syndication' );
 
-		// WordPress.com REST error messages
+		// WordPress.com REST error messages.
 		$messages['site'][301] = __( 'Invalid URL', 'push-syndication' );
 
-		// RSS error messages
+		// RSS error messages.
 
 		return $messages;
 	}
 
 	public function add_post_metaboxes() {
 
-		// return if no post types supports push syndication
+		// return if no post types supports push syndication.
 		if ( empty( $this->push_syndicate_settings['selected_post_types'] ) ) {
 			return;
 		}
@@ -804,7 +804,7 @@ class WP_Push_Syndication_Server {
 		$selected_post_types = $this->push_syndicate_settings['selected_post_types'];
 		foreach ( $selected_post_types as $selected_post_type ) {
 			add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
-			// add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' );
+			// add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' ); // phpcs:ignore Squiz.Commenting.InlineComment.InvalidEndChar -- Commented out code.
 		}
 	}
 
@@ -812,10 +812,10 @@ class WP_Push_Syndication_Server {
 
 		global $post;
 
-		// nonce for verification when saving
+		// nonce for verification when saving.
 		wp_nonce_field( plugin_basename( __FILE__ ), 'syndicate_noncename' );
 
-		// get all sitegroups
+		// get all sitegroups.
 		$sitegroups = get_terms(
 			'syn_sitegroup',
 			array(
@@ -825,7 +825,7 @@ class WP_Push_Syndication_Server {
 			) 
 		);
 
-		// if there are no sitegroups defined return
+		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
@@ -883,12 +883,12 @@ class WP_Push_Syndication_Server {
 
 		global $post;
 
-		// autosave verification
+		// autosave verification.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
 
-		// if our nonce isn't there, or we can't verify it return
+		// if our nonce isn't there, or we can't verify it return.
 		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
@@ -906,17 +906,17 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function add_syndication_status_metabox() {
-		// @TODO retrieve syndication status and display
+		// @TODO retrieve syndication status and display.
 	}
 
 	public function pre_schedule_push_content( $new_status, $old_status, $post ) {
 
-		// autosave verification
+		// autosave verification.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
 
-		// if our nonce isn't there, or we can't verify it return
+		// if our nonce isn't there, or we can't verify it return.
 		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
@@ -942,22 +942,22 @@ class WP_Push_Syndication_Server {
 		);
 	}
 
-	// cron job function to syndicate content
+	// cron job function to syndicate content.
 	public function push_content( $sites ) {
 
-		// if another process running on it return
+		// if another process running on it return.
 		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' ) {
 			return;
 		}
 
-		// set value as locked, valid for 5 mins
+		// set value as locked, valid for 5 mins.
 		set_transient( 'syn_syndicate_lock', 'locked', 60 * 5 );
 
 		/** start of critical section */
 
 		$post_ID = $sites['post_ID'];
 
-		// an array containing states of sites
+		// an array containing states of sites.
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
 		$slave_post_states = ! empty( $slave_post_states ) ? $slave_post_states : array();
 
@@ -978,7 +978,7 @@ class WP_Push_Syndication_Server {
 					}
 				}
 
-				if ( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // states 'new' and 'new-error'
+				if ( $info['state'] == 'new' || $info['state'] == 'new-error' ) { // States 'new' and 'new-error'.
 
 					$push_new_shortcircuit = apply_filters( 'syn_pre_push_new_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_new_shortcircuit ) {
@@ -991,7 +991,7 @@ class WP_Push_Syndication_Server {
 					$this->update_slave_post_states( $post_ID, $slave_post_states );
 
 					do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
-				} else { // states 'success', 'edit-error' and 'remove-error'
+				} else { // States 'success', 'edit-error' and 'remove-error'.
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit ) {
 						continue;
@@ -1013,7 +1013,7 @@ class WP_Push_Syndication_Server {
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
-				// if the post is not pushed we do not need to delete them
+				// if the post is not pushed we do not need to delete them.
 				if ( $info['state'] == 'success' || $info['state'] == 'edit-error' || $info['state'] == 'remove-error' ) {
 					$result = $client->delete_post( $info['ext_ID'] );
 					if ( is_wp_error( $result ) ) {
@@ -1039,7 +1039,7 @@ class WP_Push_Syndication_Server {
 		$old_sitegroups      = ! empty( $old_sitegroups ) ? $old_sitegroups : array();
 		$removed_sitegroups  = array_diff( $old_sitegroups, $selected_sitegroups );
 
-		// initialization
+		// initialization.
 		$data = array(
 			'post_ID'        => $post_ID,
 			'selected_sites' => array(),
@@ -1049,7 +1049,7 @@ class WP_Push_Syndication_Server {
 		if ( ! empty( $selected_sitegroups ) ) {
 			foreach ( $selected_sitegroups as $selected_sitegroup ) {
 
-				// get all the sites in the sitegroup
+				// get all the sites in the sitegroup.
 				$sites = $this->get_sites_by_sitegroup( $selected_sitegroup );
 				if ( empty( $sites ) ) {
 					continue;
@@ -1067,7 +1067,7 @@ class WP_Push_Syndication_Server {
 		if ( ! empty( $removed_sitegroups ) ) {
 			foreach ( $removed_sitegroups as $removed_sitegroup ) {
 
-				// get all the sites in the sitegroup
+				// get all the sites in the sitegroup.
 				$sites = $this->get_sites_by_sitegroup( $removed_sitegroup );
 				if ( empty( $sites ) ) {
 					continue;
@@ -1087,7 +1087,7 @@ class WP_Push_Syndication_Server {
 		return $data;
 	}
 
-	// return an array of sites as objects based on sitegroup
+	// return an array of sites as objects based on sitegroup.
 	public function get_sites_by_sitegroup( $sitegroup ) {
 
 		// @TODO if sitegroup is deleted?
@@ -1187,7 +1187,7 @@ class WP_Push_Syndication_Server {
 
 	public function pre_schedule_delete_content( $post_id ) {
 
-		// if slave post deletion is not enabled return
+		// if slave post deletion is not enabled return.
 		$delete_pushed_posts = ! empty( $this->push_syndicate_settings['delete_pushed_posts'] ) ? $this->push_syndicate_settings['delete_pushed_posts'] : 'off';
 		if ( $delete_pushed_posts != 'on' ) {
 			return;
@@ -1221,7 +1221,7 @@ class WP_Push_Syndication_Server {
 		foreach ( $slave_posts as $site_ID => $ext_ID ) {
 			$site_enabled = get_post_meta( $site_ID, 'syn_site_enabled', true );
 
-			// check whether the site is enabled
+			// check whether the site is enabled.
 			if ( $site_enabled == 'on' ) {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site_ID );
@@ -1244,19 +1244,19 @@ class WP_Push_Syndication_Server {
 		}
 
 		update_option( 'syn_delete_error_sites', $delete_error_sites );
-		// all post metadata will be automatically deleted including slave_post_states
+		// all post metadata will be automatically deleted including slave_post_states.
 	}
 
-	// get the slave posts as $site_ID => $ext_ID
+	// get the slave posts as $site_ID => $ext_ID.
 	public function get_slave_posts( $post_ID ) {
 
-		// array containing states of sites
+		// array containing states of sites.
 		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
 		if ( empty( $slave_post_states ) ) {
 			return;
 		}
 
-		// array containing slave posts as $site_ID => $ext_ID
+		// array containing slave posts as $site_ID => $ext_ID.
 		$slave_posts = array();
 
 		foreach ( $slave_post_states as $state ) {
@@ -1270,7 +1270,7 @@ class WP_Push_Syndication_Server {
 		return $slave_posts;
 	}
 
-	// checking user capability
+	// checking user capability.
 	public function current_user_can_syndicate() {
 		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 		return current_user_can( $syndicate_cap );
@@ -1312,8 +1312,8 @@ class WP_Push_Syndication_Server {
 
 	public function schedule_pull_content( $sites ) {
 
-		// to unschedule a cron we need the original arguements passed to schedule the cron
-		// we are saving it as a siteoption
+		// to unschedule a cron we need the original arguements passed to schedule the cron.
+		// we are saving it as a siteoption.
 		$old_pull_sites = get_option( 'syn_old_pull_sites' );
 
 
@@ -1351,7 +1351,7 @@ class WP_Push_Syndication_Server {
 			$sites = array_merge( $sites, $this->get_sites_by_sitegroup( $selected_sitegroup ) );
 		}
 
-		// Order by last update date
+		// Order by last update date.
 		usort( $sites, array( $this, 'sort_sites_by_last_pull_date' ) );
 
 		return $sites;
@@ -1427,7 +1427,7 @@ class WP_Push_Syndication_Server {
 							Syndication_Logger::log_post_info( $site_id, $status = 'skip_pre_pull_edit_post', $message = sprintf( __( 'skipping post per syn_pre_pull_edit_post_shortcircuit', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 							continue;
 						}
-						// if updation is disabled continue
+						// if updation is disabled continue.
 						if ( $this->push_syndicate_settings['update_pulled_posts'] != 'on' ) {
 							Syndication_Logger::log_post_info( $site_id, $status = 'skip_update_pulled_posts', $message = sprintf( __( 'skipping post update per update_pulled_posts setting', 'push-syndication' ) ), $log_time = null, $extra = array( 'post' => $post ) );
 							continue;
@@ -1574,7 +1574,7 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
-		// upgrade to 2.1
+		// Upgrade to 2.1.
 		if ( version_compare( $this->version, '2.0', '<=' ) ) {
 			$inserted_posts_by_site = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_inserted_posts'" );
 			foreach ( $inserted_posts_by_site as $site_id ) {

@@ -84,7 +84,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		$post = (array) get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		// This filter can be used to exclude or alter posts during a content push.
 		$post = apply_filters( 'syn_rest_push_filter_new_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
@@ -134,7 +134,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		$post = (array) get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		// This filter can be used to exclude or alter posts during a content push.
 		$post = apply_filters( 'syn_rest_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
@@ -180,7 +180,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
-	// get an array of values and convert it to CSV
+	// Get an array of values and convert it to CSV.
 	function _prepare_terms( $terms ) {
 
 		$terms_csv = '';
@@ -240,7 +240,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	}
 
 	public function test_connection() {
-		// @TODo find a better method
+		// @TODo find a better method.
 		$response = wp_remote_get(
 			'https://public-api.wordpress.com/rest/v1/me/?pretty=1',
 			array(
@@ -253,7 +253,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		// TODO: return WP_Error
+		// TODO: return WP_Error.
 		if ( is_wp_error( $response ) ) {
 			return false;
 		}
@@ -300,7 +300,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		$site_id    = get_post_meta( $site->ID, 'syn_site_id', true );
 		$site_url   = get_post_meta( $site->ID, 'syn_site_url', true );
 
-		// @TODO refresh UI
+		// @TODO refresh UI.
 
 		?>
 

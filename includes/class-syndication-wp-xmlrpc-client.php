@@ -14,7 +14,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	function __construct( $site_ID ) {
 
-		// @TODO check port, timeout etc
+		// @TODO check port, timeout etc.
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
 		if ( false === strpos( $server, 'xmlrpc.php' ) ) {
 			$server = esc_url_raw( trailingslashit( $server ) . 'xmlrpc.php' );
@@ -31,12 +31,12 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
 			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
 			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			// TODO: on delete post, delete thumbnail
+			// TODO: on delete post, delete thumbnail.
 		}
 	}
 
 	private function get_thumbnail_meta_keys( $post_id ) {
-		// Support for non-core images, like from the Multiple Post Thumbnail plugin
+		// Support for non-core images, like from the Multiple Post Thumbnail plugin.
 		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
 	}
 
@@ -77,8 +77,8 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			}
 
 			list( $thumbnail_url ) = wp_get_attachment_image_src( $thumbnail_id, 'full' );
-			// pass thumbnail data and meta into the addThumnail to sync caption, description and alt-text
-			// has to be this way since mw_newMediaObject doesn't allow to pass description and caption along
+			// pass thumbnail data and meta into the addThumnail to sync caption, description and alt-text.
+			// has to be this way since mw_newMediaObject doesn't allow to pass description and caption along.
 			$thumbnail_post_data = get_post( $thumbnail_id );
 			$thumbnail_alt_text  = get_post_meta( $thumbnail_id, '_wp_attachment_image_alt', true );
 			
@@ -113,16 +113,16 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$post = (array) get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		// This filter can be used to exclude or alter posts during a content push.
 		$post = apply_filters( 'syn_xmlrpc_push_filter_new_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
 		}
 		
-		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs
+		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
 
-		// rearranging arguments
+		// rearranging arguments.
 		$args                  = array();
 		$args['post_title']    = $post['post_title'];
 		$args['post_content']  = $post['post_content'];
@@ -163,7 +163,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$post = (array) get_post( $post_ID );
 
-		// This filter can be used to exclude or alter posts during a content push
+		// This filter can be used to exclude or alter posts during a content push.
 		$post = apply_filters( 'syn_xmlrpc_push_filter_edit_post', $post, $post_ID );
 		if ( false === $post ) {
 			return true;
@@ -175,7 +175,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return new WP_Error( 'syn-remote-post-not-found', esc_html__( 'Remote post doesn\'t exist.', 'push-syndication' ) );
 		}
 
-		// Delete existing metadata to avoid duplicates
+		// Delete existing metadata to avoid duplicates.
 		$args['custom_fields'] = array();
 		foreach ( $remote_post['custom_fields'] as $custom_field ) {
 			$args['custom_fields'][] = array( 
@@ -198,8 +198,8 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			$syndicated_thumbnail_id = isset( $syndicated_thumbnails_by_site[ $this->site_ID ] ) ? $syndicated_thumbnails_by_site[ $this->site_ID ] : false;
 
 			if ( $syndicated_thumbnail_id == $thumbnail_id ) {
-				// need to preserve old meta custom_type_thumbnail_id if it wasn't changed during update
-				// hence we remove ID from the custom_fileds list in order to avoid its deletion
+				// need to preserve old meta custom_type_thumbnail_id if it wasn't changed during update.
+				// hence we remove ID from the custom_fileds list in order to avoid its deletion.
 				foreach ( $args['custom_fields'] as $index => $value ) {
 					if ( $value['meta_key_lookup'] == $thumbnail_meta_key ) {
 						unset( $args['custom_fields'][ $index ] );
@@ -208,10 +208,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			}
 		}
 
-		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs
+		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
 
-		// rearranging arguments
+		// rearranging arguments.
 		$args['post_title']    = $post['post_title'];
 		$args['post_content']  = $post['post_content'];
 		$args['post_excerpt']  = $post['post_excerpt'];
@@ -256,7 +256,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	private function syndicate_gallery_images( $post_content ) {
 		$attachment_ids = array();
 		global $shortcode_tags;
-		// overwrite global shortcodes for gallery only and then revert back to original
+		// overwrite global shortcodes for gallery only and then revert back to original.
 		$temp           = $shortcode_tags;
 		$shortcode_tags = array( 'gallery' => 'gallery_shortcode' );
 		$pattern        = get_shortcode_regex();
@@ -279,7 +279,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		if ( ! empty( $image_ids ) ) {
 			foreach ( $image_ids as $key => $gallery_ids ) {
 				foreach ( $gallery_ids as $index => $id ) {
-					// do upload, get new ID back
+					// do upload, get new ID back.
 					list( $thumbnail_url ) = wp_get_attachment_image_src( $id, 'full' );
 					$thumbnail_post_data   = get_post( $id );
 					$thumbnail_alt_text    = trim( get_post_meta( $id, '_wp_attachment_image_alt', true ) );
@@ -302,12 +302,12 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			}
 		}
 
-		// new IDs needs to be injected into the post content
-		// replace old gallery code with a new one
+		// new IDs needs to be injected into the post content.
+		// replace old gallery code with a new one.
 		$lenght = count( $matches[0] );
 		for ( $i = 0; $i < $lenght; $i++ ) {
 			$shortcode = $matches[0][ $i ];
-			// WP regex matches attribute with leading space, required here
+			// WP regex matches attribute with leading space, required here.
 			$attribute     = ' ids="' . implode( ',', $image_ids[ $i ] ) . '"';
 			$new_attribute = ' ids="' . implode( ',', $new_image_ids[ $i ] ) . '"';
 			$new_shortcode = str_replace( $attribute, $new_attribute, $shortcode );
@@ -347,7 +347,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			}
 
 			foreach ( $post_meta_values as $post_meta_value ) {
-				$post_meta_value = maybe_unserialize( $post_meta_value ); // get_post_custom returns serialized data
+				$post_meta_value = maybe_unserialize( $post_meta_value ); // get_post_custom returns serialized data.
 
 				$custom_fields[] = array(
 					'key'   => $post_meta_key,
@@ -384,7 +384,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			$terms_names['post_tag'] = wp_get_object_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) );
 		}
 
-		// TODO: custom taxonomy
+		// TODO: custom taxonomy.
 
 		return $terms_names;
 	}
@@ -672,7 +672,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			),
 		);
 
-		// Note: Leting mw_newMediaObject handle our auth and cap checks
+		// Note: Leting mw_newMediaObject handle our auth and cap checks.
 		$image = $wp_xmlrpc_server->mw_newMediaObject( $args );
 
 		if ( ! is_array( $image ) || empty( $image['url'] ) ) {
@@ -705,13 +705,13 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 				'post_excerpt' => $thumbnail_post_data['post_excerpt'],
 			),
 		);
-		// update caption and description of the image
+		// update caption and description of the image.
 		$result = $wp_xmlrpc_server->wp_editPost( $args );
 		if ( $result !== true ) {
-			// failed to update atatchment post details
-			// handle it th way you want it (log it, message it)
+			// failed to update atatchment post details.
+			// Handle it the way you want it (log it, message it).
 		}
-		// update alt text of the image
+		// update alt text of the image.
 		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );
 
 		return $thumbnail_id;
@@ -788,7 +788,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			),
 		);
 
-		// Note: Leting mw_newMediaObject handle our auth and cap checks
+		// Note: Leting mw_newMediaObject handle our auth and cap checks.
 		$image = $wp_xmlrpc_server->mw_newMediaObject( $args );
 		if ( ! is_array( $image ) || empty( $image['url'] ) ) {
 			return $image;
@@ -811,14 +811,14 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			),
 		);
 
-		// update caption and description of the image
+		// update caption and description of the image.
 		$result = $wp_xmlrpc_server->wp_editPost( $args );
 		if ( $result !== true ) {
-			// failed to update atatchment post details
-			// handle it th way you want it (log it, message it)
+			// failed to update atatchment post details.
+			// Handle it the way you want it (log it, message it).
 			error_log( 'Syndication. xmlrpc_post_gallery_images Failed to update remote post attachments' );
 		}
-		// update alt text of the image
+		// update alt text of the image.
 		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );
 
 		return $thumbnail_id;

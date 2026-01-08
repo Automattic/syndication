@@ -24,10 +24,10 @@ class Failed_Syndication_Auto_Retry {
 	 */
 	public function __construct() {
 
-		// Watch the push_syndication_event action for site pull failures
+		// Watch the push_syndication_event action for site pull failures.
 		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
 
-		// Watch the push_syndication_event action for site pull successes
+		// Watch the push_syndication_event action for site pull successes.
 		add_action( 'push_syndication_after_event_pull_success', array( $this, 'handle_pull_success_event' ), 10, 2 );
 	}
 
@@ -46,15 +46,15 @@ class Failed_Syndication_Auto_Retry {
 		$failed_attempts       = (int) $failed_attempts;
 		$cleanup               = false;
 
-		// Fetch the allowable number of max pull attempts before the site is marked as 'disabled'
+		// Fetch the allowable number of max pull attempts before the site is marked as 'disabled'.
 		$max_pull_attempts = (int) get_option( 'push_syndication_max_pull_attempts', 0 );
 
-		// Bail if we've already met the max pull attempt count
+		// Bail if we've already met the max pull attempt count.
 		if ( ! $max_pull_attempts ) {
 			return;
 		}
 
-		// Only proceed if we have a valid site id
+		// Only proceed if we have a valid site id.
 		if ( 0 === $site_id ) {
 			return;
 		}
@@ -89,9 +89,9 @@ class Failed_Syndication_Auto_Retry {
 			$time_now = time();
 
 			// Create a string time to be sent to the logger.
-			// Add 1 so our log items appear to occur a second later
+			// Add 1 so our log items appear to occur a second later.
 			// and hence order better in the log viewer.
-			// Without this, sometimes when the pull occurs quickly
+			// Without this, sometimes when the pull occurs quickly.
 			// these log items appear to occur at the same time as the failure.
 			$log_time = gmdate( 'Y-m-d H:i:s', $time_now + 1 );
 
@@ -107,9 +107,9 @@ class Failed_Syndication_Auto_Retry {
 
 				// Schedule a pull retry for one minute in the future.
 				wp_schedule_single_event(
-					$auto_retry_interval,     // retry in X time
-					'syn_pull_content',       // fire the syndication_auto_retry hook
-					array( array( $site ) )   // the site which failed to pull
+					$auto_retry_interval,     // Retry in X time.
+					'syn_pull_content',       // Fire the syndication_auto_retry hook.
+					array( array( $site ) )   // The site which failed to pull.
 				);
 
 				// Increment our auto retry counter.
@@ -149,7 +149,7 @@ class Failed_Syndication_Auto_Retry {
 	 */
 	public function handle_pull_success_event( $site_id = 0, $failed_attempts = 0 ) {
 
-		// Remove the auto retry if there was one
+		// Remove the auto retry if there was one.
 		delete_post_meta( $site_id, 'syn_failed_auto_retry_attempts' );
 	}
 }

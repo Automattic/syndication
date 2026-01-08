@@ -88,7 +88,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please select a valid site.' );
 		}
 
-		// enable verbosity
+		// Enable verbosity.
 		$this->_make_em_talk_pull();
 
 		$this->_get_syndication_server()->pull_content( array( $site ) );
@@ -111,10 +111,10 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_sitegroup( $sitegroup );
 
-		// enable verbosity
+		// Enable verbosity.
 		$this->_make_em_talk_pull();
 
-		// do it, to it
+		// Do it, to it.
 		$server->pull_content( $sites );
 	}
 
@@ -125,7 +125,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 		$this->enabled_verbosity = true;
 
-		// output when a post is new or updated
+		// Output when a post is new or updated.
 		add_filter(
 			'syn_pre_pull_posts',
 			function ( $posts, $site, $client ) {
@@ -202,7 +202,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	protected function stop_the_insanity() {
 		global $wpdb, $wp_object_cache;
 
-		$wpdb->queries = array(); // or define( 'WP_IMPORTING', true );
+		$wpdb->queries = array(); // Or define( 'WP_IMPORTING', true ).
 
 		if ( ! is_object( $wp_object_cache ) ) {
 			return;
@@ -214,7 +214,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$wp_object_cache->cache          = array();
 
 		if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
-			$wp_object_cache->__remoteset(); // important
+			$wp_object_cache->__remoteset(); // Important.
 		}
 	}
 }

@@ -56,17 +56,17 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	}
 
 	public function new_post( $post_ID ) {
-		// Not supported
+		// Not supported.
 		return false;
 	}
 
 	public function edit_post( $post_ID, $ext_ID ) {
-		// Not supported
+		// Not supported.
 		return false;
 	}
 
 	public function delete_post( $ext_ID ) {
-		// Not supported
+		// Not supported.
 		return false;
 	}
 
@@ -76,7 +76,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	}
 
 	public function is_post_exists( $ext_ID ) {
-		// Not supported
+		// Not supported.
 		return false;
 	}
 
@@ -201,7 +201,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 		$this->handle_content_type();
 
-		// hold all the posts
+		// hold all the posts.
 		$posts    = array();
 		$taxonomy = array(
 			'cats' => array(),
@@ -255,7 +255,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		);
 
 		foreach ( $cats as $cat ) {
-			// checks if term exists
+			// checks if term exists.
 			if ( $result = get_term_by( 'name', $cat->term, 'category' ) ) {
 				if ( isset( $result->term_id ) ) {
 					$ids['cats'][] = $result->term_id;
@@ -265,7 +265,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 					$ids['tags'][] = $result->term_id;
 				}
 			} else {
-				// creates if not
+				// creates if not.
 				$result = wp_insert_term( $cat->term, 'category' );
 				if ( isset( $result->term_id ) ) {
 					$ids['cats'][] = $result->term_id;
@@ -273,7 +273,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			}
 		}
 
-		// returns array ready for post creation
+		// returns array ready for post creation.
 		return $ids;
 	}
 
@@ -285,11 +285,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		wp_set_post_terms( $result, $categories, 'category', true );
 		$metas = $post['postmeta'];
 
-		// handle enclosures separately first
+		// handle enclosures separately first.
 		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
-			// first remove all enclosures for the post (for updates) if any
+			// First remove all enclosures for the post (for updates) if any.
 			delete_post_meta( $result, $enc_field );
 			foreach ( $enclosures as $enclosure ) {
 				if ( defined( 'ENCLOSURES_AS_STRINGS' ) && constant( 'ENCLOSURES_AS_STRINGS' ) ) {
@@ -298,7 +298,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 				add_post_meta( $result, $enc_field, $enclosure, false );
 			}
 
-			// now remove them from the rest of the metadata before saving the rest
+			// now remove them from the rest of the metadata before saving the rest.
 			unset( $metas['enclosures'] );
 		}
 
@@ -315,11 +315,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		wp_set_post_terms( $result, $categories, 'category', true );
 		$metas = $post['postmeta'];
 
-		// handle enclosures separately first
+		// handle enclosures separately first.
 		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
-			// first remove all enclosures for the post (for updates)
+			// First remove all enclosures for the post (for updates).
 			delete_post_meta( $result, $enc_field );
 			foreach ( $enclosures as $enclosure ) {
 				if ( defined( 'ENCLOSURES_AS_STRINGS' ) && constant( 'ENCLOSURES_AS_STRINGS' ) ) {
@@ -328,7 +328,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 				add_post_meta( $result, $enc_field, $enclosure, false );
 			}
 
-			// now remove them from the rest of the metadata before saving the rest
+			// now remove them from the rest of the metadata before saving the rest.
 			unset( $metas['enclosures'] );
 		}
 
@@ -343,7 +343,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		}
 		$taxonomies = $post['tax'];
 		foreach ( $taxonomies as $tax_name => $tax_value ) {
-			// post cannot be used to create new taxonomy
+			// post cannot be used to create new taxonomy.
 			if ( ! taxonomy_exists( $tax_name ) ) {
 				continue;
 			}
@@ -358,16 +358,16 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		$taxonomies       = $post['tax'];
 		$replace_tax_list = array();
 		foreach ( $taxonomies as $tax_name => $tax_value ) {
-			// post cannot be used to create new taxonomy
+			// post cannot be used to create new taxonomy.
 			if ( ! taxonomy_exists( $tax_name ) ) {
 				continue;
 			}
 			if ( ! in_array( $tax_name, $replace_tax_list ) ) {
-				// if we haven't processed this taxonomy before, replace any terms on the post with the first new one
+				// if we haven't processed this taxonomy before, replace any terms on the post with the first new one.
 				wp_set_object_terms( $result, (string) $tax_value, $tax_name );
 				$replace_tax_list[] = $tax_name;
 			} else {
-				// if we've already added one term for this taxonomy, append any others
+				// if we've already added one term for this taxonomy, append any others.
 				wp_set_object_terms( $result, (string) $tax_value, $tax_name, true );
 			}
 		}
