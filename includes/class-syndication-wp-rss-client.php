@@ -13,7 +13,12 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 	private $site_ID;
 
-	function __construct( $site_ID ) {
+	/**
+	 * Constructor.
+	 *
+	 * @param int $site_ID The site post ID.
+	 */
+	public function __construct( $site_ID ) {
 
 		switch ( SIMPLEPIE_VERSION ) {
 			case '1.2.1':
@@ -47,6 +52,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
 	}
 
+	/**
+	 * Get the client type data.
+	 *
+	 * @return array Client ID, supported modes, and display name.
+	 */
 	public static function get_client_data() {
 		return array(
 			'id'    => 'WP_RSS',
@@ -55,31 +65,66 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		);
 	}
 
+	/**
+	 * Create a new post on the remote site.
+	 *
+	 * @param int $post_ID The local post ID.
+	 * @return false Not supported for RSS client.
+	 */
 	public function new_post( $post_ID ) {
 		// Not supported.
 		return false;
 	}
 
+	/**
+	 * Update an existing post on the remote site.
+	 *
+	 * @param int $post_ID The local post ID.
+	 * @param int $ext_ID  The remote post ID.
+	 * @return false Not supported for RSS client.
+	 */
 	public function edit_post( $post_ID, $ext_ID ) {
 		// Not supported.
 		return false;
 	}
 
+	/**
+	 * Delete a post on the remote site.
+	 *
+	 * @param int $ext_ID The remote post ID.
+	 * @return false Not supported for RSS client.
+	 */
 	public function delete_post( $ext_ID ) {
 		// Not supported.
 		return false;
 	}
 
+	/**
+	 * Test the connection to the remote site.
+	 *
+	 * @return bool True (always succeeds for RSS).
+	 */
 	public function test_connection() {
 		// TODO: Implement test_connection() method.
 		return true;
 	}
 
+	/**
+	 * Check if a post exists on the remote site.
+	 *
+	 * @param int $ext_ID The remote post ID.
+	 * @return false Not supported for RSS client.
+	 */
 	public function is_post_exists( $ext_ID ) {
 		// Not supported.
 		return false;
 	}
 
+	/**
+	 * Display the site settings form fields.
+	 *
+	 * @param WP_Post $site The site post object.
+	 */
 	public static function display_settings( $site ) {
 
 		$feed_url               = get_post_meta( $site->ID, 'syn_feed_url', true );
@@ -166,6 +211,12 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		do_action( 'syn_after_site_form', $site );
 	}
 
+	/**
+	 * Save the site settings from POST data.
+	 *
+	 * @param int $site_ID The site post ID.
+	 * @return bool True on success.
+	 */
 	public static function save_settings( $site_ID ) {
 
 		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
@@ -177,10 +228,21 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		return true;
 	}
 
+	/**
+	 * Get a post from the remote site.
+	 *
+	 * @param int $ext_ID The remote post ID.
+	 */
 	public function get_post( $ext_ID ) {
 		// TODO: Implement get_post() method.
 	}
 
+	/**
+	 * Get posts from the RSS feed.
+	 *
+	 * @param array $args Optional arguments.
+	 * @return array Array of post data arrays.
+	 */
 	public function get_posts( $args = array() ) {
 
 		$site_post = get_post( $this->site_ID );
@@ -247,6 +309,12 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		return $posts;
 	}
 
+	/**
+	 * Set taxonomy terms from a feed item.
+	 *
+	 * @param SimplePie_Item $item The feed item.
+	 * @return array Array of category and tag IDs.
+	 */
 	public function set_taxonomy( $item ) {
 		$cats = $item->get_categories();
 		$ids  = array(
@@ -277,6 +345,16 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		return $ids;
 	}
 
+	/**
+	 * Save post meta for a newly created post.
+	 *
+	 * @param int|WP_Error $result         The post ID or WP_Error.
+	 * @param array        $post           The post data array.
+	 * @param WP_Post      $site           The site post object.
+	 * @param string       $transport_type The transport type.
+	 * @param object       $client         The client instance.
+	 * @return false|void False if conditions not met.
+	 */
 	public static function save_meta( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
@@ -307,6 +385,16 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		}
 	}
 
+	/**
+	 * Update post meta for an existing post.
+	 *
+	 * @param int|WP_Error $result         The post ID or WP_Error.
+	 * @param array        $post           The post data array.
+	 * @param WP_Post      $site           The site post object.
+	 * @param string       $transport_type The transport type.
+	 * @param object       $client         The client instance.
+	 * @return false|void False if conditions not met.
+	 */
 	public static function update_meta( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
@@ -337,6 +425,16 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		}
 	}
 
+	/**
+	 * Save taxonomy terms for a newly created post.
+	 *
+	 * @param int|WP_Error $result         The post ID or WP_Error.
+	 * @param array        $post           The post data array.
+	 * @param WP_Post      $site           The site post object.
+	 * @param string       $transport_type The transport type.
+	 * @param object       $client         The client instance.
+	 * @return false|void False if conditions not met.
+	 */
 	public static function save_tax( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
@@ -351,6 +449,16 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		}
 	}
 
+	/**
+	 * Update taxonomy terms for an existing post.
+	 *
+	 * @param int|WP_Error $result         The post ID or WP_Error.
+	 * @param array        $post           The post data array.
+	 * @param WP_Post      $site           The site post object.
+	 * @param string       $transport_type The transport type.
+	 * @param object       $client         The client instance.
+	 * @return false|void False if conditions not met.
+	 */
 	public static function update_tax( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;

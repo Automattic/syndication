@@ -12,7 +12,14 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	private $useragent;
 	private $timeout;
 
-	function __construct( $site_ID, $port = 80, $timeout = 45 ) {
+	/**
+	 * Constructor.
+	 *
+	 * @param int $site_ID The site post ID.
+	 * @param int $port    The port number. Default 80.
+	 * @param int $timeout The request timeout in seconds. Default 45.
+	 */
+	public function __construct( $site_ID, $port = 80, $timeout = 45 ) {
 
 		$this->access_token = push_syndicate_decrypt( get_post_meta( $site_ID, 'syn_site_token', true ) );
 		$this->blog_ID      = get_post_meta( $site_ID, 'syn_site_id', true );
@@ -21,6 +28,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		$this->port         = $port;
 	}
 
+	/**
+	 * Get the client type data.
+	 *
+	 * @return array Client ID, supported modes, and display name.
+	 */
 	public static function get_client_data() {
 		return array(
 			'id'    => 'WP_REST',
@@ -80,6 +92,12 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		return false;
 	}
 
+	/**
+	 * Create a new post on the remote site.
+	 *
+	 * @param int $post_ID The local post ID to syndicate.
+	 * @return int|WP_Error|true The remote post ID on success, WP_Error on failure, or true if filtered out.
+	 */
 	public function new_post( $post_ID ) {
 
 		$post = (array) get_post( $post_ID );
@@ -130,6 +148,13 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
+	/**
+	 * Update an existing post on the remote site.
+	 *
+	 * @param int $post_ID The local post ID.
+	 * @param int $ext_ID  The remote post ID.
+	 * @return int|WP_Error|true The local post ID on success, WP_Error on failure, or true if filtered out.
+	 */
 	public function edit_post( $post_ID, $ext_ID ) {
 
 		$post = (array) get_post( $post_ID );
@@ -212,6 +237,12 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		return mysql2date( 'c', $mysql_date, false );
 	}
 
+	/**
+	 * Delete a post on the remote site.
+	 *
+	 * @param int $ext_ID The remote post ID.
+	 * @return true|WP_Error True on success, WP_Error on failure.
+	 */
 	public function delete_post( $ext_ID ) {
 
 		$response = wp_remote_post(
@@ -239,6 +270,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
+	/**
+	 * Test the connection to the remote WordPress.com site.
+	 *
+	 * @return bool True if connection is successful, false otherwise.
+	 */
 	public function test_connection() {
 		// @TODo find a better method.
 		$response = wp_remote_get(
@@ -267,6 +303,12 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
+	/**
+	 * Check if a post exists on the remote site.
+	 *
+	 * @param int $post_ID The remote post ID.
+	 * @return bool True if post exists, false otherwise.
+	 */
 	public function is_post_exists( $post_ID ) {
 
 		$response = wp_remote_get(
@@ -294,6 +336,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
+	/**
+	 * Display the site settings form fields.
+	 *
+	 * @param WP_Post $site The site post object.
+	 */
 	public static function display_settings( $site ) {
 
 		$site_token = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_token', true ) );
@@ -332,6 +379,12 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		do_action( 'syn_after_site_form', $site );
 	}
 
+	/**
+	 * Save the site settings from POST data.
+	 *
+	 * @param int $site_ID The site post ID.
+	 * @return bool True on success.
+	 */
 	public static function save_settings( $site_ID ) {
 		// Use wp_strip_all_tags() for the token instead of sanitize_text_field()
 		// because sanitize_text_field() converts encoded octets (e.g., %B2) which
@@ -345,10 +398,20 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		return true;
 	}
 
+	/**
+	 * Get a post from the remote site.
+	 *
+	 * @param int $ext_ID The remote post ID.
+	 */
 	public function get_post( $ext_ID ) {
 		// TODO: Implement get_post() method.
 	}
 
+	/**
+	 * Get posts from the remote site.
+	 *
+	 * @param array $args Optional arguments.
+	 */
 	public function get_posts( $args = array() ) {
 		// TODO: Implement get_posts() method.
 	}

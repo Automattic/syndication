@@ -49,6 +49,11 @@ class Syndication_Logger {
 	 */
 	private $log_id = null;
 
+	/**
+	 * Constructor.
+	 *
+	 * Sets up logging action hooks for syndication events and configures the debug level.
+	 */
 	public function __construct() {
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );

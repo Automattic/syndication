@@ -16,6 +16,11 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 	protected $_max_date = null;
 
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the list table and registers admin hooks.
+	 */
 	public function __construct() {
 		global $status, $page;
 
@@ -30,6 +35,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		add_action( 'admin_head', array( $this, 'admin_header' ) );
 	}
 
+	/**
+	 * Output CSS styles for the log list table columns.
+	 */
 	public function admin_header() {
 		$current_page = ( isset( $_GET['page'] ) ) ? (int) $_GET['page'] : false;
 		if ( 'syndication_dashboard' != $current_page ) {
@@ -48,10 +56,20 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Display a message when no log items are found.
+	 */
 	public function no_items() {
 		esc_html_e( 'No log entries found.', 'push-syndication' );
 	}
 
+	/**
+	 * Render the default column output.
+	 *
+	 * @param array  $item        The current log item.
+	 * @param string $column_name The column name being rendered.
+	 * @return string The column value or debug output.
+	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'object_id':
@@ -67,6 +85,11 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Get the list of sortable columns.
+	 *
+	 * @return array Associative array of sortable column data.
+	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'object_id' => array( 'object_id', false ),
@@ -79,6 +102,11 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		return $sortable_columns;
 	}
 
+	/**
+	 * Get the list of columns for the table.
+	 *
+	 * @return array Associative array of column names and labels.
+	 */
 	public function get_columns() {
 		$columns = array(
 			'object_id' => __( 'Object ID', 'push-syndication' ),
@@ -91,6 +119,13 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		return $columns;
 	}
 
+	/**
+	 * Custom sorting callback for log items.
+	 *
+	 * @param array $a First item to compare.
+	 * @param array $b Second item to compare.
+	 * @return int Comparison result.
+	 */
 	public function usort_reorder( $a, $b ) {
 		$orderby = ( ! empty( $_GET['orderby'] ) ) ? esc_attr( $_GET['orderby'] ) : 'time';
 		$order   = ( ! empty( $_GET['order'] ) ) ? esc_attr( $_GET['order'] ) : 'desc';
@@ -98,10 +133,21 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		return ( $order === 'asc' ) ? $result : -$result;
 	}
 
+	/**
+	 * Render the log_id column with truncation.
+	 *
+	 * @param array $item The current log item.
+	 * @return string The truncated log ID.
+	 */
 	public function column_log_id( $item ) {
 		return sprintf( '%1$s', substr( $item['log_id'], 0, 3 ) . '&hellip;' . substr( $item['log_id'], -3 ) );
 	}
 
+	/**
+	 * Get the list of bulk actions available for this table.
+	 *
+	 * @return array Empty array as no bulk actions are supported.
+	 */
 	public function get_bulk_actions() {
 		$actions = array();
 		return $actions;
@@ -208,6 +254,11 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$this->items = $this->found_data;
 	}
 
+	/**
+	 * Output extra table navigation controls.
+	 *
+	 * @param string $which The location of the extra table nav ('top' or 'bottom').
+	 */
 	protected function extra_tablenav( $which ) {
 		?>
 		<div class="alignleft actions">
@@ -225,6 +276,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the log ID filter dropdown.
+	 */
 	private function create_log_id_dropdown() {
 		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
 		?>
@@ -257,6 +311,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the month filter dropdown.
+	 */
 	protected function _create_months_dropdown() {
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		?>
@@ -282,6 +339,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the message type filter dropdown.
+	 */
 	protected function _create_types_dropdown() {
 		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		?>
@@ -307,11 +367,19 @@ class Syndication_Logger_Viewer {
 
 	public $syndication_logger_table;
 
+	/**
+	 * Constructor.
+	 *
+	 * Registers admin menu and screen option hooks.
+	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_menu_items' ) );
 		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
 	}
 
+	/**
+	 * Register the Logs submenu page under Syndication Sites.
+	 */
 	public function add_menu_items() {
 		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', 'activate_plugins', 'syndication_dashboard', array( $this, 'render_list_page' ) );
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
@@ -332,6 +400,11 @@ class Syndication_Logger_Viewer {
 		return $status;
 	}
 
+	/**
+	 * Initialize the list table and add screen options.
+	 *
+	 * Handles redirect for log ID filter and sets up the list table instance.
+	 */
 	public function initialize_list_table() {
 		if ( ! empty( $_POST['log_id'] ) && ( empty( $_GET['log_id'] ) || esc_attr( $_GET['log_id'] ) != esc_attr( $_POST['log_id'] ) ) ) {
 			wp_safe_redirect( add_query_arg( array( 'log_id' => esc_attr( $_REQUEST['log_id'] ) ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
@@ -351,6 +424,9 @@ class Syndication_Logger_Viewer {
 		$this->syndication_logger_table = new Syndication_Logger_List_Table();
 	}
 
+	/**
+	 * Render the syndication logs list page.
+	 */
 	public function render_list_page() {
 		?>
 		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>

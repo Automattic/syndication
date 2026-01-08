@@ -10,6 +10,11 @@ class Syndication_Logger_Admin_Notice {
 
 	private static $dismiss_parameter = 'syn_dismiss';
 
+	/**
+	 * Constructor.
+	 *
+	 * Registers admin hooks for handling and displaying syndication notices.
+	 */
 	public function __construct() {
 		add_action( 'admin_init', array( __CLASS__, 'handle_dismiss_syndication_notice' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'display_valid_notices' ) );
@@ -161,11 +166,24 @@ class Syndication_Logger_Admin_Notice {
 }
 
 add_filter( 'syn_message_text_multiple', 'syn_handle_multiple_error_notices', 10, 2 );
+/**
+ * Filter callback to handle multiple error notices.
+ *
+ * @param string $message      The original message text.
+ * @param array  $message_data Additional message data.
+ * @return string The filtered message text.
+ */
 function syn_handle_multiple_error_notices( $message, $message_data ) {
 	return __( 'There have been multiple errors. Please validate your syndication logs' );
 }
 
 add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10, 2 );
+/**
+ * Display an admin notice when a syndication site is disabled.
+ *
+ * @param int $site_id The ID of the disabled site.
+ * @param int $count   The number of failed pull attempts.
+ */
 function syn_add_site_disabled_notice( $site_id, $count ) {
 	Syndication_Logger_Admin_Notice::add_notice( $message_text = sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ), $message_type = 'Syndication site disabled', $class = 'error', $summarize_multiple = false );
 }

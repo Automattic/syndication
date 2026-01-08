@@ -47,7 +47,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		}
 	}
 
-	function push_post( $args, $assoc_args ) {
+	/**
+	 * Push a post to syndicated sites.
+	 *
+	 * @param array $args       Positional arguments.
+	 * @param array $assoc_args Associative arguments including post_id.
+	 */
+	public function push_post( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			array(
@@ -73,7 +79,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server->push_content( $sites );
 	}
 
-	function pull_site( $args, $assoc_args ) {
+	/**
+	 * Pull content from a syndicated site.
+	 *
+	 * @param array $args       Positional arguments.
+	 * @param array $assoc_args Associative arguments including site_id.
+	 */
+	public function pull_site( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			array(
@@ -94,12 +106,18 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$this->_get_syndication_server()->pull_content( array( $site ) );
 	}
 
-	function pull_sitegroup( $args, $assoc_args ) {
+	/**
+	 * Pull content from all sites in a sitegroup.
+	 *
+	 * @param array $args       Positional arguments.
+	 * @param array $assoc_args Associative arguments including sitegroup.
+	 */
+	public function pull_sitegroup( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			array(
 				'sitegroup' => '',
-			) 
+			)
 		);
 
 		$sitegroup = sanitize_key( $assoc_args['sitegroup'] );
@@ -118,6 +136,11 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server->pull_content( $sites );
 	}
 
+	/**
+	 * Enable verbose output for pull operations.
+	 *
+	 * Hooks into syndication filters and actions to output progress information to the CLI.
+	 */
 	private function _make_em_talk_pull() {
 		if ( $this->enabled_verbosity ) {
 			return;
@@ -157,6 +180,11 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		);
 	}
 
+	/**
+	 * Enable verbose output for push operations.
+	 *
+	 * Hooks into syndication filters and actions to output progress information to the CLI.
+	 */
 	private function _make_em_talk_push() {
 		if ( $this->enabled_verbosity ) {
 			return;
@@ -195,10 +223,21 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		);
 	}
 
+	/**
+	 * Get the global syndication server instance.
+	 *
+	 * @return WP_Push_Syndication_Server The syndication server instance.
+	 */
 	private function _get_syndication_server() {
 		return $GLOBALS['push_syndication_server'];
 	}
 
+	/**
+	 * Clear object caches to reduce memory usage during long-running operations.
+	 *
+	 * Resets WP query cache and object cache to prevent memory exhaustion
+	 * when processing large numbers of posts.
+	 */
 	protected function stop_the_insanity() {
 		global $wpdb, $wp_object_cache;
 
