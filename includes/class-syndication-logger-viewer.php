@@ -105,7 +105,11 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	}
 
 	/**
+	 * Prepares the list of items for displaying.
 	 *
+	 * Fetches log data, applies filters, sorts, and paginates.
+	 * Filters are applied BEFORE pagination so that pagination
+	 * reflects the filtered result count accurately.
 	 */
 	public function prepare_items() {
 		$columns  = $this->get_columns();
@@ -138,20 +142,12 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		foreach( $log_data as $site_id => $log_items ) {
 			$this->prepared_data = array_merge( $this->prepared_data, $log_items );
 		}
-		usort( $this->prepared_data, array( $this, 'usort_reorder' ) );
 
-		$per_page = $this->get_items_per_page( 'per_page' );
-		$current_page = $this->get_pagenum();
-		$total_items = count( $this->prepared_data );
+		// Populate min/max dates from ALL data (before filtering) for the date dropdown.
+		if ( $this->prepared_data ) {
+			$items_sorted_by_time = $this->prepared_data;
 
-		$this->found_data = array_slice( $this->prepared_data,( ( $current_page-1 )* $per_page ), $per_page );
-
-
-		// Populate min/max dates.
-		if ( $this->found_data ) {
-			$items_sorted_by_time = $this->found_data;
-
-			usort( $items_sorted_by_time, function ( $a, $b  ) {
+			usort( $items_sorted_by_time, function ( $a, $b ) {
 				return strtotime( $a['time'] ) - strtotime( $b['time'] );
 			} );
 
@@ -159,24 +155,37 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 			$this->_min_date = strtotime( reset( $items_sorted_by_time )['time'] );
 		}
 
+		// Apply filters BEFORE pagination so counts are accurate.
+		$filtered_data = $this->prepared_data;
 
-		// Filter by month
+		// Filter by month.
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		if ( $requested_month ) {
-			$this->found_data = array_filter( $this->found_data, function ( $item ) use ( $requested_month ) {
+			$filtered_data = array_filter( $filtered_data, function ( $item ) use ( $requested_month ) {
 				return date( 'Y-m', strtotime( $item['time'] ) ) === $requested_month;
 			} );
 		}
 
-
-		// Filter by type
+		// Filter by type.
 		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		if ( $requested_type ) {
-			$this->found_data = array_filter( $this->found_data, function ( $item  ) use ( $requested_type ) {
+			$filtered_data = array_filter( $filtered_data, function ( $item ) use ( $requested_type ) {
 				return $requested_type === $item['msg_type'];
 			} );
 		}
 
+		// Re-index array after filtering.
+		$filtered_data = array_values( $filtered_data );
+
+		// Sort the filtered data.
+		usort( $filtered_data, array( $this, 'usort_reorder' ) );
+
+		// Paginate the filtered and sorted data.
+		$per_page = $this->get_items_per_page( 'per_page' );
+		$current_page = $this->get_pagenum();
+		$total_items = count( $filtered_data );
+
+		$this->found_data = array_slice( $filtered_data, ( ( $current_page - 1 ) * $per_page ), $per_page );
 
 		$this->set_pagination_args( array(
 			'total_items' => $total_items,
@@ -258,7 +267,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	}
 
 	protected function _create_types_dropdown() {
-		$requested_type = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['type'] ) : null;
+		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		?>
 		<label class="screen-reader-text" for="filter-by-type">Filter by type</label>
 		<select name="type" id="filter-by-type">
