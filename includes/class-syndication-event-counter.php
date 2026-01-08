@@ -19,18 +19,18 @@ class Syndication_Event_Counter {
 	/**
 	 * Increments an event counter.
 	 *
-	 * @param string $event_slug An identifier for the event.
+	 * @param string     $event_slug An identifier for the event.
 	 * @param string|int $event_object_id An identifier for the object the event is associated with. Should be unique across all objects associated with the given $event_slug.
 	 */
 	public function count_event( $event_slug, $event_object_id = null ) {
 		// Coerce the slug and ID to strings. PHP will fire appropriate warnings if the given slug and ID are not coercible.
-		$event_slug = (string) $event_slug;
+		$event_slug      = (string) $event_slug;
 		$event_object_id = (string) $event_object_id;
 
 		// Increment the event counter.
 		$option_name = $this->_get_safe_option_name( $event_slug, $event_object_id );
-		$count = get_option( $option_name, 0 );
-		$count = $count + 1;
+		$count       = get_option( $option_name, 0 );
+		$count       = $count + 1;
 		update_option( $option_name, $count );
 
 		/**
@@ -61,7 +61,7 @@ class Syndication_Event_Counter {
 	 */
 	public function reset_event( $event_slug, $event_object_id ) {
 		// Coerce the slug and ID to strings. PHP will fire appropriate warnings if the given slug and ID are not coercible.
-		$event_slug = (string) $event_slug;
+		$event_slug      = (string) $event_slug;
 		$event_object_id = (string) $event_object_id;
 
 		delete_option( $this->_get_safe_option_name( $event_slug, $event_object_id ) );

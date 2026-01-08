@@ -4,6 +4,7 @@ interface Syndication_Client {
 
 	/**
 	 * Return Client Data
+	 *
 	 * @return array array( 'id' => (string) $transport_name, 'modes' => array( 'push', 'pull' ), 'name' => (string) $name );
 	 */
 	public static function get_client_data();
@@ -11,7 +12,7 @@ interface Syndication_Client {
 	/**
 	 * Creates a new post in the slave site.
 	 *
-	 * @param   int  $post_ID  The post ID to push.
+	 * @param   int $post_ID  The post ID to push.
 	 *
 	 * @return  boolean true on success false on failure.
 	 */
@@ -20,8 +21,8 @@ interface Syndication_Client {
 	/**
 	 * Edits an existing post in the slave site.
 	 *
-	 * @param   int  $post_ID  The post ID to push.
-	 * @param   int  $ext_ID   Slave post ID to edit.
+	 * @param   int $post_ID  The post ID to push.
+	 * @param   int $ext_ID   Slave post ID to edit.
 	 *
 	 * @return  boolean true on success false on failure.
 	 */
@@ -30,29 +31,29 @@ interface Syndication_Client {
 	/**
 	 * Deletes an existing post in the slave site.
 	 *
-	 * @param   int  $ext_ID  Slave post ID to delete.
+	 * @param   int $ext_ID  Slave post ID to delete.
 	 *
 	 * @return  boolean true on success false on failure.
 	 */
 	public function delete_post( $ext_ID );
 
-    /**
-     * Retrieves a single post from a slave site.
-     *
-     * @param   int  $ext_ID  Slave post ID to retrieve.
-     *
-     * @return  boolean true on success false on failure.
-     */
-    public function get_post( $ext_ID );
+	/**
+	 * Retrieves a single post from a slave site.
+	 *
+	 * @param   int $ext_ID  Slave post ID to retrieve.
+	 *
+	 * @return  boolean true on success false on failure.
+	 */
+	public function get_post( $ext_ID );
 
-    /**
-     * Retrieves a list of posts from a slave site.
-     *
-     * @param   array   $args  Arguments when retrieving posts.
-     *
-     * @return  boolean true on success false on failure.
-     */
-    public function get_posts( $args = array() );
+	/**
+	 * Retrieves a list of posts from a slave site.
+	 *
+	 * @param   array $args  Arguments when retrieving posts.
+	 *
+	 * @return  boolean true on success false on failure.
+	 */
+	public function get_posts( $args = array() );
 
 	/**
 	 * Test the connection with the slave site.
@@ -64,7 +65,7 @@ interface Syndication_Client {
 	/**
 	 * Checks whether the given post exists in the slave site.
 	 *
-	 * @param   int  $ext_ID  Slave post ID to check.
+	 * @param   int $ext_ID  Slave post ID to check.
 	 *
 	 * @return  boolean  true on success false on failure.
 	 */
@@ -73,17 +74,16 @@ interface Syndication_Client {
 	/**
 	 * Display the client settings for the slave site.
 	 *
-	 * @param   object  $site  The site object to display settings.
+	 * @param   object $site  The site object to display settings.
 	 */
 	public static function display_settings( $site );
 
 	/**
 	 * Save the client settings for the slave site.
 	 *
-	 * @param   int  $site_ID  The site ID to save settings.
+	 * @param   int $site_ID  The site ID to save settings.
 	 *
 	 * @return  boolean  true on success false on failure.
 	 */
 	public static function save_settings( $site_ID );
-
 }

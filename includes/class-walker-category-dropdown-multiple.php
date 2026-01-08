@@ -1,19 +1,22 @@
 <?php
 /**
  * Create HTML list of categories. Allowing a multiple select list
+ *
  * @uses Walker
  */
 class Walker_CategoryDropdownMultiple extends Walker {
 
 	var $tree_type = 'category';
 
-	var $db_fields = array ('parent' => 'parent', 'id' => 'term_id');
+	var $db_fields = array(
+		'parent' => 'parent',
+		'id'     => 'term_id',
+	);
 
 	/**
 	 * Start the element output.
 	 *
 	 * @see Walker::start_el()
-	 *
 	 *
 	 * @param string $output   Passed by reference. Used to append additional content.
 	 * @param object $category Category data object.
@@ -26,15 +29,15 @@ class Walker_CategoryDropdownMultiple extends Walker {
 
 		$cat_name = apply_filters( 'list_cats', $category->name, $category );
 
-		$output .= "\t<option class=\"level-$depth\" value=\"".$category->term_id."\"";
+		$output .= "\t<option class=\"level-$depth\" value=\"" . $category->term_id . '"';
 		if ( isset( $args['selected_array'] ) && in_array( $category->term_id, $args['selected_array'] ) ) {
 			$output .= ' selected="selected"';
 		}
 		$output .= '>';
-		$output .= $pad.$cat_name;
+		$output .= $pad . $cat_name;
 
 		if ( $args['show_count'] ) {
-			$output .= '&nbsp;&nbsp;('. $category->count .')';
+			$output .= '&nbsp;&nbsp;(' . $category->count . ')';
 		}
 		$output .= "</option>\n";
 	}

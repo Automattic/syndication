@@ -17,12 +17,12 @@
 /**
  * Load the {@see Walker_CategoryDropdownMultiple}
  */
-include_once( dirname( __FILE__ ) . '/class-walker-category-dropdown-multiple.php' );
+require_once __DIR__ . '/class-walker-category-dropdown-multiple.php';
 
 /**
  * Load the {@see Syndication_Client} interface.
  */
-include_once( dirname( __FILE__ ) . '/interface-syndication-client.php' );
+require_once __DIR__ . '/interface-syndication-client.php';
 
 /**
  * Class Syndication_WP_XML_Client
@@ -131,7 +131,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return array
 	 */
 	public static function get_client_data() {
-		return array( 'id' => 'WP_XML', 'modes' => array( 'pull' ), 'name' => 'XML' );
+		return array(
+			'id'    => 'WP_XML',
+			'modes' => array( 'pull' ),
+			'name'  => 'XML',
+		);
 	}
 
 	/**
@@ -185,8 +189,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// create $post with values from $this::node_to_post
 		// create $post_meta with values from $this::node_to_meta
 
-		//TODO: required fields for post
-		//TODO: handle categories
+		// TODO: required fields for post
+		// TODO: handle categories
 
 		$abs_nodes       = array();
 		$item_nodes      = array();
@@ -215,16 +219,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$enclosures_as_strings = isset( $nodes['enclosures_as_strings'] ) ? true : false;
 		unset( $nodes['enclosures_as_strings'] );
 
-		//TODO: add checkbox on feed config to allow enclosures to be saved as strings as SI does
-		//TODO: add tags here and in feed set up UI
+		// TODO: add checkbox on feed config to allow enclosures to be saved as strings as SI does
+		// TODO: add tags here and in feed set up UI
 		foreach ( $nodes['nodes'] as $key => $storage_locations ) {
 			foreach ( $storage_locations as $storage_location ) {
 				$storage_location['xpath'] = $key;
 				if ( $storage_location['is_item'] ) {
 					$item_nodes[] = $storage_location;
-				} else if ( $storage_location['is_photo'] ) {
+				} elseif ( $storage_location['is_photo'] ) {
 					$enc_nodes[] = $storage_location;
-				} else if ( $storage_location['is_tax'] && $storage_location['is_item'] ) {
+				} elseif ( $storage_location['is_tax'] && $storage_location['is_item'] ) {
 					$tax_nodes[] = $storage_location;
 				} else {
 					$abs_nodes[] = $storage_location;
@@ -238,7 +242,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures
 		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %s | Error: %s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %1$s | Error: %2$s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -252,24 +256,23 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		// Enable libxml to retrieve xml errors.
-		libxml_use_internal_errors(true);
+		libxml_use_internal_errors( true );
 
 		/** @var SimpleXMLElement $xml */
 		$xml = simplexml_load_string( $feed, null, 0, $namespace, false );
 
 		if ( false === $xml ) {
-
 			$xml_errors = '';
 
 			// Retrieve errors.
-			foreach( libxml_get_errors() as $error ) {
+			foreach ( libxml_get_errors() as $error ) {
 				$xml_errors .= $error->message . '\n';
 			}
 
 			// Clear libxml error buffer.
 			libxml_clear_errors();
 
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s \nErrors: %s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -291,15 +294,14 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 				if ( $abs_node['is_meta'] ) {
 					$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
-				} else if ( $abs_node['is_tax'] ) {
+				} elseif ( $abs_node['is_tax'] ) {
 					$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
 				} else {
 					$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
 				}
-			}
-			catch ( Exception $e ) {
-				//TODO: catch value not found here and alert for error
-				//TODO: catch multiple values returned here and alert for error
+			} catch ( Exception $e ) {
+				// TODO: catch value not found here and alert for error
+				// TODO: catch multiple values returned here and alert for error
 				return array();
 			}
 		}
@@ -324,7 +326,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			$item_fields['post_type'] = $this->default_post_type;
 
-			//save photos as enclosures in meta
+			// save photos as enclosures in meta
 			if ( ( isset( $enc_parent ) && strlen( $enc_parent ) ) && ! empty( $enc_nodes ) ) {
 				$meta_data['enclosures'] = $this->get_encs( $item->xpath( $enc_parent ), $enc_nodes );
 			}
@@ -337,25 +339,24 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
 					}
 					if ( isset( $save_location['is_meta'] ) && $save_location['is_meta'] ) {
-						//SimpleXMLElement::xpath returns either an array or false if an element isn't returned
-						//checking $value_array first avoids the warning we get if the field isn't found
+						// SimpleXMLElement::xpath returns either an array or false if an element isn't returned
+						// checking $value_array first avoids the warning we get if the field isn't found
 						if ( $value_array && ( count( $value_array ) > 1 ) ) {
-							$value_array = array_map( 'strval', $value_array );
+							$value_array                          = array_map( 'strval', $value_array );
 							$meta_data[ $save_location['field'] ] = $value_array;
-						} else if ( $value_array ) {
-							//return a string if $value_array contains only a single element
+						} elseif ( $value_array ) {
+							// return a string if $value_array contains only a single element
 							$meta_data[ $save_location['field'] ] = (string) $value_array[0];
 						}
-					} else if ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
-						//for some taxonomies, multiple values may be supplied in the field
+					} elseif ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
+						// for some taxonomies, multiple values may be supplied in the field
 						foreach ( $value_array as $value ) {
 							$tax_data[ $save_location['field'] ] = (string) $value;
 						}
 					} else {
 						$item_fields[ $save_location['field'] ] = (string) $value_array[0];
 					}
-				}
-				catch ( Exception $e ) {
+				} catch ( Exception $e ) {
 					// TODO: catch value not found here and alert for error
 					// TODO: catch multiple values returned here and alert for error
 					return array();
@@ -386,13 +387,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 
 			$posts[] = $item_fields;
-			$post_position++;
+			++$post_position;
 		}
 
 		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
 
 		return $posts;
-
 	}
 
 	/**
@@ -429,9 +429,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						$enc_value = $enc->xpath( stripslashes( $post_value['xpath'] ) );
 					}
 					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
-				}
-				catch ( Exception $e ) {
-					//TODO: catch value not found here and alert for error or not
+				} catch ( Exception $e ) {
+					// TODO: catch value not found here and alert for error or not
 					return true;
 				}
 			}
@@ -470,24 +469,24 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @param   object $site The site object to display settings.
 	 */
 	public static function display_settings( $site ) {
-		//TODO: JS if is_meta show text box, if is_photo show photo select with numbers as values, else show select of post fields
-		//TODO: JS Validation
-		//TODO: deal with ability to select, i.e. media:group/media:thumbnail[@width="75"]/@url (can't be unserialized as is with quotes around 75)
-		$feed_url					= get_post_meta( $site->ID, 'syn_feed_url', true );
-		$default_post_type			= get_post_meta( $site->ID, 'syn_default_post_type', true );
-		$default_post_status		= get_post_meta( $site->ID, 'syn_default_post_status', true );
-		$default_comment_status		= get_post_meta( $site->ID, 'syn_default_comment_status', true );
-		$default_ping_status		= get_post_meta( $site->ID, 'syn_default_ping_status', true );
-		$node_config				= get_post_meta( $site->ID, 'syn_node_config', true );
-		$id_field					= get_post_meta( $site->ID, 'syn_id_field', true );
-		$enc_field					= get_post_meta( $site->ID, 'syn_enc_field', true );
-		$enc_is_photo				= get_post_meta( $site->ID, 'syn_enc_is_photo', true);
+		// TODO: JS if is_meta show text box, if is_photo show photo select with numbers as values, else show select of post fields
+		// TODO: JS Validation
+		// TODO: deal with ability to select, i.e. media:group/media:thumbnail[@width="75"]/@url (can't be unserialized as is with quotes around 75)
+		$feed_url               = get_post_meta( $site->ID, 'syn_feed_url', true );
+		$default_post_type      = get_post_meta( $site->ID, 'syn_default_post_type', true );
+		$default_post_status    = get_post_meta( $site->ID, 'syn_default_post_status', true );
+		$default_comment_status = get_post_meta( $site->ID, 'syn_default_comment_status', true );
+		$default_ping_status    = get_post_meta( $site->ID, 'syn_default_ping_status', true );
+		$node_config            = get_post_meta( $site->ID, 'syn_node_config', true );
+		$id_field               = get_post_meta( $site->ID, 'syn_id_field', true );
+		$enc_field              = get_post_meta( $site->ID, 'syn_enc_field', true );
+		$enc_is_photo           = get_post_meta( $site->ID, 'syn_enc_is_photo', true );
 
-		if ( isset( $node_config['namespace'] )) {
+		if ( isset( $node_config['namespace'] ) ) {
 			$namespace = $node_config['namespace'];
 		}
 
-		//unset is outside of isset() test to remove the item from the array if the key is there with no value
+		// unset is outside of isset() test to remove the item from the array if the key is there with no value
 		$namespace = isset( $node_config['namespace'] ) ? $node_config['namespace'] : null;
 		unset( $node_config['namespace'] );
 
@@ -604,20 +603,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		<p>
 			<?php
 				add_filter( 'wp_dropdown_cats', array( __CLASS__, 'make_multiple_categories_dropdown' ) );
-				wp_dropdown_categories( array(
-						'hide_empty' => false,
-						'hierarchical' => true,
+				wp_dropdown_categories(
+					array(
+						'hide_empty'     => false,
+						'hierarchical'   => true,
 						'selected_array' => $categories,
-						'walker' => new Walker_CategoryDropdownMultiple,
-						'name' => 'categories[]'
-				) );
+						'walker'         => new Walker_CategoryDropdownMultiple(),
+						'name'           => 'categories[]',
+					) 
+				);
 				remove_filter( 'wp_dropdown_cats', array( __CLASS__, 'make_multiple_categories_dropdown' ) );
 			?>
 		</p>
 
 		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
 
-		<p><?php echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %s are required. If you want a link to another site, %s is required. To include a static string, enclose the string as "%s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) ); ?></p>
+		<p><?php echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %1$s are required. If you want a link to another site, %2$s is required. To include a static string, enclose the string as "%3$s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) ); ?></p>
 
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
 			<li class="text">
@@ -644,7 +645,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$rowcount = 0;
 		if ( ! empty( $custom_nodes ) ) :
 			foreach ( $custom_nodes as $key => $storage_locations ) :
-				foreach ( $storage_locations as $storage_location ) : ?>
+				foreach ( $storage_locations as $storage_location ) : 
+					?>
 					<ul class='syn-xml-client-xpath-form syn-xml-client-xpath-list syn-xml-client-list' data-row-count="<?php echo (int) $rowcount; ?>">
 					<li class="text">
 						<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" value="<?php echo esc_attr( wp_unslash( $key ) ); ?>" />
@@ -668,7 +670,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				<?php endforeach; ?>
 				</ul>
 				<?php
-				++ $rowcount;
+				++$rowcount;
 			endforeach;
 		endif;
 		?>
@@ -709,16 +711,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					e.preventDefault();
 
 					var $lastForm = $( '.syn-xml-client-xpath-form:last' ),
-					    $newForm = $lastForm.clone(),
-					    originalRowCount = parseInt( $lastForm.attr( 'data-row-count' ) ),
-					    newRowCount = originalRowCount + 1;
+						$newForm = $lastForm.clone(),
+						originalRowCount = parseInt( $lastForm.attr( 'data-row-count' ) ),
+						newRowCount = originalRowCount + 1;
 
 					$newForm.attr( 'data-row-count', newRowCount );
 
 					$newForm.find( 'input' ).each( function () {
 						var $this = $( this ),
-						    name = $this.attr( 'name' ),
-						    type = $this.attr( 'type' );
+							name = $this.attr( 'name' ),
+							type = $this.attr( 'type' );
 
 						if ( 'radio' === type || 'checkbox' === type ) {
 							$this.attr( 'checked', false );
@@ -746,6 +748,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 	/**
 	 * Rewrite wp_dropdown_categories output to enable a multiple select
+	 *
 	 * @param  string $result rendered category dropdown list
 	 * @return string altered category dropdown list
 	 */
@@ -782,14 +785,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			foreach ( $node_changes as $row ) {
 				$row_data = array();
 
-				//if no new has been added to the empty row at the end, ignore it
+				// if no new has been added to the empty row at the end, ignore it
 				if ( ! empty( $row['xpath'] ) ) {
-
 					foreach ( array( 'is_item', 'is_meta', 'is_tax', 'is_photo' ) as $field ) {
-						$row_data[ $field ] = isset( $row[ $field ] ) && in_array( $row[ $field ], array(
+						$row_data[ $field ] = isset( $row[ $field ] ) && in_array(
+							$row[ $field ],
+							array(
 								'true',
-								'on'
-							) ) ? 1 : 0;
+								'on',
+							) 
+						) ? 1 : 0;
 					}
 					$xpath = html_entity_decode( $row['xpath'] );
 
@@ -846,10 +851,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		wp_set_post_terms( $result, $categories, 'category', true );
 		$metas = $post['postmeta'];
 
-		//handle enclosures separately first
+		// handle enclosures separately first
 		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
-		if ( isset( $enclosures ) && isset ( $enc_field ) ) {
+		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// first remove all enclosures for the post (for updates) if any
 			delete_post_meta( $result, $enc_field );
 			foreach ( $enclosures as $enclosure ) {
@@ -945,16 +950,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$taxonomies       = $post['tax'];
 		$replace_tax_list = array();
 		foreach ( $taxonomies as $tax_name => $tax_value ) {
-			//post cannot be used to create new taxonomy
+			// post cannot be used to create new taxonomy
 			if ( ! taxonomy_exists( $tax_name ) ) {
 				continue;
 			}
 			if ( ! in_array( $tax_name, $replace_tax_list ) ) {
-				//if we haven't processed this taxonomy before, replace any terms on the post with the first new one
+				// if we haven't processed this taxonomy before, replace any terms on the post with the first new one
 				wp_set_object_terms( $result, (string) $tax_value, $tax_name );
 				$replace_tax_list[] = $tax_name;
 			} else {
-				//if we've already added one term for this taxonomy, append any others
+				// if we've already added one term for this taxonomy, append any others
 				wp_set_object_terms( $result, (string) $tax_value, $tax_name, true );
 			}
 		}
@@ -975,5 +980,4 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		return wp_remote_retrieve_body( $request );
 	}
-
 }

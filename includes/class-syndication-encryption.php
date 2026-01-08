@@ -43,5 +43,4 @@ class Syndication_Encryption {
 	public function decrypt( $data, $associative = true ) {
 		return $this->encryptor->decrypt( $data, $associative );
 	}
-
 }
