@@ -99,8 +99,10 @@ class Syndication_Logger {
 		}
 	}
 
-	/*
-	 * Use this singleton to address non-static methods
+	/**
+	 * Use this singleton to address non-static methods.
+	 *
+	 * @return Syndication_Logger The singleton instance.
 	 */
 	public static function instance() {
 		if ( null === self::$__instance ) {

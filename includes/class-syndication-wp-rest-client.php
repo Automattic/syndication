@@ -205,8 +205,14 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		}
 	}
 
-	// Get an array of values and convert it to CSV.
-	function _prepare_terms( $terms ) {
+	/**
+	 * Get an array of values and convert it to CSV.
+	 *
+	 * @param array $terms Array of term values.
+	 *
+	 * @return string CSV formatted string of terms.
+	 */
+	private function _prepare_terms( $terms ) {
 
 		$terms_csv = '';
 

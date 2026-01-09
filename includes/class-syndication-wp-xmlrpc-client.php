@@ -12,7 +12,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	private $site_ID;
 
-	function __construct( $site_ID ) {
+	public function __construct( $site_ID ) {
 
 		// @TODO check port, timeout etc.
 		$server = untrailingslashit( get_post_meta( $site_ID, 'syn_site_url', true ) );
@@ -40,7 +40,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return apply_filters( 'syn_xmlrpc_push_thumbnail_metas', array( '_thumbnail_id' ), $post_id );
 	}
 
-	function post_push_send_thumbnail( $remote_post_id, $post_id ) {
+	public function post_push_send_thumbnail( $remote_post_id, $post_id ) {
 
 		$thumbnail_meta_keys = $this->get_thumbnail_meta_keys( $post_id ); 
 
@@ -450,7 +450,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		return true;
 	}
 
-	function get_remote_post( $remote_post_id ) {
+	public function get_remote_post( $remote_post_id ) {
 
 		$result = $this->query(
 			'wp.getPost',

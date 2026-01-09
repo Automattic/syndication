@@ -12,7 +12,7 @@ class WP_Push_Syndication_Server {
 
 	private $version;
 
-	function __construct() {
+	public function __construct() {
 
 		// initialization.
 		add_action( 'init', array( $this, 'init' ) );
@@ -366,7 +366,6 @@ class WP_Push_Syndication_Server {
 			</p>
 
 			<?php
-
 		}
 	}
 
@@ -440,7 +439,6 @@ class WP_Push_Syndication_Server {
 			</li>
 
 			<?php
-
 		}
 
 		echo '</ul>';
@@ -580,7 +578,6 @@ class WP_Push_Syndication_Server {
 			</p>
 
 			<?php
-
 		}
 	}
 
@@ -849,7 +846,6 @@ class WP_Push_Syndication_Server {
 				<p> <?php echo esc_html( $sitegroup->description ); ?> </p>
 			</li>
 			<?php
-
 		}
 
 		echo '</ul>';
@@ -935,7 +931,7 @@ class WP_Push_Syndication_Server {
 		do_action( 'syn_schedule_push_content', $post->ID, $sites );
 	}
 
-	function schedule_push_content( $post_id, $sites ) {
+	public function schedule_push_content( $post_id, $sites ) {
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_push_content',
@@ -943,7 +939,11 @@ class WP_Push_Syndication_Server {
 		);
 	}
 
-	// cron job function to syndicate content.
+	/**
+	 * Cron job function to syndicate content.
+	 *
+	 * @param array $sites Array of sites data to syndicate content to.
+	 */
 	public function push_content( $sites ) {
 
 		// if another process running on it return.
@@ -1088,7 +1088,13 @@ class WP_Push_Syndication_Server {
 		return $data;
 	}
 
-	// return an array of sites as objects based on sitegroup.
+	/**
+	 * Return an array of sites as objects based on sitegroup.
+	 *
+	 * @param object $sitegroup The sitegroup term object.
+	 *
+	 * @return array Array of site post objects.
+	 */
 	public function get_sites_by_sitegroup( $sitegroup ) {
 
 		// @TODO if sitegroup is deleted?
@@ -1274,7 +1280,13 @@ class WP_Push_Syndication_Server {
 		// all post metadata will be automatically deleted including slave_post_states.
 	}
 
-	// get the slave posts as $site_ID => $ext_ID.
+	/**
+	 * Get the slave posts as $site_ID => $ext_ID.
+	 *
+	 * @param int $post_ID The post ID to get slave posts for.
+	 *
+	 * @return array|void Array of slave posts or void if none exist.
+	 */
 	public function get_slave_posts( $post_ID ) {
 
 		// array containing states of sites.
@@ -1297,7 +1309,11 @@ class WP_Push_Syndication_Server {
 		return $slave_posts;
 	}
 
-	// checking user capability.
+	/**
+	 * Check if the current user has syndication capability.
+	 *
+	 * @return bool Whether the current user can syndicate.
+	 */
 	public function current_user_can_syndicate() {
 		$syndicate_cap = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 		return current_user_can( $syndicate_cap );
@@ -1514,7 +1530,7 @@ class WP_Push_Syndication_Server {
 		return apply_filters( 'syn_pull_user_agent', self::CUSTOM_USER_AGENT );
 	}
 
-	function find_post_by_guid( $guid, $post, $site ) {
+	public function find_post_by_guid( $guid, $post, $site ) {
 		global $wpdb;
 
 		$post_id = apply_filters( 'syn_pre_find_post_by_guid', false, $guid, $post, $site );

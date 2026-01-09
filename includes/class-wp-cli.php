@@ -14,7 +14,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including post_type and paged.
 	 */
-	function push_all_posts( $args, $assoc_args ) {
+	public function push_all_posts( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			array(

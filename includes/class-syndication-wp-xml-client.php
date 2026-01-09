@@ -89,7 +89,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 *
 	 * @param int $site_ID The ID of the site to pull feeds from.
 	 */
-	function __construct( $site_ID ) {
+	public function __construct( $site_ID ) {
 		$this->site_ID = $site_ID;
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
