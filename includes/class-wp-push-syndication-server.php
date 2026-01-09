@@ -391,8 +391,9 @@ class WP_Push_Syndication_Server {
 	/**
 	 * Validate the push_syndication_max_pull_attempts option.
 	 *
-	 * @param $val
-	 * @return int
+	 * @param mixed $val The option value to validate.
+	 *
+	 * @return int Validated value.
 	 */
 	public function validate_max_pull_attempts( $val ) {
 		/**
@@ -1110,13 +1111,20 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * $site_states is an array containing state of the site
-	 * with regard to the post the state. The states are
-	 *  success - the post was pushed successfully.
-	 *  new-error - error when creating the post.
-	 *  edit-error - error when editing the post.
-	 *  remove-error - error when removing the post in a slave site, when the sitegroup is unselected
-	 *  new - if the state is not found or the post is deleted in the slave site.
+	 * Gets the site info relative to a post state.
+	 *
+	 * The states are:
+	 *  - success - the post was pushed successfully.
+	 *  - new-error - error when creating the post.
+	 *  - edit-error - error when editing the post.
+	 *  - remove-error - error when removing the post in a slave site.
+	 *  - new - if the state is not found or the post is deleted in the slave site.
+	 *
+	 * @param int                          $site_ID           The site ID.
+	 * @param array                        $slave_post_states Array of slave post states, passed by reference.
+	 * @param Syndication_Client_Interface $client            The syndication client.
+	 *
+	 * @return array Site info with state and optional ext_ID.
 	 */
 	public function get_site_info( $site_ID, &$slave_post_states, $client ) {
 
@@ -1143,10 +1151,19 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * if the result is false state transitions
+	 * Validates result of creating a new post.
+	 *
+	 * State transitions if the result is error:
 	 * new          -> new-error
 	 * new-error    -> new-error
 	 * remove-error -> new-error
+	 *
+	 * @param int|WP_Error                 $result            The result from creating the post.
+	 * @param array                        $slave_post_states Array of slave post states, passed by reference.
+	 * @param int                          $site_ID           The site ID.
+	 * @param Syndication_Client_Interface $client            The syndication client.
+	 *
+	 * @return int|WP_Error The result.
 	 */
 	public function validate_result_new_post( $result, &$slave_post_states, $site_ID, $client ) {
 
@@ -1162,9 +1179,19 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * if the result is false state transitions
+	 * Validates result of editing a post.
+	 *
+	 * State transitions if the result is error:
 	 * edit-error   -> edit-error
 	 * success      -> edit-error
+	 *
+	 * @param bool|WP_Error                $result            The result from editing the post.
+	 * @param int                          $ext_ID            The external post ID.
+	 * @param array                        $slave_post_states Array of slave post states, passed by reference.
+	 * @param int                          $site_ID           The site ID.
+	 * @param Syndication_Client_Interface $client            The syndication client.
+	 *
+	 * @return bool|WP_Error The result.
 	 */
 	public function validate_result_edit_post( $result, $ext_ID, &$slave_post_states, $site_ID, $client ) {
 		if ( is_wp_error( $result ) ) {
@@ -1515,10 +1542,11 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * Handle save_post and delete_post for syn_site posts. If a syn_site post
-	 * is updated or deleted we should reprocess any scheduled pull jobs.
+	 * Handle save_post and delete_post for syn_site posts.
 	 *
-	 * @param $post_id
+	 * If a syn_site post is updated or deleted we should reprocess any scheduled pull jobs.
+	 *
+	 * @param int $post_id The post ID.
 	 */
 	public function handle_site_change( $post_id ) {
 		if ( 'syn_site' === get_post_type( $post_id ) ) {
@@ -1527,12 +1555,13 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
-	 * Handle create_term and delete_term for syn_sitegroup terms. If a site
-	 * group is created or deleted we should reprocess any scheduled pull jobs.
+	 * Handle create_term and delete_term for syn_sitegroup terms.
 	 *
-	 * @param $term
-	 * @param $tt_id
-	 * @param $taxonomy
+	 * If a site group is created or deleted we should reprocess any scheduled pull jobs.
+	 *
+	 * @param int    $term     The term ID.
+	 * @param int    $tt_id    The term taxonomy ID.
+	 * @param string $taxonomy The taxonomy slug.
 	 */
 	public function handle_site_group_change( $term, $tt_id, $taxonomy ) {
 		if ( 'syn_sitegroup' === $taxonomy ) {

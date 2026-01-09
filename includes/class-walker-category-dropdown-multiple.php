@@ -21,8 +21,8 @@ class Walker_CategoryDropdownMultiple extends Walker {
 	 * @param string $output   Passed by reference. Used to append additional content.
 	 * @param object $category Category data object.
 	 * @param int    $depth    Depth of category in reference to parents. Default 0.
-	 * @param array  $args     An array of arguments. @see wp_list_categories()
-	 * @param int    $id       ID of the current category.
+	 * @param array  $args              An array of arguments. @see wp_list_categories().
+	 * @param int    $current_object_id ID of the current category.
 	 */
 	function start_el( &$output, $category, $depth = 0, $args = array(), $current_object_id = 0 ) {
 		$pad = str_repeat( '&nbsp;', $depth * 3 );

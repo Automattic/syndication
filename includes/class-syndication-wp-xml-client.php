@@ -141,8 +141,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Required by the interface, but not used here.
 	 *
-	 * @param int $post_ID
-	 * @return bool
+	 * @param int $post_ID The post ID.
+	 *
+	 * @return bool Always false as not supported.
 	 */
 	public function new_post( $post_ID ) {
 		return false; // Not supported.
@@ -151,9 +152,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Required by the interface, but not used here.
 	 *
-	 * @param int $post_ID
-	 * @param int $ext_ID
-	 * @return bool
+	 * @param int $post_ID The local post ID.
+	 * @param int $ext_ID  The external post ID.
+	 *
+	 * @return bool Always false as not supported.
 	 */
 	public function edit_post( $post_ID, $ext_ID ) {
 		return false; // Not supported.
@@ -162,8 +164,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Required by the interface, but not used here.
 	 *
-	 * @param int $ext_ID
-	 * @return bool
+	 * @param int $ext_ID The external post ID.
+	 *
+	 * @return bool Always false as not supported.
 	 */
 	public function delete_post( $ext_ID ) {
 		return false; // Not supported.
@@ -172,8 +175,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Required by the interface, but not used here.
 	 *
-	 * @param int $ext_ID
-	 * @return bool
+	 * @param int $ext_ID The external post ID.
+	 *
+	 * @return bool Always false as not supported.
 	 */
 	public function get_post( $ext_ID ) {
 		return false; // Not supported.
@@ -823,11 +827,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Publish the remote post to the local site.
 	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
+	 * @param int                          $result         The local post ID.
+	 * @param array                        $post           The post data.
+	 * @param WP_Post                      $site           The site post object.
+	 * @param string                       $transport_type The transport type identifier.
+	 * @param Syndication_Client_Interface $client         The syndication client.
 	 */
 	public static function publish_pulled_post( $result, $post, $site, $transport_type, $client ) {
 		wp_publish_post( $result );
@@ -836,12 +840,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Save post meta for the specified post.
 	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 * @return mixed False if an error of if the data to save isn't passed.
+	 * @param int|WP_Error                 $result         The local post ID or error.
+	 * @param array                        $post           The post data.
+	 * @param WP_Post                      $site           The site post object.
+	 * @param string                       $transport_type The transport type identifier.
+	 * @param Syndication_Client_Interface $client         The syndication client.
+	 *
+	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function save_meta( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
@@ -876,12 +881,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Update post meta for the specified post.
 	 *
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 * @return mixed False if an error of if the data to save isn't passed.
+	 * @param int|WP_Error                 $result         The local post ID or error.
+	 * @param array                        $post           The post data.
+	 * @param WP_Post                      $site           The site post object.
+	 * @param string                       $transport_type The transport type identifier.
+	 * @param Syndication_Client_Interface $client         The syndication client.
+	 *
+	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function update_meta( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
@@ -914,12 +920,15 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 
 	/**
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 * @return mixed False if an error of if the data to save isn't passed.
+	 * Save taxonomy terms for the specified post.
+	 *
+	 * @param int|WP_Error                 $result         The local post ID or error.
+	 * @param array                        $post           The post data.
+	 * @param WP_Post                      $site           The site post object.
+	 * @param string                       $transport_type The transport type identifier.
+	 * @param Syndication_Client_Interface $client         The syndication client.
+	 *
+	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function save_tax( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
@@ -936,12 +945,15 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 
 	/**
-	 * @param $result
-	 * @param $post
-	 * @param $site
-	 * @param $transport_type
-	 * @param $client
-	 * @return mixed False if an error of if the data to save isn't passed.
+	 * Update taxonomy terms for the specified post.
+	 *
+	 * @param int|WP_Error                 $result         The local post ID or error.
+	 * @param array                        $post           The post data.
+	 * @param WP_Post                      $site           The site post object.
+	 * @param string                       $transport_type The transport type identifier.
+	 * @param Syndication_Client_Interface $client         The syndication client.
+	 *
+	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function update_tax( $result, $post, $site, $transport_type, $client ) {
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {

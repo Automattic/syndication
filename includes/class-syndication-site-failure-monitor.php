@@ -17,10 +17,12 @@ class Syndication_Site_Failure_Monitor {
 	}
 
 	/**
-	 * Handle the pull failure event. If the number of failures exceeds the maximum attempts set in the options, then disable the site.
+	 * Handle the pull failure event.
 	 *
-	 * @param $site_id
-	 * @param $count
+	 * If the number of failures exceeds the maximum attempts set in the options, then disable the site.
+	 *
+	 * @param int $site_id The site ID.
+	 * @param int $count   The failure count.
 	 */
 	public function handle_pull_failure_event( $site_id, $count ) {
 		$site_id = (int) $site_id;

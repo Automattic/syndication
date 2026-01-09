@@ -6,10 +6,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
 	/**
-	 * Pushes all posts of a given type
+	 * Pushes all posts of a given type.
 	 *
 	 * @subcommand push-all-posts
 	 * @synopsis [--post_type=<post-type>] [--paged=<page>]
+	 *
+	 * @param array $args       Positional arguments.
+	 * @param array $assoc_args Associative arguments including post_type and paged.
 	 */
 	function push_all_posts( $args, $assoc_args ) {
 		$assoc_args = wp_parse_args(

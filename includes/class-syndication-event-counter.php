@@ -56,8 +56,8 @@ class Syndication_Event_Counter {
 	/**
 	 * Resets an event counter.
 	 *
-	 * @param $event_slug
-	 * @param $event_object_id
+	 * @param string     $event_slug      An identifier for the event.
+	 * @param string|int $event_object_id An identifier for the object the event is associated with.
 	 */
 	public function reset_event( $event_slug, $event_object_id ) {
 		// Coerce the slug and ID to strings. PHP will fire appropriate warnings if the given slug and ID are not coercible.
@@ -70,11 +70,14 @@ class Syndication_Event_Counter {
 	/**
 	 * Creates a safe option name for the event counter options.
 	 *
-	 * The main thing this does is make sure that the option name does not exceed the limit of 64 characters, regardless of the length of $event_slug and $event_object_id. The downside here is that we cannot easily determine which options belong to which slugs when examine the option names directly.
+	 * The main thing this does is make sure that the option name does not exceed the limit of 64 characters,
+	 * regardless of the length of $event_slug and $event_object_id. The downside here is that we cannot easily
+	 * determine which options belong to which slugs when examine the option names directly.
 	 *
-	 * @param $event_slug
-	 * @param $event_object_id
-	 * @return string
+	 * @param string     $event_slug      An identifier for the event.
+	 * @param string|int $event_object_id An identifier for the object the event is associated with.
+	 *
+	 * @return string Safe option name.
 	 */
 	protected function _get_safe_option_name( $event_slug, $event_object_id ) {
 		return 'push_syndication_event_counter_' . md5( $event_slug . $event_object_id );

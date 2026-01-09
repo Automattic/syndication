@@ -32,12 +32,10 @@ class Failed_Syndication_Auto_Retry {
 	}
 
 	/**
-	 * Handle a site pull failure event
+	 * Handle a site pull failure event.
 	 *
-	 * @param $site_id         int    The post id of the site we need to retry
-	 * @param $failed_attempts int    The number of pull failures this site has experienced
-	 *
-	 * @return null
+	 * @param int $site_id         The post ID of the site we need to retry.
+	 * @param int $failed_attempts The number of pull failures this site has experienced.
 	 */
 	public function handle_pull_failure_event( $site_id = 0, $failed_attempts = 0 ) {
 
@@ -141,11 +139,10 @@ class Failed_Syndication_Auto_Retry {
 	}
 
 	/**
-	 * Handle a site pull success event
+	 * Handle a site pull success event.
 	 *
-	 * @param $site_id         int    The post id of the site which just successfully pulled
-	 * @param $failed_attempts int    The number of pull failures this site has experienced
-	 * @return null
+	 * @param int $site_id         The post ID of the site which just successfully pulled.
+	 * @param int $failed_attempts The number of pull failures this site has experienced.
 	 */
 	public function handle_pull_success_event( $site_id = 0, $failed_attempts = 0 ) {
 
