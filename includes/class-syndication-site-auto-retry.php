@@ -16,7 +16,6 @@
  *
  * @uses Syndication_Logger
  */
-
 class Failed_Syndication_Auto_Retry {
 
 	/**

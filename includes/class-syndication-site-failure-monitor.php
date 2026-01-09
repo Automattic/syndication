@@ -6,7 +6,6 @@
  *
  * @uses Syndication_Logger
  */
-
 class Syndication_Site_Failure_Monitor {
 
 	/**

@@ -250,7 +250,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 *
 	 * @access private
 	 * @uses $shortcode_tags global variable
-	 * @param string $post_content - post to be syndicated
+	 * @param string $post_content Post to be syndicated.
 	 * @return string $post_content - post content with replaced gallery shortcodes
 	 */
 	private function syndicate_gallery_images( $post_content ) {
@@ -753,7 +753,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 	 * Upload Image for the gallery shortcode
 	 *
 	 * @uses $wp_xmlrpc_server
-	 * @param array $args Contains necessary parameters for XMLRCP call: user, paasword, image data
+	 * @param array $args Contains necessary parameters for XMLRPC call: user, password, image data.
 	 * @return integer $thumbnail_id New ID of the newly uploaded image to the remote site
 	 */
 	public static function xmlrpc_post_gallery_images( $args ) {

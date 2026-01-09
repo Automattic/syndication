@@ -8,42 +8,42 @@
 class Syndication_Logger {
 
 	/**
-	 * singleton handle
+	 * Singleton handle.
 	 *
 	 * @var object
 	 */
 	private static $__instance = null;
 
 	/**
-	 * maximum amount of rows to keep for single object log entries
+	 * Maximum amount of rows to keep for single object log entries.
 	 *
 	 * @var integer
 	 */
 	private $log_entry_limit = 150;
 
 	/**
-	 * level of information to log. Can be info for all and default for errors/success
+	 * Level of information to log. Can be info for all and default for errors/success.
 	 *
 	 * @var string
 	 */
 	private $debug_level = null;
 
 	/**
-	 * if true log messages will also be sent to php error log
+	 * If true log messages will also be sent to php error log.
 	 *
 	 * @var boolean
 	 */
 	private $use_php_error_logging = null;
 
 	/**
-	 * filter variables for retrieving log messages
+	 * Filter variables for retrieving log messages.
 	 *
 	 * @var array
 	 */
 	private $log_filter = array();
 
 	/**
-	 * a unique identifier for each page load / logging session
+	 * A unique identifier for each page load / logging session.
 	 *
 	 * @var string
 	 */
@@ -116,11 +116,11 @@ class Syndication_Logger {
 	 * do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );
 	 * do_action( 'syn_post_push_new_post', $result, $post_ID, $site, $transport_type, $client, $info );
 	 *
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site           Post object for the site doing the syndication.
+	 * @param  string $transport_type Post meta syn_transport_type for site.
+	 * @param  object $client         Syndication_Client class.
 	 */
 	public static function log_new( $result, $post, $site, $transport_type, $client ) {
 		self::instance()->log_post_event( 'new', $result, $post, $site, $transport_type, $client );
@@ -132,11 +132,11 @@ class Syndication_Logger {
 	 * do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
 	 * do_action( 'syn_post_push_edit_post', $result, $post_ID, $site, $transport_type, $client, $info );
 	 *
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site           Post object for the site doing the syndication.
+	 * @param  string $transport_type Post meta syn_transport_type for site.
+	 * @param  object $client         Syndication_Client class.
 	 */
 	public static function log_update( $result, $post, $site, $transport_type, $client ) {
 		self::instance()->log_post_event( 'update', $result, $post, $site, $transport_type, $client );
@@ -147,12 +147,12 @@ class Syndication_Logger {
 	 * usually implemented via action hook
 	 * do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 	 *
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $external_id    External post post_id
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $external_id    External post post_id.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site           Post object for the site doing the syndication.
+	 * @param  string $transport_type Post meta syn_transport_type for site.
+	 * @param  object $client         Syndication_Client class.
 	 */
 	public static function log_delete( $result, $external_id, $post, $site, $transport_type, $client ) {
 		self::instance()->log_post_event( 'delete', $result, $post, $site, $transport_type, $client );
@@ -161,12 +161,12 @@ class Syndication_Logger {
 	/**
 	 * Prepares data for the post level log events
 	 *
-	 * @param  string $event          Type of event new/update/delete
-	 * @param  mixed  $result         Result object of previous wp_insert_post action
-	 * @param  mixed  $post           Post object or post_id
-	 * @param  object $site           Post object for the site doing the syndication
-	 * @param  string $transport_type Post meta syn_transport_type for site
-	 * @param  object $client         Syndication_Client class
+	 * @param  string $event          Type of event new/update/delete.
+	 * @param  mixed  $result         Result object of previous wp_insert_post action.
+	 * @param  mixed  $post           Post object or post_id.
+	 * @param  object $site           Post object for the site doing the syndication.
+	 * @param  string $transport_type Post meta syn_transport_type for site.
+	 * @param  object $client         Syndication_Client class.
 	 */
 	private function log_post_event( $event, $result, $post, $site, $transport_type, $client ) {
 		if ( is_int( $post ) ) {
@@ -202,11 +202,11 @@ class Syndication_Logger {
 	/**
 	 * Log a faulty post level event
 	 *
-	 * @param  int    $post_id  post_id to attach the log entry to
-	 * @param  string $status   status entry
-	 * @param  string $message  log message
-	 * @param  string $log_time time of event
-	 * @param  array  $extra    additional data
+	 * @param  int    $post_id  Post ID to attach the log entry to.
+	 * @param  string $status   Status entry.
+	 * @param  string $message  Log message.
+	 * @param  string $log_time Time of event.
+	 * @param  array  $extra    Additional data.
 	 */
 	public static function log_post_error( $post_id, $status = 'error', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'error', $post_id, $status, $message, $log_time, $extra );
@@ -215,11 +215,11 @@ class Syndication_Logger {
 	/**
 	 * Log a successful post level event
 	 *
-	 * @param  int    $post_id  post_id to attach the log entry to
-	 * @param  string $status   status entry
-	 * @param  string $message  log message
-	 * @param  string $log_time time of event
-	 * @param  array  $extra    additional data
+	 * @param  int    $post_id  Post ID to attach the log entry to.
+	 * @param  string $status   Status entry.
+	 * @param  string $message  Log message.
+	 * @param  string $log_time Time of event.
+	 * @param  array  $extra    Additional data.
 	 */
 	public function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'success', $post_id, $status, $message, $log_time, $extra );
@@ -228,11 +228,11 @@ class Syndication_Logger {
 	/**
 	 * Log a post level informal event
 	 *
-	 * @param  int    $post_id  post_id to attach the log entry to
-	 * @param  string $status   status entry
-	 * @param  string $message  log message
-	 * @param  string $log_time time of event
-	 * @param  array  $extra    additional data
+	 * @param  int    $post_id  Post ID to attach the log entry to.
+	 * @param  string $status   Status entry.
+	 * @param  string $message  Log message.
+	 * @param  string $log_time Time of event.
+	 * @param  array  $extra    Additional data.
 	 */
 	public static function log_post_info( $post_id, $status = '', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'info', $post_id, $status, $message, $log_time, $extra );
@@ -241,12 +241,12 @@ class Syndication_Logger {
 	/**
 	 * Pass post level events to logger function
 	 *
-	 * @param  string $msg_type event type success/error/info
-	 * @param  int    $post_id  post_id to attach the log entry to
-	 * @param  string $status   status entry
-	 * @param  string $message  log message
-	 * @param  string $log_time time of event
-	 * @param  array  $extra    additional data
+	 * @param  string $msg_type Event type success/error/info.
+	 * @param  int    $post_id  Post ID to attach the log entry to.
+	 * @param  string $status   Status entry.
+	 * @param  string $message  Log message.
+	 * @param  string $log_time Time of event.
+	 * @param  array  $extra    Additional data.
 	 */
 	private function log_post( $msg_type, $post_id, $status, $message, $log_time, $extra ) {
 		$this->log( $storage_type = 'object', $msg_type, 'post', $post_id, $status, $message, $log_time, $extra );
@@ -255,14 +255,14 @@ class Syndication_Logger {
 	/**
 	 * Log an entry to the database
 	 *
-	 * @param  string $storage_type Where the log entry will be stored. object / option
-	 * @param  string $msg_type     event type success/error/info
-	 * @param  string $object_type  Type of object to attach log entry to. Currently only "post" is supported
-	 * @param  int    $object_id    object_id (post_id) to attach the log entry to
-	 * @param  string $status       status entry
-	 * @param  string $message      log message
-	 * @param  string $log_time     time of event
-	 * @param  array  $extra        additional data
+	 * @param  string $storage_type Where the log entry will be stored. object / option.
+	 * @param  string $msg_type     Event type success/error/info.
+	 * @param  string $object_type  Type of object to attach log entry to. Currently only "post" is supported.
+	 * @param  int    $object_id    Object ID (post_id) to attach the log entry to.
+	 * @param  string $status       Status entry.
+	 * @param  string $message      Log message.
+	 * @param  string $log_time     Time of event.
+	 * @param  array  $extra        Additional data.
 	 * @return mixed                true or WP_Error
 	 */
 	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
@@ -396,8 +396,8 @@ class Syndication_Logger {
 	/**
 	 * Format log message for error_log()
 	 *
-	 * @param  string $msg_type  Type of message
-	 * @param  array  $log_entry Prepared log_entry array
+	 * @param  string $msg_type  Type of message.
+	 * @param  array  $log_entry Prepared log_entry array.
 	 * @return string            Formatted log message
 	 */
 	private function format_log_message( $msg_type, $log_entry ) {
@@ -408,15 +408,15 @@ class Syndication_Logger {
 	/**
 	 * Retrieve and filter log messages from database
 	 *
-	 * @param  string $log_id       unique log session id
-	 * @param  string $msg_type     event type success/error/info
-	 * @param  int    $object_id    object_id (post_id) to attach the log entry to
-	 * @param  string $object_type  Type of object to attach log entry to. Currently only "post" is supported
-	 * @param  string $status       status entry
-	 * @param  string $date_start   Date string for starting date filter
-	 * @param  string $date_end     Date string for starting date filter
-	 * @param  string $message      regular expression for message text matching
-	 * @param  string $storage_type Where the log entry will be stored. object / option
+	 * @param  string $log_id       Unique log session ID.
+	 * @param  string $msg_type     Event type success/error/info.
+	 * @param  int    $object_id    Object ID (post_id) to attach the log entry to.
+	 * @param  string $object_type  Type of object to attach log entry to. Currently only "post" is supported.
+	 * @param  string $status       Status entry.
+	 * @param  string $date_start   Date string for starting date filter.
+	 * @param  string $date_end     Date string for ending date filter.
+	 * @param  string $message      Regular expression for message text matching.
+	 * @param  string $storage_type Where the log entry will be stored. Object or option.
 	 * @return array                Array of matching log entries
 	 */
 	public static function get_messages( $log_id = null, $msg_type = null, $object_id = null, $object_type = 'post', $status = null, $date_start = null, $date_end = null, $message = null, $storage_type = 'object' ) {
@@ -473,7 +473,7 @@ class Syndication_Logger {
 	 * Filter retrieved log entries by log_filter conditions
 	 *
 	 * @uses array_filter()
-	 * @param  array $data Array Element
+	 * @param  array $data Array element.
 	 * @return boolean     True to keep the entry, false to skip it
 	 */
 	public function filter_log_entries( $data ) {

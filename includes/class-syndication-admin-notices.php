@@ -23,10 +23,10 @@ class Syndication_Logger_Admin_Notice {
 	/**
 	 * Create a admin notice
 	 *
-	 * @param text    $message_text       The message you would like to show
-	 * @param string  $message_type       A message type, shown alongside with your message and used to categorize and bundle messages of the same type
-	 * @param string  $class              css class applied to the notice eg. 'updated', 'error', 'update-nag'
-	 * @param boolean $summarize_multiple setting this to true allows summarizing messages of the same message_type into one message. The message text is then passed through the syn_message_text_multiple filter and all messages of this type can be dismissed at once
+	 * @param string  $message_text       The message you would like to show.
+	 * @param string  $message_type       A message type, shown alongside with your message and used to categorize and bundle messages of the same type.
+	 * @param string  $class              CSS class applied to the notice eg. 'updated', 'error', 'update-nag'.
+	 * @param boolean $summarize_multiple Setting this to true allows summarizing messages of the same message_type into one message. The message text is then passed through the syn_message_text_multiple filter and all messages of this type can be dismissed at once.
 	 */
 	public static function add_notice( $message_text, $message_type = 'Syndication', $class = 'updated', $summarize_multiple = false ) {
 		$notices = get_option( self::$notice_option );

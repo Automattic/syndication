@@ -753,7 +753,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Rewrite wp_dropdown_categories output to enable a multiple select
 	 *
-	 * @param  string $result rendered category dropdown list
+	 * @param  string $result Rendered category dropdown list.
 	 * @return string altered category dropdown list
 	 */
 	public static function make_multiple_categories_dropdown( $result ) {

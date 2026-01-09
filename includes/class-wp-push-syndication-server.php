@@ -954,7 +954,7 @@ class WP_Push_Syndication_Server {
 		// set value as locked, valid for 5 mins.
 		set_transient( 'syn_syndicate_lock', 'locked', 60 * 5 );
 
-		/** start of critical section */
+		/** Start of critical section. */
 
 		$post_ID = $sites['post_ID'];
 
@@ -1026,7 +1026,7 @@ class WP_Push_Syndication_Server {
 		}
 
 
-		/** end of critical section */
+		/** End of critical section. */
 
 		// release the lock.
 		delete_transient( 'syn_syndicate_lock' );
