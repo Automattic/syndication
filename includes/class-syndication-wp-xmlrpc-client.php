@@ -707,9 +707,9 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		);
 		// update caption and description of the image.
 		$result = $wp_xmlrpc_server->wp_editPost( $args );
+		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf -- TODO: handle attachment update failure.
 		if ( true !== $result ) {
-			// failed to update atatchment post details.
-			// Handle it the way you want it (log it, message it).
+			// Failed to update attachment post details.
 		}
 		// update alt text of the image.
 		update_post_meta( $thumbnail_id, '_wp_attachment_image_alt', $thumbnail_alt_text );

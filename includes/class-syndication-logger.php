@@ -300,8 +300,8 @@ class Syndication_Logger {
 			$log_entry['time'] = current_time( 'mysql' );
 		}
 
+		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf -- TODO: sanitize extra data.
 		if ( ! empty( $extra ) && is_array( $extra ) ) {
-			// @TODO sanitize extra data.
 			// $log_entry['extra'] = array_map( 'sanitize_text_field', $extra );
 		}
 
@@ -358,8 +358,9 @@ class Syndication_Logger {
 				}
 
 				// @TODO log error counter.
-			} elseif ( 'term' == $object_type ) {
-				// @TODO implement if needed.
+			// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedElseif -- TODO: implement if needed.
+			} elseif ( 'term' === $object_type ) {
+				// Placeholder for future term object type support.
 			}
 		} elseif ( 'option' == $storage_type ) {
 			// Storing the log in an option value.
