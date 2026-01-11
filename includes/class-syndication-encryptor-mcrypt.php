@@ -1,12 +1,27 @@
 <?php
+/**
+ * MCrypt encryption implementation for syndication data.
+ *
+ * @package Syndication
+ */
 
 /**
  * Class Syndication_Encryptor_MCrypt
+ *
+ * Provides encryption and decryption using the deprecated MCrypt extension.
+ * This class is maintained for backwards compatibility with older PHP versions.
+ *
+ * @deprecated MCrypt was deprecated in PHP 7.1 and removed in PHP 7.2.
+ * @see Syndication_Encryptor_OpenSSL For the recommended encryption implementation.
  */
 class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 
 	/**
-	 * @inheritDoc
+	 * Encrypts data using MCrypt.
+	 *
+	 * @param mixed $data Data to encrypt.
+	 *
+	 * @return string Encrypted data.
 	 */
 	public function encrypt( $data ) {
 		$data = serialize( $data ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
@@ -15,7 +30,12 @@ class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Decrypts data using MCrypt.
+	 *
+	 * @param string $data        Encrypted data to decrypt.
+	 * @param bool   $associative Unused parameter for interface compatibility.
+	 *
+	 * @return mixed|false Decrypted data or false on failure.
 	 */
 	public function decrypt( $data, $associative = true ) {
 		// phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_decryptDeprecatedRemoved,PHPCompatibility.Extensions.RemovedExtensions.mcryptDeprecatedRemoved,PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved,PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_cbcDeprecatedRemoved
@@ -28,7 +48,9 @@ class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Gets the cipher constant.
+	 *
+	 * @return int MCrypt cipher constant.
 	 */
 	public function get_cipher() {
 		return MCRYPT_RIJNDAEL_256; // phpcs:ignore PHPCompatibility.Constants.RemovedConstants.mcrypt_rijndael_256DeprecatedRemoved

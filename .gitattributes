@@ -1,4 +1,5 @@
 # Exclude from release archives
+/.claude/              export-ignore
 /.github/              export-ignore
 /.wordpress-org/       export-ignore
 /bin/                  export-ignore

@@ -1,7 +1,15 @@
 <?php
+/**
+ * Encryption facade for syndication data.
+ *
+ * @package Syndication
+ */
 
 /**
  * Class Syndication_Encryption
+ *
+ * Provides a facade for encryption operations, delegating to a configured
+ * Syndication_Encryptor implementation (OpenSSL or MCrypt).
  */
 class Syndication_Encryption {
 
@@ -43,5 +51,4 @@ class Syndication_Encryption {
 	public function decrypt( $data, $associative = true ) {
 		return $this->encryptor->decrypt( $data, $associative );
 	}
-
 }
