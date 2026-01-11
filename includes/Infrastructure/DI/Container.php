@@ -9,6 +9,11 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Infrastructure\DI;
 
+use Automattic\Syndication\Domain\Contracts\EncryptorInterface;
+use Automattic\Syndication\Domain\Contracts\SiteRepositoryInterface;
+use Automattic\Syndication\Infrastructure\Encryption\OpenSSLEncryptor;
+use Automattic\Syndication\Infrastructure\Repositories\SiteRepository;
+
 /**
  * Simple dependency injection container for Syndication services.
  *
@@ -119,6 +124,23 @@ final class Container {
 	 * minimal and grows with the refactoring progress.
 	 */
 	private function register_default_services(): void {
-		// Services will be registered here as they are implemented during the refactor.
+		// Encryption.
+		$this->register(
+			EncryptorInterface::class,
+			static function (): EncryptorInterface {
+				$key = defined( 'PUSH_SYNDICATE_KEY' ) ? PUSH_SYNDICATE_KEY : 'default-key';
+				return new OpenSSLEncryptor( $key );
+			}
+		);
+
+		// Repositories.
+		$this->register(
+			SiteRepositoryInterface::class,
+			function ( Container $container ): SiteRepositoryInterface {
+				$encryptor = $container->get( EncryptorInterface::class );
+				\assert( $encryptor instanceof EncryptorInterface );
+				return new SiteRepository( $encryptor );
+			}
+		);
 	}
 }
