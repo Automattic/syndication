@@ -32,7 +32,7 @@
 	<rule ref="PHPCompatibilityWP"/>
 	<!-- For help in understanding this testVersion:
 		https://github.com/PHPCompatibility/PHPCompatibility#sniffing-your-code-for-compatibility-with-specific-php-versions -->
-	<config name="testVersion" value="7.4-"/>
+	<config name="testVersion" value="8.2-"/>
 
 	<!-- Rules: WordPress Coding Standards - see
 		https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards -->
@@ -51,8 +51,23 @@
 		<properties>
 			<property name="prefixes" type="array">
 				<element value="syndication"/>
+				<element value="Automattic\Syndication"/>
 			</property>
 		</properties>
+	</rule>
+
+	<!-- PSR-4 namespaced classes use PSR-4 file naming, not WordPress style -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>/includes/Application/</exclude-pattern>
+		<exclude-pattern>/includes/Domain/</exclude-pattern>
+		<exclude-pattern>/includes/Infrastructure/</exclude-pattern>
+		<exclude-pattern>/includes/Autoloader.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>/includes/Application/</exclude-pattern>
+		<exclude-pattern>/includes/Domain/</exclude-pattern>
+		<exclude-pattern>/includes/Infrastructure/</exclude-pattern>
+		<exclude-pattern>/includes/Autoloader.php</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">

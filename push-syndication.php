@@ -7,16 +7,20 @@
  * Plugin Name:  Syndication
  * Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
  * Description:  Syndicate content to and from your sites
- * Version:      2.2.0
+ * Version:      3.0.0-alpha
  * Requires at least: 6.4
- * Requires PHP: 7.4
+ * Requires PHP: 8.2
  * Author:       Automattic
  * Author URI:   http://automattic.com
  * License:      GPLv2 or later
  * Text Domain:  push-syndication
  */
 
-define( 'SYNDICATION_VERSION', '2.2.0' );
+define( 'SYNDICATION_VERSION', '3.0.0-alpha' );
+
+// Load PSR-4 autoloader for namespaced classes.
+require_once __DIR__ . '/includes/Autoloader.php';
+Syndication_Autoloader::register( __DIR__ );
 
 if ( ! defined( 'PUSH_SYNDICATE_KEY' ) ) {
 	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );

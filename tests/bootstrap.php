@@ -38,6 +38,10 @@ $is_integration = 'integration' === $testsuite;
 if ( $is_unit ) {
 	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
+	// Load PSR-4 autoloader for namespaced classes.
+	require_once dirname( __DIR__ ) . '/includes/Autoloader.php';
+	\Syndication_Autoloader::register( dirname( __DIR__ ) );
+
 	// Define WordPress time constants used in unit tests.
 	if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
 		define( 'MINUTE_IN_SECONDS', 60 );
