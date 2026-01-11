@@ -1,9 +1,20 @@
 <?php
+/**
+ * Log viewer for syndication events.
+ *
+ * @package Syndication
+ */
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
+/**
+ * Class Syndication_Logger_List_Table
+ *
+ * Extends WP_List_Table to display syndication log entries in the WordPress
+ * admin interface, with filtering, sorting, and pagination support.
+ */
 class Syndication_Logger_List_Table extends WP_List_Table {
 
 	public $prepared_data = array();

@@ -1,6 +1,6 @@
 <?php
 /**
- * The XML pull client for the Syndication plugin
+ * XML feed client for content syndication.
  *
  * Client for the Syndication plugin to pull in XML feeds for consumption.
  * This was added after the initial 1.0.0 release, but no other releases
@@ -10,22 +10,18 @@
  * @link https://github.com/Automattic/syndication/
  * @since 2.2.0
  *
- * @package WordPress
- * @subpackage Syndication
+ * @package Syndication
  */
 
-/**
- * Load the {@see Walker_CategoryDropdownMultiple}
- */
 require_once __DIR__ . '/class-walker-category-dropdown-multiple.php';
-
-/**
- * Load the {@see Syndication_Client} interface.
- */
 require_once __DIR__ . '/interface-syndication-client.php';
 
 /**
  * Class Syndication_WP_XML_Client
+ *
+ * Implements the Syndication_Client interface for pulling content from
+ * generic XML feeds. Supports configurable node mappings for flexible
+ * feed parsing.
  */
 class Syndication_WP_XML_Client implements Syndication_Client {
 

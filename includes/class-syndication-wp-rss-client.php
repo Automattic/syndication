@@ -1,8 +1,19 @@
 <?php
+/**
+ * RSS client for content syndication.
+ *
+ * @package Syndication
+ */
 
 require_once ABSPATH . 'wp-includes/class-simplepie.php';
 require_once __DIR__ . '/interface-syndication-client.php';
 
+/**
+ * Class Syndication_WP_RSS_Client
+ *
+ * Implements the Syndication_Client interface using RSS feeds for pulling
+ * content from remote sites. Extends SimplePie for feed parsing.
+ */
 class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client {
 
 	private $default_post_type;

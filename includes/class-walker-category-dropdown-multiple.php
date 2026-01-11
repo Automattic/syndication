@@ -1,8 +1,15 @@
 <?php
 /**
- * Create HTML list of categories. Allowing a multiple select list
+ * Walker for multiple-select category dropdowns.
  *
- * @uses Walker
+ * @package Syndication
+ */
+
+/**
+ * Class Walker_CategoryDropdownMultiple
+ *
+ * Creates an HTML list of categories allowing multiple selections.
+ * Used for selecting categories when configuring syndication sites.
  */
 class Walker_CategoryDropdownMultiple extends Walker {
 

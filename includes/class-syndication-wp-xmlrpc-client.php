@@ -1,10 +1,21 @@
 <?php
+/**
+ * XML-RPC client for content syndication.
+ *
+ * @package Syndication
+ */
 
 require_once ABSPATH . 'wp-includes/class-IXR.php';
 require_once ABSPATH . 'wp-includes/class-wp-http-ixr-client.php';
 require_once __DIR__ . '/interface-syndication-client.php';
 require_once __DIR__ . '/push-syndicate-encryption.php';
 
+/**
+ * Class Syndication_WP_XMLRPC_Client
+ *
+ * Implements the Syndication_Client interface using WordPress XML-RPC API
+ * for pushing and pulling content between sites.
+ */
 class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndication_Client {
 
 	private $username;

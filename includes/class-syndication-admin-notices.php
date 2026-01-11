@@ -1,7 +1,15 @@
 <?php
+/**
+ * Admin notices handler for syndication plugin.
+ *
+ * @package Syndication
+ */
 
 /**
- * Class to handle Admin notices for dismissable user notifications
+ * Class Syndication_Logger_Admin_Notice
+ *
+ * Handles dismissable admin notices for user notifications related to
+ * syndication events, errors, and status updates.
  */
 class Syndication_Logger_Admin_Notice {
 

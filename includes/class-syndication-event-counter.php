@@ -1,8 +1,17 @@
 <?php
 /**
- * Event Counter
+ * Event counter for syndication tracking.
  *
- * This allows for generic events to be captured and counted. Use the push_syndication_event and push_syndication_reset_event actions to capture and reset counters. Use push_syndication_after_event to handle events once they've occurred, and to see the number of times the event has occurred.
+ * @package Syndication
+ */
+
+/**
+ * Class Syndication_Event_Counter
+ *
+ * Captures and counts generic syndication events. Use the push_syndication_event
+ * and push_syndication_reset_event actions to capture and reset counters.
+ * Use push_syndication_after_event to handle events once they've occurred
+ * and to see the number of times the event has occurred.
  */
 class Syndication_Event_Counter {
 

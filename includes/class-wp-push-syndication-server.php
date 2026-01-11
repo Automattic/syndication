@@ -1,7 +1,18 @@
 <?php
+/**
+ * Main syndication server class.
+ *
+ * @package Syndication
+ */
 
 require_once __DIR__ . '/class-syndication-client-factory.php';
 
+/**
+ * Class WP_Push_Syndication_Server
+ *
+ * Core syndication server that handles plugin initialization, admin interfaces,
+ * settings management, and orchestrates content push/pull operations between sites.
+ */
 class WP_Push_Syndication_Server {
 
 	const CUSTOM_USER_AGENT = 'WordPress/Syndication Plugin';

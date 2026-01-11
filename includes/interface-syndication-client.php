@@ -1,5 +1,17 @@
 <?php
+/**
+ * Client interface for content syndication.
+ *
+ * @package Syndication
+ */
 
+/**
+ * Interface Syndication_Client
+ *
+ * Defines the contract for syndication transport implementations.
+ * Each client handles pushing and pulling content via a specific protocol
+ * (REST API, XML-RPC, RSS, XML feeds).
+ */
 interface Syndication_Client {
 
 	/**

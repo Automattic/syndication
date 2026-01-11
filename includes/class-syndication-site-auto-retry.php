@@ -1,9 +1,14 @@
 <?php
+/**
+ * Automatic retry handler for failed syndication pulls.
+ *
+ * @package Syndication
+ */
 
 /**
- * Failed Syndication Auto Retry
+ * Class Failed_Syndication_Auto_Retry
  *
- * Watches syndication events and handles site-related failures.
+ * Watches syndication events and handles site-related failures with automatic retries.
  *
  * There is a cron setup in class-wp-push-syndication-server.php:1266 which will
  * retry a failed pull X times (set in admin settings) and when that limit is met

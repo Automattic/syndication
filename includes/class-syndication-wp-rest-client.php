@@ -1,8 +1,19 @@
 <?php
+/**
+ * WordPress REST API client for content syndication.
+ *
+ * @package Syndication
+ */
 
 require_once __DIR__ . '/interface-syndication-client.php';
 require_once __DIR__ . '/push-syndicate-encryption.php';
 
+/**
+ * Class Syndication_WP_REST_Client
+ *
+ * Implements the Syndication_Client interface using the WordPress REST API
+ * for pushing and pulling content between sites.
+ */
 class Syndication_WP_REST_Client implements Syndication_Client {
 
 	private $access_token;

@@ -1,7 +1,18 @@
 <?php
+/**
+ * MCrypt encryption implementation for syndication data.
+ *
+ * @package Syndication
+ */
 
 /**
  * Class Syndication_Encryptor_MCrypt
+ *
+ * Provides encryption and decryption using the deprecated MCrypt extension.
+ * This class is maintained for backwards compatibility with older PHP versions.
+ *
+ * @deprecated MCrypt was deprecated in PHP 7.1 and removed in PHP 7.2.
+ * @see Syndication_Encryptor_OpenSSL For the recommended encryption implementation.
  */
 class Syndication_Encryptor_MCrypt implements Syndication_Encryptor {
 

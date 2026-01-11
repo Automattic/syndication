@@ -1,7 +1,18 @@
 <?php
+/**
+ * WP-CLI commands for content syndication.
+ *
+ * @package Syndication
+ */
 
 WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 
+/**
+ * Class Syndication_CLI_Command
+ *
+ * Provides WP-CLI commands for managing content syndication,
+ * including bulk push operations and syndication status checks.
+ */
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 

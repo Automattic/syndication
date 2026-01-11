@@ -1,5 +1,9 @@
 <?php
 /**
+ * Syndication
+ *
+ * @package Syndication
+ *
  * Plugin Name:  Syndication
  * Plugin URI:   http://wordpress.org/extend/plugins/push-syndication/
  * Description:  Syndicate content to and from your sites

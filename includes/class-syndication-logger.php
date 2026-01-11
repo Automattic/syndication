@@ -1,9 +1,17 @@
 <?php
+/**
+ * Logging system for syndication events.
+ *
+ * @package Syndication
+ */
 
 /**
- * Syndication_Logger implements a unified logging mechanism for the syndication plugin.
+ * Class Syndication_Logger
  *
- * @todo implement removal of old log messages, cron to remove messages older than X?
+ * Implements a unified logging mechanism for the syndication plugin,
+ * tracking push/pull events, errors, and syndication status changes.
+ *
+ * @todo Implement removal of old log messages, cron to remove messages older than X?
  */
 class Syndication_Logger {
 

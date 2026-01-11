@@ -1,4 +1,12 @@
 <?php
+/**
+ * Encryption helper functions for syndication.
+ *
+ * Provides global wrapper functions for encrypting and decrypting
+ * sensitive syndication data using the configured encryptor.
+ *
+ * @package Syndication
+ */
 
 /**
  * Encrypts data.

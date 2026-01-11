@@ -1,7 +1,15 @@
 <?php
+/**
+ * OpenSSL encryption implementation for syndication data.
+ *
+ * @package Syndication
+ */
 
 /**
  * Class Syndication_Encryptor_OpenSSL
+ *
+ * Provides encryption and decryption using the OpenSSL extension.
+ * This is the recommended encryption implementation for PHP 7.2+.
  */
 class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 

@@ -1,8 +1,15 @@
 <?php
 /**
- * Site Failure Moniture
+ * Site failure monitor for syndication.
  *
- * Watches syndication events and handles site-related failures.
+ * @package Syndication
+ */
+
+/**
+ * Class Syndication_Site_Failure_Monitor
+ *
+ * Monitors syndication events and handles site-related failures by tracking
+ * pull attempts and disabling sites that exceed the maximum failure threshold.
  *
  * @uses Syndication_Logger
  */

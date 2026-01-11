@@ -1,10 +1,21 @@
 <?php
+/**
+ * Factory for creating syndication client instances.
+ *
+ * @package Syndication
+ */
 
 require_once __DIR__ . '/class-syndication-wp-xmlrpc-client.php';
 require_once __DIR__ . '/class-syndication-wp-xml-client.php';
 require_once __DIR__ . '/class-syndication-wp-rest-client.php';
 require_once __DIR__ . '/class-syndication-wp-rss-client.php';
 
+/**
+ * Class Syndication_Client_Factory
+ *
+ * Creates syndication client instances based on transport type.
+ * Supports XML-RPC, REST API, RSS, and XML feed transports.
+ */
 class Syndication_Client_Factory {
 
 	/**
