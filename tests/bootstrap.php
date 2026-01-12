@@ -36,6 +36,9 @@ $is_integration = 'integration' === $testsuite;
 
 // Unit tests - load Brain Monkey and classes without WordPress.
 if ( $is_unit ) {
+	// Load WordPress stubs first (before anything else).
+	require_once __DIR__ . '/Unit/Stubs/WP_Error.php';
+
 	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 	// Load PSR-4 autoloader for namespaced classes.
