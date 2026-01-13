@@ -11,6 +11,7 @@ namespace Automattic\Syndication\Infrastructure\DI;
 
 use Automattic\Syndication\Domain\Contracts\EncryptorInterface;
 use Automattic\Syndication\Domain\Contracts\SiteRepositoryInterface;
+use Automattic\Syndication\Domain\Contracts\TransportFactoryInterface;
 use Automattic\Syndication\Infrastructure\Encryption\OpenSSLEncryptor;
 use Automattic\Syndication\Infrastructure\Repositories\SiteRepository;
 use Automattic\Syndication\Infrastructure\Transport\TransportFactory;
@@ -153,14 +154,14 @@ final class Container {
 			}
 		);
 
-		// Transport factory.
-		$this->register(
-			TransportFactory::class,
-			function ( Container $container ): TransportFactory {
-				$encryptor = $container->get( EncryptorInterface::class );
-				\assert( $encryptor instanceof EncryptorInterface );
-				return new TransportFactory( $encryptor );
-			}
-		);
+		// Transport factory - register both interface and concrete class.
+		$factory_callback = function ( Container $container ): TransportFactory {
+			$encryptor = $container->get( EncryptorInterface::class );
+			\assert( $encryptor instanceof EncryptorInterface );
+			return new TransportFactory( $encryptor );
+		};
+
+		$this->register( TransportFactory::class, $factory_callback );
+		$this->register( TransportFactoryInterface::class, $factory_callback );
 	}
 }

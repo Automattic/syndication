@@ -12,6 +12,7 @@ namespace Automattic\Syndication\Infrastructure\Transport;
 use Automattic\Syndication\Domain\Contracts\EncryptorInterface;
 use Automattic\Syndication\Domain\Contracts\PullTransportInterface;
 use Automattic\Syndication\Domain\Contracts\PushTransportInterface;
+use Automattic\Syndication\Domain\Contracts\TransportFactoryInterface;
 use Automattic\Syndication\Domain\Contracts\TransportInterface;
 use Automattic\Syndication\Infrastructure\Transport\Feed\RSSFeedTransport;
 use Automattic\Syndication\Infrastructure\Transport\REST\WordPressComTransport;
@@ -24,7 +25,7 @@ use WP_Post;
  * Creates the appropriate transport implementation based on site metadata,
  * handling credential decryption and configuration.
  */
-final class TransportFactory {
+final class TransportFactory implements TransportFactoryInterface {
 
 	/**
 	 * Transport type to class mapping.
