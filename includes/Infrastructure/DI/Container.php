@@ -13,6 +13,8 @@ use Automattic\Syndication\Domain\Contracts\EncryptorInterface;
 use Automattic\Syndication\Domain\Contracts\SiteRepositoryInterface;
 use Automattic\Syndication\Infrastructure\Encryption\OpenSSLEncryptor;
 use Automattic\Syndication\Infrastructure\Repositories\SiteRepository;
+use Automattic\Syndication\Infrastructure\Transport\TransportFactory;
+use Automattic\Syndication\Infrastructure\WordPress\HookManager;
 
 /**
  * Simple dependency injection container for Syndication services.
@@ -140,6 +142,24 @@ final class Container {
 				$encryptor = $container->get( EncryptorInterface::class );
 				\assert( $encryptor instanceof EncryptorInterface );
 				return new SiteRepository( $encryptor );
+			}
+		);
+
+		// WordPress infrastructure.
+		$this->register(
+			HookManager::class,
+			static function (): HookManager {
+				return new HookManager();
+			}
+		);
+
+		// Transport factory.
+		$this->register(
+			TransportFactory::class,
+			function ( Container $container ): TransportFactory {
+				$encryptor = $container->get( EncryptorInterface::class );
+				\assert( $encryptor instanceof EncryptorInterface );
+				return new TransportFactory( $encryptor );
 			}
 		);
 	}
