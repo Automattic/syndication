@@ -123,33 +123,70 @@ class HookRegistrarTest extends TestCase {
 	}
 
 	/**
-	 * Test on_transition_post_status is callable.
+	 * Test on_transition_post_status skips on autosave.
 	 */
-	public function test_on_transition_post_status_is_callable(): void {
+	public function test_on_transition_post_status_skips_autosave(): void {
+		if ( ! defined( 'DOING_AUTOSAVE' ) ) {
+			define( 'DOING_AUTOSAVE', true );
+		}
+
 		$post     = Mockery::mock( WP_Post::class );
 		$post->ID = 123;
 
-		// Should not throw.
+		// Should exit early and not call any functions.
 		$this->registrar->on_transition_post_status( 'publish', 'draft', $post );
 
 		$this->assertTrue( true );
 	}
 
 	/**
-	 * Test on_trash_post is callable.
+	 * Test on_trash_post skips when delete disabled.
 	 */
-	public function test_on_trash_post_is_callable(): void {
+	public function test_on_trash_post_skips_when_delete_disabled(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		// Should exit early when delete_pushed_posts not enabled.
 		$this->registrar->on_trash_post( 123 );
 
 		$this->assertTrue( true );
 	}
 
 	/**
-	 * Test on_save_post is callable.
+	 * Test on_trash_post skips when no slave posts.
 	 */
-	public function test_on_save_post_is_callable(): void {
+	public function test_on_trash_post_skips_when_no_slave_posts(): void {
+		Functions\when( 'get_option' )->justReturn( array( 'delete_pushed_posts' => true ) );
+		Functions\when( 'get_post_meta' )->justReturn( array() );
+
+		$this->registrar->on_trash_post( 123 );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_save_post handles non-syn_site post type.
+	 */
+	public function test_on_save_post_skips_non_syn_site(): void {
 		$post            = Mockery::mock( WP_Post::class );
 		$post->post_type = 'post';
+
+		// Should not trigger pull refresh for regular posts.
+		$this->registrar->on_save_post( 123, $post, true );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_save_post triggers refresh for syn_site.
+	 */
+	public function test_on_save_post_triggers_refresh_for_syn_site(): void {
+		$post            = Mockery::mock( WP_Post::class );
+		$post->post_type = 'syn_site';
+
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\expect( 'set_transient' )->once();
+		Functions\when( 'wp_next_scheduled' )->justReturn( false );
+		Functions\expect( 'wp_schedule_single_event' )->once();
 
 		$this->registrar->on_save_post( 123, $post, true );
 
@@ -157,27 +194,80 @@ class HookRegistrarTest extends TestCase {
 	}
 
 	/**
-	 * Test on_delete_post is callable.
+	 * Test on_delete_post handles non-syn_site post type.
 	 */
-	public function test_on_delete_post_is_callable(): void {
+	public function test_on_delete_post_skips_non_syn_site(): void {
+		$post            = Mockery::mock( WP_Post::class );
+		$post->post_type = 'post';
+
+		Functions\when( 'get_post' )->justReturn( $post );
+
 		$this->registrar->on_delete_post( 123 );
 
 		$this->assertTrue( true );
 	}
 
 	/**
-	 * Test on_create_term is callable.
+	 * Test on_delete_post triggers refresh for syn_site.
 	 */
-	public function test_on_create_term_is_callable(): void {
+	public function test_on_delete_post_triggers_refresh_for_syn_site(): void {
+		$post            = Mockery::mock( WP_Post::class );
+		$post->post_type = 'syn_site';
+
+		Functions\when( 'get_post' )->justReturn( $post );
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\expect( 'set_transient' )->once();
+		Functions\when( 'wp_next_scheduled' )->justReturn( false );
+		Functions\expect( 'wp_schedule_single_event' )->once();
+
+		$this->registrar->on_delete_post( 123 );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_create_term skips non-syn_sitegroup taxonomy.
+	 */
+	public function test_on_create_term_skips_non_syn_sitegroup(): void {
+		// Should not trigger pull refresh for other taxonomies.
+		$this->registrar->on_create_term( 1, 2, 'category' );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_create_term triggers refresh for syn_sitegroup.
+	 */
+	public function test_on_create_term_triggers_refresh_for_syn_sitegroup(): void {
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\expect( 'set_transient' )->once();
+		Functions\when( 'wp_next_scheduled' )->justReturn( false );
+		Functions\expect( 'wp_schedule_single_event' )->once();
+
 		$this->registrar->on_create_term( 1, 2, 'syn_sitegroup' );
 
 		$this->assertTrue( true );
 	}
 
 	/**
-	 * Test on_delete_term is callable.
+	 * Test on_delete_term skips non-syn_sitegroup taxonomy.
 	 */
-	public function test_on_delete_term_is_callable(): void {
+	public function test_on_delete_term_skips_non_syn_sitegroup(): void {
+		// Should not trigger pull refresh for other taxonomies.
+		$this->registrar->on_delete_term( 1, 2, 'category' );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_delete_term triggers refresh for syn_sitegroup.
+	 */
+	public function test_on_delete_term_triggers_refresh_for_syn_sitegroup(): void {
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\expect( 'set_transient' )->once();
+		Functions\when( 'wp_next_scheduled' )->justReturn( false );
+		Functions\expect( 'wp_schedule_single_event' )->once();
+
 		$this->registrar->on_delete_term( 1, 2, 'syn_sitegroup' );
 
 		$this->assertTrue( true );
