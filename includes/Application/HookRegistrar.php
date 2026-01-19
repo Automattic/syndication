@@ -11,6 +11,7 @@ namespace Automattic\Syndication\Application;
 
 use Automattic\Syndication\Infrastructure\DI\Container;
 use Automattic\Syndication\Infrastructure\WordPress\HookManager;
+use Automattic\Syndication\Infrastructure\WordPress\PostTypeRegistrar;
 
 /**
  * Registers WordPress hooks for the new architecture.
@@ -115,10 +116,21 @@ final class HookRegistrar {
 	/**
 	 * Handle init action.
 	 *
-	 * @todo Implement post type and taxonomy registration.
+	 * Registers the syn_site post type and syn_sitegroup taxonomy.
+	 * Safe to call even when legacy code also registers - will skip if already registered.
 	 */
 	public function on_init(): void {
-		// Will register syn_site post type and syn_sitegroup taxonomy.
+		$registrar = $this->container->get( PostTypeRegistrar::class );
+		\assert( $registrar instanceof PostTypeRegistrar );
+		$registrar->register();
+
+		/**
+		 * Fires after syndication server initialisation.
+		 *
+		 * @since 2.0.0
+		 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
+		do_action( 'syn_after_init_server' );
 	}
 
 	/**

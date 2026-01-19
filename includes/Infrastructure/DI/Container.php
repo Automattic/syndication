@@ -16,6 +16,7 @@ use Automattic\Syndication\Infrastructure\Encryption\OpenSSLEncryptor;
 use Automattic\Syndication\Infrastructure\Repositories\SiteRepository;
 use Automattic\Syndication\Infrastructure\Transport\TransportFactory;
 use Automattic\Syndication\Infrastructure\WordPress\HookManager;
+use Automattic\Syndication\Infrastructure\WordPress\PostTypeRegistrar;
 
 /**
  * Simple dependency injection container for Syndication services.
@@ -151,6 +152,13 @@ final class Container {
 			HookManager::class,
 			static function (): HookManager {
 				return new HookManager();
+			}
+		);
+
+		$this->register(
+			PostTypeRegistrar::class,
+			static function (): PostTypeRegistrar {
+				return new PostTypeRegistrar();
 			}
 		);
 

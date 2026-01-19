@@ -184,12 +184,35 @@ class HookRegistrarTest extends TestCase {
 	}
 
 	/**
-	 * Test on_init is callable.
+	 * Test on_init registers post type and taxonomy.
 	 */
-	public function test_on_init_is_callable(): void {
-		$this->registrar->on_init();
+	public function test_on_init_registers_post_type_and_taxonomy(): void {
+		Functions\when( 'post_type_exists' )->justReturn( false );
+		Functions\when( 'taxonomy_exists' )->justReturn( false );
+		Functions\when( 'apply_filters' )->returnArg( 2 );
+		Functions\when( '__' )->returnArg( 1 );
+		Functions\expect( 'register_post_type' )
+			->once()
+			->with( 'syn_site', Mockery::type( 'array' ) );
+		Functions\expect( 'register_taxonomy' )
+			->once()
+			->with( 'syn_sitegroup', 'syn_site', Mockery::type( 'array' ) );
+		Actions\expectDone( 'syn_after_init_server' )->once();
 
-		$this->assertTrue( true );
+		$this->registrar->on_init();
+	}
+
+	/**
+	 * Test on_init skips registration if already registered.
+	 */
+	public function test_on_init_skips_if_already_registered(): void {
+		Functions\when( 'post_type_exists' )->justReturn( true );
+		Functions\when( 'taxonomy_exists' )->justReturn( true );
+		Functions\expect( 'register_post_type' )->never();
+		Functions\expect( 'register_taxonomy' )->never();
+		Actions\expectDone( 'syn_after_init_server' )->once();
+
+		$this->registrar->on_init();
 	}
 
 	/**
