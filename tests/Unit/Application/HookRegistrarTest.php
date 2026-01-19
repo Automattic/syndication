@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Automattic\Syndication\Tests\Unit\Application;
 
 use Automattic\Syndication\Application\HookRegistrar;
+use Automattic\Syndication\Application\Services\PullService;
 use Automattic\Syndication\Application\Services\PushService;
 use Automattic\Syndication\Domain\Contracts\TransportFactoryInterface;
 use Automattic\Syndication\Infrastructure\DI\Container;
@@ -69,6 +70,16 @@ class HookRegistrarTest extends TestCase {
 			}
 		);
 
+		// Register PullService for tests that need it.
+		$this->container->register(
+			PullService::class,
+			function ( Container $container ): PullService {
+				$factory = $container->get( TransportFactoryInterface::class );
+				\assert( $factory instanceof TransportFactoryInterface );
+				return new PullService( $factory );
+			}
+		);
+
 		$this->registrar = new HookRegistrar( $this->container, $this->hooks );
 	}
 
@@ -83,6 +94,8 @@ class HookRegistrarTest extends TestCase {
 		Filters\expectAdded( 'cron_schedules' )->once();
 		Actions\expectAdded( 'syn_schedule_push_content' )->once();
 		Actions\expectAdded( 'syn_push_content' )->once();
+		Actions\expectAdded( 'syn_pull_content' )->once();
+		Actions\expectAdded( 'syn_refresh_pull_jobs' )->once();
 		Actions\expectAdded( 'save_post' )->once();
 		Actions\expectAdded( 'delete_post' )->once();
 		Actions\expectAdded( 'create_term' )->once();
@@ -440,6 +453,94 @@ class HookRegistrarTest extends TestCase {
 		Functions\when( 'get_post_meta' )->justReturn( array() );
 
 		$this->registrar->on_push_content( $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_pull_content skips when no sites.
+	 */
+	public function test_on_pull_content_skips_when_no_sites(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		// Should exit early when no sites provided and no selected sitegroups.
+		$this->registrar->on_pull_content( array() );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_pull_content processes site IDs.
+	 */
+	public function test_on_pull_content_processes_site_ids(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'update_pulled_posts' => 'on' )
+		);
+		Functions\when( 'get_post' )->justReturn( null );
+		Functions\when( 'wp_defer_term_counting' )->justReturn( null );
+		Functions\when( 'wp_defer_comment_counting' )->justReturn( null );
+		Functions\when( 'wp_suspend_cache_invalidation' )->justReturn( null );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+
+		$this->registrar->on_pull_content( array( 1, 2 ) );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_pull_content handles WP_Post objects.
+	 */
+	public function test_on_pull_content_handles_wp_post_objects(): void {
+		$site1     = Mockery::mock( WP_Post::class );
+		$site1->ID = 1;
+		$site2     = Mockery::mock( WP_Post::class );
+		$site2->ID = 2;
+
+		Functions\when( 'get_option' )->justReturn(
+			array( 'update_pulled_posts' => 'on' )
+		);
+		Functions\when( 'get_post' )->justReturn( null );
+		Functions\when( 'wp_defer_term_counting' )->justReturn( null );
+		Functions\when( 'wp_defer_comment_counting' )->justReturn( null );
+		Functions\when( 'wp_suspend_cache_invalidation' )->justReturn( null );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+
+		$this->registrar->on_pull_content( array( $site1, $site2 ) );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_refresh_pull_jobs schedules jobs.
+	 */
+	public function test_on_refresh_pull_jobs_schedules_jobs(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_clear_scheduled_hook' )->justReturn( 0 );
+		Functions\when( 'update_option' )->justReturn( true );
+
+		// Should run without error when no selected sitegroups.
+		$this->registrar->on_refresh_pull_jobs();
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_refresh_pull_jobs with sitegroups.
+	 */
+	public function test_on_refresh_pull_jobs_with_sitegroups(): void {
+		Functions\when( 'get_option' )->alias(
+			function ( $option ) {
+				if ( 'push_syndicate_settings' === $option ) {
+					return array( 'selected_pull_sitegroups' => array( 'group1' ) );
+				}
+				return array();
+			}
+		);
+		Functions\when( 'get_term_by' )->justReturn( false );
+		Functions\when( 'wp_clear_scheduled_hook' )->justReturn( 0 );
+		Functions\when( 'update_option' )->justReturn( true );
+
+		$this->registrar->on_refresh_pull_jobs();
 
 		$this->assertTrue( true );
 	}

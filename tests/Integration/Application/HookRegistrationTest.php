@@ -128,6 +128,24 @@ class HookRegistrationTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Test syn_pull_content hook is registered.
+	 */
+	public function test_syn_pull_content_hook_is_registered(): void {
+		$this->assertIsInt(
+			has_action( 'syn_pull_content', array( $this->registrar, 'on_pull_content' ) )
+		);
+	}
+
+	/**
+	 * Test syn_refresh_pull_jobs hook is registered.
+	 */
+	public function test_syn_refresh_pull_jobs_hook_is_registered(): void {
+		$this->assertIsInt(
+			has_action( 'syn_refresh_pull_jobs', array( $this->registrar, 'on_refresh_pull_jobs' ) )
+		);
+	}
+
+	/**
 	 * Test cron_schedules filter adds syn_pull_time_interval.
 	 */
 	public function test_cron_schedules_adds_pull_interval(): void {

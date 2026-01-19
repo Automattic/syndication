@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Application;
 
+use Automattic\Syndication\Application\Services\PullService;
 use Automattic\Syndication\Application\Services\PushService;
 use Automattic\Syndication\Domain\Contracts\SiteRepositoryInterface;
 use Automattic\Syndication\Infrastructure\DI\Container;
@@ -107,6 +108,12 @@ final class HookRegistrar {
 		$this->hooks->add_action( 'syn_schedule_push_content', array( $this, 'on_schedule_push_content' ), 10, 2 );
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
 		$this->hooks->add_action( 'syn_push_content', array( $this, 'on_push_content' ), 10, 1 );
+
+		// Pull content execution and job management.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
+		$this->hooks->add_action( 'syn_pull_content', array( $this, 'on_pull_content' ), 10, 1 );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
+		$this->hooks->add_action( 'syn_refresh_pull_jobs', array( $this, 'on_refresh_pull_jobs' ), 10, 0 );
 	}
 
 	/**
@@ -479,6 +486,143 @@ final class HookRegistrar {
 		}
 
 		return array_unique( $ids );
+	}
+
+	/**
+	 * Handle syn_pull_content cron action.
+	 *
+	 * Pulls content from remote sites using PullService.
+	 * Legacy code passes an array of WP_Post site objects or a single site in an array.
+	 *
+	 * @param array<\WP_Post|int> $sites Array of sites to pull from.
+	 */
+	public function on_pull_content( array $sites ): void {
+		if ( empty( $sites ) ) {
+			$sites = $this->get_selected_pull_sites();
+		}
+
+		$site_ids = $this->extract_site_ids( $sites );
+
+		if ( empty( $site_ids ) ) {
+			return;
+		}
+
+		// Configure update behavior from settings.
+		$settings        = get_option( 'push_syndicate_settings' );
+		$update_existing = ! empty( $settings['update_pulled_posts'] ) && 'on' === $settings['update_pulled_posts'];
+
+		$pull_service = $this->container->get( PullService::class );
+		\assert( $pull_service instanceof PullService );
+		$pull_service->set_update_existing( $update_existing );
+
+		// Pull from all sites.
+		$pull_service->pull_from_sites( $site_ids );
+	}
+
+	/**
+	 * Handle syn_refresh_pull_jobs cron action.
+	 *
+	 * Reschedules all pull jobs based on current site configuration.
+	 * Called when sites or sitegroups are modified.
+	 */
+	public function on_refresh_pull_jobs(): void {
+		$sites = $this->get_selected_pull_sites();
+
+		$this->schedule_pull_jobs( $sites );
+	}
+
+	/**
+	 * Get sites selected for pulling.
+	 *
+	 * Returns sites from the selected pull sitegroups, ordered by last pull time.
+	 *
+	 * @return array<\WP_Post> Array of site post objects.
+	 */
+	private function get_selected_pull_sites(): array {
+		$settings = get_option( 'push_syndicate_settings' );
+
+		if ( empty( $settings['selected_pull_sitegroups'] ) ) {
+			return array();
+		}
+
+		$selected_sitegroups = $settings['selected_pull_sitegroups'];
+		$sites               = array();
+
+		foreach ( $selected_sitegroups as $sitegroup ) {
+			$term = get_term_by( 'slug', $sitegroup, 'syn_sitegroup' );
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$query = new \WP_Query(
+				array(
+					'post_type'      => PostTypeRegistrar::POST_TYPE,
+					'posts_per_page' => 100,
+					'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for sitegroup filtering.
+						array(
+							'taxonomy' => PostTypeRegistrar::TAXONOMY,
+							'field'    => 'slug',
+							'terms'    => $sitegroup,
+						),
+					),
+				)
+			);
+
+			$sites = array_merge( $sites, $query->posts );
+		}
+
+		// Sort by last pull time (oldest first).
+		usort(
+			$sites,
+			static function ( \WP_Post $a, \WP_Post $b ): int {
+				$a_time = (int) get_post_meta( $a->ID, 'syn_last_pull_time', true );
+				$b_time = (int) get_post_meta( $b->ID, 'syn_last_pull_time', true );
+				return $a_time <=> $b_time;
+			}
+		);
+
+		return $sites;
+	}
+
+	/**
+	 * Schedule pull jobs for sites.
+	 *
+	 * Clears existing pull cron jobs and schedules new ones (one per site).
+	 *
+	 * @param array<\WP_Post> $sites Array of site post objects.
+	 */
+	private function schedule_pull_jobs( array $sites ): void {
+		// Get old sites to clear their scheduled jobs.
+		$old_sites = get_option( 'syn_old_pull_sites', array() );
+
+		// Clear old scheduled jobs.
+		if ( ! empty( $old_sites ) ) {
+			// Clear jobs scheduled the old way (one job for many sites).
+			wp_clear_scheduled_hook( 'syn_pull_content', array( $old_sites ) );
+
+			// Clear jobs scheduled the new way (one job per site).
+			foreach ( $old_sites as $old_site ) {
+				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_site ) );
+				// Also clear single-site array format.
+				wp_clear_scheduled_hook( 'syn_pull_content', array( array( $old_site ) ) );
+			}
+
+			// Clear any generic scheduled hook.
+			wp_clear_scheduled_hook( 'syn_pull_content' );
+		}
+
+		// Schedule new jobs: one job per site.
+		foreach ( $sites as $site ) {
+			wp_schedule_event(
+				time() - 1,
+				'syn_pull_time_interval',
+				'syn_pull_content',
+				array( array( $site ) )
+			);
+		}
+
+		// Save sites for next refresh.
+		update_option( 'syn_old_pull_sites', $sites );
 	}
 
 	/**
