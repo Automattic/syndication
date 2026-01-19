@@ -101,6 +101,12 @@ final class HookRegistrar {
 	 */
 	private function register_cron_hooks(): void {
 		$this->hooks->add_filter( 'cron_schedules', array( $this, 'on_cron_schedules' ), 10, 1 );
+
+		// Push content scheduling and execution.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
+		$this->hooks->add_action( 'syn_schedule_push_content', array( $this, 'on_schedule_push_content' ), 10, 2 );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name.
+		$this->hooks->add_action( 'syn_push_content', array( $this, 'on_push_content' ), 10, 1 );
 	}
 
 	/**
@@ -392,6 +398,87 @@ final class HookRegistrar {
 		);
 
 		return $schedules;
+	}
+
+	/**
+	 * Handle syn_schedule_push_content action.
+	 *
+	 * Schedules a cron event to push content in the background.
+	 * This ensures pushing to many sites doesn't block the request.
+	 *
+	 * @param int                                                              $post_id Post ID to push.
+	 * @param array{post_ID: int, selected_sites: array, removed_sites: array} $sites   Sites data.
+	 */
+	public function on_schedule_push_content( int $post_id, array $sites ): void {
+		unset( $post_id );
+
+		// Schedule push to run immediately in the background.
+		// Using time() - 1 ensures it runs on the next cron tick.
+		wp_schedule_single_event(
+			time() - 1,
+			'syn_push_content',
+			array( $sites )
+		);
+
+		// Spawn cron immediately if possible (non-blocking).
+		if ( function_exists( 'spawn_cron' ) ) {
+			spawn_cron();
+		}
+	}
+
+	/**
+	 * Handle syn_push_content cron action.
+	 *
+	 * Executes the actual push operation in a background context.
+	 * Uses PushService for the new architecture.
+	 *
+	 * @param array{post_ID: int, selected_sites: array, removed_sites: array} $sites Sites data.
+	 */
+	public function on_push_content( array $sites ): void {
+		$post_id = $sites['post_ID'] ?? 0;
+
+		if ( 0 === $post_id ) {
+			return;
+		}
+
+		$push_service = $this->container->get( PushService::class );
+		\assert( $push_service instanceof PushService );
+
+		// Push to selected sites.
+		$selected_site_ids = $this->extract_site_ids( $sites['selected_sites'] ?? array() );
+		if ( ! empty( $selected_site_ids ) ) {
+			$push_service->push_to_sites( $post_id, $selected_site_ids );
+		}
+
+		// Delete from removed sites.
+		$removed_site_ids = $this->extract_site_ids( $sites['removed_sites'] ?? array() );
+		foreach ( $removed_site_ids as $site_id ) {
+			$push_service->delete_from_site( $post_id, $site_id );
+		}
+	}
+
+	/**
+	 * Extract site IDs from sites array.
+	 *
+	 * The sites array can contain either WP_Post objects (legacy) or site IDs (new).
+	 *
+	 * @param array<int|\WP_Post> $sites Array of sites.
+	 * @return array<int> Array of site IDs.
+	 */
+	private function extract_site_ids( array $sites ): array {
+		$ids = array();
+
+		foreach ( $sites as $site ) {
+			if ( $site instanceof \WP_Post ) {
+				$ids[] = $site->ID;
+			} elseif ( is_object( $site ) && isset( $site->ID ) ) {
+				$ids[] = (int) $site->ID;
+			} elseif ( is_numeric( $site ) ) {
+				$ids[] = (int) $site;
+			}
+		}
+
+		return array_unique( $ids );
 	}
 
 	/**

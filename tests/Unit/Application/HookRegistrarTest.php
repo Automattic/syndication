@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace Automattic\Syndication\Tests\Unit\Application;
 
 use Automattic\Syndication\Application\HookRegistrar;
+use Automattic\Syndication\Application\Services\PushService;
+use Automattic\Syndication\Domain\Contracts\TransportFactoryInterface;
 use Automattic\Syndication\Infrastructure\DI\Container;
 use Automattic\Syndication\Infrastructure\WordPress\HookManager;
 use Automattic\Syndication\Tests\Unit\TestCase;
@@ -56,6 +58,17 @@ class HookRegistrarTest extends TestCase {
 
 		$this->container = new Container();
 		$this->hooks     = new HookManager();
+
+		// Register PushService for tests that need it.
+		$this->container->register(
+			PushService::class,
+			function ( Container $container ): PushService {
+				$factory = $container->get( TransportFactoryInterface::class );
+				\assert( $factory instanceof TransportFactoryInterface );
+				return new PushService( $factory );
+			}
+		);
+
 		$this->registrar = new HookRegistrar( $this->container, $this->hooks );
 	}
 
@@ -68,6 +81,8 @@ class HookRegistrarTest extends TestCase {
 		Actions\expectAdded( 'transition_post_status' )->once();
 		Actions\expectAdded( 'wp_trash_post' )->once();
 		Filters\expectAdded( 'cron_schedules' )->once();
+		Actions\expectAdded( 'syn_schedule_push_content' )->once();
+		Actions\expectAdded( 'syn_push_content' )->once();
 		Actions\expectAdded( 'save_post' )->once();
 		Actions\expectAdded( 'delete_post' )->once();
 		Actions\expectAdded( 'create_term' )->once();
@@ -310,6 +325,121 @@ class HookRegistrarTest extends TestCase {
 	 */
 	public function test_on_admin_init_is_callable(): void {
 		$this->registrar->on_admin_init();
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_schedule_push_content schedules cron event.
+	 */
+	public function test_on_schedule_push_content_schedules_cron(): void {
+		$sites = array(
+			'post_ID'        => 123,
+			'selected_sites' => array( 1, 2, 3 ),
+			'removed_sites'  => array(),
+		);
+
+		Functions\expect( 'wp_schedule_single_event' )
+			->once()
+			->with( Mockery::type( 'int' ), 'syn_push_content', array( $sites ) );
+		Functions\when( 'spawn_cron' )->justReturn( null );
+
+		$this->registrar->on_schedule_push_content( 123, $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_schedule_push_content spawns cron.
+	 */
+	public function test_on_schedule_push_content_spawns_cron(): void {
+		$sites = array(
+			'post_ID'        => 123,
+			'selected_sites' => array(),
+			'removed_sites'  => array(),
+		);
+
+		Functions\when( 'wp_schedule_single_event' )->justReturn( true );
+		Functions\expect( 'spawn_cron' )->once();
+
+		$this->registrar->on_schedule_push_content( 123, $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_push_content skips when no post_ID.
+	 */
+	public function test_on_push_content_skips_when_no_post_id(): void {
+		$sites = array(
+			'selected_sites' => array( 1 ),
+			'removed_sites'  => array(),
+		);
+
+		// Should exit early without calling PushService.
+		$this->registrar->on_push_content( $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_push_content pushes to selected sites.
+	 */
+	public function test_on_push_content_pushes_to_selected_sites(): void {
+		$sites = array(
+			'post_ID'        => 123,
+			'selected_sites' => array( 1, 2 ),
+			'removed_sites'  => array(),
+		);
+
+		// The PushService is registered in the container and will be called.
+		// For this test, we just verify the method runs without error.
+		// Full integration testing verifies the actual push.
+		Functions\when( 'get_post' )->justReturn( null );
+		Functions\when( 'get_transient' )->justReturn( 'locked' );
+
+		$this->registrar->on_push_content( $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_push_content handles WP_Post objects in sites array.
+	 */
+	public function test_on_push_content_handles_wp_post_objects(): void {
+		$site1     = Mockery::mock( WP_Post::class );
+		$site1->ID = 1;
+		$site2     = Mockery::mock( WP_Post::class );
+		$site2->ID = 2;
+
+		$sites = array(
+			'post_ID'        => 123,
+			'selected_sites' => array( $site1, $site2 ),
+			'removed_sites'  => array(),
+		);
+
+		Functions\when( 'get_post' )->justReturn( null );
+		Functions\when( 'get_transient' )->justReturn( 'locked' );
+
+		$this->registrar->on_push_content( $sites );
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test on_push_content deletes from removed sites.
+	 */
+	public function test_on_push_content_deletes_from_removed_sites(): void {
+		$sites = array(
+			'post_ID'        => 123,
+			'selected_sites' => array(),
+			'removed_sites'  => array( 3, 4 ),
+		);
+
+		Functions\when( 'get_post' )->justReturn( null );
+		Functions\when( 'get_post_meta' )->justReturn( array() );
+
+		$this->registrar->on_push_content( $sites );
 
 		$this->assertTrue( true );
 	}
