@@ -26,6 +26,23 @@ if ( ! defined( 'PUSH_SYNDICATE_KEY' ) ) {
 	define( 'PUSH_SYNDICATE_KEY', 'PUSH_SYNDICATE_KEY' );
 }
 
+// Initialise the new DDD architecture.
+use Automattic\Syndication\Application\Bootstrapper;
+
+$GLOBALS['syndication_bootstrapper'] = Bootstrapper::init();
+
+/**
+ * Get the Syndication DI container.
+ *
+ * Helper function for accessing the dependency injection container
+ * from legacy code during the migration to the new architecture.
+ *
+ * @return \Automattic\Syndication\Infrastructure\DI\Container The container.
+ */
+function syndication_container(): \Automattic\Syndication\Infrastructure\DI\Container {
+	return Bootstrapper::get_instance()->container();
+}
+
 /**
  * Load syndication logger
  */

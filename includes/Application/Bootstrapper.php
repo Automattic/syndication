@@ -46,6 +46,13 @@ final class Bootstrapper {
 	private readonly HookManager $hooks;
 
 	/**
+	 * Hook registrar.
+	 *
+	 * @var HookRegistrar
+	 */
+	private readonly HookRegistrar $hook_registrar;
+
+	/**
 	 * Whether the bootstrapper has been initialised.
 	 *
 	 * @var bool
@@ -58,8 +65,9 @@ final class Bootstrapper {
 	 * @param Container $container DI container.
 	 */
 	private function __construct( Container $container ) {
-		$this->container = $container;
-		$this->hooks     = $container->get( HookManager::class );
+		$this->container      = $container;
+		$this->hooks          = $container->get( HookManager::class );
+		$this->hook_registrar = new HookRegistrar( $container, $this->hooks );
 	}
 
 	/**
@@ -144,8 +152,8 @@ final class Bootstrapper {
 	/**
 	 * Register WordPress hooks.
 	 *
-	 * Note: These hooks will eventually replace the hooks registered
-	 * in the legacy WP_Push_Syndication_Server class.
+	 * Note: These hooks run in parallel with the legacy hooks during
+	 * migration. Once verified, the legacy code can be removed.
 	 */
 	private function register_hooks(): void {
 		// Register hook to provide DI container to legacy code.
@@ -156,9 +164,17 @@ final class Bootstrapper {
 			}
 		);
 
-		// Future: Register cron hooks for scheduled syndication.
-		// Future: Register admin menu hooks.
-		// Future: Register REST API endpoints.
+		// Register all hooks via the HookRegistrar.
+		$this->hook_registrar->register();
+	}
+
+	/**
+	 * Get the hook registrar.
+	 *
+	 * @return HookRegistrar The hook registrar.
+	 */
+	public function hook_registrar(): HookRegistrar {
+		return $this->hook_registrar;
 	}
 
 	/**
