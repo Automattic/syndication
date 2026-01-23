@@ -50,8 +50,7 @@ if ( $is_unit ) {
 		define( 'MINUTE_IN_SECONDS', 60 );
 	}
 
-	// Load classes needed for unit tests (those without WordPress dependencies).
-	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
+	// Load test case base class.
 	require_once __DIR__ . '/Unit/TestCase.php';
 
 	return;
@@ -81,5 +80,4 @@ if ( $is_integration ) {
 	 * Load test dependencies.
 	 */
 	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
-	require_once __DIR__ . '/Integration/Syndication_Mock_Client.php';
 }

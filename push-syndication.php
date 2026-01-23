@@ -67,17 +67,8 @@ require_once __DIR__ . '/includes/class-wp-push-syndication-server.php';
 
 $GLOBALS['push_syndication_server'] = new WP_Push_Syndication_Server();
 
-// Create the event counter.
-require __DIR__ . '/includes/class-syndication-event-counter.php';
-new Syndication_Event_Counter();
-
-// Create the site failure monitor.
-require __DIR__ . '/includes/class-syndication-site-failure-monitor.php';
-new Syndication_Site_Failure_Monitor();
-
-// Create the site auto retry functionality.
-require __DIR__ . '/includes/class-syndication-site-auto-retry.php';
-new Failed_Syndication_Auto_Retry();
+// Initialize site health monitoring (replaces legacy event counter, failure monitor, and auto-retry).
+( new \Automattic\Syndication\Infrastructure\Health\SiteHealthMonitor() )->register();
 
 // Initialize syndication notifications.
 ( new \Automattic\Syndication\Infrastructure\Notification\SyndicationNotifier() )->register_hooks();
