@@ -60,8 +60,7 @@ class WP_Push_Syndication_Server {
 		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // Use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load.
 		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 
-		// adding custom time interval.
-		add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
+		// Note: cron_schedules filter is now handled by PluginBootstrapper.
 
 		// firing a cron job.
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
@@ -1821,24 +1820,7 @@ class WP_Push_Syndication_Server {
 		return current_user_can( $syndicate_cap );
 	}
 
-	public function cron_add_pull_time_interval( $schedules ) {
-
-		// Only add custom interval if syndication settings are defined.
-		if (
-			empty( $this->push_syndicate_settings )
-			|| ! array_key_exists( 'pull_time_interval', $this->push_syndicate_settings )
-		) {
-			return $schedules;
-		}
-
-		// Adds the custom time interval to the existing schedules.
-		$schedules['syn_pull_time_interval'] = array(
-			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
-			'display'  => esc_html__( 'Pull Time Interval', 'push-syndication' ),
-		);
-
-		return $schedules;
-	}
+	// Note: cron_add_pull_time_interval is now handled by PluginBootstrapper::on_cron_schedules().
 
 	public function pre_schedule_pull_content( $selected_sitegroups ) {
 
