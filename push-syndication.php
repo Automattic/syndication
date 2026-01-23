@@ -58,11 +58,9 @@ function syndication_container(): \Automattic\Syndication\Infrastructure\DI\Cont
 }
 
 /**
- * Load syndication logger
+ * Load legacy classes still needed.
  */
 require_once __DIR__ . '/includes/class-syndication-logger.php';
-Syndication_Logger::init();
-
 require_once __DIR__ . '/includes/class-wp-push-syndication-server.php';
 
 $GLOBALS['push_syndication_server'] = new WP_Push_Syndication_Server();
@@ -77,6 +75,10 @@ $GLOBALS['push_syndication_server'] = new WP_Push_Syndication_Server();
 if ( is_admin() ) {
 	( new \Automattic\Syndication\Infrastructure\Logging\PullLogViewer() )->register();
 	( new \Automattic\Syndication\Infrastructure\Logging\PushLogViewer() )->register();
+
+	// Legacy log viewer (only shows if legacy logs exist).
+	require_once __DIR__ . '/includes/class-syndication-logger-viewer.php';
+	new Syndication_Logger_Viewer();
 }
 
 // Load encryption helper functions (uses Container internally).

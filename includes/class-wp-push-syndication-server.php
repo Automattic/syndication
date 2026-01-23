@@ -190,12 +190,11 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function register_syndicate_actions() {
-		add_action( 'syn_schedule_push_content', array( $this, 'schedule_push_content' ), 10, 2 );
+		// Note: syn_schedule_push_content, syn_push_content, and syn_pull_content
+		// are now handled by PluginBootstrapper using the new service layer.
+		// Only delete content actions remain here.
 		add_action( 'syn_schedule_delete_content', array( $this, 'schedule_delete_content' ) );
-
-		add_action( 'syn_push_content', array( $this, 'push_content' ) );
 		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
-		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
 	public function add_new_columns( $columns ) {
