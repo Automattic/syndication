@@ -384,16 +384,48 @@ class Syndication_Logger_Viewer {
 	 * Registers admin menu and screen option hooks.
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_menu_items' ) );
+		// Use priority 20 to appear after Pull Logs and Push Logs (priority 10).
+		add_action( 'admin_menu', array( $this, 'add_menu_items' ), 20 );
 		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
 	}
 
 	/**
-	 * Register the Logs submenu page under Syndication Sites.
+	 * Register the Legacy Logs submenu page under Syndication Sites.
+	 *
+	 * Only shown when legacy logs exist.
 	 */
 	public function add_menu_items() {
-		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', 'activate_plugins', 'syndication_dashboard', array( $this, 'render_list_page' ) );
+		// Only show legacy logs page if there are legacy logs.
+		if ( ! $this->has_legacy_logs() ) {
+			return;
+		}
+
+		$hook = add_submenu_page(
+			'edit.php?post_type=syn_site',
+			__( 'Legacy Logs', 'push-syndication' ),
+			__( 'Legacy Logs', 'push-syndication' ),
+			'activate_plugins',
+			'syndication_dashboard',
+			array( $this, 'render_list_page' )
+		);
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
+	}
+
+	/**
+	 * Check if there are any legacy logs in the database.
+	 *
+	 * @return bool True if legacy logs exist.
+	 */
+	private function has_legacy_logs() {
+		global $wpdb;
+
+		// Check if any posts have the legacy syn_log meta key.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time check for legacy data.
+		$count = $wpdb->get_var(
+			"SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key = 'syn_log' LIMIT 1"
+		);
+
+		return (int) $count > 0;
 	}
 
 	/**
@@ -440,16 +472,29 @@ class Syndication_Logger_Viewer {
 	 */
 	public function render_list_page() {
 		?>
-		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>
-			<?php
-			$this->syndication_logger_table->prepare_items();
-			?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Legacy Syndication Logs', 'push-syndication' ); ?></h1>
+
+			<div class="notice notice-info">
+				<p>
+					<?php
+					printf(
+						/* translators: 1: Pull Logs link, 2: Push Logs link */
+						esc_html__( 'These are legacy logs from an older version of the plugin. New logs are recorded in %1$s and %2$s.', 'push-syndication' ),
+						'<a href="' . esc_url( admin_url( 'edit.php?post_type=syn_site&page=syndication-pull-logs' ) ) . '">' . esc_html__( 'Pull Logs', 'push-syndication' ) . '</a>',
+						'<a href="' . esc_url( admin_url( 'edit.php?post_type=syn_site&page=syndication-push-logs' ) ) . '">' . esc_html__( 'Push Logs', 'push-syndication' ) . '</a>'
+					);
+					?>
+				</p>
+			</div>
+
+			<?php $this->syndication_logger_table->prepare_items(); ?>
+
 			<form method="get" action="">
 				<input type="hidden" name="post_type" value="syn_site">
 				<input type="hidden" name="page" value="syndication_dashboard">
 				<?php
 				$this->syndication_logger_table->search_box( 'search', 'search_id' );
-
 				$this->syndication_logger_table->display();
 				?>
 			</form>

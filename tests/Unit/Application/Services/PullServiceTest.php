@@ -46,6 +46,10 @@ class PullServiceTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
+		// Stub WordPress functions used by SyndicationLog.
+		Functions\when( 'current_time' )->justReturn( '2026-01-22 12:00:00' );
+		Functions\when( 'update_post_meta' )->justReturn( true );
+
 		$this->factory = Mockery::mock( TransportFactoryInterface::class );
 		$this->service = new PullService( $this->factory );
 	}
@@ -82,7 +86,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_returns_skipped_when_site_disabled(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		Functions\when( 'get_post' )->justReturn( $post );
 		Functions\when( 'get_post_meta' )->alias(
@@ -105,7 +110,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_returns_failure_when_no_transport(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		Functions\when( 'get_post' )->justReturn( $post );
 		Functions\when( 'get_post_meta' )->alias(
@@ -133,7 +139,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_returns_success_with_no_posts(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		$transport = Mockery::mock( PullTransportInterface::class );
 
@@ -178,7 +185,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_creates_new_posts(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		$transport = Mockery::mock( PullTransportInterface::class );
 
@@ -243,7 +251,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_handles_posts_without_guid(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		$transport = Mockery::mock( PullTransportInterface::class );
 
@@ -303,7 +312,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_sites_processes_multiple_sites(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		$transport = Mockery::mock( PullTransportInterface::class );
 
@@ -347,7 +357,8 @@ class PullServiceTest extends TestCase {
 	 */
 	public function test_pull_from_site_handles_insert_error(): void {
 		$post            = Mockery::mock( WP_Post::class );
-		$post->post_type = 'syn_site';
+		$post->post_type  = 'syn_site';
+		$post->post_title = 'Test Site';
 
 		$transport = Mockery::mock( PullTransportInterface::class );
 

@@ -9,9 +9,11 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Application\Services;
 
+use Automattic\Syndication\Application\Contracts\PushServiceInterface;
 use Automattic\Syndication\Application\DTO\PushResult;
 use Automattic\Syndication\Domain\Contracts\PushTransportInterface;
 use Automattic\Syndication\Domain\Contracts\TransportFactoryInterface;
+use Automattic\Syndication\Infrastructure\Logging\SyndicationLog;
 use WP_Error;
 use WP_Post;
 
@@ -21,7 +23,7 @@ use WP_Post;
  * Orchestrates the push syndication workflow including transport creation,
  * state management, and result tracking.
  */
-final class PushService {
+final class PushService implements PushServiceInterface {
 
 	/**
 	 * Lock transient name.
@@ -67,19 +69,62 @@ final class PushService {
 			return array();
 		}
 
+		$log = SyndicationLog::instance();
+		$log->start_push( $post_id, $post->post_title );
+
 		try {
 			$results      = array();
 			$slave_states = $this->get_slave_post_states( $post_id );
 
 			foreach ( $site_ids as $site_id ) {
-				$results[ $site_id ] = $this->push_to_site( $post_id, $site_id, $slave_states );
+				$result              = $this->push_to_site( $post_id, $site_id, $slave_states );
+				$results[ $site_id ] = $result;
+
+				// Log the result.
+				$this->log_push_result( $log, $result, $site_id );
 			}
 
 			$this->save_slave_post_states( $post_id, $slave_states );
 
+			$log->end_push();
+
 			return $results;
 		} finally {
 			$this->release_lock();
+		}
+	}
+
+	/**
+	 * Log a push result.
+	 *
+	 * @param SyndicationLog $log     The log instance.
+	 * @param PushResult     $result  The push result.
+	 * @param int            $site_id Site post ID.
+	 */
+	private function log_push_result( SyndicationLog $log, PushResult $result, int $site_id ): void {
+		$site      = get_post( $site_id );
+		$site_name = $site instanceof WP_Post ? $site->post_title : __( 'Unknown site', 'push-syndication' );
+
+		// Map result status to log action.
+		$action_map = array(
+			'created' => SyndicationLog::ACTION_CREATED,
+			'updated' => SyndicationLog::ACTION_UPDATED,
+			'deleted' => SyndicationLog::ACTION_DELETED,
+		);
+
+		if ( $result->is_success() ) {
+			$action = $action_map[ $result->action ] ?? SyndicationLog::ACTION_UPDATED;
+			$log->log_pushed_site( $site_id, $site_name, $action, $result->remote_id );
+		} elseif ( $result->is_skipped() ) {
+			$log->log_pushed_site( $site_id, $site_name, SyndicationLog::ACTION_SKIPPED, 0 );
+		} else {
+			$log->log_pushed_site(
+				$site_id,
+				$site_name,
+				SyndicationLog::ACTION_FAILED,
+				0,
+				$result->message
+			);
 		}
 	}
 
