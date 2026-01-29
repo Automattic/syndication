@@ -57,6 +57,19 @@ if ( $is_unit ) {
 }
 
 if ( $is_integration ) {
+	/*
+	 * Load WP_CLI stub BEFORE WordPress bootstraps.
+	 *
+	 * This ensures CLI commands don't exit on WP_CLI::error() calls,
+	 * and output can be captured for assertions in tests.
+	 */
+	require_once __DIR__ . '/Stubs/WpCliStub.php';
+
+	// Define WP_CLI constant so plugin registers CLI commands.
+	if ( ! defined( 'WP_CLI' ) ) {
+		define( 'WP_CLI', true );
+	}
+
 	$_tests_dir = WPIntegration\get_path_to_wp_test_dir();
 
 	// Give access to tests_add_filter() function.
@@ -80,4 +93,6 @@ if ( $is_integration ) {
 	 * Load test dependencies.
 	 */
 	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
+	require_once __DIR__ . '/Integration/CLI/WpCliOutputCapture.php';
+	require_once __DIR__ . '/Integration/CLI/CliTestCase.php';
 }
