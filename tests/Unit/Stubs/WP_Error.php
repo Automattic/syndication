@@ -40,7 +40,7 @@ class WP_Error {
 	 * @param string $message Error message.
 	 * @param mixed  $data    Error data.
 	 */
-	public function __construct( string $code = '', string $message = '', mixed $data = '' ) {
+	public function __construct( string $code = '', string $message = '', $data = '' ) {
 		if ( ! empty( $code ) ) {
 			$this->errors[ $code ][] = $message;
 			if ( ! empty( $data ) ) {
