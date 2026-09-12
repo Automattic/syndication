@@ -66,7 +66,8 @@ There is no PSR-4 autoloading. Everything is `require_once`d from
 
 Runtime requires only `composer/installers`. Dev: `automattic/vipwpcs`,
 `yoast/wp-test-utils`, `phpunit/phpunit` ^9, `php-parallel-lint/php-parallel-lint`,
-`phpcompatibility/phpcompatibility-wp`.
+`phpcompatibility/phpcompatibility-wp`, and `sirbrillig/phpcs-changed` (pinned to
+`^2.13`; see the comment in `cs-lint.yml` before bumping it).
 
 ## Commands
 
@@ -116,9 +117,11 @@ Key points:
 
 ## CI
 
-- **cs-lint.yml** — `composer validate`, PHP parse-error lint and an XML lint of
-  `phpunit.xml.dist`. The two PHPCS steps are **commented out**, so code style is
-  *not* enforced by CI: `composer cs` is currently a local-only gate.
+- **cs-lint.yml** — `composer validate`, PHP parse-error lint, an XML lint of
+  `phpunit.xml.dist`, and a code style gate. The gate runs `phpcs-changed` on
+  pull requests only, reporting just the violations a change itself introduces
+  rather than the whole backlog. Errors fail the build and appear as inline
+  annotations on the diff; warnings annotate without failing.
 - **unit.yml** — unit tests on PHP 7.4, 8.1, 8.2 and 8.3.
 - **integration.yml** — wp-env integration tests, single site and multisite, on
   WP 6.4 with PHP 7.4 and WP `master` with PHP latest. Installs `@wordpress/env`
@@ -143,15 +146,19 @@ Key points:
 ## Common Pitfalls
 
 - Do not edit WordPress core files or bundled dependencies in `vendor/`.
-- Run `composer cs` before committing. Nothing in CI checks code style, so a
-  violation will merge unnoticed.
+- Run `composer cs` before committing, but expect a wall of pre-existing
+  violations: the backlog is 511 errors and 106 warnings across 17 files, and
+  `phpcbf` fixes none of them. CI only holds you to the lines you actually
+  changed, so `composer cs` output is mostly other people's debt — read it for
+  your own files, not as a pass/fail signal.
 - Adding a class file is not enough — add the `require_once` to
   `push-syndication.php`, as there is no autoloader.
-- **`composer test:unit` exits non-zero if Xdebug or PCOV is installed.** The
-  tests themselves pass, then coverage generation dies with `Undefined constant
-  "ABSPATH"`, because `phpunit.xml.dist` sets `processUncoveredFiles="true"` over
-  `push-syndication.php`. CI does not hit this, as it sets `coverage: none`.
-  Locally, use `php -d xdebug.mode=off ./vendor/bin/phpunit --testsuite Unit`.
+- **Do not re-add `processUncoveredFiles` to `phpunit.xml.dist`.** It makes
+  PHPUnit statically include every file under `includes/`, three of which
+  `require_once ABSPATH . ...` at the top level. The unit suite runs without
+  WordPress, so that crashes coverage generation and makes `composer test:unit`
+  exit non-zero for anyone with Xdebug or PCOV installed. CI does not catch it,
+  as it runs with `coverage: none`.
 - **mcrypt is absent from modern PHP**, so the `Syndication_Encryptor_MCrypt`
   tests skip locally and in CI. Skipped encryption tests are expected, not a
   regression.
