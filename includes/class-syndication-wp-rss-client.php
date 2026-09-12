@@ -31,25 +31,20 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public function __construct( $site_ID ) {
 
-		switch ( SIMPLEPIE_VERSION ) {
-			case '1.2.1':
-				parent::SimplePie();
-				break;
-			case '1.3':
-				parent::__construct();
-				break;
-			default:
-				parent::__construct();
-				break;
-		}
-
 		parent::__construct();
 
 		$this->site_ID = $site_ID;
 
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
-		
-		$this->set_cache_class( 'WP_Feed_Cache' );
+
+		// Mirrors core's fetch_feed(). SimplePie 1.3 deprecated set_cache_class()
+		// in favour of a registered cache location, and WP_Feed_Cache is itself
+		// deprecated in favour of WP_Feed_Cache_Transient. The old call emitted a
+		// deprecation notice on every screen that lists a site, because PHP prints
+		// it wherever the client happens to be constructed.
+		require_once ABSPATH . WPINC . '/class-wp-feed-cache-transient.php';
+		SimplePie_Cache::register( 'wp_transient', 'WP_Feed_Cache_Transient' );
+		$this->set_cache_location( 'wp_transient' );
 
 		$this->default_post_type      = get_post_meta( $site_ID, 'syn_default_post_type', true );
 		$this->default_post_status    = get_post_meta( $site_ID, 'syn_default_post_status', true );
