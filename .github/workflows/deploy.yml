@@ -1,0 +1,118 @@
+name: Deploy to WordPress.org
+
+# Triggered by the tag, not by `release: [released]`, because release.yml
+# publishes the release with the default GITHUB_TOKEN, and "events triggered by
+# the GITHUB_TOKEN will not create a new workflow run" — the exceptions being
+# workflow_dispatch, repository_dispatch, and pull_request opened/synchronize/
+# reopened. A release-typed trigger would therefore never fire, and silently:
+# no run appears at all, so it looks like the deploy was never configured. See
+# https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
+#
+# workflow_dispatch is the escape hatch: it can dry-run against SVN before a
+# real deploy, and can push a tag that was cut before this workflow existed.
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g. 2.2.0)'
+        required: true
+      dry_run:
+        description: 'Build and diff against SVN without committing'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: false
+  group: ${{ github.workflow }}
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org SVN
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Decide whether this tag ships to WordPress.org
+        id: gate
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -eu
+
+          VERSION="${TAG#v}"
+
+          # This value is interpolated into checkout's `ref:`, and on
+          # workflow_dispatch it is free text. Constrain it to a version.
+          case "$VERSION" in
+            *[!0-9A-Za-z.-]* | '' )
+              echo "::error::'${VERSION}' is not a valid version tag"
+              exit 1
+              ;;
+          esac
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          # A hyphen marks a pre-release (3.0.0-rc.1). WordPress.org has no
+          # concept of one: an SVN tag there is immediately installable, and
+          # would become the stable version the moment Stable tag caught up.
+          case "$VERSION" in
+            *-*)
+              echo "ship=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::${VERSION} is a pre-release; skipping WordPress.org."
+              ;;
+            *)
+              echo "ship=true" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - name: Check out the tag
+        if: steps.gate.outputs.ship == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ steps.gate.outputs.version }}
+          persist-credentials: false
+
+      - name: Check README.md agrees with the tag
+        if: steps.gate.outputs.ship == 'true'
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: |
+          set -eu
+
+          # WordPress.org serves whatever "Stable tag" points at, so a stale
+          # one silently publishes the previous release under the new version.
+          STABLE="$(sed -n 's/^Stable tag:[[:space:]]*//p' README.md | head -n1 | tr -d '[:space:]')"
+          if [ "$STABLE" != "$VERSION" ]; then
+            echo "::error::README.md Stable tag is '${STABLE}' but the tag is '${VERSION}'"
+            exit 1
+          fi
+
+          # There is deliberately no readme.txt: WordPress.org accepts README.md
+          # with the same header block. Two readmes would let them disagree,
+          # and readme.txt wins.
+          if [ -f readme.txt ]; then
+            echo "::error::readme.txt exists; this plugin uses README.md only"
+            exit 1
+          fi
+
+      - name: Deploy
+        if: steps.gate.outputs.ship == 'true'
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        with:
+          dry-run: ${{ inputs.dry_run || false }}
+        env:
+          # Not the repository name: the repo is "syndication" but the
+          # WordPress.org slug is "push-syndication".
+          SLUG: push-syndication
+          VERSION: ${{ steps.gate.outputs.version }}
+          # Exclusions come from .distignore; banners, icons and screenshots
+          # come from .wordpress-org/. Both rsyncs run with --delete, so
+          # anything missing locally is removed from SVN.
+          ASSETS_DIR: .wordpress-org
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
