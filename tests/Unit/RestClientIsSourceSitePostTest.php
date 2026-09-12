@@ -115,7 +115,6 @@ class RestClientIsSourceSitePostTest extends TestCase {
 					array(
 						'timeout'    => $this->timeout,
 						'user-agent' => $this->useragent,
-						'sslverify'  => false,
 						'headers'    => array(
 							'authorization' => 'Bearer ' . $this->access_token,
 						),
