@@ -17,6 +17,11 @@ class WP_Push_Syndication_Server {
 
 	const CUSTOM_USER_AGENT = 'WordPress/Syndication Plugin';
 
+	/**
+	 * Lowest pull interval, in seconds, that may be scheduled.
+	 */
+	const MIN_PULL_TIME_INTERVAL = 300;
+
 	public $push_syndicate_settings;
 	public $push_syndicate_default_settings;
 	public $push_syndicate_transports;
@@ -266,23 +271,67 @@ class WP_Push_Syndication_Server {
 		}
 	}
 
+	/**
+	 * Validates the plugin settings before they are stored.
+	 *
+	 * Selections are intersected with the values actually offered by the
+	 * settings screen, so only registered post types and existing sitegroup
+	 * slugs can ever reach the option.
+	 *
+	 * @param array $raw_settings Unvalidated settings, as submitted.
+	 *
+	 * @return array Validated settings.
+	 */
 	public function push_syndicate_settings_validate( $raw_settings ) {
 
+		$raw_settings = (array) $raw_settings;
+
 		$settings                             = array();
-		$settings['client_id']                = sanitize_text_field( $raw_settings['client_id'] );
-		$settings['selected_post_types']      = ! empty( $raw_settings['selected_post_types'] ) ? $raw_settings['selected_post_types'] : array();
-		$settings['delete_pushed_posts']      = ! empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off';
-		$settings['selected_pull_sitegroups'] = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array();
-		$settings['pull_time_interval']       = ! empty( $raw_settings['pull_time_interval'] ) ? max( $raw_settings['pull_time_interval'], 300 ) : '3600';
-		$settings['update_pulled_posts']      = ! empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off';
+		$settings['client_id']                = sanitize_text_field( $raw_settings['client_id'] ?? '' );
+		$settings['selected_post_types']      = $this->validate_selection( $raw_settings['selected_post_types'] ?? array(), get_post_types() );
+		$settings['delete_pushed_posts']      = isset( $raw_settings['delete_pushed_posts'] ) && 'on' === $raw_settings['delete_pushed_posts'] ? 'on' : 'off';
+		$settings['selected_pull_sitegroups'] = $this->validate_selection( $raw_settings['selected_pull_sitegroups'] ?? array(), $this->get_sitegroup_slugs() );
+		$settings['pull_time_interval']       = ! empty( $raw_settings['pull_time_interval'] ) ? max( self::MIN_PULL_TIME_INTERVAL, absint( $raw_settings['pull_time_interval'] ) ) : 3600;
+		$settings['update_pulled_posts']      = isset( $raw_settings['update_pulled_posts'] ) && 'on' === $raw_settings['update_pulled_posts'] ? 'on' : 'off';
 
 		// The client secret field is write-only: a blank submission keeps the stored secret.
-		$submitted_secret          = isset( $raw_settings['client_secret'] ) ? sanitize_text_field( $raw_settings['client_secret'] ) : '';
-		$settings['client_secret'] = '' !== $submitted_secret ? $submitted_secret : $this->push_syndicate_settings['client_secret'];
+		$submitted_secret          = sanitize_text_field( $raw_settings['client_secret'] ?? '' );
+		$settings['client_secret'] = '' !== $submitted_secret ? $submitted_secret : ( $this->push_syndicate_settings['client_secret'] ?? '' );
 
 		$this->pre_schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
 		return $settings;
+	}
+
+	/**
+	 * Reduces a submitted selection to the values that were actually offered.
+	 *
+	 * @param mixed $submitted Submitted value, expected to be an array of strings.
+	 * @param array $allowed   Permitted values.
+	 *
+	 * @return array Validated selection, re-indexed.
+	 */
+	private function validate_selection( $submitted, $allowed ) {
+		$submitted = array_filter( (array) $submitted, 'is_string' );
+
+		return array_values( array_intersect( $submitted, $allowed ) );
+	}
+
+	/**
+	 * Gets the slugs of every existing sitegroup.
+	 *
+	 * @return array Sitegroup slugs.
+	 */
+	private function get_sitegroup_slugs() {
+		$slugs = get_terms(
+			array(
+				'taxonomy'   => 'syn_sitegroup',
+				'fields'     => 'slugs',
+				'hide_empty' => false,
+			)
+		);
+
+		return is_array( $slugs ) ? $slugs : array();
 	}
 
 	public function register_syndicate_settings() {
@@ -1365,7 +1414,7 @@ class WP_Push_Syndication_Server {
 
 		// Adds the custom time interval to the existing schedules.
 		$schedules['syn_pull_time_interval'] = array(
-			'interval' => intval( $this->push_syndicate_settings['pull_time_interval'] ),
+			'interval' => max( self::MIN_PULL_TIME_INTERVAL, absint( $this->push_syndicate_settings['pull_time_interval'] ) ),
 			'display'  => esc_html__( 'Pull Time Interval', 'push-syndication' ),
 		);
 
