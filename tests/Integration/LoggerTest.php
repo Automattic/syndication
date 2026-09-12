@@ -118,4 +118,35 @@ class LoggerTest extends WPIntegrationTestCase {
 		$errors = get_post_meta( $site_id, 'syn_log_errors', true );
 		$this->assertEquals( 1, (int) $errors );
 	}
+
+	/**
+	 * Test that a stored value the plugin did not write is not turned into an object.
+	 *
+	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be
+	 * well-formed log data. Some values are stored verbatim rather than re-serialized,
+	 * and reading one back must yield an array, never an object graph.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_never_returns_an_object_from_stored_meta(): void {
+		$post_id = $this->factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'draft',
+			)
+		);
+
+		$inner   = 'x:i:0;a:1:{i:0;s:3:"pwn";};m:a:0:{}';
+		$payload = 'C:11:"ArrayObject":' . strlen( $inner ) . ':{' . $inner . '}';
+
+		add_post_meta( $post_id, 'syn_log', $payload );
+
+		// Confirm the value was stored verbatim rather than re-serialized on the way in.
+		$this->assertSame( $payload, get_post_meta( $post_id, 'syn_log', true ) );
+
+		$log_entries = Syndication_Logger::get_messages();
+
+		$this->assertArrayHasKey( $post_id, $log_entries );
+		$this->assertSame( array(), $log_entries[ $post_id ] );
+	}
 }
