@@ -700,6 +700,11 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return $image;
 		}
 
+		// mw_newMediaObject only requires `upload_files`, so check the caller may edit the target post before writing to it.
+		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
+			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
+		}
+
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
 			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
