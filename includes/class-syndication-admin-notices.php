@@ -182,7 +182,7 @@ add_filter( 'syn_message_text_multiple', 'syn_handle_multiple_error_notices', 10
  * @return string The filtered message text.
  */
 function syn_handle_multiple_error_notices( $message, $message_data ) {
-	return __( 'There have been multiple errors. Please validate your syndication logs' );
+	return __( 'There have been multiple errors. Please validate your syndication logs', 'push-syndication' );
 }
 
 add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10, 2 );
