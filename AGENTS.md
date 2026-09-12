@@ -11,7 +11,7 @@ Cross-site post syndication for WordPress multisite and external sites.
 | **Namespace** | `Automattic\Syndication` |
 | **Source directory** | `includes/` |
 | **Version** | 2.2.0 |
-| **Requires PHP** | 8.2+ |
+| **Requires PHP** | 7.4+ |
 | **Requires WP** | 6.4+ |
 
 ### Directory Structure
