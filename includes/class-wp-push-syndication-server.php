@@ -686,8 +686,9 @@ class WP_Push_Syndication_Server {
 		$transport_mode = ! empty( $transport_mode ) ? $transport_mode : 'pull';
 		$site_enabled   = ! empty( $site_enabled ) ? $site_enabled : 'off';
 
-		// nonce for verification when saving.
-		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
+		// nonce for verification when saving. Distinct from the syndicate metabox nonce so that
+		// a nonce for one save path is not valid for the other.
+		wp_nonce_field( 'syn_save_site_settings', 'site_settings_noncename' );
 
 		$this->display_transports( $transport_type, $transport_mode );
 
@@ -719,6 +720,11 @@ class WP_Push_Syndication_Server {
 		echo '</select>';
 	}
 
+	/**
+	 * Persist the site settings metabox on a syn_site save.
+	 *
+	 * @return void
+	 */
 	public function save_site_settings() {
 
 		global $post;
@@ -729,16 +735,25 @@ class WP_Push_Syndication_Server {
 		}
 
 		// if our nonce isn't there, or we can't verify it return.
-		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['site_settings_noncename'] ) ), 'syn_save_site_settings' ) ) {
 			return;
 		}
 
-		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists.
+		// Site settings only ever belong to a site, and only to a user who can syndicate.
+		if ( empty( $post->ID ) || 'syn_site' !== get_post_type( $post ) || ! $this->current_user_can_syndicate() ) {
+			return;
+		}
 
-		// @TODO validate that type and mode are valid.
+		$transport_type = isset( $_POST['transport_type'] ) ? sanitize_text_field( wp_unslash( $_POST['transport_type'] ) ) : '';
+
+		// Only registered transports may be persisted; the value ends up in a class name.
+		if ( ! isset( $this->push_syndicate_transports[ $transport_type ] ) ) {
+			return;
+		}
+
 		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
 
-		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
+		$site_enabled = isset( $_POST['site_enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['site_enabled'] ) ) : 'off';
 
 		try {
 			$save = Syndication_Client_Factory::save_client_settings( $post->ID, $transport_type );
