@@ -23,8 +23,7 @@
 		</testsuite>
 	</testsuites>
 
-	<coverage cacheDirectory=".phpunit.cache/code-coverage"
-			  processUncoveredFiles="true">
+	<coverage cacheDirectory=".phpunit.cache/code-coverage">
 		<include>
 			<file>push-syndication.php</file>
 			<directory suffix=".php">includes</directory>
