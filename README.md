@@ -83,6 +83,14 @@ The push functionality requires WordPress on the destination site. However, pull
 
 Yes, Syndication works with WordPress multisite installations. You can syndicate content between subsites or to external sites.
 
+## Screenshots
+
+1. The settings screen, covering pull sitegroups, pull scheduling, pushable post types and WordPress.com application credentials
+2. The Sites list, showing each destination's transport, sitegroup and status
+3. Registering a standalone WordPress install over XML-RPC
+4. Registering a WordPress.com site over the REST API
+5. The Syndicate panel in the post editor, for choosing which sitegroups a post goes to
+
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md) for the full changelog.
