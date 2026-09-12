@@ -77,23 +77,20 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	/**
 	 * Render the default column output.
 	 *
+	 * Log entries are read from post meta that may have been written by a
+	 * lower-privileged user, so every value is escaped before output.
+	 * WP_List_Table echoes the return value without escaping it.
+	 *
 	 * @param array  $item        The current log item.
 	 * @param string $column_name The column name being rendered.
-	 * @return string The column value or debug output.
+	 * @return string The escaped column value, or an empty string.
 	 */
 	public function column_default( $item, $column_name ) {
-		switch ( $column_name ) {
-			case 'object_id':
-			case 'log_id':
-			case 'time':
-			case 'msg_type':
-			case 'status':
-			case 'message':
-				return $item[ $column_name ];
-
-			default:
-				return print_r( $item, true );
+		if ( ! isset( $item[ $column_name ] ) || ! is_scalar( $item[ $column_name ] ) ) {
+			return '';
 		}
+
+		return esc_html( (string) $item[ $column_name ] );
 	}
 
 	/**
@@ -138,9 +135,24 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	 * @return int Comparison result.
 	 */
 	public function usort_reorder( $a, $b ) {
-		$orderby = ( ! empty( $_GET['orderby'] ) ) ? esc_attr( $_GET['orderby'] ) : 'time';
-		$order   = ( ! empty( $_GET['order'] ) ) ? esc_attr( $_GET['order'] ) : 'desc';
-		$result  = strcmp( $a[ $orderby ], $b[ $orderby ] );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only sorting of an admin list table.
+		$orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : '';
+		$order   = isset( $_GET['order'] ) ? strtolower( sanitize_key( wp_unslash( $_GET['order'] ) ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! array_key_exists( $orderby, $this->get_sortable_columns() ) ) {
+			$orderby = 'time';
+		}
+
+		if ( 'asc' !== $order ) {
+			$order = 'desc';
+		}
+
+		$a_value = isset( $a[ $orderby ] ) && is_scalar( $a[ $orderby ] ) ? (string) $a[ $orderby ] : '';
+		$b_value = isset( $b[ $orderby ] ) && is_scalar( $b[ $orderby ] ) ? (string) $b[ $orderby ] : '';
+
+		$result = strcmp( $a_value, $b_value );
+
 		return ( 'asc' === $order ) ? $result : -$result;
 	}
 
@@ -148,10 +160,16 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	 * Render the log_id column with truncation.
 	 *
 	 * @param array $item The current log item.
-	 * @return string The truncated log ID.
+	 * @return string The escaped, truncated log ID.
 	 */
 	public function column_log_id( $item ) {
-		return sprintf( '%1$s', substr( $item['log_id'], 0, 3 ) . '&hellip;' . substr( $item['log_id'], -3 ) );
+		if ( ! isset( $item['log_id'] ) || ! is_scalar( $item['log_id'] ) ) {
+			return '';
+		}
+
+		$log_id = (string) $item['log_id'];
+
+		return esc_html( substr( $log_id, 0, 3 ) ) . '&hellip;' . esc_html( substr( $log_id, -3 ) );
 	}
 
 	/**
@@ -291,7 +309,8 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	 * Output the log ID filter dropdown.
 	 */
 	private function create_log_id_dropdown() {
-		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter on an admin list table.
+		$requested_log_id = isset( $_REQUEST['log_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['log_id'] ) ) : 0;
 		?>
 		<label class="screen-reader-text" for="filter-by-log-id"><?php esc_html_e( 'Filter by Log ID', 'push-syndication' ); ?></label>
 		<select name="log_id" id="filter-by-log-id">
@@ -299,22 +318,22 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 			<?php
 			$log_ids = array();
 			foreach ( $this->prepared_data as $row ) {
-				if ( 0 == $row['log_id'] ) {
+				if ( ! isset( $row['log_id'] ) || ! is_scalar( $row['log_id'] ) || 0 == $row['log_id'] ) {
 					continue;
 				}
 
-				$log_id = esc_attr( $row['log_id'] );
+				$log_id = (string) $row['log_id'];
 				if ( ! isset( $log_ids[ $log_id ] ) ) {
 					$log_ids[ $log_id ] = sprintf(
 						"<option %s value='%s'>%s</option>\n",
 						selected( $requested_log_id, $log_id, false ),
 						esc_attr( $log_id ),
-						esc_attr( $this->column_log_id( $row ) )
+						$this->column_log_id( $row )
 					);
 				}
 			}
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each element is escaped with esc_attr() in the loop above
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- values are escaped with esc_attr()/column_log_id() in the loop above.
 			echo implode( "\n", $log_ids );
 			?>
 		</select>

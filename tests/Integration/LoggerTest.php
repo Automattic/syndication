@@ -149,4 +149,41 @@ class LoggerTest extends WPIntegrationTestCase {
 		$this->assertArrayHasKey( $post_id, $log_entries );
 		$this->assertSame( array(), $log_entries[ $post_id ] );
 	}
+
+	/**
+	 * The log meta keys must not be writable through capability-checked paths.
+	 *
+	 * This is what keeps them out of the Custom Fields panel, the add/delete meta
+	 * AJAX endpoints and XML-RPC set_custom_fields(), all of which gate on these caps.
+	 *
+	 * @covers Syndication_Logger::register_log_meta
+	 */
+	public function test_log_meta_keys_are_not_writable_by_capability(): void {
+		/*
+		 * The plugin registers these on `init`, which fires once per PHPUnit run, and
+		 * WP_UnitTestCase_Base::tear_down() calls unregister_all_meta_keys() after every
+		 * test. Register them here rather than relying on a registration an earlier test
+		 * has already torn down.
+		 */
+		Syndication_Logger::register_log_meta();
+
+		$admin_id = $this->factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $admin_id );
+
+		$post_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+			$this->assertFalse( current_user_can( 'add_post_meta', $post_id, $meta_key ), $meta_key );
+			$this->assertFalse( current_user_can( 'edit_post_meta', $post_id, $meta_key ), $meta_key );
+			$this->assertFalse( current_user_can( 'delete_post_meta', $post_id, $meta_key ), $meta_key );
+		}
+
+		// An unrelated key is still writable, so the denial is not blanket.
+		$this->assertTrue( current_user_can( 'edit_post_meta', $post_id, 'syn_site_url' ) );
+
+		// The logger writes via update_post_meta(), which does not consult the auth
+		// callback, so normal logging is unaffected.
+		Syndication_Logger::log_post_error( $post_id, 'error', 'still logging' );
+		$this->assertNotEmpty( get_post_meta( $post_id, 'syn_log', true ) );
+	}
 }
