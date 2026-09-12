@@ -659,11 +659,21 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		$thumbnail_post_data = $args[6];
 		$thumbnail_alt_text  = $args[7];
 
+		// Authenticate before doing anything with the caller-supplied URL, otherwise
+		// an unauthenticated request can make this site fetch an arbitrary URL (SSRF).
+		if ( ! $wp_xmlrpc_server->login( $username, $password ) ) {
+			return $wp_xmlrpc_server->error;
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+		}
+
 		if ( ! $post_ID ) {
 			return new IXR_Error( 500, esc_html__( 'Please specify a valid post_ID.', 'push-syndication' ) );
 		}
 
-		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
+		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
 			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
@@ -779,7 +789,17 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		$thumbnail_post_data = $args[4];
 		$thumbnail_alt_text  = $args[5];
 
-		$thumbnail_raw = wp_remote_retrieve_body( wp_remote_get( $thumbnail_url ) );
+		// Authenticate before doing anything with the caller-supplied URL, otherwise
+		// an unauthenticated request can make this site fetch an arbitrary URL (SSRF).
+		if ( ! $wp_xmlrpc_server->login( $username, $password ) ) {
+			return $wp_xmlrpc_server->error;
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+		}
+
+		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
 			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
