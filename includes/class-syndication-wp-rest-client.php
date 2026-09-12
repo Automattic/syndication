@@ -405,6 +405,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 
 		// The token field is write-only: a blank submission keeps the stored token.
 		if ( '' !== $token ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
 			update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( $token ) );
 		}
 		update_post_meta( $site_ID, 'syn_site_id', isset( $_POST['site_id'] ) ? sanitize_text_field( wp_unslash( $_POST['site_id'] ) ) : '' );

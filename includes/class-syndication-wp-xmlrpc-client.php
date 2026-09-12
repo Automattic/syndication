@@ -609,6 +609,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		update_post_meta( $site_ID, 'syn_site_username', $username );
 		// The password field is write-only: a blank submission keeps the stored password.
 		if ( '' !== $password ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
 			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
 		}
 
