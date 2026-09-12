@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 **Note on versioning:** This release follows 2.0.1 from the `develop` branch. A `2.1` branch existed with experimental features but was never formally released. To avoid confusion with that unreleased work and establish a clean baseline, we're releasing as 2.2.0. The `3.0.0` release will incorporate architectural improvements and any valuable features from the experimental branch, bringing all development back to a single, unified codebase.
 
+### Security
+
+* security: escape output in admin interfaces by @GaryJones in <https://github.com/Automattic/syndication/pull/181>
+
 ### Fixed
 
 * fix: defer pull jobs refresh to prevent timeout with many sites by @GaryJones in <https://github.com/Automattic/syndication/pull/185>
@@ -16,7 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 * fix: format dates as ISO 8601 for WordPress.com REST API by @GaryJones in <https://github.com/Automattic/syndication/pull/188>
 * fix: prevent PHP warning when settings are null by @GaryJones in <https://github.com/Automattic/syndication/pull/182>
 * fix: prevent syndication loops through unique post identification by @GaryJones in <https://github.com/Automattic/syndication/pull/184>
-* security: escape output in admin interfaces by @GaryJones in <https://github.com/Automattic/syndication/pull/181>
 
 ### Added
 
@@ -27,6 +30,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 * test: add comprehensive unit tests for cron pull time interval by @GaryJones in <https://github.com/Automattic/syndication/pull/183>
 
 ## [2.0.1] - 2017-12-18
+
+### Security
+
+* security: add nonces for notification dismissal by @betzster
+* security: add missing sanitization for message data by @betzster
 
 ### Fixed
 
@@ -43,11 +51,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 * chore: add Travis CI configuration by @trepmal in <https://github.com/Automattic/syndication/pull/122>
 * chore: add icon and banner assets by @kraftbj in <https://github.com/Automattic/syndication/pull/79>
-
-### Maintenance
-
-* security: add nonces for notification dismissal by @betzster
-* security: add missing sanitization for message data by @betzster
 
 ## [2.0.0] - 2012-08-20
 
