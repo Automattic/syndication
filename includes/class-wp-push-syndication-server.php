@@ -503,8 +503,7 @@ class WP_Push_Syndication_Server {
 		$response = wp_remote_post(
 			'https://public-api.wordpress.com/oauth2/token',
 			array(
-				'sslverify' => false,
-				'body'      => array(
+				'body' => array(
 					'client_id'     => $this->push_syndicate_settings['client_id'],
 					'redirect_uri'  => $redirect_uri,
 					'client_secret' => $this->push_syndicate_settings['client_secret'],

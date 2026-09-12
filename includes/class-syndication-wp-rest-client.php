@@ -83,7 +83,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 				),
@@ -137,7 +136,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 					'Content-Type'  => 'application/x-www-form-urlencoded',
@@ -194,7 +192,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 					'Content-Type'  => 'application/x-www-form-urlencoded',
@@ -267,7 +264,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 				),
@@ -299,7 +295,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 				),
@@ -333,7 +328,6 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			array(
 				'timeout'    => $this->timeout,
 				'user-agent' => $this->useragent,
-				'sslverify'  => false,
 				'headers'    => array(
 					'authorization' => 'Bearer ' . $this->access_token,
 				),
