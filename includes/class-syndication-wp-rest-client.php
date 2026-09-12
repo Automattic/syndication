@@ -367,19 +367,19 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			<a href="<?php echo esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) ); ?>" target="_blank"><?php esc_html_e( 'settings page', 'push-syndication' ); ?></a>
 		</p>
 		<p>
-			<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
+			<label for="site_token"><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="password" class="widefat" name="site_token" id="site_token" size="100" autocomplete="off" value="" placeholder="<?php echo $has_token ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
 		</p>
 		<p>
-			<label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
+			<label for="site_id"><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" class="widefat" name="site_id" id="site_id" size="100" value="<?php echo esc_attr( $site_id ); ?>" />
 		</p>
 		<p>
-			<label for=site_url><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
+			<label for="site_url"><?php echo esc_html__( 'Enter a valid Blog URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_attr( $site_url ); ?>" />
