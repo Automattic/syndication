@@ -16,6 +16,7 @@
 .phpcs.xml.dist
 .wp-env.json
 .wp-env.override.json
+AGENTS.md
 CHANGELOG.md
 composer.json
 composer.lock
