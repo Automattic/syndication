@@ -47,7 +47,7 @@ class WP_Push_Syndication_Server {
 
 		// syndicating content.
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
-		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ) ); // Use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load.
+		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ), 10, 3 ); // Use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load.
 		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
 
 		// adding custom time interval.
@@ -686,8 +686,9 @@ class WP_Push_Syndication_Server {
 		$transport_mode = ! empty( $transport_mode ) ? $transport_mode : 'pull';
 		$site_enabled   = ! empty( $site_enabled ) ? $site_enabled : 'off';
 
-		// nonce for verification when saving.
-		wp_nonce_field( plugin_basename( __FILE__ ), 'site_settings_noncename' );
+		// nonce for verification when saving. Distinct from the syndicate metabox nonce so that
+		// a nonce for one save path is not valid for the other.
+		wp_nonce_field( 'syn_save_site_settings', 'site_settings_noncename' );
 
 		$this->display_transports( $transport_type, $transport_mode );
 
@@ -719,9 +720,13 @@ class WP_Push_Syndication_Server {
 		echo '</select>';
 	}
 
-	public function save_site_settings() {
-
-		global $post;
+	/**
+	 * Persist the site settings metabox on a syn_site save.
+	 *
+	 * @param int $post_id ID of the post being saved.
+	 * @return void
+	 */
+	public function save_site_settings( $post_id ) {
 
 		// autosave verification.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -729,23 +734,32 @@ class WP_Push_Syndication_Server {
 		}
 
 		// if our nonce isn't there, or we can't verify it return.
-		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( $_POST['site_settings_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['site_settings_noncename'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['site_settings_noncename'] ) ), 'syn_save_site_settings' ) ) {
 			return;
 		}
 
-		$transport_type = sanitize_text_field( $_POST['transport_type'] ); // TODO: validate this exists.
+		// Site settings only ever belong to a site, and only to a user who can syndicate.
+		if ( 'syn_site' !== get_post_type( $post_id ) || ! $this->current_user_can_syndicate() ) {
+			return;
+		}
 
-		// @TODO validate that type and mode are valid.
-		update_post_meta( $post->ID, 'syn_transport_type', $transport_type );
+		$transport_type = isset( $_POST['transport_type'] ) ? sanitize_text_field( wp_unslash( $_POST['transport_type'] ) ) : '';
 
-		$site_enabled = sanitize_text_field( $_POST['site_enabled'] );
+		// Only registered transports may be persisted; the value ends up in a class name.
+		if ( ! isset( $this->push_syndicate_transports[ $transport_type ] ) ) {
+			return;
+		}
+
+		update_post_meta( $post_id, 'syn_transport_type', $transport_type );
+
+		$site_enabled = isset( $_POST['site_enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['site_enabled'] ) ) : 'off';
 
 		try {
-			$save = Syndication_Client_Factory::save_client_settings( $post->ID, $transport_type );
+			$save = Syndication_Client_Factory::save_client_settings( $post_id, $transport_type );
 			if ( ! $save ) {
 				return;
 			}
-			$client = Syndication_Client_Factory::get_client( $transport_type, $post->ID );
+			$client = Syndication_Client_Factory::get_client( $transport_type, $post_id );
 
 			if ( $client->test_connection() ) {
 				add_filter(
@@ -772,7 +786,7 @@ class WP_Push_Syndication_Server {
 			);
 		}
 
-		update_post_meta( $post->ID, 'syn_site_enabled', $site_enabled );
+		update_post_meta( $post_id, 'syn_site_enabled', $site_enabled );
 	}
 
 	public function push_syndicate_admin_messages( $messages ) {
@@ -886,9 +900,15 @@ class WP_Push_Syndication_Server {
 		}
 	}
 
-	public function save_syndicate_settings() {
-
-		global $post;
+	/**
+	 * Persist the syndicate metabox when a post changes status.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Old post status.
+	 * @param \WP_Post $post       Post being saved.
+	 * @return void
+	 */
+	public function save_syndicate_settings( $new_status, $old_status, $post ) {
 
 		// autosave verification.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -896,7 +916,7 @@ class WP_Push_Syndication_Server {
 		}
 
 		// if our nonce isn't there, or we can't verify it return.
-		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['syndicate_noncename'] ) ), plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
 
@@ -924,7 +944,7 @@ class WP_Push_Syndication_Server {
 		}
 
 		// if our nonce isn't there, or we can't verify it return.
-		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( $_POST['syndicate_noncename'], plugin_basename( __FILE__ ) ) ) {
+		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['syndicate_noncename'] ) ), plugin_basename( __FILE__ ) ) ) {
 			return;
 		}
 
