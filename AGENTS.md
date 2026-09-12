@@ -16,9 +16,10 @@ Push and pull post syndication between WordPress sites and external endpoints.
 | **Text domain** | `push-syndication` |
 | **Namespace** | None — classes use the `Syndication_` prefix |
 | **Source directory** | `includes/` |
-| **Version** | 2.2.0 |
-| **Requires PHP** | 7.4+ (may be raised later) |
-| **Requires WP** | 6.4+ |
+
+Version, `Requires PHP` and `Requires at least` are not repeated here: read them
+from the plugin headers in `push-syndication.php`, which the release workflow
+treats as canonical. `README.md` carries the same headers for WordPress.org.
 
 ### Directory Structure
 
@@ -30,7 +31,7 @@ syndication/
 ├── tests/
 │   ├── Unit/           # Brain Monkey, no WordPress bootstrap
 │   └── Integration/    # Real WordPress via wp-env
-├── .github/workflows/  # cs-lint, unit, integration
+├── .github/workflows/  # cs-lint, unit, integration, release, deploy
 ├── .phpcs.xml.dist     # PHPCS configuration
 └── .wp-env.json        # wp-env configuration
 ```
@@ -127,6 +128,42 @@ Key points:
   WP 6.4 with PHP 7.4 and WP `master` with PHP latest. Installs `@wordpress/env`
   globally at its latest version, so CI can drift from a developer's pinned
   local install.
+- **release.yml** — on any pushed tag: checks the tag matches both versions in
+  `push-syndication.php`, builds a `push-syndication/`-rooted ZIP from
+  `.distignore`, and publishes a GitHub Release titled `Syndication X.Y.Z` with
+  the matching `CHANGELOG.md` section as its body. A hyphenated tag
+  (`3.0.0-rc.1`) is published as a pre-release.
+- **deploy.yml** — on any pushed non-hyphenated tag: checks `README.md`'s
+  `Stable tag:` matches, then deploys to WordPress.org SVN via the 10up action
+  with `SLUG: push-syndication`. Deliberately *not* triggered by
+  `release: [released]` — release.yml publishes with the default `GITHUB_TOKEN`,
+  and `GITHUB_TOKEN` events do not start further workflow runs. Needs the
+  `SVN_USERNAME` and `SVN_PASSWORD` secrets. `workflow_dispatch` offers a
+  dry-run.
+
+## Releases
+
+Use the `/release` skill. It covers the branch, version bumps, changelog, i18n,
+the three release commits, the `main`-based PR, the signed tag, and the sync
+back to `develop`. Never hand-write GitHub Release notes or a WordPress.org
+changelog — `release.yml` derives the release from `CHANGELOG.md`.
+
+Repo-specific facts the skill cannot infer:
+
+- **The wp.org slug is `push-syndication`, not the repo name `syndication`.**
+  It appears in the ZIP's top-level directory, `deploy.yml`'s `SLUG`, and the
+  `.pot` header. A ZIP rooted at `syndication/` installs *alongside* an existing
+  wp.org copy instead of updating it.
+- `README.md` is the WordPress.org readme — there is deliberately no
+  `readme.txt`. Its plugin headers need two trailing spaces per line.
+- Tags are bare (`2.2.0`), not `v`-prefixed, and signed.
+- `composer i18n` passes `--slug=push-syndication`. The slug only sets the
+  `Report-Msgid-Bugs-To` header, and `wordpress.org/plugins/syndication/` is an
+  unrelated plugin that was closed in 2018 — pointing there sends translators to
+  a dead forum.
+- `bin/backfill-wporg-tags.sh` is a one-off for adding 2.0.0 and 2.0.1 to
+  WordPress.org SVN. It writes only to `tags/`, never `trunk/`, so no older
+  release ever becomes the stable download. Not part of the release flow.
 
 ## Architectural Decisions
 

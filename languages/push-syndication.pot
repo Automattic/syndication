@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Syndication 2.2.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/syndication\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/push-syndication\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-12T12:49:24+00:00\n"
+"POT-Creation-Date: 2026-09-12T13:08:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: push-syndication\n"
@@ -170,65 +170,65 @@ msgstr ""
 msgid "Enter a valid Blog URL"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:151
+#: includes/class-syndication-wp-rss-client.php:146
 #: includes/class-syndication-wp-xml-client.php:512
 msgid "Enter feed URL"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:157
+#: includes/class-syndication-wp-rss-client.php:152
 #: includes/class-syndication-wp-xml-client.php:518
 msgid "Select post type"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:175
+#: includes/class-syndication-wp-rss-client.php:170
 #: includes/class-syndication-wp-xml-client.php:532
 msgid "Select post status"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:193
+#: includes/class-syndication-wp-rss-client.php:188
 #: includes/class-syndication-wp-xml-client.php:546
 msgid "Select comment status"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:197
-#: includes/class-syndication-wp-rss-client.php:206
+#: includes/class-syndication-wp-rss-client.php:192
+#: includes/class-syndication-wp-rss-client.php:201
 #: includes/class-syndication-wp-xml-client.php:550
 #: includes/class-syndication-wp-xml-client.php:559
 msgid "Open"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:198
-#: includes/class-syndication-wp-rss-client.php:207
+#: includes/class-syndication-wp-rss-client.php:193
+#: includes/class-syndication-wp-rss-client.php:202
 #: includes/class-syndication-wp-xml-client.php:551
 #: includes/class-syndication-wp-xml-client.php:560
 msgid "Closed"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:202
+#: includes/class-syndication-wp-rss-client.php:197
 #: includes/class-syndication-wp-xml-client.php:555
 msgid "Select ping status"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:211
+#: includes/class-syndication-wp-rss-client.php:206
 msgid "Select category status"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:215
+#: includes/class-syndication-wp-rss-client.php:210
 msgid "Import categories"
 msgstr ""
 
-#: includes/class-syndication-wp-rss-client.php:216
+#: includes/class-syndication-wp-rss-client.php:211
 msgid "Ignore categories"
 msgstr ""
 
 #. translators: %s: Feed URL.
-#: includes/class-syndication-wp-rss-client.php:265
+#: includes/class-syndication-wp-rss-client.php:260
 #, php-format
 msgid "Failed to parse feed at: %s"
 msgstr ""
 
 #. translators: %d: Size of the fetched feed, in bytes.
-#: includes/class-syndication-wp-rss-client.php:271
+#: includes/class-syndication-wp-rss-client.php:266
 #: includes/class-syndication-wp-xml-client.php:255
 #, php-format
 msgid "fetched feed with %d bytes"
