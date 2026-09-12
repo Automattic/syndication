@@ -387,8 +387,6 @@ class WP_Push_Syndication_Server {
 
 		<div class="wrap" xmlns="http://www.w3.org/1999/html">
 
-			<?php screen_icon(); // @TODO custom screen icon ?>
-
 			<h2><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h2>
 
 			<form action="options.php" method="post">
