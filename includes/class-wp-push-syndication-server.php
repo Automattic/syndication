@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/class-syndication-client-factory.php';
+require_once __DIR__ . '/push-syndicate-encryption.php';
 
 /**
  * Class WP_Push_Syndication_Server
@@ -276,7 +277,8 @@ class WP_Push_Syndication_Server {
 	 *
 	 * Selections are intersected with the values actually offered by the
 	 * settings screen, so only registered post types and existing sitegroup
-	 * slugs can ever reach the option.
+	 * slugs can ever reach the option. A newly submitted client secret is
+	 * encrypted before it is stored.
 	 *
 	 * @param array $raw_settings Unvalidated settings, as submitted.
 	 *
@@ -296,7 +298,9 @@ class WP_Push_Syndication_Server {
 
 		// The client secret field is write-only: a blank submission keeps the stored secret.
 		$submitted_secret          = sanitize_text_field( $raw_settings['client_secret'] ?? '' );
-		$settings['client_secret'] = '' !== $submitted_secret ? $submitted_secret : ( $this->push_syndicate_settings['client_secret'] ?? '' );
+		$settings['client_secret'] = '' !== $submitted_secret
+			? push_syndicate_encrypt( $submitted_secret )
+			: ( $this->push_syndicate_settings['client_secret'] ?? '' );
 
 		$this->pre_schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
@@ -332,6 +336,26 @@ class WP_Push_Syndication_Server {
 		);
 
 		return is_array( $slugs ) ? $slugs : array();
+	}
+
+	/**
+	 * Gets the client secret, decrypted for use.
+	 *
+	 * Falls back to the stored value for secrets saved before they were
+	 * encrypted at rest.
+	 *
+	 * @return string The client secret.
+	 */
+	private function get_client_secret() {
+		$stored = $this->push_syndicate_settings['client_secret'] ?? '';
+
+		if ( '' === $stored ) {
+			return '';
+		}
+
+		$decrypted = push_syndicate_decrypt( $stored );
+
+		return is_string( $decrypted ) ? $decrypted : $stored;
 	}
 
 	public function register_syndicate_settings() {
@@ -559,7 +583,7 @@ class WP_Push_Syndication_Server {
 				'body' => array(
 					'client_id'     => $this->push_syndicate_settings['client_id'],
 					'redirect_uri'  => $redirect_uri,
-					'client_secret' => $this->push_syndicate_settings['client_secret'],
+					'client_secret' => $this->get_client_secret(),
 					'code'          => $_GET['code'],
 					'grant_type'    => 'authorization_code',
 				),

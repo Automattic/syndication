@@ -147,7 +147,7 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * A submitted client secret must replace the stored secret.
+	 * A submitted client secret must replace the stored secret, encrypted.
 	 */
 	public function test_submitted_client_secret_is_stored(): void {
 		$server                          = $GLOBALS['push_syndication_server'];
@@ -160,6 +160,7 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 			)
 		);
 
-		$this->assertSame( 'new-secret', $settings['client_secret'] );
+		$this->assertNotSame( 'new-secret', $settings['client_secret'] );
+		$this->assertSame( 'new-secret', push_syndicate_decrypt( $settings['client_secret'] ) );
 	}
 }
