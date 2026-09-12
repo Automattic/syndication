@@ -459,7 +459,7 @@ class Syndication_Logger_Viewer {
 	 */
 	public function render_list_page() {
 		?>
-		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>
+		<div class="wrap"><h1><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h1>
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>
