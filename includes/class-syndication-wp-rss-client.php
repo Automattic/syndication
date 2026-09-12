@@ -194,8 +194,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		</p>
 		<p>
 			<select name="default_comment_status" id="default_comment_status" />
-				<option value="open" <?php selected( 'open', $default_comment_status ); ?> >open</option>
-				<option value="closed" <?php selected( 'closed', $default_comment_status ); ?> >closed</option>
+				<option value="open" <?php selected( 'open', $default_comment_status ); ?> ><?php esc_html_e( 'Open', 'push-syndication' ); ?></option>
+				<option value="closed" <?php selected( 'closed', $default_comment_status ); ?> ><?php esc_html_e( 'Closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 		<p>
@@ -203,8 +203,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		</p>
 		<p>
 			<select name="default_ping_status" id="default_ping_status" />
-			<option value="open" <?php selected( 'open', $default_ping_status ); ?> >open</option>
-			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?> >closed</option>
+			<option value="open" <?php selected( 'open', $default_ping_status ); ?> ><?php esc_html_e( 'Open', 'push-syndication' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?> ><?php esc_html_e( 'Closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 		<p>
@@ -212,8 +212,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		</p>
 		<p>
 			<select name="default_cat_status" id="default_cat_status" />
-			<option value="yes" <?php selected( 'yes', $default_cat_status ); ?> ><?php echo esc_html__( 'import categories', 'push-syndication' ); ?></option>
-			<option value="no" <?php selected( 'no', $default_cat_status ); ?> ><?php echo esc_html__( 'ignore categories', 'push-syndication' ); ?></option>
+			<option value="yes" <?php selected( 'yes', $default_cat_status ); ?> ><?php echo esc_html__( 'Import categories', 'push-syndication' ); ?></option>
+			<option value="no" <?php selected( 'no', $default_cat_status ); ?> ><?php echo esc_html__( 'Ignore categories', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 

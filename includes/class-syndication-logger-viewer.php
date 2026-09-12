@@ -347,7 +347,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	protected function _create_months_dropdown() {
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		?>
-		<label class="screen-reader-text" for="filter-by-month">Filter by month</label>
+		<label class="screen-reader-text" for="filter-by-month"><?php esc_html_e( 'Filter by month', 'push-syndication' ); ?></label>
 		<select name="month" id="filter-by-month">
 			<option value="">All dates</option>
 
@@ -375,7 +375,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	protected function _create_types_dropdown() {
 		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		?>
-		<label class="screen-reader-text" for="filter-by-type">Filter by type</label>
+		<label class="screen-reader-text" for="filter-by-type"><?php esc_html_e( 'Filter by type', 'push-syndication' ); ?></label>
 		<select name="type" id="filter-by-type">
 			<option value="">All types</option>
 			<?php 
