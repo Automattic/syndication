@@ -721,7 +721,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! $thumbnail_set ) {
-			return new IXR_Error( 403, __( 'Could not attach post thumbnail.' ) );
+			return new IXR_Error( 403, __( 'Could not attach post thumbnail.', 'push-syndication' ) );
 		}
 		
 		$args = array(
@@ -763,7 +763,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
-			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.', 'push-syndication' ) );
 		}
 
 		if ( '_thumbnail_id' == $meta_key ) {
@@ -773,7 +773,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! $result ) {
-			return new IXR_Error( 403, __( 'Could not remove post thumbnail.' ) );
+			return new IXR_Error( 403, __( 'Could not remove post thumbnail.', 'push-syndication' ) );
 		}
 
 		return true;

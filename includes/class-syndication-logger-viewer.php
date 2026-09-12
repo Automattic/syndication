@@ -297,7 +297,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				$this->_create_months_dropdown();
 				$this->_create_types_dropdown();
 
-				submit_button( __( 'Filter' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+				submit_button( __( 'Filter', 'push-syndication' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
 			}
 
 			?>

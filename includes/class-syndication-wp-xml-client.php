@@ -117,6 +117,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
+			// translators: %s: Site post ID.
 			$this->error_message = sprintf( __( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
 		}
 	}
@@ -242,6 +243,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures.
 		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
+			// translators: 1: Feed URL, 2: Error message.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %1$s | Error: %2$s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
 			// Track the event.
@@ -249,6 +251,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		} else {
+			// translators: %d: Size of the fetched feed, in bytes.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
 
 			// Track the event.
@@ -272,6 +275,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			// Clear libxml error buffer.
 			libxml_clear_errors();
 
+			// translators: 1: Feed URL, 2: List of XML parser errors.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
@@ -310,9 +314,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
+			// translators: %s: XPath expression used to locate the post root.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 			return array();
 		} else {
+			// translators: %d: Number of items found in the feed.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
 		}
 
@@ -390,6 +396,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			++$post_position;
 		}
 
+		// translators: %d: Number of posts prepared for import.
 		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
 
 		return $posts;
@@ -505,7 +512,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php esc_attr_e( $feed_url ); ?>" />
+			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
 		</p>
 		<p>
 			<label for="default_post_type"><?php esc_html_e( 'Select post type', 'push-syndication' ); ?></label>
@@ -517,7 +524,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_types as $post_type ) {
 				?>
-				<option value="<?php esc_attr_e( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php esc_html_e( $post_type ); ?></option>
+				<option value="<?php echo esc_attr( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php echo esc_html( $post_type ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -531,7 +538,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_statuses as $key => $value ) {
 				?>
-				<option value="<?php esc_attr_e( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php esc_html_e( $key ); ?></option>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php echo esc_html( $key ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -558,35 +565,35 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="namespace"><?php esc_html_e( 'Enter XML namespace', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" size="75" name="namespace" id="namespace" value="<?php esc_attr_e( $namespace ); ?>" />
+			<input type="text" size="75" name="namespace" id="namespace" value="<?php echo esc_attr( $namespace ); ?>" />
 		</p>
 
 		<p>
 			<label for="post_root"><?php esc_html_e( 'Enter XPath to post root', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="post_root" id="post_root" value="<?php esc_attr_e( $post_root ); ?>" />
+			<input type="text" name="post_root" id="post_root" value="<?php echo esc_attr( $post_root ); ?>" />
 		</p>
 
 		<p>
 			<label for="id_field"><?php esc_html_e( 'Enter post meta key for unique post identifier', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="id_field" id="id_field" value="<?php esc_attr_e( $id_field ); ?>" />
+			<input type="text" name="id_field" id="id_field" value="<?php echo esc_attr( $id_field ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_parent"><?php esc_html_e( 'Enter parent element for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_parent" id="enc_parent" value="<?php esc_attr_e( $enc_parent ); ?>" />
+			<input type="text" name="enc_parent" id="enc_parent" value="<?php echo esc_attr( $enc_parent ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_field"><?php esc_html_e( 'Enter meta name for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_field" id="enc_field" value="<?php esc_attr_e( $enc_field ); ?>" />
+			<input type="text" name="enc_field" id="enc_field" value="<?php echo esc_attr( $enc_field ); ?>" />
 		</p>
 
 		<p>
@@ -618,7 +625,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
 
-		<p><?php echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %1$s are required. If you want a link to another site, %2$s is required. To include a static string, enclose the string as "%3$s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) ); ?></p>
+		<p>
+			<?php
+			// translators: 1: Comma-separated list of required field names, 2: The is_permalink field name, 3: The string keyword used to wrap a static value.
+			echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %1$s are required. If you want a link to another site, %2$s is required. To include a static string, enclose the string as "%3$s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) );
+			?>
+		</p>
 
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
 			<li class="text">

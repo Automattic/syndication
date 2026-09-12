@@ -232,10 +232,10 @@ class Syndication_Logger {
 			} else {
 				$message = 'fail';
 			}
-			self::log_post_error( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			self::log_post_error( $site->ID, $status = $event, $message, $log_time, $extra );
 		} else {
 			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
-			self::log_post_success( $site->ID, $status = __( esc_attr( $event ), 'push-syndication' ), $message, $log_time, $extra );
+			self::log_post_success( $site->ID, $status = $event, $message, $log_time, $extra );
 		}
 	}
 

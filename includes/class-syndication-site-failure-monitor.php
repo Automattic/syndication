@@ -47,6 +47,7 @@ class Syndication_Site_Failure_Monitor {
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
+			// translators: 1: Site post ID, 2: Number of failed pull attempts.
 			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
 
 			do_action( 'push_syndication_site_disabled', $site_id, $count );

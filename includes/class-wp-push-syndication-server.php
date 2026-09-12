@@ -100,16 +100,16 @@ class WP_Push_Syndication_Server {
 			'syn_site',
 			array(
 				'labels'               => array(
-					'name'          => __( 'Sites' ),
-					'singular_name' => __( 'Site' ),
-					'add_new'       => __( 'Add Site' ),
-					'add_new_item'  => __( 'Add New Site' ),
-					'edit_item'     => __( 'Edit Site' ),
-					'new_item'      => __( 'New Site' ),
-					'view_item'     => __( 'View Site' ),
-					'search_items'  => __( 'Search Sites' ),
+					'name'          => __( 'Sites', 'push-syndication' ),
+					'singular_name' => __( 'Site', 'push-syndication' ),
+					'add_new'       => __( 'Add Site', 'push-syndication' ),
+					'add_new_item'  => __( 'Add New Site', 'push-syndication' ),
+					'edit_item'     => __( 'Edit Site', 'push-syndication' ),
+					'new_item'      => __( 'New Site', 'push-syndication' ),
+					'view_item'     => __( 'View Site', 'push-syndication' ),
+					'search_items'  => __( 'Search Sites', 'push-syndication' ),
 				),
-				'description'          => __( 'Sites in the network' ),
+				'description'          => __( 'Sites in the network', 'push-syndication' ),
 				'public'               => false,
 				'show_ui'              => true,
 				'publicly_queryable'   => false,
@@ -131,17 +131,17 @@ class WP_Push_Syndication_Server {
 			'syn_site',
 			array(
 				'labels'            => array(
-					'name'              => __( 'Site Groups' ),
-					'singular_name'     => __( 'Site Group' ),
-					'search_items'      => __( 'Search Site Groups' ),
-					'popular_items'     => __( 'Popular Site Groups' ),
-					'all_items'         => __( 'All Site Groups' ),
-					'parent_item'       => __( 'Parent Site Group' ),
-					'parent_item_colon' => __( 'Parent Site Group' ),
-					'edit_item'         => __( 'Edit Site Group' ),
-					'update_item'       => __( 'Update Site Group' ),
-					'add_new_item'      => __( 'Add New Site Group' ),
-					'new_item_name'     => __( 'New Site Group Name' ),
+					'name'              => __( 'Site Groups', 'push-syndication' ),
+					'singular_name'     => __( 'Site Group', 'push-syndication' ),
+					'search_items'      => __( 'Search Site Groups', 'push-syndication' ),
+					'popular_items'     => __( 'Popular Site Groups', 'push-syndication' ),
+					'all_items'         => __( 'All Site Groups', 'push-syndication' ),
+					'parent_item'       => __( 'Parent Site Group', 'push-syndication' ),
+					'parent_item_colon' => __( 'Parent Site Group', 'push-syndication' ),
+					'edit_item'         => __( 'Edit Site Group', 'push-syndication' ),
+					'update_item'       => __( 'Update Site Group', 'push-syndication' ),
+					'add_new_item'      => __( 'Add New Site Group', 'push-syndication' ),
+					'new_item_name'     => __( 'New Site Group Name', 'push-syndication' ),
 
 				),
 				'public'            => false,
@@ -183,11 +183,11 @@ class WP_Push_Syndication_Server {
 	public function add_new_columns( $columns ) {
 		$new_columns                  = array();
 		$new_columns['cb']            = '<input type="checkbox" />';
-		$new_columns['title']         = _x( 'Site Name', 'column name' );
-		$new_columns['client-type']   = _x( 'Client Type', 'column name' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name' );
-		$new_columns['site_status']   = _x( 'Status', 'column name' );
-		$new_columns['date']          = _x( 'Date', 'column name' );
+		$new_columns['title']         = _x( 'Site Name', 'column name', 'push-syndication' );
+		$new_columns['client-type']   = _x( 'Client Type', 'column name', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name', 'push-syndication' );
+		$new_columns['site_status']   = _x( 'Status', 'column name', 'push-syndication' );
+		$new_columns['date']          = _x( 'Date', 'column name', 'push-syndication' );
 		return $new_columns;
 	}
 
@@ -201,6 +201,7 @@ class WP_Push_Syndication_Server {
 					$client_data = $client->get_client_data();
 					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
+					// translators: %s: Transport type of the site.
 					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
 				}
 				break;
@@ -596,9 +597,9 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function site_metaboxes() {
-		add_meta_box( 'sitediv', __( ' Site Settings ' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
+		add_meta_box( 'sitediv', __( ' Site Settings ', 'push-syndication' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
 		remove_meta_box( 'submitdiv', 'syn_site', 'side' );
-		add_meta_box( 'submitdiv', __( ' Site Status ' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'submitdiv', __( ' Site Status ', 'push-syndication' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -719,6 +720,7 @@ class WP_Push_Syndication_Server {
 		$max_len = 0;
 		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
+			// translators: 1: Client name, 2: Client mode.
 			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%1$s (%2$s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
 		}
 		echo '</select>';
@@ -829,7 +831,7 @@ class WP_Push_Syndication_Server {
 
 		$selected_post_types = $this->push_syndicate_settings['selected_post_types'];
 		foreach ( $selected_post_types as $selected_post_type ) {
-			add_meta_box( 'syndicatediv', __( ' Syndicate ' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
+			add_meta_box( 'syndicatediv', __( ' Syndicate ', 'push-syndication' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
 			// add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' ); // phpcs:ignore Squiz.Commenting.InlineComment.InvalidEndChar -- Commented out code.
 		}
 	}
@@ -1480,8 +1482,10 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( is_array( $posts ) && count( $posts ) > 0 ) {
+				// translators: 1: Site post ID, 2: Number of posts in the feed.
 				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %1$d with %2$d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
+				// translators: %d: Site post ID.
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
