@@ -98,12 +98,42 @@ class Syndication_Logger {
 	public static function init() {
 		self::instance()->log_id = md5( uniqid() . microtime() );
 
+		add_action( 'init', array( __CLASS__, 'register_log_meta' ) );
+
 		require_once __DIR__ . '/class-syndication-admin-notices.php';
 		new Syndication_Logger_Admin_Notice();
 
 		if ( is_admin() ) {
 			require_once __DIR__ . '/class-syndication-logger-viewer.php';
 			$viewer = new Syndication_Logger_Viewer();
+		}
+	}
+
+	/**
+	 * Register the log meta keys with an auth callback that always denies.
+	 *
+	 * These keys are read back and rendered on the Syndication Logs screen, and
+	 * get_messages() queries them across the whole of postmeta without constraining
+	 * the post type, so their values must not be writable by whoever can edit a post.
+	 *
+	 * map_meta_cap() consults the auth callback for add_post_meta, edit_post_meta and
+	 * delete_post_meta, which keeps the keys out of the Custom Fields panel, the
+	 * add/delete meta AJAX endpoints and XML-RPC set_custom_fields().
+	 *
+	 * This is hardening rather than the fix: update_post_meta() never consults the
+	 * auth callback, so the logger's own writes are unaffected, and so is anything
+	 * else calling it directly. Output escaping in the log viewer remains what
+	 * actually prevents a planted payload from executing.
+	 */
+	public static function register_log_meta() {
+		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+			register_meta(
+				'post',
+				$meta_key,
+				array(
+					'auth_callback' => '__return_false',
+				)
+			);
 		}
 	}
 
