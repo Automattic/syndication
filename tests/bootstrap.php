@@ -92,7 +92,9 @@ if ( $is_integration ) {
 	/*
 	 * Load test dependencies.
 	 */
+	require_once __DIR__ . '/Integration/TestCase.php';
 	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
+	require_once __DIR__ . '/Integration/Syndication_Mock_Client.php';
 	require_once __DIR__ . '/Integration/CLI/WpCliOutputCapture.php';
 	require_once __DIR__ . '/Integration/CLI/CliTestCase.php';
 }
