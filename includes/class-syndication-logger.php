@@ -450,7 +450,15 @@ class Syndication_Logger {
 					 */
 					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // Cache pass (see note above).
 					foreach ( $all_log_entries as $log_entry ) {
-						$log_entries[ $log_entry->post_id ] = unserialize( $log_entry->meta_value );
+						/*
+						 * Never unserialize the raw column directly. `syn_log` is an unprotected meta key,
+						 * so its contents cannot be assumed to be something this plugin wrote.
+						 * `maybe_unserialize()` applies the same gate as every other meta read, and the
+						 * array check discards anything that did not round-trip as a log array.
+						 */
+						$log_entry_value = maybe_unserialize( $log_entry->meta_value );
+
+						$log_entries[ $log_entry->post_id ] = is_array( $log_entry_value ) ? $log_entry_value : array();
 					}
 				}
 			}
