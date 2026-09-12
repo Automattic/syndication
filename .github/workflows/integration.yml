@@ -5,10 +5,10 @@ on:
     branches:
       - develop
       - main
+      - 3.x
     paths:
       - '**.php'
       - 'composer.json'
-      - 'composer.lock'
       - 'phpunit.xml.dist'
       - '.wp-env.json'
       - '.github/workflows/integration.yml'
@@ -16,10 +16,10 @@ on:
     branches:
       - develop
       - main
+      - 3.x
     paths:
       - '**.php'
       - 'composer.json'
-      - 'composer.lock'
       - 'phpunit.xml.dist'
       - '.wp-env.json'
       - '.github/workflows/integration.yml'
@@ -37,6 +37,7 @@ jobs:
   test:
     name: WP ${{ matrix.wordpress }} on PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     strategy:
       matrix:
@@ -44,22 +45,25 @@ jobs:
           # Check lowest supported WP version, with the lowest supported PHP.
           - wordpress: '6.4'
             php: '8.2'
-          # Check latest WP with the latest PHP.
+          # Check latest WP with the highest supported PHP.
           - wordpress: 'master'
-            php: 'latest'
+            php: '8.5'
       fail-fast: false
 
     env:
       WP_ENV_CORE: WordPress/WordPress#${{ matrix.wordpress }}
+      # Without this, both legs would run against the phpVersion pinned in
+      # .wp-env.json and the matrix would only vary the PHP used on the host.
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Setup PHP ${{ matrix.php }}
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -71,10 +75,10 @@ jobs:
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520 # 3.1.1
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 'lts/*'
 
