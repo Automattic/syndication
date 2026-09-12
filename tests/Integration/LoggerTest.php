@@ -159,6 +159,14 @@ class LoggerTest extends WPIntegrationTestCase {
 	 * @covers Syndication_Logger::register_log_meta
 	 */
 	public function test_log_meta_keys_are_not_writable_by_capability(): void {
+		/*
+		 * The plugin registers these on `init`, which fires once per PHPUnit run, and
+		 * WP_UnitTestCase_Base::tear_down() calls unregister_all_meta_keys() after every
+		 * test. Register them here rather than relying on a registration an earlier test
+		 * has already torn down.
+		 */
+		Syndication_Logger::register_log_meta();
+
 		$admin_id = $this->factory()->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $admin_id );
 
