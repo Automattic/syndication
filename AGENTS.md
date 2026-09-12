@@ -1,6 +1,12 @@
 # Syndication
 
-Cross-site post syndication for WordPress multisite and external sites.
+Push and pull post syndication between WordPress sites and external endpoints.
+
+> **Branch note:** this file describes `develop`, the 2.x line. A separate
+> long-lived `3.x` branch holds an unmerged DDD rewrite (namespaced
+> `Automattic\Syndication`, `Domain`/`Application`/`Infrastructure` layers, a DI
+> container). PR #197 targets `3.x`, not `develop`. Nothing below applies to
+> that branch.
 
 ## Project Knowledge
 
@@ -8,94 +14,151 @@ Cross-site post syndication for WordPress multisite and external sites.
 |----------|-------|
 | **Main file** | `push-syndication.php` |
 | **Text domain** | `push-syndication` |
-| **Namespace** | `Automattic\Syndication` |
+| **Namespace** | None — classes use the `Syndication_` prefix |
 | **Source directory** | `includes/` |
 | **Version** | 2.2.0 |
-| **Requires PHP** | 7.4+ |
+| **Requires PHP** | 7.4+ (may be raised later) |
 | **Requires WP** | 6.4+ |
 
 ### Directory Structure
 
 ```
 syndication/
-├── includes/
-│   ├── Domain/             # Value objects, contracts (SiteConfig, SiteCredentials)
-│   ├── Application/        # Services, DTOs, contracts (PullService, PushService)
-│   └── Infrastructure/     # WordPress integration, transports, CLI, repositories
-│       ├── Transport/      # REST, XML-RPC, Feed transport implementations
-│       ├── CLI/            # WP-CLI commands (11 commands)
-│       └── WordPress/      # Hooks, admin UI, encryption
+├── includes/           # Flat directory of class-*.php and interface-*.php files
+│   └── css/            # Admin styles for the site editor and site list
+├── languages/          # push-syndication.pot
 ├── tests/
-│   ├── Unit/               # Unit tests (Brain Monkey)
-│   ├── Integration/        # Integration tests (wp-env)
-│   ├── Stubs/              # Test stubs/doubles
-│   └── Behat/              # Behat BDD context classes
-├── features/               # Behat feature files (.feature)
-├── behat.yml               # Behat configuration
-├── .github/workflows/      # CI: cs-lint, integration, unit
-└── .phpcs.xml.dist         # PHPCS configuration
+│   ├── Unit/           # Brain Monkey, no WordPress bootstrap
+│   └── Integration/    # Real WordPress via wp-env
+├── .github/workflows/  # cs-lint, unit, integration
+├── .phpcs.xml.dist     # PHPCS configuration
+└── .wp-env.json        # wp-env configuration
 ```
+
+There is no PSR-4 autoloading. Everything is `require_once`d from
+`push-syndication.php`, so a new class file must be wired in there explicitly.
 
 ### Key Classes
 
-- **Domain**: `SiteConfig`, `SiteCredentials` (value objects); syndication contracts
-- **Application**: `PullService`, `PushService` (orchestrate syndication); DTOs for data transfer
-- **Infrastructure**: `TransportFactory` (creates REST/XML-RPC/Feed transports), `HookManager`, `Container` (DI), `EncryptionService`
-- **CLI**: 11 commands for pull/push site/sitegroup management and listing
+- **`WP_Push_Syndication_Server`** — the main controller. Registers the `syn_site`
+  post type and `syn_sitegroup` taxonomy, admin UI, settings, and the push/pull
+  cron jobs. Instantiated into `$GLOBALS['push_syndication_server']`.
+- **`Syndication_Client_Factory`** — maps a transport type to a class by string
+  concatenation: `Syndication_{$transport_type}_Client`. Also proxies
+  `display_settings` and `save_settings` to that class.
+- **`Syndication_Client`** (interface) — implemented by `Syndication_WP_REST_Client`,
+  `Syndication_WP_RSS_Client`, `Syndication_WP_XML_Client` and
+  `Syndication_WP_XMLRPC_Client`.
+- **`Syndication_Encryption`** — wraps a `Syndication_Encryptor` implementation.
+  `Syndication_Encryptor_OpenSSL` is used on PHP 7.1+;
+  `Syndication_Encryptor_MCrypt` only below that. Instantiated into
+  `$GLOBALS['push_syndication_encryption']`.
+- **`Syndication_Logger`** — logging, with `Syndication_Logger_Viewer`,
+  `Syndication_Logger_List_Table` and `Syndication_Logger_Admin_Notice` for display.
+- **`Syndication_Event_Counter`**, **`Syndication_Site_Failure_Monitor`**,
+  **`Failed_Syndication_Auto_Retry`** — failure tracking and retry, each
+  instantiated at load time.
+- **`Syndication_CLI_Command`** — registered as `wp syndication`, loaded only when
+  `WP_CLI` is defined. Four subcommands: `push_all_posts`, `push_post`,
+  `pull_site`, `pull_sitegroup`.
 
 ### Dependencies
 
-- **Dev**: `automattic/vipwpcs`, `yoast/wp-test-utils`, `behat/behat`
+Runtime requires only `composer/installers`. Dev: `automattic/vipwpcs`,
+`yoast/wp-test-utils`, `phpunit/phpunit` ^9, `php-parallel-lint/php-parallel-lint`,
+`phpcompatibility/phpcompatibility-wp`.
 
 ## Commands
 
 ```bash
-composer cs                # Check code standards (PHPCS)
-composer cs-fix            # Auto-fix code standard violations
-composer lint              # PHP syntax lint
-composer test:unit         # Run unit tests
-composer test:integration  # Run integration tests (requires wp-env)
-composer test:integration-ms  # Run multisite integration tests
-composer coverage          # Run tests with HTML coverage report
-composer behat             # Run Behat BDD scenarios (requires wp-env)
-composer behat-rerun       # Re-run failed Behat scenarios
-composer prepare-behat     # Prepare environment for Behat tests
+composer cs                   # Check code standards (PHPCS)
+composer cs-fix               # Auto-fix code standard violations (PHPCBF)
+composer lint                 # PHP syntax lint
+composer lint-ci              # Syntax lint with checkstyle output
+composer i18n                 # Regenerate languages/push-syndication.pot
+composer test:unit            # Unit tests (no WordPress needed)
+composer test:integration     # Integration tests (requires wp-env running)
+composer test:integration-ms  # Integration tests under WP_MULTISITE=1
+composer coverage             # HTML coverage report into .phpunit.cache/
+composer coverage-ci          # Coverage via wp-env
+```
+
+### Running integration tests
+
+`wp-env start` must be running first. The `test:integration*` scripts hardcode
+`--env-cwd=wp-content/plugins/syndication`, but wp-env mounts the plugin under
+the *checkout directory name*. In a worktree or differently named clone, run
+phpunit directly instead:
+
+```bash
+wp-env run tests-cli --env-cwd=wp-content/plugins/<dir-name> ./vendor/bin/phpunit --testsuite integration
 ```
 
 ## Conventions
 
-Follow the standards documented in `~/code/plugin-standards/` for full details. Key points:
+Follow the standards documented in `~/code/plugin-standards/` for full details.
+Key points:
 
 - **Commits**: Use the `/commit` skill. Favour explaining "why" over "what".
 - **PRs**: Use the `/pr` skill. Squash and merge by default.
 - **Branch naming**: `feature/description`, `fix/description` from `develop`.
-- **Testing**: Three test types here:
-  - **Unit tests**: For isolated domain/application logic. Use `Yoast\WPTestUtils\BrainMonkey\YoastTestCase`.
-  - **Integration tests**: For WordPress-dependent behaviour. Use `Yoast\WPTestUtils\WPIntegration\TestCase`.
-  - **Behat tests**: For CLI contract verification and critical happy paths only. Keep Behat scenarios minimal (2-5 per command).
-- **Code style**: WordPress coding standards via PHPCS. Tabs for indentation.
+- **Code style**: WordPress coding standards via PHPCS — `WordPress-Extra`,
+  `WordPress-Docs`, `WordPress-VIP-Go` and `PHPCompatibilityWP`, with
+  `testVersion` at `7.4-`. Tabs for indentation. `tests/` is excluded from PHPCS.
+- **Naming**: New global functions, classes and constants need the `syndication`
+  prefix, enforced by `WordPress.NamingConventions.PrefixAllGlobals`.
 - **i18n**: All user-facing strings must use the `push-syndication` text domain.
-- **DDD layering**: Domain classes must not depend on Infrastructure or Application.
+- **Testing**: two suites, and the names are case-sensitive and inconsistent —
+  `--testsuite Unit` but `--testsuite integration`.
+  - **Unit**: extend `tests/Unit/TestCase.php` (which extends
+    `Yoast\WPTestUtils\BrainMonkey\TestCase`). No WordPress loaded, so mock it.
+  - **Integration**: extend `Yoast\WPTestUtils\WPIntegration\TestCase`.
+
+## CI
+
+- **cs-lint.yml** — `composer validate`, PHP parse-error lint and an XML lint of
+  `phpunit.xml.dist`. The two PHPCS steps are **commented out**, so code style is
+  *not* enforced by CI: `composer cs` is currently a local-only gate.
+- **unit.yml** — unit tests on PHP 7.4, 8.1, 8.2 and 8.3.
+- **integration.yml** — wp-env integration tests, single site and multisite, on
+  WP 6.4 with PHP 7.4 and WP `master` with PHP latest. Installs `@wordpress/env`
+  globally at its latest version, so CI can drift from a developer's pinned
+  local install.
 
 ## Architectural Decisions
 
-- **Domain-Driven Design (DDD)**: Three-layer architecture (Domain/Application/Infrastructure). Do not bypass layers.
-- **Transport pattern**: Syndication supports multiple transport protocols (REST API, XML-RPC, RSS Feed). New transport types should implement the transport interface and be registered via `TransportFactory`.
-- **Push-based model**: The primary syndication direction is push (from source to targets). Pull is also supported but push is the primary flow.
-- **Encryption**: Site credentials are encrypted at rest using `EncryptionService`. Never store credentials in plain text.
-- **DI container**: Services are wired via a DI container. Register new services there rather than instantiating directly.
-- **Behat for CLI testing**: WP-CLI commands are tested with Behat for contract verification. Keep Behat scenarios focused on the CLI interface, not internal logic.
-- **Multisite awareness**: This plugin operates across sites. Many operations require multisite context — always consider which site context code runs in.
+- **Sites are posts**: each syndication endpoint is a `syn_site` post, grouped by
+  the `syn_sitegroup` taxonomy. Site settings live in post meta on that post.
+- **Transport by naming convention**: `Syndication_Client_Factory` resolves a
+  class name by string concatenation, so a new transport must be named
+  `Syndication_{Type}_Client`, implement `Syndication_Client`, expose static
+  `display_settings`/`save_settings`, and be `require_once`d in the main file.
+- **Push is the primary direction**; pull is supported and runs on cron.
+- **Credentials are encrypted at rest** via `Syndication_Encryption`. Never store
+  or log them in plain text.
+- **Globals, not injection**: the server and encryption objects are passed around
+  as `$GLOBALS`. This is legacy, and the main file carries a `@TODO` about it, but
+  match the existing pattern rather than introducing a container on `develop`.
 
 ## Common Pitfalls
 
 - Do not edit WordPress core files or bundled dependencies in `vendor/`.
-- Run `composer cs` before committing. CI will reject code standard violations.
-- Integration tests require `npx wp-env start` running first.
-- **Do not violate DDD layer boundaries**: Domain must not `use` anything from Infrastructure or Application.
-- **Site context matters**: When syndicating across sites in multisite, always be explicit about which site context you're operating in. Use `switch_to_blog()` / `restore_current_blog()` correctly and always restore.
-- **Credentials are encrypted**: Never log, expose, or store credentials in plain text. Use `EncryptionService`.
-- Behat tests are slow (10-20 seconds per scenario). Do not write Behat tests for edge cases — use integration tests instead.
-- The text domain is `push-syndication` (not `syndication`). Get this right in all i18n calls.
-- Transport errors from remote sites can be unpredictable. Always handle transport exceptions gracefully and provide meaningful error messages.
-- Do not add new transports without considering authentication, error handling, and retry logic.
+- Run `composer cs` before committing. Nothing in CI checks code style, so a
+  violation will merge unnoticed.
+- Adding a class file is not enough — add the `require_once` to
+  `push-syndication.php`, as there is no autoloader.
+- **`composer test:unit` exits non-zero if Xdebug or PCOV is installed.** The
+  tests themselves pass, then coverage generation dies with `Undefined constant
+  "ABSPATH"`, because `phpunit.xml.dist` sets `processUncoveredFiles="true"` over
+  `push-syndication.php`. CI does not hit this, as it sets `coverage: none`.
+  Locally, use `php -d xdebug.mode=off ./vendor/bin/phpunit --testsuite Unit`.
+- **mcrypt is absent from modern PHP**, so the `Syndication_Encryptor_MCrypt`
+  tests skip locally and in CI. Skipped encryption tests are expected, not a
+  regression.
+- **Site context matters**: when syndicating across sites in multisite, be
+  explicit about which site you are operating in. Use `switch_to_blog()` /
+  `restore_current_blog()` and always restore.
+- Transport errors from remote sites are unpredictable. Handle exceptions
+  gracefully and give meaningful messages.
+- The text domain is `push-syndication`, not `syndication`. Get this right in all
+  i18n calls.
