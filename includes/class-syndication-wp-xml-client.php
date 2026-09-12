@@ -505,7 +505,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php esc_attr_e( $feed_url ); ?>" />
+			<input type="text" name="feed_url" id="feed_url" size="100" value="<?php echo esc_attr( $feed_url ); ?>" />
 		</p>
 		<p>
 			<label for="default_post_type"><?php esc_html_e( 'Select post type', 'push-syndication' ); ?></label>
@@ -517,7 +517,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_types as $post_type ) {
 				?>
-				<option value="<?php esc_attr_e( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php esc_html_e( $post_type ); ?></option>
+				<option value="<?php echo esc_attr( $post_type ); ?>" <?php selected( $post_type, $default_post_type ); ?>><?php echo esc_html( $post_type ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -531,7 +531,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			foreach ( $post_statuses as $key => $value ) {
 				?>
-				<option value="<?php esc_attr_e( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php esc_html_e( $key ); ?></option>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $default_post_status ); ?>><?php echo esc_html( $key ); ?></option>
 			<?php } ?>
 			</select>
 		</p>
@@ -558,35 +558,35 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="namespace"><?php esc_html_e( 'Enter XML namespace', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" size="75" name="namespace" id="namespace" value="<?php esc_attr_e( $namespace ); ?>" />
+			<input type="text" size="75" name="namespace" id="namespace" value="<?php echo esc_attr( $namespace ); ?>" />
 		</p>
 
 		<p>
 			<label for="post_root"><?php esc_html_e( 'Enter XPath to post root', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="post_root" id="post_root" value="<?php esc_attr_e( $post_root ); ?>" />
+			<input type="text" name="post_root" id="post_root" value="<?php echo esc_attr( $post_root ); ?>" />
 		</p>
 
 		<p>
 			<label for="id_field"><?php esc_html_e( 'Enter post meta key for unique post identifier', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="id_field" id="id_field" value="<?php esc_attr_e( $id_field ); ?>" />
+			<input type="text" name="id_field" id="id_field" value="<?php echo esc_attr( $id_field ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_parent"><?php esc_html_e( 'Enter parent element for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_parent" id="enc_parent" value="<?php esc_attr_e( $enc_parent ); ?>" />
+			<input type="text" name="enc_parent" id="enc_parent" value="<?php echo esc_attr( $enc_parent ); ?>" />
 		</p>
 
 		<p>
 			<label for="enc_field"><?php esc_html_e( 'Enter meta name for enclosures', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" name="enc_field" id="enc_field" value="<?php esc_attr_e( $enc_field ); ?>" />
+			<input type="text" name="enc_field" id="enc_field" value="<?php echo esc_attr( $enc_field ); ?>" />
 		</p>
 
 		<p>
