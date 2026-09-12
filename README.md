@@ -85,11 +85,11 @@ Yes, Syndication works with WordPress multisite installations. You can syndicate
 
 ## Screenshots
 
-1. The settings screen, covering pull sitegroups, pull scheduling, pushable post types and WordPress.com application credentials
-2. The Sites list, showing each destination's transport, sitegroup and status
-3. Registering a standalone WordPress install over XML-RPC
-4. Registering a WordPress.com site over the REST API
-5. The Syndicate panel in the post editor, for choosing which sitegroups a post goes to
+1. [The settings screen, covering pull sitegroups, pull scheduling, pushable post types and WordPress.com application credentials](.wordpress-org/screenshot-1.png)
+2. [The Sites list, showing each destination's transport, sitegroup and status](.wordpress-org/screenshot-2.png)
+3. [Registering a standalone WordPress install over XML-RPC](.wordpress-org/screenshot-3.png)
+4. [Registering a WordPress.com site over the REST API](.wordpress-org/screenshot-4.png)
+5. [The Syndicate panel in the post editor, for choosing which sitegroups a post goes to](.wordpress-org/screenshot-5.png)
 
 ## Changelog
 
