@@ -48,6 +48,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Needed so the PR base commit is present for the changed-line diff below.
+          fetch-depth: 0
 
       # Validate the composer.json file.
       # @link https://getcomposer.org/doc/03-cli.md#validate
@@ -71,10 +73,41 @@ jobs:
           xml-file: ./phpunit.xml.dist
           xml-schema-file: ./vendor/phpunit/phpunit/phpunit.xsd
 
-      # Check the code-style consistency of the PHP files.
-#      - name: Check PHP code style
-#        continue-on-error: true
-#        run: vendor/bin/phpcs --report-full --report-checkstyle=./phpcs-report.xml
+      # Check the code-style consistency of the lines this pull request changes.
+      #
+      # The plugin carries a backlog of pre-existing violations, none of them
+      # auto-fixable and some only resolvable by renaming public hooks, which is
+      # why the whole-repo PHPCS steps that used to live here sat commented out.
+      # phpcs-changed reports only violations that the change itself introduces,
+      # which holds new work to the standard without requiring the backlog be
+      # cleared first.
+      #
+      # Pinned to ^2.13 deliberately. On this repository 3.0.1 reports nothing
+      # and exits 0 whatever it is given: it batches its PHPCS calls through a
+      # temporary directory and looks results up by the absolute path it wrote,
+      # but PHPCS 3.13 keys its JSON by a path with the leading slash stripped
+      # (and symlinks resolved), so every lookup misses. Reported upstream; lift
+      # the pin once a fixed 3.x is released.
+      - name: Determine changed PHP files
+        id: changed
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- '*.php' > changed-php-files.txt
+          echo "count=$(wc -l < changed-php-files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          cat changed-php-files.txt
 
-#      - name: Show PHPCS results in PR
-#        run: cs2pr ./phpcs-report.xml
+      - name: Check PHP code style on changed lines
+        if: github.event_name == 'pull_request' && steps.changed.outputs.count != '0'
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          xargs vendor/bin/phpcs-changed --git --git-base "$BASE_SHA" \
+            --report checkstyle < changed-php-files.txt > phpcs-report.xml
+
+      - name: Show PHPCS results in PR
+        if: github.event_name == 'pull_request' && steps.changed.outputs.count != '0'
+        run: cs2pr --graceful-warnings ./phpcs-report.xml
