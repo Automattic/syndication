@@ -1,12 +1,12 @@
 # Syndication
 
-Stable tag: 2.2.0
-Requires at least: 6.4
-Tested up to: 6.9
-Requires PHP: 7.4
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Tags: syndication, xmlrpc, rest-api, content-distribution, multisite
+Stable tag: 2.2.0  
+Requires at least: 6.4  
+Tested up to: 6.9  
+Requires PHP: 7.4  
+License: GPLv2 or later  
+License URI: https://www.gnu.org/licenses/gpl-2.0.html  
+Tags: syndication, xmlrpc, rest-api, content-distribution, multisite  
 Contributors: automattic, garyj, nprasath002, batmoo, betzster, nickdaugherty
 
 Syndicate content to and from your WordPress sites. Push posts to multiple destinations or pull content from external feeds with a single click.
@@ -85,7 +85,7 @@ Yes, Syndication works with WordPress multisite installations. You can syndicate
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for the full changelog.
+See [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md) for the full changelog.
 
 ## Contributing
 
