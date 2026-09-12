@@ -68,9 +68,6 @@ $GLOBALS['push_syndication_server'] = new WP_Push_Syndication_Server();
 // Initialize site health monitoring (replaces legacy event counter, failure monitor, and auto-retry).
 ( new \Automattic\Syndication\Infrastructure\Health\SiteHealthMonitor() )->register();
 
-// Initialize syndication notifications.
-( new \Automattic\Syndication\Infrastructure\Notification\SyndicationNotifier() )->register_hooks();
-
 // Initialize log viewers (admin only).
 if ( is_admin() ) {
 	( new \Automattic\Syndication\Infrastructure\Logging\PullLogViewer() )->register();
