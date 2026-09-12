@@ -117,6 +117,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( parse_url( $url ) ) {
 			$this->feed_url = $url;
 		} else {
+			// translators: %s: Site post ID.
 			$this->error_message = sprintf( __( 'Feed URL not set for this feed: %s', 'push-syndication' ), $this->site_ID );
 		}
 	}
@@ -242,6 +243,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: kill feed client if too many failures.
 		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
+			// translators: 1: Feed URL, 2: Error message.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %1$s | Error: %2$s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
 
 			// Track the event.
@@ -249,6 +251,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		} else {
+			// translators: %d: Size of the fetched feed, in bytes.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
 
 			// Track the event.
@@ -272,6 +275,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			// Clear libxml error buffer.
 			libxml_clear_errors();
 
+			// translators: 1: Feed URL, 2: List of XML parser errors.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 
 			// Track the event.
@@ -310,9 +314,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
+			// translators: %s: XPath expression used to locate the post root.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
 			return array();
 		} else {
+			// translators: %d: Number of items found in the feed.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'simplexml_load_string', $message = sprintf( __( 'parsed feed, received %d items', 'push-syndication' ), count( $items ) ), $log_time = null, $extra = array() );
 		}
 
@@ -390,6 +396,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			++$post_position;
 		}
 
+		// translators: %d: Number of posts prepared for import.
 		Syndication_Logger::log_post_info( $this->site_ID, $status = 'posts_received', $message = sprintf( __( '%d posts were prepared', 'push-syndication' ), count( $posts ) ), $log_time = null, $extra = array() );
 
 		return $posts;
@@ -618,7 +625,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
 
-		<p><?php echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %1$s are required. If you want a link to another site, %2$s is required. To include a static string, enclose the string as "%3$s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) ); ?></p>
+		<p>
+			<?php
+			// translators: 1: Comma-separated list of required field names, 2: The is_permalink field name, 3: The string keyword used to wrap a static value.
+			echo wp_kses( sprintf( __( '<strong>PLEASE NOTE:</strong> %1$s are required. If you want a link to another site, %2$s is required. To include a static string, enclose the string as "%3$s(your_string_here)" &mdash; no quotes.', 'push-syndication' ), 'post_title, post_guid, guid', 'is_permalink', 'string' ), array( 'strong' => array() ) );
+			?>
+		</p>
 
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
 			<li class="text">

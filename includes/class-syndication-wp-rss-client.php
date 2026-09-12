@@ -261,11 +261,13 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		$rss_init = $this->init();
 
 		if ( false === $rss_init ) {
+			// translators: %s: Feed URL.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = isset( $site_post->postmeta['is_update'] ) ? $site_post->postmeta['is_update'] : null, $extra = array( 'error' => $this->error() ) );
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
 		} else {
+			// translators: %d: Size of the fetched feed, in bytes.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $this->get_raw_data() ) ), $log_time = null, $extra = array() );
 
 			// Track the event.

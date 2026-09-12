@@ -193,5 +193,6 @@ add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10
  * @param int $count   The number of failed pull attempts.
  */
 function syn_add_site_disabled_notice( $site_id, $count ) {
+	// translators: 1: Site post ID, 2: Number of failed pull attempts.
 	Syndication_Logger_Admin_Notice::add_notice( $message_text = sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ), $message_type = 'Syndication site disabled', $class = 'error', $summarize_multiple = false );
 }

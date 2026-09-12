@@ -201,6 +201,7 @@ class WP_Push_Syndication_Server {
 					$client_data = $client->get_client_data();
 					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
+					// translators: %s: Transport type of the site.
 					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
 				}
 				break;
@@ -719,6 +720,7 @@ class WP_Push_Syndication_Server {
 		$max_len = 0;
 		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
+			// translators: 1: Client name, 2: Client mode.
 			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%1$s (%2$s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
 		}
 		echo '</select>';
@@ -1480,8 +1482,10 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( is_array( $posts ) && count( $posts ) > 0 ) {
+				// translators: 1: Site post ID, 2: Number of posts in the feed.
 				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %1$d with %2$d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
 			} else {
+				// translators: %d: Site post ID.
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );
 			}
 
