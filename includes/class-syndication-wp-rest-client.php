@@ -354,9 +354,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 */
 	public static function display_settings( $site ) {
 
-		$site_token = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_token', true ) );
-		$site_id    = get_post_meta( $site->ID, 'syn_site_id', true );
-		$site_url   = get_post_meta( $site->ID, 'syn_site_url', true );
+		$has_token = '' !== (string) get_post_meta( $site->ID, 'syn_site_token', true );
+		$site_id   = get_post_meta( $site->ID, 'syn_site_id', true );
+		$site_url  = get_post_meta( $site->ID, 'syn_site_url', true );
 
 		// @TODO refresh UI.
 
@@ -370,7 +370,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			<label for=site_token><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" class="widefat" name="site_token" id="site_token" size="100" value="<?php echo esc_attr( $site_token ); ?>" />
+			<input type="password" class="widefat" name="site_token" id="site_token" size="100" autocomplete="off" value="" placeholder="<?php echo $has_token ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
 		</p>
 		<p>
 			<label for=site_id><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
@@ -402,7 +402,12 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		// can break OAuth tokens. The token is encrypted before storage anyway.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Token sanitized with wp_strip_all_tags.
 		$token = isset( $_POST['site_token'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_token'] ) ) : '';
-		update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( $token ) );
+
+		// The token field is write-only: a blank submission keeps the stored token.
+		if ( '' !== $token ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+			update_post_meta( $site_ID, 'syn_site_token', push_syndicate_encrypt( $token ) );
+		}
 		update_post_meta( $site_ID, 'syn_site_id', isset( $_POST['site_id'] ) ? sanitize_text_field( wp_unslash( $_POST['site_id'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_site_url', isset( $_POST['site_url'] ) ? esc_url_raw( wp_unslash( $_POST['site_url'] ) ) : '' );
 

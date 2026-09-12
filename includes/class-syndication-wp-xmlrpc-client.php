@@ -566,7 +566,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$site_url      = get_post_meta( $site->ID, 'syn_site_url', true );
 		$site_username = get_post_meta( $site->ID, 'syn_site_username', true );
-		$site_password = push_syndicate_decrypt( get_post_meta( $site->ID, 'syn_site_password', true ) );
+		$has_password  = '' !== (string) get_post_meta( $site->ID, 'syn_site_password', true );
 
 		?>
 
@@ -586,7 +586,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<label><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="<?php echo esc_attr( $site_password ); ?>" />
+			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="" placeholder="<?php echo $has_password ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
 		</p>
 
 		<?php
@@ -607,7 +607,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
 		update_post_meta( $site_ID, 'syn_site_username', $username );
-		update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
+		// The password field is write-only: a blank submission keeps the stored password.
+		if ( '' !== $password ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
+		}
 
 		if ( ! filter_var( $site_url, FILTER_VALIDATE_URL ) ) {
 			add_filter(

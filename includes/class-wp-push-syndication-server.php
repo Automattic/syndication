@@ -270,12 +270,15 @@ class WP_Push_Syndication_Server {
 
 		$settings                             = array();
 		$settings['client_id']                = sanitize_text_field( $raw_settings['client_id'] );
-		$settings['client_secret']            = sanitize_text_field( $raw_settings['client_secret'] );
 		$settings['selected_post_types']      = ! empty( $raw_settings['selected_post_types'] ) ? $raw_settings['selected_post_types'] : array();
 		$settings['delete_pushed_posts']      = ! empty( $raw_settings['delete_pushed_posts'] ) ? $raw_settings['delete_pushed_posts'] : 'off';
 		$settings['selected_pull_sitegroups'] = ! empty( $raw_settings['selected_pull_sitegroups'] ) ? $raw_settings['selected_pull_sitegroups'] : array();
 		$settings['pull_time_interval']       = ! empty( $raw_settings['pull_time_interval'] ) ? max( $raw_settings['pull_time_interval'], 300 ) : '3600';
 		$settings['update_pulled_posts']      = ! empty( $raw_settings['update_pulled_posts'] ) ? $raw_settings['update_pulled_posts'] : 'off';
+
+		// The client secret field is write-only: a blank submission keeps the stored secret.
+		$submitted_secret          = isset( $raw_settings['client_secret'] ) ? sanitize_text_field( $raw_settings['client_secret'] ) : '';
+		$settings['client_secret'] = '' !== $submitted_secret ? $submitted_secret : $this->push_syndicate_settings['client_secret'];
 
 		$this->pre_schedule_pull_content( $settings['selected_pull_sitegroups'] );
 
@@ -477,7 +480,8 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_client_secret() {
-		echo '<input type="text" size=100 name="push_syndicate_settings[client_secret]" value="' . esc_attr( $this->push_syndicate_settings['client_secret'] ) . '"/>';
+		$placeholder = empty( $this->push_syndicate_settings['client_secret'] ) ? '' : __( 'Leave blank to keep the saved value', 'push-syndication' );
+		echo '<input type="password" size=100 autocomplete="off" name="push_syndicate_settings[client_secret]" value="" placeholder="' . esc_attr( $placeholder ) . '"/>';
 	}
 
 	public function get_api_token() {
