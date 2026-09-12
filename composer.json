@@ -23,6 +23,7 @@
 		"php-parallel-lint/php-parallel-lint": "^1.0",
 		"phpcompatibility/phpcompatibility-wp": "^2.1",
 		"phpunit/phpunit": "^9",
+		"sirbrillig/phpcs-changed": "^2.13",
 		"yoast/wp-test-utils": "^1.2"
 	},
 	"config": {
@@ -44,7 +45,7 @@
 			"@php ./vendor/bin/phpcbf -q"
 		],
 		"i18n": [
-			"@php wp i18n make-pot . ./languages/push-syndication.pot --domain=push-syndication"
+			"@php wp i18n make-pot . ./languages/push-syndication.pot --domain=push-syndication --slug=push-syndication"
 		],
 		"lint": [
 			"@php ./vendor/php-parallel-lint/php-parallel-lint/parallel-lint . -e php --exclude vendor --exclude .git"

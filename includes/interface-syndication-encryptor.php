@@ -1,7 +1,15 @@
 <?php
+/**
+ * Encryptor interface for syndication data encryption.
+ *
+ * @package Syndication
+ */
 
 /**
  * Interface Syndication_Encryptor
+ *
+ * Defines the contract for encryption implementations used to secure
+ * sensitive syndication data such as credentials and tokens.
  */
 interface Syndication_Encryptor {
 

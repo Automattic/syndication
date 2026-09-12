@@ -1,7 +1,15 @@
 <?php
+/**
+ * OpenSSL encryption implementation for syndication data.
+ *
+ * @package Syndication
+ */
 
 /**
  * Class Syndication_Encryptor_OpenSSL
+ *
+ * Provides encryption and decryption using the OpenSSL extension.
+ * This is the recommended encryption implementation for PHP 7.2+.
  */
 class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 
@@ -13,7 +21,11 @@ class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 	private $cipher = 'aes-256-cbc';
 
 	/**
-	 * @inheritDoc
+	 * Encrypts data using OpenSSL.
+	 *
+	 * @param mixed $data Data to encrypt.
+	 *
+	 * @return string Encrypted data.
 	 */
 	public function encrypt( $data ) {
 		$data   = wp_json_encode( $data );
@@ -28,7 +40,12 @@ class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Decrypts data using OpenSSL.
+	 *
+	 * @param string $data        Encrypted data to decrypt.
+	 * @param bool   $associative Whether to return associative array. Default true.
+	 *
+	 * @return mixed|false Decrypted data or false on failure.
 	 */
 	public function decrypt( $data, $associative = true ) {
 		$cipher = $this->get_cipher();
@@ -47,7 +64,9 @@ class Syndication_Encryptor_OpenSSL implements Syndication_Encryptor {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Gets the cipher configuration.
+	 *
+	 * @return array|false Cipher configuration array or false if cipher unavailable.
 	 */
 	public function get_cipher() {
 		if ( in_array( $this->cipher, openssl_get_cipher_methods(), true ) ) {

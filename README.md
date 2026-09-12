@@ -1,12 +1,12 @@
 # Syndication
 
-Stable tag: 2.2.0
-Requires at least: 6.4
-Tested up to: 6.9
-Requires PHP: 7.4
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Tags: syndication, xmlrpc, rest-api, content-distribution, multisite
+Stable tag: 2.2.1  
+Requires at least: 6.4  
+Tested up to: 7.1  
+Requires PHP: 7.4  
+License: GPLv2 or later  
+License URI: https://www.gnu.org/licenses/gpl-2.0.html  
+Tags: syndication, xmlrpc, rest-api, content-distribution, multisite  
 Contributors: automattic, garyj, nprasath002, batmoo, betzster, nickdaugherty
 
 Syndicate content to and from your WordPress sites. Push posts to multiple destinations or pull content from external feeds with a single click.
@@ -83,9 +83,17 @@ The push functionality requires WordPress on the destination site. However, pull
 
 Yes, Syndication works with WordPress multisite installations. You can syndicate content between subsites or to external sites.
 
+## Screenshots
+
+1. [The settings screen, covering pull sitegroups, pull scheduling, pushable post types and WordPress.com application credentials](.wordpress-org/screenshot-1.png)
+2. [The Sites list, showing each destination's transport, sitegroup and status](.wordpress-org/screenshot-2.png)
+3. [Registering a standalone WordPress install over XML-RPC](.wordpress-org/screenshot-3.png)
+4. [Registering a WordPress.com site over the REST API](.wordpress-org/screenshot-4.png)
+5. [The Syndicate panel in the post editor, for choosing which sitegroups a post goes to](.wordpress-org/screenshot-5.png)
+
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for the full changelog.
+See [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md) for the full changelog.
 
 ## Contributing
 

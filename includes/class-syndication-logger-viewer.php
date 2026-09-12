@@ -1,9 +1,20 @@
 <?php
+/**
+ * Log viewer for syndication events.
+ *
+ * @package Syndication
+ */
 
-if( ! class_exists( 'WP_List_Table' ) ) {
-	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
+if ( ! class_exists( 'WP_List_Table' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
+/**
+ * Class Syndication_Logger_List_Table
+ *
+ * Extends WP_List_Table to display syndication log entries in the WordPress
+ * admin interface, with filtering, sorting, and pagination support.
+ */
 class Syndication_Logger_List_Table extends WP_List_Table {
 
 	public $prepared_data = array();
@@ -16,22 +27,33 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 
 	protected $_max_date = null;
 
-	public function __construct(){
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the list table and registers admin hooks.
+	 */
+	public function __construct() {
 		global $status, $page;
 
-		parent::__construct( array(
-			'singular'  => __( 'log', 'push-syndication' ),
-			'plural'    => __( 'logs', 'push-syndication' ),
-			'ajax'      => false
-		) );
+		parent::__construct(
+			array(
+				'singular' => __( 'log', 'push-syndication' ),
+				'plural'   => __( 'logs', 'push-syndication' ),
+				'ajax'     => false,
+			) 
+		);
 
 		add_action( 'admin_head', array( $this, 'admin_header' ) );
 	}
 
+	/**
+	 * Output CSS styles for the log list table columns.
+	 */
 	public function admin_header() {
 		$current_page = ( isset( $_GET['page'] ) ) ? (int) $_GET['page'] : false;
-		if( 'syndication_dashboard' != $current_page )
+		if ( 'syndication_dashboard' != $current_page ) {
 			return;
+		}
 
 		?>
 		<style type="text/css">
@@ -45,157 +67,237 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Display a message when no log items are found.
+	 */
 	public function no_items() {
 		esc_html_e( 'No log entries found.', 'push-syndication' );
 	}
 
+	/**
+	 * Render the default column output.
+	 *
+	 * Log entries are read from post meta that may have been written by a
+	 * lower-privileged user, so every value is escaped before output.
+	 * WP_List_Table echoes the return value without escaping it.
+	 *
+	 * @param array  $item        The current log item.
+	 * @param string $column_name The column name being rendered.
+	 * @return string The escaped column value, or an empty string.
+	 */
 	public function column_default( $item, $column_name ) {
-		switch( $column_name ) {
-			case 'object_id':
-			case 'log_id':
-			case 'time':
-			case 'msg_type':
-			case 'status':
-			case 'message':
-				return $item[ $column_name ];
-
-			default:
-				return print_r( $item, true );
+		if ( ! isset( $item[ $column_name ] ) || ! is_scalar( $item[ $column_name ] ) ) {
+			return '';
 		}
+
+		return esc_html( (string) $item[ $column_name ] );
 	}
 
+	/**
+	 * Get the list of sortable columns.
+	 *
+	 * @return array Associative array of sortable column data.
+	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'object_id' => array( 'object_id',	false ),
-			'log_id'	=> array( 'log_id', 	false ),
-			'time'		=> array( 'time', 		false ),
-			'msg_type' 	=> array( 'msg_type',	false ),
-			'message'  	=> array( 'message', 	false ),
-			'status'   	=> array( 'status',		false )
-			);
+			'object_id' => array( 'object_id', false ),
+			'log_id'    => array( 'log_id', false ),
+			'time'      => array( 'time', false ),
+			'msg_type'  => array( 'msg_type', false ),
+			'message'   => array( 'message', false ),
+			'status'    => array( 'status', false ),
+		);
 		return $sortable_columns;
 	}
 
-	public function get_columns(){
+	/**
+	 * Get the list of columns for the table.
+	 *
+	 * @return array Associative array of column names and labels.
+	 */
+	public function get_columns() {
 		$columns = array(
-			'object_id'	=> __( 'Object ID', 'push-syndication' ),
-			'log_id'	=> __( 'Log ID', 	'push-syndication' ),
-			'time'		=> __( 'Time', 		'push-syndication' ),
-			'msg_type'	=> __( 'Type', 		'push-syndication' ),
-			'status'	=> __( 'Status', 	'push-syndication' ),
-			'message'	=> __( 'Message', 	'push-syndication' ),
-			);
+			'object_id' => __( 'Object ID', 'push-syndication' ),
+			'log_id'    => __( 'Log ID', 'push-syndication' ),
+			'time'      => __( 'Time', 'push-syndication' ),
+			'msg_type'  => __( 'Type', 'push-syndication' ),
+			'status'    => __( 'Status', 'push-syndication' ),
+			'message'   => __( 'Message', 'push-syndication' ),
+		);
 		return $columns;
 	}
 
+	/**
+	 * Custom sorting callback for log items.
+	 *
+	 * @param array $a First item to compare.
+	 * @param array $b Second item to compare.
+	 * @return int Comparison result.
+	 */
 	public function usort_reorder( $a, $b ) {
-		$orderby = ( ! empty( $_GET['orderby'] ) ) ? esc_attr( $_GET['orderby'] ) : 'time';
-		$order = ( ! empty($_GET['order'] ) ) ? esc_attr( $_GET['order'] ) : 'desc';
-		$result = strcmp( $a[$orderby], $b[$orderby] );
-		return ( $order === 'asc' ) ? $result : -$result;
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only sorting of an admin list table.
+		$orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : '';
+		$order   = isset( $_GET['order'] ) ? strtolower( sanitize_key( wp_unslash( $_GET['order'] ) ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! array_key_exists( $orderby, $this->get_sortable_columns() ) ) {
+			$orderby = 'time';
+		}
+
+		if ( 'asc' !== $order ) {
+			$order = 'desc';
+		}
+
+		$a_value = isset( $a[ $orderby ] ) && is_scalar( $a[ $orderby ] ) ? (string) $a[ $orderby ] : '';
+		$b_value = isset( $b[ $orderby ] ) && is_scalar( $b[ $orderby ] ) ? (string) $b[ $orderby ] : '';
+
+		$result = strcmp( $a_value, $b_value );
+
+		return ( 'asc' === $order ) ? $result : -$result;
 	}
 
-	public function column_log_id($item){
-		return sprintf('%1$s', substr( $item['log_id'], 0, 3 ) . '&hellip;' . substr( $item['log_id'], -3 ) );
+	/**
+	 * Render the log_id column with truncation.
+	 *
+	 * @param array $item The current log item.
+	 * @return string The escaped, truncated log ID.
+	 */
+	public function column_log_id( $item ) {
+		if ( ! isset( $item['log_id'] ) || ! is_scalar( $item['log_id'] ) ) {
+			return '';
+		}
+
+		$log_id = (string) $item['log_id'];
+
+		return esc_html( substr( $log_id, 0, 3 ) ) . '&hellip;' . esc_html( substr( $log_id, -3 ) );
 	}
 
+	/**
+	 * Get the list of bulk actions available for this table.
+	 *
+	 * @return array Empty array as no bulk actions are supported.
+	 */
 	public function get_bulk_actions() {
 		$actions = array();
 		return $actions;
 	}
 
 	/**
+	 * Prepares the list of items for displaying.
 	 *
+	 * Fetches log data, applies filters, sorts, and paginates.
+	 * Filters are applied BEFORE pagination so that pagination
+	 * reflects the filtered result count accurately.
 	 */
 	public function prepare_items() {
-		$columns  = $this->get_columns();
-		$hidden   = array();
-		$sortable = $this->get_sortable_columns();
+		$columns               = $this->get_columns();
+		$hidden                = array();
+		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$log_id = ( isset( $_REQUEST['log_id'] ) ) ? esc_attr( $_REQUEST['log_id'] ) : null;
-		$msg_type = null;
-		$object_id = null;
-		$object_type = 'post';
-		$log_status = null;
-		$date_start = null;
-		$date_end = null;
-		$message = null;
+		$log_id       = ( isset( $_REQUEST['log_id'] ) ) ? esc_attr( $_REQUEST['log_id'] ) : null;
+		$msg_type     = null;
+		$object_id    = null;
+		$object_type  = 'post';
+		$log_status   = null;
+		$date_start   = null;
+		$date_end     = null;
+		$message      = null;
 		$storage_type = 'object';
 
 		$log_data = Syndication_Logger::instance()->get_messages(
-				$log_id,
-				$msg_type,
-				$object_id,
-				$object_type,
-				$log_status,
-				$date_start,
-				$date_end,
-				$message,
-				$storage_type
+			$log_id,
+			$msg_type,
+			$object_id,
+			$object_type,
+			$log_status,
+			$date_start,
+			$date_end,
+			$message,
+			$storage_type
 		);
 
-		foreach( $log_data as $site_id => $log_items ) {
+		foreach ( $log_data as $site_id => $log_items ) {
 			$this->prepared_data = array_merge( $this->prepared_data, $log_items );
 		}
-		usort( $this->prepared_data, array( $this, 'usort_reorder' ) );
 
-		$per_page = $this->get_items_per_page( 'per_page' );
-		$current_page = $this->get_pagenum();
-		$total_items = count( $this->prepared_data );
+		// Populate min/max dates from ALL data (before filtering) for the date dropdown.
+		if ( $this->prepared_data ) {
+			$items_sorted_by_time = $this->prepared_data;
 
-		$this->found_data = array_slice( $this->prepared_data,( ( $current_page-1 )* $per_page ), $per_page );
-
-
-		// Populate min/max dates.
-		if ( $this->found_data ) {
-			$items_sorted_by_time = $this->found_data;
-
-			usort( $items_sorted_by_time, function ( $a, $b  ) {
-				return strtotime( $a['time'] ) - strtotime( $b['time'] );
-			} );
+			usort(
+				$items_sorted_by_time,
+				function ( $a, $b ) {
+					return strtotime( $a['time'] ) - strtotime( $b['time'] );
+				} 
+			);
 
 			$this->_max_date = strtotime( end( $items_sorted_by_time )['time'] );
 			$this->_min_date = strtotime( reset( $items_sorted_by_time )['time'] );
 		}
 
+		// Apply filters BEFORE pagination so counts are accurate.
+		$filtered_data = $this->prepared_data;
 
-		// Filter by month
+		// Filter by month.
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		if ( $requested_month ) {
-			$this->found_data = array_filter( $this->found_data, function ( $item ) use ( $requested_month ) {
-				return date( 'Y-m', strtotime( $item['time'] ) ) === $requested_month;
-			} );
+			$filtered_data = array_filter(
+				$filtered_data,
+				function ( $item ) use ( $requested_month ) {
+					return date( 'Y-m', strtotime( $item['time'] ) ) === $requested_month;
+				} 
+			);
 		}
 
-
-		// Filter by type
+		// Filter by type.
 		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		if ( $requested_type ) {
-			$this->found_data = array_filter( $this->found_data, function ( $item  ) use ( $requested_type ) {
-				return $requested_type === $item['msg_type'];
-			} );
+			$filtered_data = array_filter(
+				$filtered_data,
+				function ( $item ) use ( $requested_type ) {
+					return $requested_type === $item['msg_type'];
+				} 
+			);
 		}
 
+		// Re-index array after filtering.
+		$filtered_data = array_values( $filtered_data );
 
-		$this->set_pagination_args( array(
-			'total_items' => $total_items,
-			'per_page'    => $per_page
-		) );
+		// Sort the filtered data.
+		usort( $filtered_data, array( $this, 'usort_reorder' ) );
+
+		// Paginate the filtered and sorted data.
+		$per_page     = $this->get_items_per_page( 'syndication_logs_per_page', 20 );
+		$current_page = $this->get_pagenum();
+		$total_items  = count( $filtered_data );
+
+		$this->found_data = array_slice( $filtered_data, ( ( $current_page - 1 ) * $per_page ), $per_page );
+
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_items,
+				'per_page'    => $per_page,
+			) 
+		);
 		$this->items = $this->found_data;
 	}
 
+	/**
+	 * Output extra table navigation controls.
+	 *
+	 * @param string $which The location of the extra table nav ('top' or 'bottom').
+	 */
 	protected function extra_tablenav( $which ) {
 		?>
 		<div class="alignleft actions">
 			<?php
-			if ( 'top' == $which && !is_singular() ) {
-
+			if ( 'top' == $which && ! is_singular() ) {
 				$this->create_log_id_dropdown();
 				$this->_create_months_dropdown();
 				$this->_create_types_dropdown();
 
-				submit_button( __( 'Filter' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+				submit_button( __( 'Filter', 'push-syndication' ), 'button', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
 			}
 
 			?>
@@ -203,8 +305,12 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the log ID filter dropdown.
+	 */
 	private function create_log_id_dropdown() {
-		$requested_log_id = isset( $_REQUEST['log_id'] ) ? esc_attr( $_REQUEST['log_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter on an admin list table.
+		$requested_log_id = isset( $_REQUEST['log_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['log_id'] ) ) : 0;
 		?>
 		<label class="screen-reader-text" for="filter-by-log-id"><?php esc_html_e( 'Filter by Log ID', 'push-syndication' ); ?></label>
 		<select name="log_id" id="filter-by-log-id">
@@ -212,20 +318,22 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 			<?php
 			$log_ids = array();
 			foreach ( $this->prepared_data as $row ) {
-				if ( 0 == $row['log_id'] )
+				if ( ! isset( $row['log_id'] ) || ! is_scalar( $row['log_id'] ) || 0 == $row['log_id'] ) {
 					continue;
+				}
 
-				$log_id = esc_attr( $row['log_id'] );
-				if ( ! isset( $log_ids[$log_id] ) ) {
-					$log_ids[$log_id] = sprintf( "<option %s value='%s'>%s</option>\n",
+				$log_id = (string) $row['log_id'];
+				if ( ! isset( $log_ids[ $log_id ] ) ) {
+					$log_ids[ $log_id ] = sprintf(
+						"<option %s value='%s'>%s</option>\n",
 						selected( $requested_log_id, $log_id, false ),
 						esc_attr( $log_id ),
-						esc_attr( $this->column_log_id( $row ) )
+						$this->column_log_id( $row )
 					);
 				}
 			}
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each element is escaped with esc_attr() in the loop above
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- values are escaped with esc_attr()/column_log_id() in the loop above.
 			echo implode( "\n", $log_ids );
 			?>
 		</select>
@@ -233,19 +341,23 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the month filter dropdown.
+	 */
 	protected function _create_months_dropdown() {
 		$requested_month = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['month'] ) : null;
 		?>
-		<label class="screen-reader-text" for="filter-by-month">Filter by month</label>
+		<label class="screen-reader-text" for="filter-by-month"><?php esc_html_e( 'Filter by month', 'push-syndication' ); ?></label>
 		<select name="month" id="filter-by-month">
 			<option value="">All dates</option>
 
 			<?php
 			if ( $this->_min_date && $this->_max_date ) {
 				$month_pointer = new DateTime( '@' . $this->_min_date );
-				$max_month = new DateTime( '@' . $this->_max_date );
+				$max_month     = new DateTime( '@' . $this->_max_date );
 
-				while ( $month_pointer <= $max_month ) { ?>
+				while ( $month_pointer <= $max_month ) { 
+					?>
 					<option
 						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( $month_pointer->format( 'F Y' ) ); ?></option>
 					<?php
@@ -257,13 +369,22 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		<?php
 	}
 
+	/**
+	 * Output the message type filter dropdown.
+	 */
 	protected function _create_types_dropdown() {
-		$requested_type = isset( $_REQUEST['month'] ) ? esc_attr( $_REQUEST['type'] ) : null;
+		$requested_type = isset( $_REQUEST['type'] ) ? esc_attr( $_REQUEST['type'] ) : null;
 		?>
-		<label class="screen-reader-text" for="filter-by-type">Filter by type</label>
+		<label class="screen-reader-text" for="filter-by-type"><?php esc_html_e( 'Filter by type', 'push-syndication' ); ?></label>
 		<select name="type" id="filter-by-type">
 			<option value="">All types</option>
-			<?php foreach( array( 'success' => 'Success', 'info' => 'Information', 'error' => 'Error' ) as $key => $label ): ?>
+			<?php 
+			foreach ( array(
+				'success' => 'Success',
+				'info'    => 'Information',
+				'error'   => 'Error',
+			) as $key => $label ) : 
+				?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $requested_type, $key ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
@@ -276,26 +397,69 @@ class Syndication_Logger_Viewer {
 
 	public $syndication_logger_table;
 
+	/**
+	 * Constructor.
+	 *
+	 * Registers admin menu and screen option hooks.
+	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_menu_items' ) );
+		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
 	}
 
-	public function add_menu_items(){
+	/**
+	 * Register the Logs submenu page under Syndication Sites.
+	 */
+	public function add_menu_items() {
 		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', 'activate_plugins', 'syndication_dashboard', array( $this, 'render_list_page' ) );
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
 	}
 
+	/**
+	 * Save the screen option value when submitted.
+	 *
+	 * @param mixed  $status The current status (false by default).
+	 * @param string $option The option name.
+	 * @param mixed  $value  The option value.
+	 * @return mixed The value to save, or $status to skip saving.
+	 */
+	public function set_screen_option( $status, $option, $value ) {
+		if ( 'syndication_logs_per_page' === $option ) {
+			return absint( $value );
+		}
+		return $status;
+	}
+
+	/**
+	 * Initialize the list table and add screen options.
+	 *
+	 * Handles redirect for log ID filter and sets up the list table instance.
+	 */
 	public function initialize_list_table() {
 		if ( ! empty( $_POST['log_id'] ) && ( empty( $_GET['log_id'] ) || esc_attr( $_GET['log_id'] ) != esc_attr( $_POST['log_id'] ) ) ) {
-			wp_safe_redirect( add_query_arg( array( 'log_id' => esc_attr( $_REQUEST['log_id'] ) ), wp_unslash($_SERVER['REQUEST_URI'] ) ) );
+			wp_safe_redirect( add_query_arg( array( 'log_id' => esc_attr( $_REQUEST['log_id'] ) ), wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 			exit;
 		}
+
+		// Add screen options for items per page.
+		add_screen_option(
+			'per_page',
+			array(
+				'label'   => __( 'Log entries', 'push-syndication' ),
+				'default' => 20,
+				'option'  => 'syndication_logs_per_page',
+			)
+		);
+
 		$this->syndication_logger_table = new Syndication_Logger_List_Table();
 	}
 
-	public function render_list_page(){
+	/**
+	 * Render the syndication logs list page.
+	 */
+	public function render_list_page() {
 		?>
-		<div class="wrap"><h2><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h2>
+		<div class="wrap"><h1><?php esc_html_e( 'Syndication Logs', 'push-syndication' ); ?></h1>
 			<?php
 			$this->syndication_logger_table->prepare_items();
 			?>

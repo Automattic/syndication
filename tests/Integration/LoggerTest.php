@@ -118,4 +118,72 @@ class LoggerTest extends WPIntegrationTestCase {
 		$errors = get_post_meta( $site_id, 'syn_log_errors', true );
 		$this->assertEquals( 1, (int) $errors );
 	}
+
+	/**
+	 * Test that a stored value the plugin did not write is not turned into an object.
+	 *
+	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be
+	 * well-formed log data. Some values are stored verbatim rather than re-serialized,
+	 * and reading one back must yield an array, never an object graph.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_never_returns_an_object_from_stored_meta(): void {
+		$post_id = $this->factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'draft',
+			)
+		);
+
+		$inner   = 'x:i:0;a:1:{i:0;s:3:"pwn";};m:a:0:{}';
+		$payload = 'C:11:"ArrayObject":' . strlen( $inner ) . ':{' . $inner . '}';
+
+		add_post_meta( $post_id, 'syn_log', $payload );
+
+		// Confirm the value was stored verbatim rather than re-serialized on the way in.
+		$this->assertSame( $payload, get_post_meta( $post_id, 'syn_log', true ) );
+
+		$log_entries = Syndication_Logger::get_messages();
+
+		$this->assertArrayHasKey( $post_id, $log_entries );
+		$this->assertSame( array(), $log_entries[ $post_id ] );
+	}
+
+	/**
+	 * The log meta keys must not be writable through capability-checked paths.
+	 *
+	 * This is what keeps them out of the Custom Fields panel, the add/delete meta
+	 * AJAX endpoints and XML-RPC set_custom_fields(), all of which gate on these caps.
+	 *
+	 * @covers Syndication_Logger::register_log_meta
+	 */
+	public function test_log_meta_keys_are_not_writable_by_capability(): void {
+		/*
+		 * The plugin registers these on `init`, which fires once per PHPUnit run, and
+		 * WP_UnitTestCase_Base::tear_down() calls unregister_all_meta_keys() after every
+		 * test. Register them here rather than relying on a registration an earlier test
+		 * has already torn down.
+		 */
+		Syndication_Logger::register_log_meta();
+
+		$admin_id = $this->factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $admin_id );
+
+		$post_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+			$this->assertFalse( current_user_can( 'add_post_meta', $post_id, $meta_key ), $meta_key );
+			$this->assertFalse( current_user_can( 'edit_post_meta', $post_id, $meta_key ), $meta_key );
+			$this->assertFalse( current_user_can( 'delete_post_meta', $post_id, $meta_key ), $meta_key );
+		}
+
+		// An unrelated key is still writable, so the denial is not blanket.
+		$this->assertTrue( current_user_can( 'edit_post_meta', $post_id, 'syn_site_url' ) );
+
+		// The logger writes via update_post_meta(), which does not consult the auth
+		// callback, so normal logging is unaffected.
+		Syndication_Logger::log_post_error( $post_id, 'error', 'still logging' );
+		$this->assertNotEmpty( get_post_meta( $post_id, 'syn_log', true ) );
+	}
 }
