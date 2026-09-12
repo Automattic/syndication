@@ -42,6 +42,26 @@ final class Container {
 	private array $instances = array();
 
 	/**
+	 * Shared container instance.
+	 *
+	 * @var Container|null
+	 */
+	private static ?Container $instance = null;
+
+	/**
+	 * Get the shared container instance.
+	 *
+	 * @return Container The shared container.
+	 */
+	public static function instance(): Container {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
