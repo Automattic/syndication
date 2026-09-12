@@ -366,30 +366,28 @@ class WP_Push_Syndication_Server {
 	public function display_syndicate_settings() {
 
 		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options', 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
-		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-		add_settings_field( 'max_pull_attempts', esc_html__( 'Maximum pull attempts', 'push-syndication' ), array( $this, 'display_max_pull_attempts' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
-		add_settings_field( 'update_pulled_posts', esc_html__( 'update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options' );
+		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options', array( 'label_for' => 'pull_time_interval' ) );
+		add_settings_field( 'max_pull_attempts', esc_html__( 'Maximum pull attempts', 'push-syndication' ), array( $this, 'display_max_pull_attempts' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options', array( 'label_for' => 'push_syndication_max_pull_attempts' ) );
+		add_settings_field( 'update_pulled_posts', esc_html__( 'Update pulled posts', 'push-syndication' ), array( $this, 'display_update_pulled_posts_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options', array( 'label_for' => 'update_pulled_posts' ) );
 
 		add_settings_section( 'push_syndicate_post_types', esc_html__( 'Post Types', 'push-syndication' ), array( $this, 'display_push_post_types_description' ), 'push_syndicate_post_types' );
-		add_settings_field( 'post_type_selection', esc_html__( 'select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
+		add_settings_field( 'post_type_selection', esc_html__( 'Select post types', 'push-syndication' ), array( $this, 'display_post_types_selection' ), 'push_syndicate_post_types', 'push_syndicate_post_types' );
 
-		add_settings_section( 'delete_pushed_posts', esc_html__( ' Delete Pushed Posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
-		add_settings_field( 'delete_post_check', esc_html__( ' delete pushed posts ', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts' );
+		add_settings_section( 'delete_pushed_posts', esc_html__( 'Delete Pushed Posts', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_description' ), 'delete_pushed_posts' );
+		add_settings_field( 'delete_post_check', esc_html__( 'Delete pushed posts', 'push-syndication' ), array( $this, 'display_delete_pushed_posts_selection' ), 'delete_pushed_posts', 'delete_pushed_posts', array( 'label_for' => 'delete_pushed_posts' ) );
 
-		add_settings_section( 'api_token', esc_html__( ' API Token Configuration ', 'push-syndication' ), array( $this, 'display_apitoken_description' ), 'api_token' );
-		add_settings_field( 'client_id', esc_html__( ' Enter your client id ', 'push-syndication' ), array( $this, 'display_client_id' ), 'api_token', 'api_token' );
-		add_settings_field( 'client_secret', esc_html__( ' Enter your client secret ', 'push-syndication' ), array( $this, 'display_client_secret' ), 'api_token', 'api_token' );
+		add_settings_section( 'api_token', esc_html__( 'API Token Configuration', 'push-syndication' ), array( $this, 'display_apitoken_description' ), 'api_token' );
+		add_settings_field( 'client_id', esc_html__( 'Enter your client ID', 'push-syndication' ), array( $this, 'display_client_id' ), 'api_token', 'api_token', array( 'label_for' => 'client_id' ) );
+		add_settings_field( 'client_secret', esc_html__( 'Enter your client secret', 'push-syndication' ), array( $this, 'display_client_secret' ), 'api_token', 'api_token', array( 'label_for' => 'client_secret' ) );
 
 		?>
 
-		<div class="wrap" xmlns="http://www.w3.org/1999/html">
+		<div class="wrap">
 
-			<?php screen_icon(); // @TODO custom screen icon ?>
-
-			<h2><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h2>
+			<h1><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h1>
 
 			<form action="options.php" method="post">
 
@@ -399,7 +397,7 @@ class WP_Push_Syndication_Server {
 
 				<?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
 
-				<?php submit_button( '  Pull Now ' ); ?>
+				<?php submit_button( __( 'Pull Now', 'push-syndication' ) ); ?>
 
 				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
@@ -462,7 +460,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_time_interval_selection() {
-		echo '<input type="text" size="10" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
+		echo '<input type="text" size="10" id="pull_time_interval" name="push_syndicate_settings[pull_time_interval]" value="' . esc_attr( $this->push_syndicate_settings['pull_time_interval'] ) . '"/>';
 	}
 
 	/**
@@ -470,7 +468,7 @@ class WP_Push_Syndication_Server {
 	 */
 	public function display_max_pull_attempts() {
 		?>
-		<input type="text" size="10" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
+		<input type="text" size="10" id="push_syndication_max_pull_attempts" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
 		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
 		<?php
 	}
@@ -500,7 +498,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_update_pulled_posts_selection() {
 		// @TODO refractor this.
-		echo '<input type="checkbox" name="push_syndicate_settings[update_pulled_posts]" value="on" ';
+		echo '<input type="checkbox" id="update_pulled_posts" name="push_syndicate_settings[update_pulled_posts]" value="on" ';
 		echo checked( $this->push_syndicate_settings['update_pulled_posts'], 'on' ) . ' />';
 	}
 
@@ -538,7 +536,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_delete_pushed_posts_selection() {
 		// @TODO refractor this.
-		echo '<input type="checkbox" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
+		echo '<input type="checkbox" id="delete_pushed_posts" name="push_syndicate_settings[delete_pushed_posts]" value="on" ';
 		echo checked( $this->push_syndicate_settings['delete_pushed_posts'], 'on' ) . ' />';
 	}
 
@@ -550,12 +548,12 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_client_id() {
-		echo '<input type="text" size=100 name="push_syndicate_settings[client_id]" value="' . esc_attr( $this->push_syndicate_settings['client_id'] ) . '"/>';
+		echo '<input type="text" size="100" id="client_id" name="push_syndicate_settings[client_id]" value="' . esc_attr( $this->push_syndicate_settings['client_id'] ) . '"/>';
 	}
 
 	public function display_client_secret() {
 		$placeholder = empty( $this->push_syndicate_settings['client_secret'] ) ? '' : __( 'Leave blank to keep the saved value', 'push-syndication' );
-		echo '<input type="password" size=100 autocomplete="off" name="push_syndicate_settings[client_secret]" value="" placeholder="' . esc_attr( $placeholder ) . '"/>';
+		echo '<input type="password" size="100" id="client_secret" autocomplete="off" name="push_syndicate_settings[client_secret]" value="" placeholder="' . esc_attr( $placeholder ) . '"/>';
 	}
 
 	public function get_api_token() {
@@ -563,7 +561,7 @@ class WP_Push_Syndication_Server {
 		$redirect_uri           = menu_page_url( 'push-syndicate-settings', false );
 		$authorization_endpoint = 'https://public-api.wordpress.com/oauth2/authorize?client_id=' . $this->push_syndicate_settings['client_id'] . '&redirect_uri=' . $redirect_uri . '&response_type=code';
 
-		echo '<h3>' . esc_html__( 'Authorization ', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h3>';
 
 		// if code is not found return or settings updated return.
 		if ( empty( $_GET['code'] ) || ! empty( $_GET['settings-updated'] ) ) {
@@ -571,7 +569,7 @@ class WP_Push_Syndication_Server {
 
 			?>
 
-			<input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
+			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
 
 			<?php
 
@@ -598,7 +596,7 @@ class WP_Push_Syndication_Server {
 
 			?>
 
-			<input type=button class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value=" Authorize  ">
+			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
 
 			<?php
 
@@ -670,9 +668,9 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function site_metaboxes() {
-		add_meta_box( 'sitediv', __( ' Site Settings ', 'push-syndication' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
+		add_meta_box( 'sitediv', __( 'Site Settings', 'push-syndication' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
 		remove_meta_box( 'submitdiv', 'syn_site', 'side' );
-		add_meta_box( 'submitdiv', __( ' Site Status ', 'push-syndication' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
+		add_meta_box( 'submitdiv', __( 'Site Status', 'push-syndication' ), array( $this, 'add_site_status_metabox' ), 'syn_site', 'side', 'high' );
 	}
 
 	public function add_site_status_metabox( $site ) {
@@ -785,9 +783,9 @@ class WP_Push_Syndication_Server {
 
 	public function display_transports( $transport_type, $mode ) {
 
-		echo '<p>' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</p>';
+		echo '<p><label for="transport_type">' . esc_html__( 'Select a transport type', 'push-syndication' ) . '</label></p>';
 		// TODO: add direction.
-		echo '<select name="transport_type" onchange="this.form.submit()">';
+		echo '<select name="transport_type" id="transport_type" onchange="this.form.submit()">';
 
 		$values  = array();
 		$max_len = 0;
@@ -904,7 +902,7 @@ class WP_Push_Syndication_Server {
 
 		$selected_post_types = $this->push_syndicate_settings['selected_post_types'];
 		foreach ( $selected_post_types as $selected_post_type ) {
-			add_meta_box( 'syndicatediv', __( ' Syndicate ', 'push-syndication' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
+			add_meta_box( 'syndicatediv', __( 'Syndicate', 'push-syndication' ), array( $this, 'add_syndicate_metabox' ), $selected_post_type, 'side', 'high' );
 			// add_meta_box( 'syndicationstatusdiv', __( ' Syndication Status ' ), array( $this, 'add_syndication_status_metabox' ), $selected_post_type, 'normal', 'high' ); // phpcs:ignore Squiz.Commenting.InlineComment.InvalidEndChar -- Commented out code.
 		}
 	}

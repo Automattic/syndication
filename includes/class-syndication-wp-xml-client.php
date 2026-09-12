@@ -547,8 +547,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p>
 			<select name="default_comment_status" id="default_comment_status">
-			<option value="open" <?php selected( 'open', $default_comment_status ); ?>><?php esc_html_e( 'open', 'push-syndication' ); ?></option>
-			<option value="closed" <?php selected( 'closed', $default_comment_status ); ?>><?php esc_html_e( 'closed', 'push-syndication' ); ?></option>
+			<option value="open" <?php selected( 'open', $default_comment_status ); ?>><?php esc_html_e( 'Open', 'push-syndication' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $default_comment_status ); ?>><?php esc_html_e( 'Closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 		<p>
@@ -556,8 +556,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 		<p>
 			<select name="default_ping_status" id="default_ping_status">
-			<option value="open" <?php selected( 'open', $default_ping_status ); ?>><?php esc_html_e( 'open', 'push-syndication' ); ?></option>
-			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?>><?php esc_html_e( 'closed', 'push-syndication' ); ?></option>
+			<option value="open" <?php selected( 'open', $default_ping_status ); ?>><?php esc_html_e( 'Open', 'push-syndication' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $default_ping_status ); ?>><?php esc_html_e( 'Closed', 'push-syndication' ); ?></option>
 			</select>
 		</p>
 
@@ -617,6 +617,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						'selected_array' => $categories,
 						'walker'         => new Walker_CategoryDropdownMultiple(),
 						'name'           => 'categories[]',
+						'id'             => 'categories',
 					) 
 				);
 				remove_filter( 'wp_dropdown_cats', array( __CLASS__, 'make_multiple_categories_dropdown' ) );
@@ -634,22 +635,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
 			<li class="text">
-				<label for="xpath"><?php esc_html_e( 'XPath Expression', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'XPath Expression', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<label for="item_node"><?php esc_html_e( 'Item', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'Item', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<label for="photo_node"><?php esc_html_e( 'Enc.', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'Enc.', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<label for="meta_node"><?php esc_html_e( 'Meta', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'Meta', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<label for="tax_node"><?php esc_html_e( 'Tax', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'Tax', 'push-syndication' ); ?></span>
 			</li>
 			<li class="text">
-				<label for="item_field"><?php esc_html_e( 'Field in Post', 'push-syndication' ); ?></label>
+				<span><?php esc_html_e( 'Field in Post', 'push-syndication' ); ?></span>
 			</li>
 		</ul>
 
@@ -661,22 +662,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					?>
 					<ul class='syn-xml-client-xpath-form syn-xml-client-xpath-list syn-xml-client-list' data-row-count="<?php echo (int) $rowcount; ?>">
 					<li class="text">
-						<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" value="<?php echo esc_attr( wp_unslash( $key ) ); ?>" />
+						<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" aria-label="<?php esc_attr_e( 'XPath expression', 'push-syndication' ); ?>" value="<?php echo esc_attr( wp_unslash( $key ) ); ?>" />
 					</li>
 					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" <?php checked( $storage_location['is_item'] ); ?> value="true" />
+						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" aria-label="<?php esc_attr_e( 'Item', 'push-syndication' ); ?>" <?php checked( $storage_location['is_item'] ); ?> value="true" />
 					</li>
 					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
+						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" aria-label="<?php esc_attr_e( 'Enclosure', 'push-syndication' ); ?>" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
 					</li>
 					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
+						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" aria-label="<?php esc_attr_e( 'Meta', 'push-syndication' ); ?>" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
 					</li>
 					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
+						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" aria-label="<?php esc_attr_e( 'Taxonomy', 'push-syndication' ); ?>" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
 					</li>
 					<li class="text">
-						<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" value="<?php echo esc_attr( stripcslashes( $storage_location['field'] ) ); ?>" />
+						<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" value="<?php echo esc_attr( stripcslashes( $storage_location['field'] ) ); ?>" />
 					</li>
 					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
 				<?php endforeach; ?>
@@ -689,22 +690,22 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<ul class='syn-xml-client-xpath-form syn-xml-xpath-list syn-xml-client-list' data-row-count="<?php echo (int) $rowcount; ?>">
 			<li class="text">
-				<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" />
+				<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" aria-label="<?php esc_attr_e( 'XPath expression', 'push-syndication' ); ?>" />
 			</li>
 			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" />
+				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" aria-label="<?php esc_attr_e( 'Item', 'push-syndication' ); ?>" />
 			</li>
 			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" />
+				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" aria-label="<?php esc_attr_e( 'Enclosure', 'push-syndication' ); ?>" />
 			</li>
 			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" />
+				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" aria-label="<?php esc_attr_e( 'Meta', 'push-syndication' ); ?>" />
 			</li>
 			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" />
+				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" aria-label="<?php esc_attr_e( 'Taxonomy', 'push-syndication' ); ?>" />
 			</li>
 			<li class="text">
-				<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" />
+				<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" />
 			</li>
 			<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
 		</ul>
@@ -746,6 +747,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 						name = name.replace( '[' + ( originalRowCount ) + ']', '[' + newRowCount + ']' );
 						$this.attr( 'name', name ); // hack hack hack!!!
+
+						$this.attr( 'id', $this.attr( 'id' ).replace( 'node-' + originalRowCount + '-', 'node-' + newRowCount + '-' ) );
 					} );
 
 					$newForm.insertAfter( $lastForm );

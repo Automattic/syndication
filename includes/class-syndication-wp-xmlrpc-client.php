@@ -571,7 +571,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		?>
 
 		<p>
-			<label for=site_url><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
+			<label for="site_url"><?php echo esc_html__( 'Enter a valid site URL', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="text" class="widefat" name="site_url" id="site_url" size="100" value="<?php echo esc_html( $site_url ); ?>" />
@@ -583,7 +583,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<input type="text" class="widefat" name="site_username" id="site_username" size="100" value="<?php echo esc_attr( $site_username ); ?>" />
 		</p>
 		<p>
-			<label><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
+			<label for="site_password"><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
 			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="" placeholder="<?php echo $has_password ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
