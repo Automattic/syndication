@@ -46,7 +46,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_has_correct_prefix(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result = $method->invoke( $this->counter, 'test_event', '123' );
 
@@ -58,7 +57,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_is_consistent(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result1 = $method->invoke( $this->counter, 'test_event', '123' );
 		$result2 = $method->invoke( $this->counter, 'test_event', '123' );
@@ -71,7 +69,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_different_slugs(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result1 = $method->invoke( $this->counter, 'event_a', '123' );
 		$result2 = $method->invoke( $this->counter, 'event_b', '123' );
@@ -84,7 +81,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_different_object_ids(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result1 = $method->invoke( $this->counter, 'test_event', '123' );
 		$result2 = $method->invoke( $this->counter, 'test_event', '456' );
@@ -97,7 +93,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_max_length(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		// Test with very long slug and ID.
 		$long_slug = str_repeat( 'very_long_event_slug_', 10 );
@@ -113,7 +108,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_uses_md5(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result   = $method->invoke( $this->counter, 'test', '123' );
 		$expected = 'push_syndication_event_counter_' . md5( 'test123' );
@@ -126,7 +120,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_empty_slug(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result   = $method->invoke( $this->counter, '', '123' );
 		$expected = 'push_syndication_event_counter_' . md5( '123' );
@@ -139,7 +132,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_empty_object_id(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		$result   = $method->invoke( $this->counter, 'test_event', '' );
 		$expected = 'push_syndication_event_counter_' . md5( 'test_event' );
@@ -152,7 +144,6 @@ class EventCounterTest extends TestCase {
 	 */
 	public function test_get_safe_option_name_numeric_id(): void {
 		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
 
 		// The method converts to string internally.
 		$result   = $method->invoke( $this->counter, 'pull_failure', 42 );
