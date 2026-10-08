@@ -97,4 +97,4 @@ See [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG
 
 ## Contributing
 
-Pull requests are welcome on [GitHub](https://github.com/Automattic/syndication).
+Pull requests are welcome on [GitHub](https://github.com/Automattic/syndication). See [CONTRIBUTING.md](https://github.com/Automattic/syndication/blob/develop/CONTRIBUTING.md) for setup, checks and signed commits.
