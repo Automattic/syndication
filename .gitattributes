@@ -15,6 +15,7 @@
 /.wp-env.override.json export-ignore
 /AGENTS.md             export-ignore
 /CHANGELOG.md          export-ignore
+/CONTRIBUTING.md       export-ignore
 /composer.json         export-ignore
 /composer.lock         export-ignore
 /package.json          export-ignore
