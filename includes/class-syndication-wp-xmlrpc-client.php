@@ -501,53 +501,102 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 *
 	 * @param string $meta_key   The meta key to search for.
 	 * @param string $meta_value The meta value to match.
+	 * @param string $post_type  Optional. Post type to search. Default empty, which searches the remote's default, 'post'.
 	 * @return bool True if post exists on target site, false otherwise.
 	 */
-	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+	public function is_source_site_post( $meta_key = '', $meta_value = '', $post_type = '' ) {
 
 		// If meta key or value are empty.
 		if ( empty( $meta_key ) || empty( $meta_value ) ) {
 			return false;
 		}
 
-		// Use filter to limit posts returned and request custom_fields.
+		// wp.getPosts can't filter by meta, so page through the remote posts.
+		// ponytail: one request per 100 remote posts on a first push; a custom remote method could look the meta up directly.
 		$filter = array(
 			'number' => 100,
+			'offset' => 0,
 		);
-
-		$result = $this->query(
-			'wp.getPosts',
-			'1',
-			$this->username,
-			$this->password,
-			$filter,
-			array( 'post_id', 'custom_fields' )
-		);
-
-		if ( ! $result ) {
-			return false;
+		if ( $post_type ) {
+			$filter['post_type'] = $post_type;
 		}
 
-		$posts_list = $this->getResponse();
+		/**
+		 * Filters how many pages of 100 remote posts the XML-RPC loop guard checks.
+		 *
+		 * If the limit is reached without a match, the post is treated as not
+		 * found on the remote, so it is pushed.
+		 *
+		 * @since 2.2.3
+		 *
+		 * @param int $max_pages Maximum number of pages to request. Default 100.
+		 * @param int $site_id   ID of the syn_site post being pushed to.
+		 */
+		$max_pages = (int) apply_filters( 'syndication_xmlrpc_loop_guard_max_pages', 100, $this->site_ID ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+		$seen_ids  = array();
 
-		if ( empty( $posts_list ) ) {
-			return false;
-		}
+		for ( $page = 0; $page < $max_pages; $page++ ) {
+			$filter['offset'] = $page * $filter['number'];
 
-		foreach ( $posts_list as $post ) {
-			if ( empty( $post['custom_fields'] ) ) {
-				continue;
+			$result = $this->query(
+				'wp.getPosts',
+				'1',
+				$this->username,
+				$this->password,
+				$filter,
+				array( 'post_id', 'custom_fields' )
+			);
+
+			if ( ! $result ) {
+				return false;
 			}
 
-			foreach ( $post['custom_fields'] as $field ) {
-				if ( isset( $field['key'], $field['value'] ) &&
-					$meta_key === $field['key'] &&
-					$meta_value === $field['value']
-				) {
-					return true;
+			$posts_list = $this->getResponse();
+
+			if ( empty( $posts_list ) ) {
+				return false;
+			}
+
+			$has_unseen_posts = false;
+
+			foreach ( $posts_list as $post ) {
+				if ( isset( $seen_ids[ $post['post_id'] ] ) ) {
+					continue;
+				}
+				$seen_ids[ $post['post_id'] ] = true;
+				$has_unseen_posts             = true;
+
+				if ( empty( $post['custom_fields'] ) ) {
+					continue;
+				}
+
+				foreach ( $post['custom_fields'] as $field ) {
+					if ( isset( $field['key'], $field['value'] ) &&
+						$meta_key === $field['key'] &&
+						$meta_value === $field['value']
+					) {
+						return true;
+					}
 				}
 			}
+
+			// A short page is the last one.
+			if ( count( $posts_list ) < $filter['number'] ) {
+				return false;
+			}
+
+			// A page of posts already seen means the remote is ignoring the offset.
+			if ( ! $has_unseen_posts ) {
+				break;
+			}
 		}
+
+		Syndication_Logger::log_post_error(
+			$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			'loop_guard_incomplete',
+			/* translators: 1: meta value searched for, 2: number of remote posts checked */
+			sprintf( __( 'Stopped looking for %1$s on the remote site after %2$d posts without a match. Pushing the post.', 'push-syndication' ), $meta_value, count( $seen_ids ) )
+		);
 
 		return false;
 	}

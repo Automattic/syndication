@@ -61,9 +61,10 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 *
 	 * @param string $meta_key   The meta key to search for.
 	 * @param string $meta_value The meta value to match.
+	 * @param string $post_type  Optional. Post type to search. Default empty, which searches the API's default, 'post'.
 	 * @return bool True if post exists on target site, false otherwise.
 	 */
-	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+	public function is_source_site_post( $meta_key = '', $meta_value = '', $post_type = '' ) {
 
 		// If meta key or value are empty.
 		if ( empty( $meta_key ) || empty( $meta_value ) ) {
@@ -77,6 +78,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			rawurlencode( $meta_key ),
 			rawurlencode( $meta_value )
 		);
+		if ( $post_type ) {
+			$url .= '&type=' . rawurlencode( $post_type );
+		}
 
 		$response = wp_remote_get(
 			$url,

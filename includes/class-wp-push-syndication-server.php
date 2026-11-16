@@ -1078,10 +1078,11 @@ class WP_Push_Syndication_Server {
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// Check if post already exists on target to prevent syndication loops.
-				if ( in_array( $transport_type, array( 'WP_REST', 'WP_XMLRPC' ), true ) ) {
+				// Only before the first push: after that the target holds our own copy, which carries the same post_uniqueid.
+				if ( in_array( $info['state'], array( 'new', 'new-error' ), true ) && in_array( $transport_type, array( 'WP_REST', 'WP_XMLRPC' ), true ) ) {
 					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
 
-					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id ) ) {
+					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id, get_post_type( $post_ID ) ) ) {
 						continue;
 					}
 				}
