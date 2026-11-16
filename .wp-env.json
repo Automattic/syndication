@@ -13,6 +13,9 @@
   },
   "env": {
     "tests": {
+      "config": {
+        "WP_DEBUG": true
+      },
       "phpVersion": "8.4",
       "core": "WordPress/WordPress#trunk"
     }
