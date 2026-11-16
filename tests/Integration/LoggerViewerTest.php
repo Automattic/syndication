@@ -140,6 +140,33 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The filter dropdown labels go through the plugin's text domain.
+	 *
+	 * @covers Syndication_Logger_List_Table::_create_months_dropdown
+	 * @covers Syndication_Logger_List_Table::_create_types_dropdown
+	 */
+	public function test_filter_dropdown_labels_are_translatable(): void {
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translation ) {
+				return strtoupper( $translation );
+			}
+		);
+
+		ob_start();
+		foreach ( array( '_create_months_dropdown', '_create_types_dropdown' ) as $method_name ) {
+			$method = new ReflectionMethod( $this->table, $method_name );
+			$method->setAccessible( true );
+			$method->invoke( $this->table );
+		}
+		$output = ob_get_clean();
+
+		foreach ( array( 'ALL DATES', 'ALL TYPES', 'SUCCESS', 'INFORMATION', 'ERROR' ) as $label ) {
+			$this->assertStringContainsString( ">{$label}</option>", $output );
+		}
+	}
+
+	/**
 	 * Every rendered column value must be escaped.
 	 *
 	 * @covers Syndication_Logger_List_Table::column_default

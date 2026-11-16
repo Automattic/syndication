@@ -350,7 +350,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		?>
 		<label class="screen-reader-text" for="filter-by-month"><?php esc_html_e( 'Filter by month', 'push-syndication' ); ?></label>
 		<select name="month" id="filter-by-month">
-			<option value="">All dates</option>
+			<option value=""><?php esc_html_e( 'All dates', 'push-syndication' ); ?></option>
 
 			<?php
 			if ( $this->_min_date && $this->_max_date ) {
@@ -379,12 +379,12 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		?>
 		<label class="screen-reader-text" for="filter-by-type"><?php esc_html_e( 'Filter by type', 'push-syndication' ); ?></label>
 		<select name="type" id="filter-by-type">
-			<option value="">All types</option>
+			<option value=""><?php esc_html_e( 'All types', 'push-syndication' ); ?></option>
 			<?php 
 			foreach ( array(
-				'success' => 'Success',
-				'info'    => 'Information',
-				'error'   => 'Error',
+				'success' => __( 'Success', 'push-syndication' ),
+				'info'    => __( 'Information', 'push-syndication' ),
+				'error'   => __( 'Error', 'push-syndication' ),
 			) as $key => $label ) : 
 				?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $requested_type, $key ); ?>><?php echo esc_html( $label ); ?></option>
@@ -415,7 +415,7 @@ class Syndication_Logger_Viewer {
 	public function add_menu_items() {
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
-		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', $capability, 'syndication_dashboard', array( $this, 'render_list_page' ) );
+		$hook = add_submenu_page( 'edit.php?post_type=syn_site', esc_html__( 'Logs', 'push-syndication' ), esc_html__( 'Logs', 'push-syndication' ), $capability, 'syndication_dashboard', array( $this, 'render_list_page' ) );
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
 	}
 
@@ -471,7 +471,7 @@ class Syndication_Logger_Viewer {
 				<input type="hidden" name="post_type" value="syn_site">
 				<input type="hidden" name="page" value="syndication_dashboard">
 				<?php
-				$this->syndication_logger_table->search_box( 'search', 'search_id' );
+				$this->syndication_logger_table->search_box( __( 'Search Logs', 'push-syndication' ), 'search_id' );
 
 				$this->syndication_logger_table->display();
 				?>
