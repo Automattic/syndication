@@ -87,15 +87,14 @@ class Syndication_Logger {
 	 * @return bool True to also log with error_log().
 	 */
 	private function use_php_error_logging() {
-		// Allow setting of use_php_error_logging.
-		$use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
+		/*
+		 * Allow setting of use_php_error_logging. The default is null rather than false, so
+		 * that returning false turns PHP error logging off even when WP_DEBUG is on.
+		 */
+		$use_php_error_logging = apply_filters( 'syn_use_php_error_logging', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
-		if ( false === $use_php_error_logging ) {
-			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$use_php_error_logging = true;    // Log also with error_log().
-			} else {
-				$use_php_error_logging = false;   // Log only in db.
-			}
+		if ( null === $use_php_error_logging ) {
+			return defined( 'WP_DEBUG' ) && true === WP_DEBUG;
 		}
 
 		return true === $use_php_error_logging;

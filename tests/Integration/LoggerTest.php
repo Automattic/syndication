@@ -285,6 +285,53 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Returning false from the PHP error logging filter turns it off, even under WP_DEBUG.
+	 *
+	 * WP_DEBUG is a constant, so the test can't switch it on. Instead it checks that the
+	 * filter's default is distinct from false, which is what lets false mean "off".
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_php_error_logging_filter_false_turns_it_off(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$default = 'unset';
+
+		add_filter(
+			'syn_use_php_error_logging',
+			static function ( $value ) use ( &$default ) {
+				$default = $value;
+				return false;
+			}
+		);
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_error( $site_id, 'error', 'Not sent to the PHP error log' );
+			}
+		);
+
+		$this->assertNull( $default );
+		$this->assertSame( '', $output );
+	}
+
+	/**
+	 * With no filter, PHP error logging follows WP_DEBUG.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_php_error_logging_follows_wp_debug_by_default(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_error( $site_id, 'error', 'Maybe sent to the PHP error log' );
+			}
+		);
+
+		$this->assertSame( defined( 'WP_DEBUG' ) && WP_DEBUG, '' !== $output );
+	}
+
+	/**
 	 * Run a callback with the PHP error log redirected to a temporary file.
 	 *
 	 * @param callable $callback Code that may write to the error log.
