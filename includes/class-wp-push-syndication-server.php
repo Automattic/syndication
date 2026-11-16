@@ -1013,6 +1013,20 @@ class WP_Push_Syndication_Server {
 		// @TODO retrieve syndication status and display.
 	}
 
+	/**
+	 * Schedule a push when a post with selected sitegroups changes.
+	 *
+	 * Driven by the saved selection rather than the Syndicate box, so posts
+	 * published by cron, WP-CLI or other code are pushed too. There is no nonce
+	 * or capability check: choosing the sitegroups was the authorized step.
+	 * save_syndicate_settings() runs first on the same hook, so a selection
+	 * saved in the editor is pushed in the same request, once.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Old post status.
+	 * @param \WP_Post $post       Post whose status changed.
+	 * @return void
+	 */
 	public function pre_schedule_push_content( $new_status, $old_status, $post ) {
 
 		// autosave verification.
@@ -1020,12 +1034,13 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
-		// if our nonce isn't there, or we can't verify it return.
-		if ( ! isset( $_POST['syndicate_noncename'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['syndicate_noncename'] ) ), plugin_basename( __FILE__ ) ) ) {
+		// Trashing and restoring are left to the "Delete pushed posts" setting.
+		if ( wp_is_post_revision( $post ) || wp_is_post_autosave( $post ) || 'trash' === $new_status || 'trash' === $old_status ) {
 			return;
 		}
 
-		if ( ! $this->current_user_can_syndicate() ) {
+		// Nothing to push to or remove from. Returning here also keeps meta off unrelated posts.
+		if ( empty( get_post_meta( $post->ID, '_syn_selected_sitegroups', true ) ) && empty( get_post_meta( $post->ID, '_syn_old_sitegroups', true ) ) ) {
 			return;
 		}
 
