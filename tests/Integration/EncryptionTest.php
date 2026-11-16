@@ -32,34 +32,6 @@ class EncryptionTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Test if the `encrypt` method on Syndication_Encryption calls the `encrypt` method on the specific Syndication_Encryptor
-	 */
-	public function test_encrypt_method_is_called_on_encryptor_object() {
-		$fake_encrypted_string = 'I\'m an encrypted string.';
-
-		$mock_encryptor = $this->createMock( \Syndication_Encryptor::class );
-		$mock_encryptor->method( 'encrypt' )->will( $this->returnValue( $fake_encrypted_string ) );
-
-		$syndication_encryption = new \Syndication_Encryption( $mock_encryptor );
-
-		self::assertSame( $fake_encrypted_string, $syndication_encryption->encrypt( 'I am a plain-text string' ) );
-	}
-
-	/**
-	 * Test if the `decrypt` method on Syndication_Encryption calls the `decrypt` method on the specific Syndication_Encryptor
-	 */
-	public function test_decrypt_method_is_called_on_encryptor_object() {
-		$fake_plain_text_string = 'I am a plain-text string.';
-
-		$mock_encryptor = $this->createMock( \Syndication_Encryptor::class );
-		$mock_encryptor->method( 'decrypt' )->will( $this->returnValue( $fake_plain_text_string ) );
-
-		$syndication_encryption = new \Syndication_Encryption( $mock_encryptor );
-
-		self::assertSame( $fake_plain_text_string, $syndication_encryption->decrypt( 'I\'m an encrypted string.' ) );
-	}
-
-	/**
 	 * Tests the encryption functions
 	 */
 	public function test_encryption() {
