@@ -215,4 +215,15 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 			),
 		);
 	}
+
+	/**
+	 * The code is sanitized before it is sent.
+	 */
+	public function test_code_is_sanitized(): void {
+		$_GET['code'] = " auth-code<script>\n";
+
+		$this->render();
+
+		$this->assertSame( 'auth-code', $this->requests[0]['args']['body']['code'] );
+	}
 }

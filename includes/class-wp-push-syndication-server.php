@@ -563,8 +563,11 @@ class WP_Push_Syndication_Server {
 
 		echo '<h3>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h3>';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect from WordPress.com, which cannot carry a nonce.
+		$code = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+
 		// if code is not found return or settings updated return.
-		if ( empty( $_GET['code'] ) || ! empty( $_GET['settings-updated'] ) ) {
+		if ( '' === $code || ! empty( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check.
 			echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 
 			?>
@@ -583,7 +586,7 @@ class WP_Push_Syndication_Server {
 					'client_id'     => $this->push_syndicate_settings['client_id'],
 					'redirect_uri'  => $redirect_uri,
 					'client_secret' => $this->get_client_secret(),
-					'code'          => $_GET['code'],
+					'code'          => $code,
 					'grant_type'    => 'authorization_code',
 				),
 			) 
