@@ -1,29 +1,4 @@
-.syn-xml-client-xpath-new {
-	clear: inline-start;
-}
-.syn-xml-client-list-head {
-	font-weight: bold;
-}
-.syn-xml-client-list {
-	width: 100%;
-	clear: both;
-}
-.syn-xml-client-list li,
-.syn-xml-client-list-head li {
-	float: inline-start;
-	width: 50px;
+.syn-xml-client-xpath-table .syn-xml-client-xpath-check {
+	width: 5em;
 	text-align: center;
-}
-.syn-xml-client-list li.text,
-.syn-xml-client-list-head li.text {
-	width: 200px;
-	text-align: start;
-}
-.syn-xml-client-list li.wide,
-.syn-xml-client-list-head li.wide {
-	width: 150px;
-}
-.syn-delete {
-	color: #f00;
-	border-bottom: 1px solid #f00;
 }

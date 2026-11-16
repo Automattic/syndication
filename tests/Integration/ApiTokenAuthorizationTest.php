@@ -136,11 +136,12 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * The closing instruction reads as one sentence, with a space after the link.
+	 * The closing instruction reads as one sentence, with a space after the link,
+	 * and the link says it opens a new tab.
 	 */
 	public function test_success_instruction_is_one_sentence(): void {
 		$this->assertStringContainsString(
-			'when registering a <a href="https://wordpress.com" target="_blank">WordPress.com</a> site.',
+			'when registering a <a href="https://wordpress.com" target="_blank">WordPress.com <span class="screen-reader-text">(opens in a new tab)</span></a> site.',
 			$this->render()
 		);
 	}
