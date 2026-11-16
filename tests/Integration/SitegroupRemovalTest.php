@@ -7,14 +7,28 @@
 
 namespace Automattic\Syndication\Tests;
 
+use Syndication_Recording_Client;
+use WP_Error;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
+
+require_once __DIR__ . '/Syndication_Recording_Client.php';
 
 /**
  * Class SitegroupRemovalTest
  *
  * @covers WP_Push_Syndication_Server::get_sites_by_post_ID
+ * @covers WP_Push_Syndication_Server::push_content
  */
 class SitegroupRemovalTest extends WPIntegrationTestCase {
+
+	/**
+	 * Reset the recording client.
+	 */
+	public function set_up(): void {
+		parent::set_up();
+		Syndication_Recording_Client::reset();
+		delete_transient( 'syn_syndicate_lock' );
+	}
 
 	/**
 	 * Create a sitegroup.
@@ -100,5 +114,85 @@ class SitegroupRemovalTest extends WPIntegrationTestCase {
 
 		$this->assertSame( array( $site_id ), wp_list_pluck( $sites['selected_sites'], 'ID' ) );
 		$this->assertSame( array(), $sites['removed_sites'] );
+	}
+
+	/**
+	 * Removing a copy fires the same hooks as deleting one on trash, so it is logged.
+	 */
+	public function test_a_removal_fires_the_delete_hooks(): void {
+		global $push_syndication_server;
+
+		$site_id = $this->create_site( array() );
+		$post_id = $this->create_post( array(), array() );
+		update_post_meta( $post_id, '_syn_slave_post_states', array( 'success' => array( $site_id => array( 'ext_ID' => 77 ) ) ) );
+
+		$fired = array();
+		add_action(
+			'syn_post_push_delete_post',
+			function ( ...$args ) use ( &$fired ) {
+				$fired[] = array_slice( $args, 0, 4 );
+			},
+			10,
+			6
+		);
+
+		$push_syndication_server->push_content(
+			array(
+				'post_ID'        => $post_id,
+				'selected_sites' => array(),
+				'removed_sites'  => array( get_post( $site_id ) ),
+			)
+		);
+
+		$this->assertSame( array( array( true, 77, $post_id, $site_id ) ), $fired );
+	}
+
+	/**
+	 * A removal skipped through the short-circuit filter leaves the copy, and its record, in place.
+	 */
+	public function test_a_skipped_removal_keeps_the_copy_and_its_record(): void {
+		global $push_syndication_server;
+
+		$skipped_id = $this->create_site( array() );
+		$failing_id = $this->create_site( array() );
+		$post_id    = $this->create_post( array(), array() );
+		update_post_meta(
+			$post_id,
+			'_syn_slave_post_states',
+			array(
+				'success' => array(
+					$skipped_id => array( 'ext_ID' => 11 ),
+					$failing_id => array( 'ext_ID' => 22 ),
+				),
+			)
+		);
+
+		add_filter(
+			'syn_pre_push_delete_post_shortcircuit',
+			function ( $shortcircuit, $ext_id, $local_id, $site_id ) use ( $skipped_id ) {
+				return $site_id === $skipped_id ? true : $shortcircuit;
+			},
+			10,
+			4
+		);
+
+		// The second removal fails, which saves the post's states.
+		Syndication_Recording_Client::$results['delete_post'] = new WP_Error( 'delete-failed', 'Nope' );
+
+		$push_syndication_server->push_content(
+			array(
+				'post_ID'        => $post_id,
+				'selected_sites' => array(),
+				'removed_sites'  => array( get_post( $skipped_id ), get_post( $failing_id ) ),
+			)
+		);
+
+		$this->assertSame(
+			array( array( 'delete_post', $failing_id, array( 22 ) ) ),
+			Syndication_Recording_Client::calls_to( 'delete_post' )
+		);
+
+		$states = get_post_meta( $post_id, '_syn_slave_post_states', true );
+		$this->assertSame( array( 'ext_ID' => 11 ), $states['success'][ $skipped_id ] );
 	}
 }

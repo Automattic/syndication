@@ -1168,13 +1168,26 @@ class WP_Push_Syndication_Server {
 
 		if ( ! empty( $sites['removed_sites'] ) ) {
 			foreach ( $sites['removed_sites'] as $site ) {
+				// get_site_info() drops the site's entry; a skipped removal puts it back.
+				$states_before_site = $slave_post_states;
+
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them.
 				if ( 'success' === $info['state'] || 'edit-error' === $info['state'] || 'remove-error' === $info['state'] ) {
+					// The same hooks as deleting the remote copies of a trashed post, so removals are logged.
+					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+					if ( true === $push_delete_shortcircuit ) {
+						$slave_post_states[ $info['state'] ][ $site->ID ] = $states_before_site[ $info['state'] ][ $site->ID ];
+						continue;
+					}
+
 					$result = $client->delete_post( $info['ext_ID'] );
+
+					do_action( 'syn_post_push_delete_post', $result, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+
 					if ( is_wp_error( $result ) ) {
 						$slave_post_states['remove-error'][ $site->ID ] = $result;
 						$this->update_slave_post_states( $post_ID, $slave_post_states );
