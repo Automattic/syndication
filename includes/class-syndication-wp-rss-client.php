@@ -289,13 +289,21 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 				'post_excerpt'   => $item->get_description(),
 				'post_type'      => $this->default_post_type,
 				'post_status'    => $this->default_post_status,
-				'post_date'      => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
 				'comment_status' => $this->default_comment_status,
 				'ping_status'    => $this->default_ping_status,
 				'post_guid'      => $item->get_id(),
 				'post_category'  => $taxonomy['cats'],
 				'tags_input'     => $taxonomy['tags'],
 			);
+
+			// Without a date, leave it to WordPress: the current time for a new post,
+			// and the existing date for an update.
+			$post_date_gmt = $item->get_gmdate( 'Y-m-d H:i:s' );
+			if ( null !== $post_date_gmt ) {
+				$post['post_date_gmt'] = $post_date_gmt;
+				$post['post_date']     = get_date_from_gmt( $post_date_gmt );
+			}
+
 			/**
 			 * Exclude or alter posts during an RSS syndication pull.
 			 *

@@ -69,4 +69,26 @@ class RssClientTest extends WPIntegrationTestCase {
 		$this->assertSame( array(), $posts[0]['post_category'] );
 		$this->assertSame( array(), $posts[0]['tags_input'] );
 	}
+
+	/**
+	 * The item date is stored as GMT and converted to the site's timezone.
+	 */
+	public function test_item_date_is_stored_in_gmt_and_site_time(): void {
+		update_option( 'timezone_string', 'America/New_York' );
+
+		$posts = $this->make_client( '<item><guid>a</guid><title>A</title><pubDate>Mon, 15 Jan 2024 12:34:56 +0000</pubDate></item>' )->get_posts();
+
+		$this->assertSame( '2024-01-15 12:34:56', $posts[0]['post_date_gmt'] );
+		$this->assertSame( '2024-01-15 07:34:56', $posts[0]['post_date'] );
+	}
+
+	/**
+	 * An item with no date leaves the date to WordPress rather than 1970.
+	 */
+	public function test_item_without_a_date_has_no_post_date(): void {
+		$posts = $this->make_client( '<item><guid>a</guid><title>A</title></item>' )->get_posts();
+
+		$this->assertArrayNotHasKey( 'post_date', $posts[0] );
+		$this->assertArrayNotHasKey( 'post_date_gmt', $posts[0] );
+	}
 }
