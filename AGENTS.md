@@ -27,6 +27,7 @@ treats as canonical. `README.md` carries the same headers for WordPress.org.
 syndication/
 ├── includes/           # Flat directory of class-*.php and interface-*.php files
 │   └── css/            # Admin styles for the site editor and site list
+├── docs/               # User and developer guides (excluded from release ZIPs)
 ├── languages/          # push-syndication.pot
 ├── tests/
 │   ├── Unit/           # Brain Monkey, no WordPress bootstrap
@@ -51,8 +52,8 @@ There is no PSR-4 autoloading. Everything is `require_once`d from
   `Syndication_WP_RSS_Client`, `Syndication_WP_XML_Client` and
   `Syndication_WP_XMLRPC_Client`.
 - **`Syndication_Encryption`** — wraps a `Syndication_Encryptor` implementation.
-  `Syndication_Encryptor_OpenSSL` is used on PHP 7.1+;
-  `Syndication_Encryptor_MCrypt` only below that. Instantiated into
+  `Syndication_Encryptor_OpenSSL` is used on PHP 7.1+, so always on supported
+  versions; the `Syndication_Encryptor_MCrypt` branch can't run on PHP 7.4. Instantiated into
   `$GLOBALS['push_syndication_encryption']`.
 - **`Syndication_Logger`** — logging, with `Syndication_Logger_Viewer`,
   `Syndication_Logger_List_Table` and `Syndication_Logger_Admin_Notice` for display.
@@ -60,8 +61,10 @@ There is no PSR-4 autoloading. Everything is `require_once`d from
   **`Failed_Syndication_Auto_Retry`** — failure tracking and retry, each
   instantiated at load time.
 - **`Syndication_CLI_Command`** — registered as `wp syndication`, loaded only when
-  `WP_CLI` is defined. Four subcommands: `push_all_posts`, `push_post`,
-  `pull_site`, `pull_sitegroup`.
+  `WP_CLI` is defined. Four subcommands: `push-all-posts`, `push_post`,
+  `pull_site` and `pull_sitegroup`. WP-CLI takes the names from the method
+  names (or `@subcommand`) as they are, so three keep their underscores;
+  `push-post`, `pull-site` and `pull-sitegroup` are `@alias`es.
 
 ### Dependencies
 
@@ -98,19 +101,21 @@ wp-env run tests-cli --env-cwd=wp-content/plugins/<dir-name> ./vendor/bin/phpuni
 
 ## Conventions
 
-Follow the standards documented in `~/code/plugin-standards/` for full details.
-Key points:
+See `CONTRIBUTING.md` for setup, checks and the contribution workflow. Key points:
 
-- **Commits**: Use the `/commit` skill. Favour explaining "why" over "what".
-- **PRs**: Use the `/pr` skill. Squash and merge by default.
-- **Branch naming**: `feature/description`, `fix/description` from `develop`.
+- **Commits**: Every commit must be signed; `develop` and `main` reject unsigned commits. Use a [Conventional Commits](https://www.conventionalcommits.org/) prefix (`fix:`, `feat:`, `test:`, `docs:`, `ci:`, `chore:` and so on) with an imperative subject of about 50 characters, and a body that explains why the change was needed rather than what changed. One concern per commit.
+- **PRs**: Open against `develop`. The title describes the outcome in sentence case, without a conventional commit prefix. The description explains the problem first, then how the PR solves it. PRs land as merge commits (squash and rebase merging are disabled), so every commit message reaches `develop` as written.
+- **Testing**: Write integration tests for WordPress-dependent behavior, unit tests for isolated logic. Test the real class, not a copy of its logic.
 - **Code style**: WordPress coding standards via PHPCS — `WordPress-Extra`,
   `WordPress-Docs`, `WordPress-VIP-Go` and `PHPCompatibilityWP`, with
   `testVersion` at `7.4-`. Tabs for indentation. `tests/` is excluded from PHPCS.
-- **Naming**: New global functions, classes and constants need the `syndication`
-  prefix, enforced by `WordPress.NamingConventions.PrefixAllGlobals`.
+- **Naming**: New global functions, classes, constants and hooks need the `syndication`
+  prefix, enforced by `WordPress.NamingConventions.PrefixAllGlobals`. Existing `syn_`
+  hooks keep their names.
 - **i18n**: All user-facing strings must use the `push-syndication` text domain.
-- **Testing**: two suites, and the names are case-sensitive and inconsistent —
+- **Docs**: User and developer guides live in `docs/`. When a change alters behavior,
+  a hook, a setting or a WP-CLI command, update the matching page in the same PR.
+- **Testing suites**: the names are case-sensitive and inconsistent —
   `--testsuite Unit` but `--testsuite integration`.
   - **Unit**: extend `tests/Unit/TestCase.php` (which extends
     `Yoast\WPTestUtils\BrainMonkey\TestCase`). No WordPress loaded, so mock it.
@@ -143,12 +148,13 @@ Key points:
 
 ## Releases
 
-Use the `/release` skill. It covers the branch, version bumps, changelog, i18n,
-the three release commits, the `main`-based PR, the signed tag, and the sync
-back to `develop`. Never hand-write GitHub Release notes or a WordPress.org
-changelog — `release.yml` derives the release from `CHANGELOG.md`.
+Maintainers cut releases from a `release/x.y.z` branch into `main`: version bumps, the
+`CHANGELOG.md` entry, the readme's Changelog and Upgrade Notice, and the POT file.
+Pushing the signed version tag on `main` publishes the release. Never hand-write
+GitHub Release notes or a WordPress.org changelog — `release.yml` derives the release
+from `CHANGELOG.md`.
 
-Repo-specific facts the skill cannot infer:
+Repo-specific release facts:
 
 - **The wp.org slug is `push-syndication`, not the repo name `syndication`.**
   It appears in the ZIP's top-level directory, `deploy.yml`'s `SLUG`, and the
