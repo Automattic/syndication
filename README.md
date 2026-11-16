@@ -102,6 +102,18 @@ Yes. Each site on the network has its own sites, site groups and settings. To sy
 
 The highlights of recent releases are below. Every change, including older releases, is listed in [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md).
 
+### 2.3.0
+
+- **Changed:** Existing XML sites keep publishing pulled posts, and "Delete pushed posts" is ticked on existing installs, so nothing changes on update. Both settings now work, so review them afterwards.
+- **Changed:** Scheduled posts, and posts published by WP-CLI or code, are now pushed.
+- **Changed:** A pull only updates posts pulled from the same site.
+- **Changed:** The admin says "site group" instead of "sitegroup", and the Edit Site screen works with a keyboard and screen reader.
+- **Fixed:** Pushes and pulls now reach every site in a site group, not just the first 100.
+- **Fixed:** Password-protected posts stay protected on XML-RPC sites, and edits reach XML-RPC sites after the first push.
+- **Fixed:** REST and RSS dates are correct on sites outside UTC, and RSS pulls fetch a fresh feed each time.
+- **Fixed:** Sites are disabled only after consecutive pull failures, and pull jobs no longer pile up.
+- **Fixed:** Many smaller problems with XML pulls, the Logs screen, WP-CLI output and WordPress.com authorization.
+
 ### 2.2.2
 
 - **Fixed:** PHP warnings logged when a post is pushed or deleted.
@@ -114,6 +126,10 @@ The highlights of recent releases are below. Every change, including older relea
 - **Fixed:** Filtering and pagination on the Syndication Logs screen.
 
 ## Upgrade Notice
+
+### 2.3.0
+
+Fixes many push and pull problems. Existing XML sites keep publishing pulled posts and "Delete pushed posts" is ticked, to keep current behavior; review both after updating. Admin text now says "site group".
 
 ### 2.2.2
 
