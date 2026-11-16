@@ -913,10 +913,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		$categories = $post['post_category'];
 		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( __CLASS__, 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && self::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates) if any.
@@ -954,10 +954,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		$categories = $post['post_category'];
 		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( __CLASS__, 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && self::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates).
@@ -976,6 +976,26 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		foreach ( $metas as $meta_key => $meta_value ) {
 			update_post_meta( $result, $meta_key, $meta_value );
 		}
+	}
+
+	/**
+	 * Whether pulled feed data may be written to a post meta key.
+	 *
+	 * Refuses protected keys and the plugin's own syn_ and _syn_ keys. The key is
+	 * checked as add_post_meta() will store it, unslashed, and keys outside printable
+	 * ASCII are refused because MySQL's default collations can match them to one of
+	 * those keys.
+	 *
+	 * @param string $meta_key Meta key named by the site's configuration.
+	 * @return bool True if the key may be written.
+	 */
+	public static function is_allowed_meta_key( $meta_key ) {
+		$meta_key = wp_unslash( (string) $meta_key );
+
+		return '' !== $meta_key
+			&& ! preg_match( '/[^\x20-\x7E]/', $meta_key )
+			&& ! is_protected_meta( $meta_key, 'post' )
+			&& ! preg_match( '/^_?syn_/i', $meta_key );
 	}
 
 	/**
