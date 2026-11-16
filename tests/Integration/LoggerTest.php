@@ -238,7 +238,7 @@ class LoggerTest extends WPIntegrationTestCase {
 	/**
 	 * Test that a stored value the plugin did not write is not turned into an object.
 	 *
-	 * The log was kept under an unprotected meta key before 2.2.3, so its contents cannot
+	 * The log was kept under an unprotected meta key before 2.3.0, so its contents cannot
 	 * be assumed to be well-formed log data. Some values are stored verbatim rather than re-serialized,
 	 * and reading one back must yield an array, never an object graph.
 	 *

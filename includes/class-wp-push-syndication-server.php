@@ -1502,7 +1502,7 @@ class WP_Push_Syndication_Server {
 	 *
 	 * @param int        $post_ID     ID of the local post.
 	 * @param array|null $slave_posts Remote copies as $site_ID => $ext_ID. Read from the
-	 *                                post's meta when null, as for jobs scheduled before 2.2.3.
+	 *                                post's meta when null, as for jobs scheduled before 2.3.0.
 	 * @return void
 	 */
 	public function delete_content( $post_ID, $slave_posts = null ) {
@@ -1701,7 +1701,7 @@ class WP_Push_Syndication_Server {
 
 	public function schedule_pull_content( $sites ) {
 
-		// Clear every pull job, whatever its arguments. Jobs scheduled before 2.2.3 carried
+		// Clear every pull job, whatever its arguments. Jobs scheduled before 2.3.0 carried
 		// whole site posts, which stop matching as soon as a site changes.
 		wp_unschedule_hook( 'syn_pull_content' );
 
@@ -1763,7 +1763,7 @@ class WP_Push_Syndication_Server {
 		$updated_post_ids = array();
 
 		foreach ( $sites as $site ) {
-			// Pull jobs pass site IDs; jobs scheduled before 2.2.3, and direct callers, pass site posts.
+			// Pull jobs pass site IDs; jobs scheduled before 2.3.0, and direct callers, pass site posts.
 			$site = is_object( $site ) ? $site : get_post( (int) $site );
 			if ( ! $site || 'syn_site' !== $site->post_type ) {
 				continue;
@@ -2034,10 +2034,10 @@ class WP_Push_Syndication_Server {
 			update_option( 'syn_version', '2.1' );
 		}
 
-		// Upgrade to 2.2.3: XML pulls now apply the site's status settings instead of
+		// Upgrade to 2.3.0: XML pulls now apply the site's status settings instead of
 		// publishing every new post with the default comment and ping status. Save
 		// those as the settings, so existing XML sites keep pulling the way they did.
-		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+		if ( version_compare( $this->version, '2.3.0', '<' ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off upgrade, covering sites in any status.
 			$xml_site_ids = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_transport_type' AND meta_value = 'WP_XML'" );
 
@@ -2051,10 +2051,10 @@ class WP_Push_Syndication_Server {
 			}
 		}
 
-		// Upgrade to 2.2.3. Trashing a pushed post used to delete its remote copies whatever
+		// Upgrade to 2.3.0. Trashing a pushed post used to delete its remote copies whatever
 		// the "Delete pushed posts" setting said, so turn the setting on for existing installs
 		// to keep that behavior visible and switchable. New installs keep the default.
-		if ( ! empty( $this->version ) && version_compare( $this->version, '2.2.3', '<' ) ) {
+		if ( ! empty( $this->version ) && version_compare( $this->version, '2.3.0', '<' ) ) {
 			$this->push_syndicate_settings['delete_pushed_posts'] = 'on';
 
 			// Skip the settings validation, which would encrypt the stored client secret again.
@@ -2065,15 +2065,15 @@ class WP_Push_Syndication_Server {
 			}
 		}
 
-		// Upgrade to 2.2.3: pull jobs are keyed by site ID. Replace the old jobs, and drop
+		// Upgrade to 2.3.0: pull jobs are keyed by site ID. Replace the old jobs, and drop
 		// the site posts that were stored only to unschedule them.
-		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+		if ( version_compare( $this->version, '2.3.0', '<' ) ) {
 			delete_option( 'syn_old_pull_sites' );
 			$this->schedule_deferred_pull_jobs_refresh();
 		}
 
-		// Upgrade to 2.2.3: keep site logs under protected meta keys.
-		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+		// Upgrade to 2.3.0: keep site logs under protected meta keys.
+		if ( version_compare( $this->version, '2.3.0', '<' ) ) {
 			$this->upgrade_log_meta_keys();
 		}
 

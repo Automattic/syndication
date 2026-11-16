@@ -71,7 +71,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			/**
 			 * Filters how many seconds push-all-posts pauses between batches of 150 posts.
 			 *
-			 * @since 2.2.3
+			 * @since 2.3.0
 			 *
 			 * @param int $seconds Seconds to pause. Default 2.
 			 */

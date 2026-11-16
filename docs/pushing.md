@@ -53,7 +53,7 @@ On **Settings → Push Syndication**, **Delete pushed posts** controls what happ
 - **Ticked:** when the post is trashed, or permanently deleted without being trashed first, its remote copies are deleted too, in the background. Emptying the trash afterwards doesn't delete anything more.
 - **Not ticked:** remote copies are left alone.
 
-New installs leave it unticked. Sites upgraded from before 2.2.3 have it ticked, because before 2.2.3 trashing a post always deleted its remote copies, whatever the setting said.
+New installs leave it unticked. Sites upgraded from before 2.3.0 have it ticked, because before 2.3.0 trashing a post always deleted its remote copies, whatever the setting said.
 
 What "deleted" means depends on the other site. An XML-RPC delete moves posts and pages to the trash if the other site has trash enabled, and permanently deletes other post types. WordPress.com decides for itself.
 

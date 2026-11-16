@@ -36,7 +36,7 @@ Custom fields on a `syn_site` post:
 | `syn_node_config`, `syn_id_field`, `syn_enc_field`, `syn_enc_is_photo` | XML feed mapping. |
 | `syn_last_pull_time` | Timestamp of the last pull, used to order pulls. |
 | `syn_failed_auto_retry_attempts` | Automatic retries used since the last success. |
-| `_syn_log`, `_syn_log_errors`, `_syn_log_errors_overall` | The site's last 150 log entries, failures since the last success, and failures overall. Before 2.2.3 these were `syn_log`, `syn_log_errors` and `syn_log_errors_overall`; the 2.2.3 upgrade renames them. |
+| `_syn_log`, `_syn_log_errors`, `_syn_log_errors_overall` | The site's last 150 log entries, failures since the last success, and failures overall. Before 2.3.0 these were `syn_log`, `syn_log_errors` and `syn_log_errors_overall`; the 2.3.0 upgrade renames them. |
 
 ### Pushed and pulled posts
 
@@ -89,14 +89,14 @@ Nothing is removed when the plugin is deleted: there's no uninstall routine.
 | --- | --- | --- |
 | `syn_push_content` | Single, straight after a post with site groups is saved, or a minute later if a push is already running. | One array: `post_ID`, and the sites to push to and remove from as `WP_Post` objects. |
 | `syn_delete_content` | Single, straight after a post is trashed or deleted, when **Delete pushed posts** is ticked. | The post ID, and the remote copies to delete, by site. |
-| `syn_pull_content` | Repeating, one per site in the site groups pulled on a schedule, on the `syn_pull_time_interval` schedule (**Specify time interval in seconds**). Also single, for automatic retries. | The site's ID. Automatic retries, and jobs scheduled before 2.2.3, carry the whole site post instead; both work. |
+| `syn_pull_content` | Repeating, one per site in the site groups pulled on a schedule, on the `syn_pull_time_interval` schedule (**Specify time interval in seconds**). Also single, for automatic retries. | The site's ID. Automatic retries, and jobs scheduled before 2.3.0, carry the whole site post instead; both work. |
 | `syn_refresh_pull_jobs` | Single, a minute after a site or site group changes. | None. |
 
 Saving the settings, or `syn_refresh_pull_jobs` running, clears every `syn_pull_content` job and schedules one per site again.
 
 ## Upgrades
 
-`WP_Push_Syndication_Server::maybe_upgrade()` runs on `init`, on every kind of request, including cron, WP-CLI and REST. When `syn_version` is older than the plugin, it takes a lock so only one request upgrades, runs the steps in `upgrade()`, and stores the new version. On multisite, each site upgrades on its own first request. The 2.2.3 steps:
+`WP_Push_Syndication_Server::maybe_upgrade()` runs on `init`, on every kind of request, including cron, WP-CLI and REST. When `syn_version` is older than the plugin, it takes a lock so only one request upgrades, runs the steps in `upgrade()`, and stores the new version. On multisite, each site upgrades on its own first request. The 2.3.0 steps:
 
 - set **Delete pushed posts** on for existing installs, matching how trashing behaved before;
 - set each XML site's post status to `publish`, and its comment and ping status to what its posts were getting, matching how XML pulls behaved before;
