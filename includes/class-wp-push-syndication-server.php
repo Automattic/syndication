@@ -56,14 +56,15 @@ class WP_Push_Syndication_Server {
 		// syndicating content.
 		add_action( 'add_meta_boxes', array( $this, 'add_post_metaboxes' ) );
 		add_action( 'transition_post_status', array( $this, 'save_syndicate_settings' ), 10, 3 ); // Use transition_post_status instead of save_post because the former is fired earlier which causes race conditions when a site group select and publish happen on the same load.
-		add_action( 'wp_trash_post', array( $this, 'delete_content' ) );
+		add_action( 'wp_trash_post', array( $this, 'pre_schedule_delete_content' ) );
 
 		// adding custom time interval.
 		add_filter( 'cron_schedules', array( $this, 'cron_add_pull_time_interval' ) );
 
 		// firing a cron job.
 		add_action( 'transition_post_status', array( $this, 'pre_schedule_push_content' ), 10, 3 );
-		add_action( 'delete_post', array( $this, 'schedule_delete_content' ) );
+		// Before the post meta that records the remote copies is deleted.
+		add_action( 'before_delete_post', array( $this, 'pre_schedule_delete_content' ) );
 
 		// Handle changes to sites and site groups.
 		add_action( 'save_post', array( $this, 'handle_site_change' ) );
@@ -184,7 +185,7 @@ class WP_Push_Syndication_Server {
 		add_action( 'syn_schedule_delete_content', array( $this, 'schedule_delete_content' ) );
 
 		add_action( 'syn_push_content', array( $this, 'push_content' ) );
-		add_action( 'syn_delete_content', array( $this, 'delete_content' ) );
+		add_action( 'syn_delete_content', array( $this, 'delete_content' ), 10, 2 );
 		add_action( 'syn_pull_content', array( $this, 'pull_content' ), 10, 1 );
 	}
 
@@ -1416,6 +1417,16 @@ class WP_Push_Syndication_Server {
 		update_post_meta( $post_id, '_syn_slave_post_states', $slave_post_states );
 	}
 
+	/**
+	 * Schedule deletion of a post's remote copies, if the settings ask for it.
+	 *
+	 * Runs when a post is trashed, and when it is permanently deleted without
+	 * being trashed first. No capability check: whoever may delete the post
+	 * may delete its copies, including cron and WP-CLI.
+	 *
+	 * @param int $post_id ID of the post being trashed or deleted.
+	 * @return void
+	 */
 	public function pre_schedule_delete_content( $post_id ) {
 
 		// if slave post deletion is not enabled return.
@@ -1424,26 +1435,50 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
-		if ( ! $this->current_user_can_syndicate() ) {
+		// A post deleted from the trash had its remote copies handled when it was trashed.
+		if ( 'trash' === get_post_status( $post_id ) ) {
 			return;
 		}
 
 		do_action( 'syn_schedule_delete_content', $post_id );
 	}
 
+	/**
+	 * Schedule a cron job to delete a post's remote copies.
+	 *
+	 * The remote IDs are captured now, as the post meta recording them may be
+	 * gone by the time the job runs.
+	 *
+	 * @param int $post_ID ID of the post whose remote copies should be deleted.
+	 * @return void
+	 */
 	public function schedule_delete_content( $post_ID ) {
+		$slave_posts = $this->get_slave_posts( $post_ID );
+
+		if ( empty( $slave_posts ) ) {
+			return;
+		}
+
 		wp_schedule_single_event(
 			time() - 1,
 			'syn_delete_content',
-			array( $post_ID )
+			array( $post_ID, $slave_posts )
 		);
 	}
 
-	public function delete_content( $post_ID ) {
+	/**
+	 * Delete a post's remote copies.
+	 *
+	 * @param int        $post_ID     ID of the local post.
+	 * @param array|null $slave_posts Remote copies as $site_ID => $ext_ID. Read from the
+	 *                                post's meta when null, as for jobs scheduled before 2.2.3.
+	 * @return void
+	 */
+	public function delete_content( $post_ID, $slave_posts = null ) {
 
 		$delete_error_sites = get_option( 'syn_delete_error_sites' );
 		$delete_error_sites = ! empty( $delete_error_sites ) ? $delete_error_sites : array();
-		$slave_posts        = $this->get_slave_posts( $post_ID );
+		$slave_posts        = null === $slave_posts ? $this->get_slave_posts( $post_ID ) : $slave_posts;
 
 		if ( empty( $slave_posts ) ) {
 			return;
@@ -1467,7 +1502,7 @@ class WP_Push_Syndication_Server {
 
 					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 
-					if ( ! $result ) {
+					if ( ! $result || is_wp_error( $result ) ) {
 						$delete_error_sites[ $site_ID ] = array( $ext_ID );
 					}
 				}
@@ -1475,7 +1510,6 @@ class WP_Push_Syndication_Server {
 		}
 
 		update_option( 'syn_delete_error_sites', $delete_error_sites );
-		// all post metadata will be automatically deleted including slave_post_states.
 	}
 
 	/**
@@ -1949,6 +1983,20 @@ class WP_Push_Syndication_Server {
 				update_post_meta( $site_id, 'syn_default_post_status', 'publish' );
 				update_post_meta( $site_id, 'syn_default_comment_status', get_default_comment_status( $post_type ) );
 				update_post_meta( $site_id, 'syn_default_ping_status', get_default_comment_status( $post_type, 'pingback' ) );
+			}
+		}
+
+		// Upgrade to 2.2.3. Trashing a pushed post used to delete its remote copies whatever
+		// the "Delete pushed posts" setting said, so turn the setting on for existing installs
+		// to keep that behavior visible and switchable. New installs keep the default.
+		if ( ! empty( $this->version ) && version_compare( $this->version, '2.2.3', '<' ) ) {
+			$this->push_syndicate_settings['delete_pushed_posts'] = 'on';
+
+			// Skip the settings validation, which would encrypt the stored client secret again.
+			$validating = remove_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
+			update_option( 'push_syndicate_settings', $this->push_syndicate_settings );
+			if ( $validating ) {
+				add_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 			}
 		}
 
