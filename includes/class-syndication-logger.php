@@ -30,20 +30,6 @@ class Syndication_Logger {
 	private $log_entry_limit = 150;
 
 	/**
-	 * Level of information to log. Can be info for all and default for errors/success.
-	 *
-	 * @var string
-	 */
-	private $debug_level = null;
-
-	/**
-	 * If true log messages will also be sent to php error log.
-	 *
-	 * @var boolean
-	 */
-	private $use_php_error_logging = null;
-
-	/**
 	 * Filter variables for retrieving log messages.
 	 *
 	 * @var array
@@ -60,7 +46,7 @@ class Syndication_Logger {
 	/**
 	 * Constructor.
 	 *
-	 * Sets up logging action hooks for syndication events and configures the debug level.
+	 * Sets up logging action hooks for syndication events.
 	 */
 	public function __construct() {
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
@@ -68,28 +54,51 @@ class Syndication_Logger {
 		add_action( 'syn_post_push_delete_post', array( __CLASS__, 'log_delete' ), 10, 6 );
 		add_action( 'syn_post_push_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
 		add_action( 'syn_post_push_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );
+	}
 
+	/**
+	 * Get the level of information to log: info for everything, default for errors and successes.
+	 *
+	 * The logger is set up while the plugin loads, before themes and later plugins, so the
+	 * filter is read each time it's needed rather than once in the constructor.
+	 *
+	 * @return string The debug level.
+	 */
+	private function get_debug_level() {
 		// Allow setting of a debug_level (info || default).
-		$this->debug_level = apply_filters( 'syn_pre_debug_level', false );
+		$debug_level = apply_filters( 'syn_pre_debug_level', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
-		if ( false === $this->debug_level ) {
+		if ( false === $debug_level ) {
 			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->debug_level = 'info';    // Log everything.
+				$debug_level = 'info';    // Log everything.
 			} else {
-				$this->debug_level = 'default'; // Log only errors + success.
+				$debug_level = 'default'; // Log only errors + success.
 			}
 		}
 
+		return $debug_level;
+	}
+
+	/**
+	 * Whether log messages should also be sent to the PHP error log.
+	 *
+	 * Read each time it's needed, for the same reason as get_debug_level().
+	 *
+	 * @return bool True to also log with error_log().
+	 */
+	private function use_php_error_logging() {
 		// Allow setting of use_php_error_logging.
-		$this->use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
+		$use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
 
-		if ( false === $this->use_php_error_logging ) {
+		if ( false === $use_php_error_logging ) {
 			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->use_php_error_logging = true;    // Log also with error_log().
+				$use_php_error_logging = true;    // Log also with error_log().
 			} else {
-				$this->use_php_error_logging = false;   // Log only in db.
+				$use_php_error_logging = false;   // Log only in db.
 			}
 		}
+
+		return true === $use_php_error_logging;
 	}
 
 	/**
@@ -312,7 +321,7 @@ class Syndication_Logger {
 	 */
 	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
 		// Don't log infos depending on debug level.
-		if ( 'info' == $msg_type && 'info' != $this->debug_level ) {
+		if ( 'info' === $msg_type && 'info' !== $this->get_debug_level() ) {
 			return;
 		}
 
@@ -349,7 +358,7 @@ class Syndication_Logger {
 		}
 
 
-		if ( true === $this->use_php_error_logging ) {
+		if ( $this->use_php_error_logging() ) {
 			error_log( $this->format_log_message( $msg_type, $log_entry ) );
 		}
 
