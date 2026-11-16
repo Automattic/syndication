@@ -203,7 +203,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$log_status   = null;
 		$date_start   = null;
 		$date_end     = null;
-		$message      = null;
+		$message      = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only search on an admin list table.
 		$storage_type = 'object';
 
 		$log_data = Syndication_Logger::instance()->get_messages(

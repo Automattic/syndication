@@ -43,7 +43,7 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	 * Clean up request superglobals.
 	 */
 	public function tear_down(): void {
-		unset( $_GET['orderby'], $_GET['order'], $_GET['page'] );
+		unset( $_GET['orderby'], $_GET['order'], $_GET['page'], $_REQUEST['s'] );
 		parent::tear_down();
 	}
 
@@ -86,6 +86,32 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 
 		preg_match_all( "/value='(\d{4}-\d{2})'/", $output, $matches );
 		$this->assertSame( array( '2026-01', '2026-02', '2026-03' ), $matches[1] );
+	}
+
+	/**
+	 * The search box filters entries by message, as plain text rather than a pattern.
+	 *
+	 * @covers Syndication_Logger_List_Table::prepare_items
+	 */
+	public function test_search_filters_entries_by_message_text(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Failed to parse feed' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Could not reach feed (timeout)' );
+
+		$_REQUEST['s'] = 'failed';
+		$this->table->prepare_items();
+		$this->assertSame( array( 'Failed to parse feed' ), wp_list_pluck( $this->table->items, 'message' ) );
+
+		$_REQUEST['s'] = '(timeout)';
+		$table         = new Syndication_Logger_List_Table();
+		$table->prepare_items();
+		$this->assertSame( array( 'Could not reach feed (timeout)' ), wp_list_pluck( $table->items, 'message' ) );
+
+		$_REQUEST['s'] = 'feed.*';
+		$table         = new Syndication_Logger_List_Table();
+		$table->prepare_items();
+		$this->assertSame( array(), $table->items );
 	}
 
 	/**
