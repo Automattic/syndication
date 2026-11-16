@@ -553,7 +553,14 @@ class WP_Push_Syndication_Server {
 
 	public function display_apitoken_description() {
 		// @TODO add client type information.
-		echo '<p>' . esc_html__( 'To syndicate content to WordPress.com you must ', 'push-syndication' ) . '<a href="https://developer.wordpress.com/apps/new/">' . esc_html__( 'create a new application', 'push-syndication' ) . '</a></p>';
+		echo '<p>' . wp_kses(
+			sprintf(
+				/* translators: %s: URL of the WordPress.com page for creating an application. */
+				__( 'To syndicate content to WordPress.com you must <a href="%s">create a new application</a>.', 'push-syndication' ),
+				esc_url( 'https://developer.wordpress.com/apps/new/' )
+			),
+			array( 'a' => array( 'href' => array() ) )
+		) . '</p>';
 		echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
 		echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
 	}
@@ -658,7 +665,19 @@ class WP_Push_Syndication_Server {
 
 		<?php
 
-		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ) . '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
+		echo '<p>' . wp_kses(
+			sprintf(
+				/* translators: %s: Link to WordPress.com. */
+				__( 'Enter the above details in the relevant fields when registering a %s site.', 'push-syndication' ),
+				'<a href="https://wordpress.com" target="_blank">WordPress.com</a>'
+			),
+			array(
+				'a' => array(
+					'href'   => array(),
+					'target' => array(),
+				),
+			)
+		) . '</p>';
 	}
 
 	public function display_sitegroups_selection() {
