@@ -1658,10 +1658,11 @@ class WP_Push_Syndication_Server {
 			define( 'WP_IMPORTING', true );
 		}
 
-		// Temporarily suspend comment and term counting and cache invalidation.
+		// Temporarily suspend comment and term counting. Cache invalidation stays
+		// on: terms a pull creates must be visible to the rest of the same pull,
+		// or a lookup answered from a stale cache creates the term again.
 		wp_defer_term_counting( true );
 		wp_defer_comment_counting( true );
-		wp_suspend_cache_invalidation( true );
 
 		// Keep track of posts that are added or changed.
 		$updated_post_ids = array();
@@ -1761,8 +1762,7 @@ class WP_Push_Syndication_Server {
 			update_post_meta( $site_id, 'syn_last_pull_time', time() );
 		}
 
-		// Resume comment and term counting and cache invalidation.
-		wp_suspend_cache_invalidation( false );
+		// Resume comment and term counting.
 		wp_defer_term_counting( false );
 		wp_defer_comment_counting( false );
 
