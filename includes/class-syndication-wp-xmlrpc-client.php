@@ -77,8 +77,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 						$thumbnail_meta
 					);
 
-					unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); 
-					update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					// Keep tracking the remote thumbnail until it's gone, so a failed delete is retried on the next push.
+					if ( $result ) {
+						unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+						update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					}
 				}
 				continue;
 			}
@@ -616,14 +619,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password sanitized with wp_strip_all_tags.
 		$password = isset( $_POST['site_password'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_password'] ) ) : '';
 
-		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
-		update_post_meta( $site_ID, 'syn_site_username', $username );
-		// The password field is write-only: a blank submission keeps the stored password.
-		if ( '' !== $password ) {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
-			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
-		}
-
+		// Validate before saving anything, so an invalid URL never replaces a working one.
 		if ( ! filter_var( $site_url, FILTER_VALIDATE_URL ) ) {
 			add_filter(
 				'redirect_post_location',
@@ -632,6 +628,16 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				}
 			);
 			return false;
+		}
+
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
+		update_post_meta( $site_ID, 'syn_site_username', $username );
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		// The password field is write-only: a blank submission keeps the stored password.
+		if ( '' !== $password ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
 		}
 
 		return true;
