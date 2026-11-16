@@ -73,7 +73,7 @@ Feeds on private addresses are allowed so that intranet feeds work. That means a
 
 ## XML-RPC methods
 
-Syndication adds three XML-RPC methods to every site it's active on, so that sites pushing to it can send featured images and gallery images: `syndication.addThumbnail`, `syndication.deleteThumbnail` and `syndication.postGalleryImage`. Each needs a username and password. Adding a featured image needs `upload_files` and permission to edit the post, removing one needs permission to edit the post, and uploading a gallery image needs `upload_files`.
+Syndication adds three XML-RPC methods to every site it's active on, so that sites pushing to it can send featured images and gallery images: `syndication.addThumbnail`, `syndication.deleteThumbnail` and `syndication.postGalleryImage`. Each needs a username and password. Adding a featured image needs `upload_files` and permission to edit the post, removing one needs permission to edit the post, and uploading a gallery image needs `upload_files`. A thumbnail stored under a custom field other than `_thumbnail_id`, such as one from the Multiple Post Thumbnails plugin, also needs permission to edit that custom field, so protected custom fields (names starting with an underscore) are refused unless registered with an `auth_callback` that allows them.
 
 If nothing pushes to a site, you can remove them:
 
