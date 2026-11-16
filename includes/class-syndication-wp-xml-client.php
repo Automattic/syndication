@@ -252,9 +252,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		} else {
 			// translators: %d: Size of the fetched feed, in bytes.
 			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
-
-			// Track the event.
-			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 		}
 
 		// Enable libxml to retrieve xml errors.
@@ -282,6 +279,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		}
+
+		// Track the event only once the feed has parsed, as success resets the failure count.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing hook and property names.
+		do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 
 		// TODO: handle constant strings in XML.
 		foreach ( $abs_nodes as $abs_node ) {

@@ -80,22 +80,22 @@ class Failed_Syndication_Auto_Retry {
 		// Fetch the number of times we've tried to auto-retry.
 		$site_auto_retry_count = (int) get_post_meta( $site_id, 'syn_failed_auto_retry_attempts', true );
 
+		// Store the current time for repeated use below.
+		$time_now = time();
+
+		// Create a string time to be sent to the logger, in site time as the logger's own entries are.
+		// Add 1 so our log items appear to occur a second later.
+		// and hence order better in the log viewer.
+		// Without this, sometimes when the pull occurs quickly.
+		// these log items appear to occur at the same time as the failure.
+		$log_time = wp_date( 'Y-m-d H:i:s', $time_now + 1 );
+
 		// Only proceed if we haven't hit the pull attempt ceiling.
 		if ( $failed_attempts < $max_pull_attempts ) {
 
 			// Allow the default auto retry to be filtered.
 			// By default, only auto retry 3 times.
 			$auto_retry_limit = apply_filters( 'pull_syndication_failure_auto_retry_limit', 3 );
-
-			// Store the current time for repeated use below.
-			$time_now = time();
-
-			// Create a string time to be sent to the logger.
-			// Add 1 so our log items appear to occur a second later.
-			// and hence order better in the log viewer.
-			// Without this, sometimes when the pull occurs quickly.
-			// these log items appear to occur at the same time as the failure.
-			$log_time = gmdate( 'Y-m-d H:i:s', $time_now + 1 );
 
 			// Are we still below the auto retry limit?
 			if ( $site_auto_retry_count < $auto_retry_limit ) {

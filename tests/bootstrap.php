@@ -45,6 +45,7 @@ if ( $is_unit ) {
 
 	// Load classes needed for unit tests (those without WordPress dependencies).
 	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
+	require_once dirname( __DIR__ ) . '/includes/class-syndication-site-auto-retry.php';
 	require_once __DIR__ . '/Unit/TestCase.php';
 
 	return;
