@@ -98,19 +98,6 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Run pull_site on a feed whose post fails to save.
-	 *
-	 * pull_content() casts each result to int after firing the pull hooks, so a
-	 * WP_Error raises a PHP warning there (a server-side defect, not the
-	 * command's). Silence it so the test checks only what the command reports.
-	 *
-	 * @param int $site_id Site ID.
-	 */
-	private function pull_site_despite_server_cast( int $site_id ): void {
-		@( new Syndication_CLI_Command() )->pull_site( array(), array( 'site_id' => $site_id ) );
-	}
-
-	/**
 	 * A mistyped sitegroup is an error, and pulls nothing.
 	 *
 	 * @covers ::pull_sitegroup
@@ -179,7 +166,7 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 			)
 		);
 
-		$this->pull_site_despite_server_cast( $site_id );
+		( new Syndication_CLI_Command() )->pull_site( array(), array( 'site_id' => $site_id ) );
 
 		$this->assertSame(
 			array( '-- Failed to add post https://example.com/?p=1: Content, title, and excerpt are empty.' ),
@@ -213,7 +200,7 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 			)
 		);
 
-		$this->pull_site_despite_server_cast( $site_id );
+		( new Syndication_CLI_Command() )->pull_site( array(), array( 'site_id' => $site_id ) );
 
 		$this->assertSame(
 			array( '-- Failed to update post https://example.com/?p=2: Content, title, and excerpt are empty.' ),
