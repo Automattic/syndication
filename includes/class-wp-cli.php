@@ -140,8 +140,20 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please specify a valid sitegroup' );
 		}
 
+		if ( ! get_term_by( 'slug', $sitegroup, 'syn_sitegroup' ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::error( sprintf( __( 'Sitegroup "%s" does not exist.', 'push-syndication' ), $sitegroup ) );
+		}
+
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_sitegroup( $sitegroup );
+
+		// pull_content() treats an empty list as "every scheduled site", so stop here.
+		if ( empty( $sites ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::warning( sprintf( __( 'Sitegroup "%s" has no sites; nothing to pull.', 'push-syndication' ), $sitegroup ) );
+			return;
+		}
 
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
