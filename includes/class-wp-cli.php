@@ -8,16 +8,31 @@
 WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 
 /**
- * Class Syndication_CLI_Command
+ * Pushes and pulls syndicated content.
  *
- * Provides WP-CLI commands for managing content syndication,
- * including bulk push operations and syndication status checks.
+ * Pushes posts to the sites in their selected sitegroups, one at a time or
+ * in bulk, and pulls content from a site or a whole sitegroup.
  */
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
 	/**
-	 * Pushes all posts of a given type.
+	 * Pushes all posts of a given type to the sites in their selected sitegroups.
+	 *
+	 * Works through the posts 150 at a time. Posts with no selected sitegroups
+	 * are skipped with a warning, and the run carries on.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--post_type=<post-type>]
+	 * : Post type to push. Default: post.
+	 *
+	 * [--paged=<page>]
+	 * : Page of 150 posts to start from, to resume an interrupted run. Default: 1.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication push-all-posts --post_type=page
 	 *
 	 * @subcommand push-all-posts
 	 * @synopsis [--post_type=<post-type>] [--paged=<page>]
@@ -62,7 +77,22 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Push a post to syndicated sites.
+	 * Pushes a post to the sites in its selected sitegroups.
+	 *
+	 * A post with no selected sitegroups, or none with enabled sites, is skipped
+	 * with a warning. A site that rejects the push is reported with a warning.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --post_id=<post-id>
+	 * : ID of the post to push.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication push-post --post_id=123
+	 *
+	 * @alias push-post
+	 * @synopsis --post_id=<post-id>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including post_id.
@@ -97,7 +127,19 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Pull content from a syndicated site.
+	 * Pulls content from a site.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --site_id=<site-id>
+	 * : ID of the site (a syn_site post) to pull from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication pull-site --site_id=45
+	 *
+	 * @alias pull-site
+	 * @synopsis --site_id=<site-id>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including site_id.
@@ -124,7 +166,19 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Pull content from all sites in a sitegroup.
+	 * Pulls content from every site in a sitegroup.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --sitegroup=<sitegroup>
+	 * : Slug of the sitegroup to pull from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication pull-sitegroup --sitegroup=news-partners
+	 *
+	 * @alias pull-sitegroup
+	 * @synopsis --sitegroup=<sitegroup>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including sitegroup.
