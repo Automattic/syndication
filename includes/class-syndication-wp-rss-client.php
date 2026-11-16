@@ -37,6 +37,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
+		// Every pull reads the feed afresh. SimplePie otherwise caches it for an
+		// hour, so shorter pull intervals and Pull Now would miss new items.
+		$this->enable_cache( false );
+
 		// Mirrors core's fetch_feed(). SimplePie 1.3 deprecated set_cache_class()
 		// in favour of a registered cache location, and WP_Feed_Cache is itself
 		// deprecated in favour of WP_Feed_Cache_Transient. The old call emitted a
