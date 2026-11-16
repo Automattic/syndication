@@ -8,6 +8,7 @@
 namespace Automattic\Syndication\Tests;
 
 use Syndication_Recording_Client;
+use WP_Error;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 require_once __DIR__ . '/Syndication_Recording_Client.php';
@@ -201,5 +202,19 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 		wp_delete_post( self::factory()->post->create(), true );
 
 		$this->assertSame( 0, $this->run_scheduled( 'syn_delete_content' ) );
+	}
+
+	/**
+	 * A WP_Error from the client is recorded as a delete failure.
+	 */
+	public function test_records_a_wp_error_as_a_delete_failure(): void {
+		global $push_syndication_server;
+
+		delete_option( 'syn_delete_error_sites' );
+		Syndication_Recording_Client::$results['delete_post'] = new WP_Error( 'delete-failed', 'Nope' );
+
+		$push_syndication_server->delete_content( $this->post_id );
+
+		$this->assertSame( array( $this->site_id => array( self::EXT_ID ) ), get_option( 'syn_delete_error_sites' ) );
 	}
 }

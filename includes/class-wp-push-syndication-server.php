@@ -1502,7 +1502,7 @@ class WP_Push_Syndication_Server {
 
 					do_action( 'syn_post_push_delete_post', $result, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
 
-					if ( ! $result ) {
+					if ( ! $result || is_wp_error( $result ) ) {
 						$delete_error_sites[ $site_ID ] = array( $ext_ID );
 					}
 				}
