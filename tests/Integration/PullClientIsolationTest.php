@@ -23,14 +23,17 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 class PullClientIsolationTest extends WPIntegrationTestCase {
 
 	/**
-	 * Local file holding the RSS feed. SimplePie reads local paths directly.
-	 *
-	 * @var string
+	 * Address the RSS site's feed is served from.
 	 */
-	private $rss_file;
+	const RSS_FEED_URL = 'http://rss.example.com/feed.xml';
 
 	/**
-	 * Write the RSS fixture and serve the XML feed over a mocked request.
+	 * Address the XML site's feed is served from.
+	 */
+	const XML_FEED_URL = 'http://xml.example.com/feed.xml';
+
+	/**
+	 * Serve both feeds over mocked requests, answering by URL.
 	 */
 	public function set_up(): void {
 		parent::set_up();
@@ -38,21 +41,30 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 		require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-wp-xml-client.php';
 		require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-wp-rss-client.php';
 
-		$this->rss_file = wp_tempnam( 'syn-rss' );
-		file_put_contents( // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-			$this->rss_file,
-			'<?xml version="1.0"?><rss version="2.0"><channel><title>RSS</title><link>https://rss.example.com/</link><description>RSS</description>'
-				. '<item><title>From RSS</title><link>https://rss.example.com/1</link><guid>https://rss.example.com/1</guid>'
-				. '<description>RSS body</description><pubDate>Mon, 16 Nov 2026 10:00:00 +0000</pubDate></item>'
-				. '</channel></rss>'
+		$feeds = array(
+			self::RSS_FEED_URL => array(
+				'type' => 'application/rss+xml',
+				'body' => '<?xml version="1.0"?><rss version="2.0"><channel><title>RSS</title><link>https://rss.example.com/</link><description>RSS</description>'
+					. '<item><title>From RSS</title><link>https://rss.example.com/1</link><guid>https://rss.example.com/1</guid>'
+					. '<description>RSS body</description><pubDate>Mon, 16 Nov 2026 10:00:00 +0000</pubDate></item>'
+					. '</channel></rss>',
+			),
+			self::XML_FEED_URL => array(
+				'type' => 'application/xml',
+				'body' => '<?xml version="1.0"?><feed><entry><id>xml-1</id><title>From XML</title><body>XML body</body></entry></feed>',
+			),
 		);
 
 		add_filter(
 			'pre_http_request',
-			function () {
+			function ( $preempt, $args, $url ) use ( $feeds ) {
+				if ( ! isset( $feeds[ $url ] ) ) {
+					return new \WP_Error( 'http_request_failed', 'Unexpected request.' );
+				}
+
 				return array(
-					'headers'  => array(),
-					'body'     => '<?xml version="1.0"?><feed><entry><id>xml-1</id><title>From XML</title><body>XML body</body></entry></feed>',
+					'headers'  => array( 'content-type' => $feeds[ $url ]['type'] ),
+					'body'     => $feeds[ $url ]['body'],
 					'response' => array(
 						'code'    => 200,
 						'message' => 'OK',
@@ -60,16 +72,10 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 					'cookies'  => array(),
 					'filename' => '',
 				);
-			}
+			},
+			10,
+			3
 		);
-	}
-
-	/**
-	 * Remove the RSS fixture.
-	 */
-	public function tear_down(): void {
-		unlink( $this->rss_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
-		parent::tear_down();
 	}
 
 	/**
@@ -121,7 +127,7 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 		return $this->make_site(
 			'WP_XML',
 			$meta + array(
-				'syn_feed_url'    => 'http://xml.example.com/feed.xml',
+				'syn_feed_url'    => self::XML_FEED_URL,
 				'syn_id_field'    => 'xml_id',
 				'syn_node_config' => array(
 					'namespace'  => '',
@@ -166,7 +172,7 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 		$rss_site = $this->make_site(
 			'WP_RSS',
 			array(
-				'syn_feed_url'            => $this->rss_file,
+				'syn_feed_url'            => self::RSS_FEED_URL,
 				'syn_default_post_status' => 'draft',
 				'syn_default_cat_status'  => 'no',
 			)
@@ -219,7 +225,7 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 	 */
 	public function test_callbacks_ignore_posts_from_another_client(): void {
 		$xml_site   = $this->make_xml_site();
-		$rss_site   = $this->make_site( 'WP_RSS', array( 'syn_feed_url' => $this->rss_file ) );
+		$rss_site   = $this->make_site( 'WP_RSS', array( 'syn_feed_url' => self::RSS_FEED_URL ) );
 		$xml_client = new \Syndication_WP_XML_Client( $xml_site->ID );
 		$rss_client = new \Syndication_WP_RSS_Client( $rss_site->ID );
 		$post_data  = array(
