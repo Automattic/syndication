@@ -42,6 +42,7 @@ class WP_Push_Syndication_Server {
 
 		// submenus.
 		add_action( 'admin_menu', array( $this, 'register_syndicate_settings' ) );
+		add_filter( 'option_page_capability_push_syndicate_settings', array( $this, 'settings_capability' ) );
 
 		// defining sites.
 		add_action( 'save_post', array( $this, 'save_site_settings' ) );
@@ -359,6 +360,17 @@ class WP_Push_Syndication_Server {
 
 	public function register_syndicate_settings() {
 		add_submenu_page( 'options-general.php', esc_html__( 'Push Syndication Settings', 'push-syndication' ), esc_html__( 'Push Syndication', 'push-syndication' ), apply_filters( 'syn_syndicate_cap', 'manage_options' ), 'push-syndicate-settings', array( $this, 'display_syndicate_settings' ) );
+	}
+
+	/**
+	 * Capability options.php requires to save the settings screen.
+	 *
+	 * The same capability that shows the screen, rather than the default manage_options.
+	 *
+	 * @return string Capability name.
+	 */
+	public function settings_capability() {
+		return apply_filters( 'syn_syndicate_cap', 'manage_options' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 	}
 
 	public function display_syndicate_settings() {
