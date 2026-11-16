@@ -1156,7 +1156,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
-			return new WP_Error( 'syndication-fetch-failure', 'Failed to fetch XML Feed; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
+			/* translators: %d: HTTP status code. */
+			return new WP_Error( 'syndication-fetch-failure', sprintf( __( 'Failed to fetch XML feed; HTTP status %d.', 'push-syndication' ), wp_remote_retrieve_response_code( $request ) ) );
 		}
 
 		$body = wp_remote_retrieve_body( $request );
@@ -1165,7 +1166,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// older libxml builds an external entity declaration is resolved at parse
 		// time, turning a MITM'd http:// feed into local file disclosure or SSRF.
 		if ( preg_match( '/<!\s*(DOCTYPE|ENTITY)/i', $body ) ) {
-			return new WP_Error( 'syndication-fetch-failure', 'Refused XML feed: it declares a document type.' );
+			return new WP_Error( 'syndication-fetch-failure', __( 'Refused XML feed: it declares a document type.', 'push-syndication' ) );
 		}
 
 		return $body;

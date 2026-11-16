@@ -18,17 +18,34 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 class TranslatableAdminStringsTest extends WPIntegrationTestCase {
 
 	/**
+	 * The server's transports as they were before a test changed them.
+	 *
+	 * @var array|null
+	 */
+	private $original_transports;
+
+	/**
 	 * Mark every translation in the plugin's text domain.
 	 */
 	public function set_up(): void {
 		parent::set_up();
 
-		add_filter(
-			'gettext_push-syndication',
-			static function ( $translation ) {
-				return '[' . $translation . ']';
-			}
-		);
+		$mark = static function ( $translation ) {
+			return '[' . $translation . ']';
+		};
+		add_filter( 'gettext_push-syndication', $mark );
+		add_filter( 'gettext_with_context_push-syndication', $mark );
+
+		$this->original_transports = $GLOBALS['push_syndication_server']->push_syndicate_transports;
+	}
+
+	/**
+	 * Restore the server's transports.
+	 */
+	public function tear_down(): void {
+		$GLOBALS['push_syndication_server']->push_syndicate_transports = $this->original_transports;
+
+		parent::tear_down();
 	}
 
 	/**
@@ -73,5 +90,65 @@ class TranslatableAdminStringsTest extends WPIntegrationTestCase {
 		);
 
 		$this->assertMatchesRegularExpression( '#\[To generate the following information automatically, visit the <a href="[^"]+" target="_blank">settings page</a>\.\]#', $html );
+	}
+
+	/**
+	 * Create a site using a transport type.
+	 *
+	 * @param string $transport_type The site's transport type.
+	 * @return int The site post ID.
+	 */
+	private function make_site( string $transport_type ): int {
+		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		update_post_meta( $site_id, 'syn_transport_type', $transport_type );
+
+		return $site_id;
+	}
+
+	/**
+	 * The transport column on the Sites list translates its format and mode.
+	 *
+	 * @covers WP_Push_Syndication_Server::manage_columns
+	 */
+	public function test_sites_list_transport_label_is_translated(): void {
+		$site_id = $this->make_site( 'WP_RSS' );
+
+		$html = $this->render(
+			static function () use ( $site_id ) {
+				$GLOBALS['push_syndication_server']->manage_columns( 'client-type', $site_id );
+			}
+		);
+
+		$this->assertSame( '[RSS ([pull])]', $html );
+	}
+
+	/**
+	 * A site whose transport has gone shows a translated message, not the exception text.
+	 *
+	 * @covers WP_Push_Syndication_Server::add_site_settings_metabox
+	 */
+	public function test_missing_transport_message_is_translated(): void {
+		$GLOBALS['push_syndication_server']->push_syndicate_transports = array();
+		$GLOBALS['post'] = get_post( $this->make_site( 'Missing' ) );
+
+		$html = $this->render(
+			static function () {
+				$GLOBALS['push_syndication_server']->add_site_settings_metabox( $GLOBALS['post'] );
+			}
+		);
+
+		$this->assertStringContainsString( '[Transport class not found!]', $html );
+		$this->assertStringNotContainsString( 'transport class not found', $html );
+	}
+
+	/**
+	 * The title of the site-disabled admin notice is translated.
+	 *
+	 * @covers ::syn_add_site_disabled_notice
+	 */
+	public function test_site_disabled_notice_title_is_translated(): void {
+		syn_add_site_disabled_notice( 1, 3 );
+
+		$this->assertArrayHasKey( '[Syndication site disabled]', get_option( 'syn_notices' ) );
 	}
 }

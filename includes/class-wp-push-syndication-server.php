@@ -208,7 +208,7 @@ class WP_Push_Syndication_Server {
 				try {
 					$client      = Syndication_Client_Factory::get_client( $transport_type, $id );
 					$client_data = $client->get_client_data();
-					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
+					echo esc_html( $this->get_transport_label( $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
 					// translators: %s: Transport type of the site.
 					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
@@ -649,15 +649,15 @@ class WP_Push_Syndication_Server {
 		<table class="form-table">
 			<tbody>
 			<tr valign="top">
-				<th scope="row">Access token</th>
+				<th scope="row"><?php esc_html_e( 'Access token', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->access_token ); ?></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row">Blog ID</th>
+				<th scope="row"><?php esc_html_e( 'Blog ID', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->blog_id ); ?></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row">Blog URL</th>
+				<th scope="row"><?php esc_html_e( 'Blog URL', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->blog_url ); ?></td>
 			</tr>
 			</tbody>
@@ -824,7 +824,7 @@ class WP_Push_Syndication_Server {
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
 		} catch ( Exception $e ) {
-			echo esc_html( $e->getMessage() );
+			esc_html_e( 'Transport class not found!', 'push-syndication' );
 		}
 
 		?>
@@ -844,10 +844,30 @@ class WP_Push_Syndication_Server {
 		$max_len = 0;
 		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
-			// translators: 1: Client name, 2: Client mode.
-			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%1$s (%2$s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . esc_html( $this->get_transport_label( $value['name'], $mode ) ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * Label a transport with its name and mode, as shown in the admin.
+	 *
+	 * @param string $name Client name.
+	 * @param string $mode Client mode: push or pull.
+	 * @return string
+	 */
+	private function get_transport_label( $name, $mode ) {
+		$mode_labels = array(
+			'push' => _x( 'push', 'transport mode', 'push-syndication' ),
+			'pull' => _x( 'pull', 'transport mode', 'push-syndication' ),
+		);
+
+		return sprintf(
+			/* translators: 1: Client name, 2: Client mode. */
+			__( '%1$s (%2$s)', 'push-syndication' ),
+			$name,
+			isset( $mode_labels[ $mode ] ) ? $mode_labels[ $mode ] : $mode
+		);
 	}
 
 	/**

@@ -146,6 +146,24 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The labels of the token details go through the text domain.
+	 */
+	public function test_token_detail_labels_are_translatable(): void {
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translation ) {
+				return '[' . $translation . ']';
+			}
+		);
+
+		$html = $this->render();
+
+		foreach ( array( 'Access token', 'Blog ID', 'Blog URL' ) as $label ) {
+			$this->assertStringContainsString( ">[{$label}]</th>", $html );
+		}
+	}
+
+	/**
 	 * Without a code, only the Authorize button is shown.
 	 */
 	public function test_shows_authorize_button_without_code(): void {
