@@ -195,4 +195,53 @@ class SitegroupRemovalTest extends WPIntegrationTestCase {
 		$states = get_post_meta( $post_id, '_syn_slave_post_states', true );
 		$this->assertSame( array( 'ext_ID' => 11 ), $states['success'][ $skipped_id ] );
 	}
+
+	/**
+	 * An edit skipped through the short-circuit filter keeps the record of the remote copy.
+	 *
+	 * @covers WP_Push_Syndication_Server::push_content
+	 */
+	public function test_a_skipped_edit_keeps_the_record_of_the_copy(): void {
+		global $push_syndication_server;
+
+		$skipped_id = $this->create_site( array() );
+		$edited_id  = $this->create_site( array() );
+		$post_id    = $this->create_post( array(), array() );
+		update_post_meta(
+			$post_id,
+			'_syn_slave_post_states',
+			array(
+				'success' => array(
+					$skipped_id => array( 'ext_ID' => 11 ),
+					$edited_id  => array( 'ext_ID' => 22 ),
+				),
+			)
+		);
+
+		add_filter(
+			'syn_pre_push_edit_post_shortcircuit',
+			function ( $shortcircuit, $local_id, $site ) use ( $skipped_id ) {
+				return $site->ID === $skipped_id ? true : $shortcircuit;
+			},
+			10,
+			3
+		);
+
+		// The second site's edit saves the post's states.
+		$push_syndication_server->push_content(
+			array(
+				'post_ID'        => $post_id,
+				'selected_sites' => array( get_post( $skipped_id ), get_post( $edited_id ) ),
+				'removed_sites'  => array(),
+			)
+		);
+
+		$this->assertSame(
+			array( array( 'edit_post', $edited_id, array( $post_id, 22 ) ) ),
+			Syndication_Recording_Client::calls_to( 'edit_post' )
+		);
+
+		$states = get_post_meta( $post_id, '_syn_slave_post_states', true );
+		$this->assertSame( array( 'ext_ID' => 11 ), $states['success'][ $skipped_id ] );
+	}
 }

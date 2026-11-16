@@ -1123,6 +1123,9 @@ class WP_Push_Syndication_Server {
 
 		if ( ! empty( $sites['selected_sites'] ) ) {
 			foreach ( $sites['selected_sites'] as $site ) {
+				// get_site_info() drops the site's entry; a site that is skipped gets it back.
+				$states_before_site = $slave_post_states;
+
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
@@ -1133,6 +1136,7 @@ class WP_Push_Syndication_Server {
 					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
 
 					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id, get_post_type( $post_ID ) ) ) {
+						$slave_post_states = $states_before_site;
 						continue;
 					}
 				}
@@ -1153,6 +1157,7 @@ class WP_Push_Syndication_Server {
 				} else { // States 'success', 'edit-error' and 'remove-error'.
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit ) {
+						$slave_post_states = $states_before_site;
 						continue;
 					}
 
