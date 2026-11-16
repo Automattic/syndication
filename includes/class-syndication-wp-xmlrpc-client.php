@@ -496,14 +496,30 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return false;
 		}
 
-		// wp.getPosts can't filter by meta, so page through every remote post.
+		// wp.getPosts can't filter by meta, so page through the remote posts.
 		// ponytail: one request per 100 remote posts on a first push; a custom remote method could look the meta up directly.
 		$filter = array(
 			'number' => 100,
 			'offset' => 0,
 		);
 
-		do {
+		/**
+		 * Filters how many pages of 100 remote posts the XML-RPC loop guard checks.
+		 *
+		 * If the limit is reached without a match, the post is treated as not
+		 * found on the remote, so it is pushed.
+		 *
+		 * @since 2.2.3
+		 *
+		 * @param int $max_pages Maximum number of pages to request. Default 100.
+		 * @param int $site_id   ID of the syn_site post being pushed to.
+		 */
+		$max_pages = (int) apply_filters( 'syndication_xmlrpc_loop_guard_max_pages', 100, $this->site_ID ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+		$seen_ids  = array();
+
+		for ( $page = 0; $page < $max_pages; $page++ ) {
+			$filter['offset'] = $page * $filter['number'];
+
 			$result = $this->query(
 				'wp.getPosts',
 				'1',
@@ -523,7 +539,15 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				return false;
 			}
 
+			$has_unseen_posts = false;
+
 			foreach ( $posts_list as $post ) {
+				if ( isset( $seen_ids[ $post['post_id'] ] ) ) {
+					continue;
+				}
+				$seen_ids[ $post['post_id'] ] = true;
+				$has_unseen_posts             = true;
+
 				if ( empty( $post['custom_fields'] ) ) {
 					continue;
 				}
@@ -538,9 +562,23 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				}
 			}
 
-			$is_full_page      = count( $posts_list ) === $filter['number'];
-			$filter['offset'] += $filter['number'];
-		} while ( $is_full_page );
+			// A short page is the last one.
+			if ( count( $posts_list ) < $filter['number'] ) {
+				return false;
+			}
+
+			// A page of posts already seen means the remote is ignoring the offset.
+			if ( ! $has_unseen_posts ) {
+				break;
+			}
+		}
+
+		Syndication_Logger::log_post_error(
+			$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			'loop_guard_incomplete',
+			/* translators: 1: meta value searched for, 2: number of remote posts checked */
+			sprintf( __( 'Stopped looking for %1$s on the remote site after %2$d posts without a match. Pushing the post.', 'push-syndication' ), $meta_value, count( $seen_ids ) )
+		);
 
 		return false;
 	}

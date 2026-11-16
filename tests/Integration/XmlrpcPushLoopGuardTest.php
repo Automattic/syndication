@@ -35,6 +35,13 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 	private $remote_posts = array();
 
 	/**
+	 * Whether the fake remote ignores the wp.getPosts offset.
+	 *
+	 * @var bool
+	 */
+	private $ignore_offset = false;
+
+	/**
 	 * The syn_site post for the remote.
 	 *
 	 * @var \WP_Post
@@ -54,8 +61,9 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 	public function set_up(): void {
 		parent::set_up();
 
-		$this->calls        = array();
-		$this->remote_posts = array();
+		$this->calls         = array();
+		$this->remote_posts  = array();
+		$this->ignore_offset = false;
 
 		$this->site = self::factory()->post->create_and_get( array( 'post_type' => 'syn_site' ) );
 		update_post_meta( $this->site->ID, 'syn_transport_type', 'WP_XMLRPC' );
@@ -91,7 +99,7 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 				break;
 			case 'wp.getPosts':
 				$filter   = $message->params[3];
-				$offset   = isset( $filter['offset'] ) ? (int) $filter['offset'] : 0;
+				$offset   = isset( $filter['offset'] ) && ! $this->ignore_offset ? (int) $filter['offset'] : 0;
 				$response = array_slice( $this->remote_posts, $offset, (int) $filter['number'] );
 				break;
 			case 'wp.newPost':
@@ -192,6 +200,39 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 3, count( array_keys( $this->calls, 'wp.getPosts', true ) ), 'Every page of remote posts should be checked.' );
 		$this->assertContains( 'wp.newPost', $this->calls );
+	}
+
+	/**
+	 * A remote that ignores the offset doesn't keep the guard paging forever.
+	 */
+	public function test_guard_stops_when_remote_ignores_offset(): void {
+		$this->ignore_offset = true;
+		$this->remote_posts  = $this->remote_posts( 250 );
+
+		$this->push();
+
+		$this->assertSame( 2, count( array_keys( $this->calls, 'wp.getPosts', true ) ), 'The guard should stop at the first page with nothing new.' );
+		$this->assertContains( 'wp.newPost', $this->calls );
+		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, 'syn_log', true ), 'status' ) );
+	}
+
+	/**
+	 * The guard stops at the page limit, logs it, and lets the push go ahead.
+	 */
+	public function test_guard_stops_at_page_limit(): void {
+		add_filter(
+			'syndication_xmlrpc_loop_guard_max_pages',
+			static function () {
+				return 1;
+			}
+		);
+		$this->remote_posts = $this->remote_posts( 250, 180 );
+
+		$this->push();
+
+		$this->assertSame( 1, count( array_keys( $this->calls, 'wp.getPosts', true ) ) );
+		$this->assertContains( 'wp.newPost', $this->calls );
+		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, 'syn_log', true ), 'status' ) );
 	}
 
 	/**
