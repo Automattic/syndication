@@ -69,6 +69,21 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	}
 
 	/**
+	 * Set the feed URL, unless the site has none yet.
+	 *
+	 * SimplePie can't parse an empty URL, and on PHP 8.5 trying raises a deprecation.
+	 *
+	 * @param string|string[] $url Feed URL.
+	 */
+	public function set_feed_url( $url ) {
+		if ( '' === $url ) {
+			return;
+		}
+
+		parent::set_feed_url( $url );
+	}
+
+	/**
 	 * Fetch and parse the feed.
 	 *
 	 * WP_SimplePie_File uses wp_safe_remote_request(), which refuses private
@@ -332,9 +347,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			}
 
 			$post = array(
-				'post_title'     => $item->get_title(),
-				'post_content'   => $item->get_content(),
-				'post_excerpt'   => $item->get_description(),
+				// SimplePie returns null for a missing field; WordPress expects strings.
+				'post_title'     => (string) $item->get_title(),
+				'post_content'   => (string) $item->get_content(),
+				'post_excerpt'   => (string) $item->get_description(),
 				'post_type'      => $this->default_post_type,
 				'post_status'    => $this->default_post_status,
 				'comment_status' => $this->default_comment_status,

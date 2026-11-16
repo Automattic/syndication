@@ -20,6 +20,18 @@ require_once __DIR__ . '/Syndication_Recording_Client.php';
  */
 class PullCronScheduleTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
+	/**
+	 * Clear the mock feed and the recording client.
+	 */
+	public function tear_down(): void {
+		\Syndication_Mock_Client::set_posts( array() );
+		\Syndication_Recording_Client::reset();
+
+		parent::tear_down();
+	}
+
 	/**
 	 * Create an enabled site.
 	 *
@@ -176,6 +188,11 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 			)
 		);
 
+		// The old bug turned the WP_Error into post ID 1, so make sure there is a post 1 to clean.
+		if ( ! get_post( 1 ) ) {
+			self::factory()->post->create( array( 'import_id' => 1 ) );
+		}
+
 		$cleaned = array();
 		add_action(
 			'clean_post_cache',
@@ -186,9 +203,7 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 
 		$push_syndication_server->pull_content( array( $site_id ) );
 
-		\Syndication_Mock_Client::set_posts( array() );
-
-		$this->assertNotContains( 1, $cleaned );
+		$this->assertSame( array(), $cleaned, 'Only posts that were saved should have their cache cleaned.' );
 	}
 
 	/**
@@ -216,10 +231,14 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 
 		$reflection = new ReflectionClass( $push_syndication_server );
 		$version    = $reflection->getProperty( 'version' );
-		$version->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$version->setAccessible( true );
+		}
 		$version->setValue( $push_syndication_server, '2.2.1' );
 		$upgrade = $reflection->getMethod( 'upgrade' );
-		$upgrade->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$upgrade->setAccessible( true );
+		}
 		$upgrade->invoke( $push_syndication_server );
 
 		$this->assertFalse( get_option( 'syn_old_pull_sites' ) );

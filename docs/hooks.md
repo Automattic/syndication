@@ -21,6 +21,7 @@ Most hooks are prefixed `syn_`. Others use `push_syndication_`, `pull_syndicatio
 | [`syn_schedule_delete_content`](#syn_schedule_delete_content) | Action | A post's remote copies are being scheduled for deletion |
 | [`syn_pre_push_delete_post_shortcircuit`](#syn_pre_push_delete_post_shortcircuit) | Filter | Skipping the deletion of a remote copy |
 | [`syn_post_push_delete_post`](#syn_post_push_delete_post) | Action | A remote copy was deleted |
+| [`syndication_cli_push_all_posts_pause`](#syndication_cli_push_all_posts_pause) | Filter | The pause between batches of `wp syndication push-all-posts` |
 | **WordPress XML-RPC pushes** | | |
 | [`syn_xmlrpc_push_filter_new_post`](#syn_xmlrpc_push_filter_new_post) | Filter | A post before its first push, or skipping it |
 | [`syn_xmlrpc_push_new_post_args`](#syn_xmlrpc_push_new_post_args) | Filter | The data sent for a new post |
@@ -165,6 +166,14 @@ Fires after a remote copy is deleted, because the post was trashed or deleted or
 
 - `true|WP_Error $result`
 - `int $ext_ID`, `int $post_ID`, `int $site_ID`, `string $transport_type`, `$client`
+
+### syndication_cli_push_all_posts_pause
+
+Filters how many seconds [`wp syndication push-all-posts`](wp-cli.md#push-all-posts) pauses between batches of 150 posts. Return `0` for no pause.
+
+- `int $seconds` Default `2`.
+
+Since 2.2.3.
 
 ## WordPress XML-RPC pushes
 

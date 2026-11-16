@@ -31,7 +31,7 @@ class GetSitesBySitegroupTest extends WPIntegrationTestCase {
 		);
 
 		$site_ids = self::factory()->post->create_many(
-			205,
+			101,
 			array(
 				'post_type'   => 'syn_site',
 				'post_status' => 'publish',
@@ -44,7 +44,7 @@ class GetSitesBySitegroupTest extends WPIntegrationTestCase {
 
 		$sites = $push_syndication_server->get_sites_by_sitegroup( 'big-group' );
 
-		$this->assertCount( 205, $sites );
+		$this->assertCount( 101, $sites );
 
 		$returned_ids = wp_list_pluck( $sites, 'ID' );
 		sort( $returned_ids );

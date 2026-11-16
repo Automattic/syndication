@@ -25,11 +25,7 @@ class LoggerSkippedPushTest extends WPIntegrationTestCase {
 	 * @return array
 	 */
 	private function log_entries( int $site_id ): array {
-		// The log moves to the protected `_syn_log` key in 2.2.3; read whichever this build writes.
 		$log = get_post_meta( $site_id, '_syn_log', true );
-		if ( empty( $log ) ) {
-			$log = get_post_meta( $site_id, 'syn_log', true );
-		}
 		return is_array( $log ) ? $log : array();
 	}
 

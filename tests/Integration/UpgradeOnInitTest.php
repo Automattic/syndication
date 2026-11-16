@@ -17,6 +17,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class UpgradeOnInitTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * Times the upgrade routine has written syn_version.
 	 *
@@ -53,7 +55,9 @@ class UpgradeOnInitTest extends WPIntegrationTestCase {
 		global $push_syndication_server;
 
 		$property = new ReflectionProperty( $push_syndication_server, 'version' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( true );
+		}
 		$property->setValue( $push_syndication_server, $version );
 	}
 

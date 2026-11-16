@@ -92,9 +92,10 @@ class XmlClientNodeRowsTest extends WPIntegrationTestCase {
 		$html = ob_get_clean();
 
 		$dom = new \DOMDocument();
-		libxml_use_internal_errors( true );
+		$internal_errors = libxml_use_internal_errors( true );
 		$dom->loadHTML( $html );
 		libxml_clear_errors();
+		libxml_use_internal_errors( $internal_errors );
 
 		$pairs = array();
 		foreach ( ( new \DOMXPath( $dom ) )->query( '//input[starts-with(@name, "node[")]' ) as $input ) {

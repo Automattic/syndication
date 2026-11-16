@@ -116,6 +116,25 @@ class XmlClientDoctypeRejectionTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The fetch refuses a feed declaring a doctype, whether or not it would parse.
+	 *
+	 * The other tests can pass for a feed the parser rejects anyway; this one
+	 * pins the refusal itself.
+	 *
+	 * @dataProvider data_doctype_feeds
+	 *
+	 * @param string $feed The feed body served to the client.
+	 */
+	public function test_fetch_refuses_a_feed_with_a_doctype( string $feed ): void {
+		$this->feed_body = $feed;
+
+		$result = $this->make_client()->fetch_feed();
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'Refused XML feed: it declares a document type.', $result->get_error_message() );
+	}
+
+	/**
 	 * A feed with a doctype is never handed to the parser.
 	 *
 	 * @dataProvider data_doctype_feeds

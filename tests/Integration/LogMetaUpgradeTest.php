@@ -18,28 +18,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class LogMetaUpgradeTest extends WPIntegrationTestCase {
 
-	/**
-	 * The server's stored version before the test changed it.
-	 *
-	 * @var string|false
-	 */
-	private $original_version;
-
-	/**
-	 * Remember the server's version so the test can pretend to upgrade from an older one.
-	 */
-	public function set_up(): void {
-		parent::set_up();
-		$this->original_version = $this->version_property()->getValue( $GLOBALS['push_syndication_server'] );
-	}
-
-	/**
-	 * Restore the server's version.
-	 */
-	public function tear_down(): void {
-		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], $this->original_version );
-		parent::tear_down();
-	}
+	use RestoresServerState;
 
 	/**
 	 * A site's existing log, error count and overall error count move to the protected keys.
@@ -93,6 +72,7 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 		$this->upgrade_from_2_2_1();
 
 		$this->assertFalse( metadata_exists( 'post', $post_id, '_syn_log' ) );
+		$this->assertSame( array( array( 'message' => 'Planted' ) ), get_post_meta( $post_id, 'syn_log', true ), 'Meta the plugin did not write should be left alone.' );
 	}
 
 	/**
@@ -105,7 +85,9 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], '2.2.1' );
 
 		$upgrade = new ReflectionMethod( $GLOBALS['push_syndication_server'], 'upgrade' );
-		$upgrade->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$upgrade->setAccessible( true );
+		}
 		$upgrade->invoke( $GLOBALS['push_syndication_server'] );
 	}
 
@@ -116,7 +98,9 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 	 */
 	private function version_property(): ReflectionProperty {
 		$property = new ReflectionProperty( $GLOBALS['push_syndication_server'], 'version' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( true );
+		}
 
 		return $property;
 	}

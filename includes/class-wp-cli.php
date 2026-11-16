@@ -68,7 +68,17 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 			$this->stop_the_insanity();
 
-			sleep( 2 );
+			/**
+			 * Filters how many seconds push-all-posts pauses between batches of 150 posts.
+			 *
+			 * @since 2.2.3
+			 *
+			 * @param int $seconds Seconds to pause. Default 2.
+			 */
+			$pause = (int) apply_filters( 'syndication_cli_push_all_posts_pause', 2 );
+			if ( $pause > 0 ) {
+				sleep( $pause );
+			}
 
 			++$query_args['paged'];
 

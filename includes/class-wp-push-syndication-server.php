@@ -715,7 +715,10 @@ class WP_Push_Syndication_Server {
 			<div id="major-publishing-actions">
 
 				<div id="delete-action">
-					<a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $site->ID ) ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
+					<?php $delete_link = get_delete_post_link( $site->ID ); ?>
+					<?php if ( $delete_link ) : ?>
+						<a class="submitdelete deletion" href="<?php echo esc_url( $delete_link ); ?>"><?php esc_html_e( 'Move to Trash', 'push-syndication' ); ?></a>
+					<?php endif; ?>
 				</div>
 
 				<div id="publishing-action">

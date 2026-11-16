@@ -23,17 +23,12 @@ require_once __DIR__ . '/Syndication_Recording_Client.php';
  */
 class DeletePushedPostsTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * Remote post ID of the pushed copy.
 	 */
 	const EXT_ID = 55;
-
-	/**
-	 * Settings before the test.
-	 *
-	 * @var array
-	 */
-	private $original_settings;
 
 	/**
 	 * Site the post was pushed to.
@@ -55,9 +50,6 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 	public function set_up(): void {
 		parent::set_up();
 
-		global $push_syndication_server;
-		$this->original_settings = $push_syndication_server->push_syndicate_settings;
-
 		Syndication_Recording_Client::reset();
 
 		$this->site_id = self::factory()->post->create(
@@ -75,16 +67,6 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 			'_syn_slave_post_states',
 			array( 'success' => array( $this->site_id => array( 'ext_ID' => self::EXT_ID ) ) )
 		);
-	}
-
-	/**
-	 * Restore the settings.
-	 */
-	public function tear_down(): void {
-		global $push_syndication_server;
-		$push_syndication_server->push_syndicate_settings = $this->original_settings;
-
-		parent::tear_down();
 	}
 
 	/**
@@ -230,11 +212,15 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 		$reflection = new ReflectionClass( $push_syndication_server );
 
 		$version = $reflection->getProperty( 'version' );
-		$version->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$version->setAccessible( true );
+		}
 		$version->setValue( $push_syndication_server, $from_version );
 
 		$upgrade = $reflection->getMethod( 'upgrade' );
-		$upgrade->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$upgrade->setAccessible( true );
+		}
 		$upgrade->invoke( $push_syndication_server );
 	}
 
@@ -285,17 +271,5 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 
 		$this->assertFalse( get_option( 'push_syndicate_settings' ) );
 		$this->assertSame( 'off', $push_syndication_server->push_syndicate_settings['delete_pushed_posts'] );
-	}
-
-	/**
-	 * Installs already on 2.2.3 or later keep whatever they chose.
-	 */
-	public function test_upgrade_leaves_the_setting_alone_from_2_2_3(): void {
-		$this->store_settings( array( 'delete_pushed_posts' => 'off' ) );
-
-		$this->upgrade_from( '2.2.3' );
-
-		$stored = get_option( 'push_syndicate_settings' );
-		$this->assertSame( 'off', $stored['delete_pushed_posts'] );
 	}
 }

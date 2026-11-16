@@ -154,11 +154,7 @@ class CronPullTimeIntervalTest extends WPIntegrationTestCase {
 	public function test_schedule_is_registered_on_the_cron_schedules_filter(): void {
 		$this->server->push_syndicate_settings = array( 'pull_time_interval' => 1800 );
 
-		add_filter( 'cron_schedules', array( $this->server, 'cron_add_pull_time_interval' ) ); // phpcs:ignore WordPress.WP.CronInterval.ChangeDetected
-
 		$schedules = wp_get_schedules();
-
-		remove_filter( 'cron_schedules', array( $this->server, 'cron_add_pull_time_interval' ) );
 
 		$this->assertArrayHasKey( 'syn_pull_time_interval', $schedules );
 		$this->assertSame( 1800, $schedules['syn_pull_time_interval']['interval'] );

@@ -60,7 +60,7 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * The XML-RPC password must not appear in the rendered form.
+	 * The XML-RPC password field renders empty, without the saved password.
 	 */
 	public function test_xmlrpc_password_is_not_rendered(): void {
 		update_post_meta( $this->site->ID, 'syn_site_password', push_syndicate_encrypt( 'hunter2' ) );
@@ -70,6 +70,12 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 		$html = ob_get_clean();
 
 		$this->assertStringNotContainsString( 'hunter2', $html );
+		$this->assertMatchesRegularExpression(
+			'/<input[^>]+name="site_password"[^>]+value=""[^>]+aria-describedby="site_password-description"/',
+			$html,
+			'The field should render empty, described as having a saved value.'
+		);
+		$this->assertStringContainsString( '<p class="description" id="site_password-description">Leave blank to keep the saved value.</p>', $html );
 	}
 
 	/**
@@ -103,7 +109,7 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * The WordPress.com bearer token must not appear in the rendered form.
+	 * The WordPress.com token field renders empty, without the saved token.
 	 */
 	public function test_rest_token_is_not_rendered(): void {
 		update_post_meta( $this->site->ID, 'syn_site_token', push_syndicate_encrypt( 'bearer-token-123' ) );
@@ -113,6 +119,12 @@ class WriteOnlyCredentialFieldsTest extends WPIntegrationTestCase {
 		$html = ob_get_clean();
 
 		$this->assertStringNotContainsString( 'bearer-token-123', $html );
+		$this->assertMatchesRegularExpression(
+			'/<input[^>]+name="site_token"[^>]+value=""[^>]+aria-describedby="site_token-description"/',
+			$html,
+			'The field should render empty, described as having a saved value.'
+		);
+		$this->assertStringContainsString( '<p class="description" id="site_token-description">Leave blank to keep the saved value.</p>', $html );
 	}
 
 	/**

@@ -21,7 +21,7 @@ Pushes from the command line run straight away, in the command, rather than in W
 
 ### push-all-posts
 
-Pushes every post of one post type, 150 posts at a time, pausing for two seconds between batches.
+Pushes every post of one post type, 150 posts at a time, pausing for two seconds between batches. The [`syndication_cli_push_all_posts_pause`](hooks.md#syndication_cli_push_all_posts_pause) filter changes the pause.
 
 ```sh
 wp syndication push-all-posts [--post_type=<post-type>] [--paged=<page>]

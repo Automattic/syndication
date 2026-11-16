@@ -7,8 +7,11 @@
 
 namespace Automattic\Syndication\Tests;
 
+use Syndication_Recording_Client;
 use WP_Error;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
+
+require_once __DIR__ . '/Syndication_Recording_Client.php';
 
 /**
  * Class ValidateResultNewPostTest
@@ -97,12 +100,15 @@ class ValidateResultNewPostTest extends WPIntegrationTestCase {
 	/**
 	 * Pushing to a pull-only site leaves no success state behind.
 	 *
-	 * The mock transport's new_post() returns false, as the RSS and XML clients do.
+	 * The client's new_post() returns false, as the RSS and XML clients do.
 	 *
 	 * @covers WP_Push_Syndication_Server::push_content
 	 */
 	public function test_push_to_a_client_returning_false_records_no_success(): void {
 		global $push_syndication_server;
+
+		Syndication_Recording_Client::reset();
+		Syndication_Recording_Client::$results['new_post'] = false;
 
 		$post_id = self::factory()->post->create();
 		$site_id = self::factory()->post->create(
@@ -111,7 +117,7 @@ class ValidateResultNewPostTest extends WPIntegrationTestCase {
 				'post_status' => 'publish',
 			)
 		);
-		update_post_meta( $site_id, 'syn_transport_type', 'Mock' );
+		update_post_meta( $site_id, 'syn_transport_type', 'Recording' );
 
 		$push_syndication_server->push_content(
 			array(
@@ -122,6 +128,9 @@ class ValidateResultNewPostTest extends WPIntegrationTestCase {
 		);
 
 		$states = get_post_meta( $post_id, '_syn_slave_post_states', true );
+		$this->assertCount( 1, Syndication_Recording_Client::calls_to( 'new_post' ), 'The push should reach the client.' );
 		$this->assertArrayNotHasKey( 'success', (array) $states );
+
+		Syndication_Recording_Client::reset();
 	}
 }

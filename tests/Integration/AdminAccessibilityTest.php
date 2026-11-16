@@ -121,6 +121,38 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The site status box links to the trash for a user who can delete the site.
+	 */
+	public function test_site_status_box_links_to_the_trash(): void {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$xpath = $this->render(
+			function () {
+				$this->server()->add_site_status_metabox( $this->site );
+			}
+		);
+
+		$link = $xpath->query( '//a[contains(@class, "submitdelete")]' )->item( 0 );
+		$this->assertNotNull( $link );
+		$this->assertStringContainsString( 'action=trash', $link->getAttribute( 'href' ) );
+	}
+
+	/**
+	 * A user who can't delete the site gets no trash link, rather than one going nowhere.
+	 */
+	public function test_site_status_box_has_no_trash_link_without_permission(): void {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+
+		$xpath = $this->render(
+			function () {
+				$this->server()->add_site_status_metabox( $this->site );
+			}
+		);
+
+		$this->assertSame( 0, $xpath->query( '//a[contains(@class, "submitdelete")]' )->length );
+	}
+
+	/**
 	 * Choosing a transport doesn't submit the form until the user asks it to.
 	 */
 	public function test_choosing_a_transport_does_not_submit_the_form(): void {
