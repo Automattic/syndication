@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Tests;
 
+use ReflectionMethod;
 use Syndication_CLI_Command;
 use WP_CLI;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
@@ -141,5 +142,49 @@ class CliCommandTest extends WPIntegrationTestCase {
 		foreach ( WP_CLI::messages( 'log' ) as $line ) {
 			$this->assertStringNotContainsString( 'Updated remote post', $line );
 		}
+	}
+
+	/**
+	 * The object cache's remote connections are reset between pages of a long run.
+	 *
+	 * @covers ::stop_the_insanity
+	 */
+	public function test_stop_the_insanity_resets_remote_cache_connections(): void {
+		global $wp_object_cache;
+
+		$fake_cache = new class() {
+			/**
+			 * Properties the method clears.
+			 *
+			 * @var array
+			 */
+			public $group_ops, $stats, $memcache_debug, $cache;
+
+			/**
+			 * Whether __remoteset() ran.
+			 *
+			 * @var bool
+			 */
+			public $remoteset_called = false;
+
+			/**
+			 * Stand-in for the memcached drop-in's connection reset.
+			 */
+			public function __remoteset(): void {
+				$this->remoteset_called = true;
+			}
+		};
+
+		$original_cache  = $wp_object_cache;
+		$wp_object_cache = $fake_cache;
+		try {
+			$method = new ReflectionMethod( Syndication_CLI_Command::class, 'stop_the_insanity' );
+			$method->setAccessible( true );
+			$method->invoke( new Syndication_CLI_Command() );
+		} finally {
+			$wp_object_cache = $original_cache;
+		}
+
+		$this->assertTrue( $fake_cache->remoteset_called );
 	}
 }

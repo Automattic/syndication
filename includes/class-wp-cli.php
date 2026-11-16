@@ -281,7 +281,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$wp_object_cache->memcache_debug = array();
 		$wp_object_cache->cache          = array();
 
-		if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
+		if ( is_callable( array( $wp_object_cache, '__remoteset' ) ) ) {
 			$wp_object_cache->__remoteset(); // Important.
 		}
 	}
