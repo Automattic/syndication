@@ -120,6 +120,54 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A successful push passes the local post ID, which has a `guid` but no `post_guid`.
+	 *
+	 * @covers Syndication_Logger::log_new
+	 */
+	public function test_push_new_post_logs_the_local_post_guid(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$post_id = $this->factory()->post->create();
+
+		do_action( 'syn_post_push_new_post', 456, $post_id, get_post( $site_id ), 'WP_XMLRPC', null, array() );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'success', $log[0]['msg_type'] );
+		$this->assertSame( get_the_guid( $post_id ) . ',456', $log[0]['message'] );
+	}
+
+	/**
+	 * The delete hook passes the site ID rather than the site post.
+	 *
+	 * @covers Syndication_Logger::log_delete
+	 */
+	public function test_push_delete_post_logs_to_the_site(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$post_id = $this->factory()->post->create();
+
+		do_action( 'syn_post_push_delete_post', true, 789, $post_id, $site_id, 'WP_XMLRPC', null );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'success', $log[0]['msg_type'] );
+		$this->assertSame( 'delete', $log[0]['status'] );
+	}
+
+	/**
+	 * A failed delete is also logged to the site, not dropped.
+	 *
+	 * @covers Syndication_Logger::log_delete
+	 */
+	public function test_failed_push_delete_post_logs_an_error_to_the_site(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$post_id = $this->factory()->post->create();
+
+		do_action( 'syn_post_push_delete_post', false, 789, $post_id, $site_id, 'WP_XMLRPC', null );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'error', $log[0]['msg_type'] );
+		$this->assertSame( 1, (int) get_post_meta( $site_id, 'syn_log_errors', true ) );
+	}
+
+	/**
 	 * Test that a stored value the plugin did not write is not turned into an object.
 	 *
 	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be

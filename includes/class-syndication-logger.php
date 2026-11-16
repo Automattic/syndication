@@ -204,7 +204,7 @@ class Syndication_Logger {
 	 * @param  string $event          Type of event new/update/delete.
 	 * @param  mixed  $result         Result object of previous wp_insert_post action.
 	 * @param  mixed  $post           Post object or post_id.
-	 * @param  object $site           Post object for the site doing the syndication.
+	 * @param  mixed  $site           Post object or post_id for the site doing the syndication.
 	 * @param  string $transport_type Post meta syn_transport_type for site.
 	 * @param  object $client         Syndication_Client class.
 	 */
@@ -212,6 +212,9 @@ class Syndication_Logger {
 		if ( is_int( $post ) ) {
 			$post = get_post( $post, ARRAY_A );
 		}
+
+		// The delete hook passes the site ID rather than the site post.
+		$site_id = is_object( $site ) ? $site->ID : (int) $site;
 
 		if ( isset( $post['postmeta'] ) && isset( $post['postmeta']['is_update'] ) ) {
 			$log_time = $post['postmeta']['is_update'];
@@ -232,10 +235,12 @@ class Syndication_Logger {
 			} else {
 				$message = 'fail';
 			}
-			self::log_post_error( $site->ID, $status = $event, $message, $log_time, $extra );
+			self::log_post_error( $site_id, $status = $event, $message, $log_time, $extra );
 		} else {
-			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
-			self::log_post_success( $site->ID, $status = $event, $message, $log_time, $extra );
+			// Pulled items carry the remote post_guid; pushed posts are local, so use their own guid.
+			$guid    = $post['post_guid'] ?? $post['guid'] ?? '';
+			$message = sprintf( '%s,%d', sanitize_text_field( $guid ), intval( $result ) );
+			self::log_post_success( $site_id, $status = $event, $message, $log_time, $extra );
 		}
 	}
 
