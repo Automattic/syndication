@@ -152,13 +152,17 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return $response;
 		}
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
+		$response = $this->parse_response( $response, 'rest-push-new-fail' );
 
-		if ( empty( $response->error ) ) {
-			return $response->ID;
-		} else {
-			return new WP_Error( 'rest-push-new-fail', $response->message );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
+
+		if ( empty( $response->ID ) ) {
+			return new WP_Error( 'rest-push-new-fail', __( 'WordPress.com did not return the ID of the new post.', 'push-syndication' ) );
+		}
+
+		return $response->ID;
 	}
 
 	/**
@@ -204,17 +208,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
+		$response = $this->parse_response( $response, 'rest-push-edit-fail' );
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return $post_ID;
-		} else {
-			return new WP_Error( 'rest-push-edit-fail', $response->message );
-		}
+		return is_wp_error( $response ) ? $response : $post_ID;
 	}
 
 	/**
@@ -226,13 +222,36 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 */
 	private function _prepare_terms( $terms ) {
 
-		$terms_csv = '';
+		return is_array( $terms ) ? implode( ',', $terms ) : '';
+	}
 
-		foreach ( $terms as $term ) {
-			$terms_csv .= $term . ',';
+	/**
+	 * Decode a WordPress.com REST API response, turning any failure into a WP_Error.
+	 *
+	 * @param array|WP_Error $response   Response from wp_remote_*().
+	 * @param string         $error_code Error code for a failed response.
+	 * @return object|WP_Error The decoded body, or WP_Error on failure.
+	 */
+	private function parse_response( $response, $error_code ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
 
-		return $terms_csv;
+		$status = (int) wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( $status >= 200 && $status < 300 && is_object( $body ) && empty( $body->error ) ) {
+			return $body;
+		}
+
+		if ( is_object( $body ) && ! empty( $body->message ) && is_string( $body->message ) ) {
+			$message = $body->message;
+		} else {
+			/* translators: %d: HTTP status code. */
+			$message = sprintf( __( 'Unexpected response from WordPress.com (HTTP status %d).', 'push-syndication' ), $status );
+		}
+
+		return new WP_Error( $error_code, $message );
 	}
 
 	/**
@@ -244,7 +263,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
+	 * @param string $mysql_date GMT date in MySQL format (Y-m-d H:i:s).
 	 * @return string Date in ISO 8601 format, or empty string if invalid.
 	 */
 	private function format_date_for_api( $mysql_date ) {
@@ -252,7 +271,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return '';
 		}
 
-		return mysql2date( 'c', $mysql_date, false );
+		// The date is GMT, so read it as UTC. mysql2date() would read it in the
+		// site's timezone and shift the post by the site's UTC offset.
+		$timestamp = strtotime( $mysql_date . ' UTC' );
+
+		return false === $timestamp ? '' : gmdate( 'c', $timestamp );
 	}
 
 	/**
@@ -274,17 +297,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
+		$response = $this->parse_response( $response, 'rest-push-delete-fail' );
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return new WP_Error( 'rest-push-delete-fail', $response->message );
-		}
+		return is_wp_error( $response ) ? $response : true;
 	}
 
 	/**
@@ -305,18 +320,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		// TODO: return WP_Error.
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return ! is_wp_error( $this->parse_response( $response, 'rest-test-connection-fail' ) );
 	}
 
 	/**
@@ -338,17 +342,10 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		// Only a 404 says the post is gone. The caller recreates a missing post, so
+		// treating a timeout or outage as missing would duplicate it on the remote
+		// site; assume it exists and let the following edit or delete report the error.
+		return 404 !== wp_remote_retrieve_response_code( $response );
 	}
 
 	/**
