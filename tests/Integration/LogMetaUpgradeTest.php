@@ -105,7 +105,9 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], '2.2.1' );
 
 		$upgrade = new ReflectionMethod( $GLOBALS['push_syndication_server'], 'upgrade' );
-		$upgrade->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$upgrade->setAccessible( true );
+		}
 		$upgrade->invoke( $GLOBALS['push_syndication_server'] );
 	}
 
@@ -116,7 +118,9 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 	 */
 	private function version_property(): ReflectionProperty {
 		$property = new ReflectionProperty( $GLOBALS['push_syndication_server'], 'version' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( true );
+		}
 
 		return $property;
 	}

@@ -51,7 +51,9 @@ class UpgradeXmlSiteStatusTest extends WPIntegrationTestCase {
 	 */
 	private function version_property(): \ReflectionProperty {
 		$property = new \ReflectionProperty( 'WP_Push_Syndication_Server', 'version' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( true );
+		}
 		return $property;
 	}
 
@@ -64,7 +66,9 @@ class UpgradeXmlSiteStatusTest extends WPIntegrationTestCase {
 		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], $from );
 
 		$method = new \ReflectionMethod( 'WP_Push_Syndication_Server', 'upgrade' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 		$method->invoke( $GLOBALS['push_syndication_server'] );
 	}
 

@@ -230,11 +230,15 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 		$reflection = new ReflectionClass( $push_syndication_server );
 
 		$version = $reflection->getProperty( 'version' );
-		$version->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$version->setAccessible( true );
+		}
 		$version->setValue( $push_syndication_server, $from_version );
 
 		$upgrade = $reflection->getMethod( 'upgrade' );
-		$upgrade->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$upgrade->setAccessible( true );
+		}
 		$upgrade->invoke( $push_syndication_server );
 	}
 

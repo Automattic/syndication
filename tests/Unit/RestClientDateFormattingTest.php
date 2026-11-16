@@ -63,7 +63,9 @@ class RestClientDateFormattingTest extends TestCase {
 		$class  = new \ReflectionClass( \Syndication_WP_REST_Client::class );
 		$client = $class->newInstanceWithoutConstructor();
 		$method = $class->getMethod( $method );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		return $method->invoke( $client, $arg );
 	}

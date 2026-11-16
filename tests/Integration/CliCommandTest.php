@@ -208,7 +208,9 @@ class CliCommandTest extends WPIntegrationTestCase {
 		$wp_object_cache = $fake_cache;
 		try {
 			$method = new ReflectionMethod( Syndication_CLI_Command::class, 'stop_the_insanity' );
-			$method->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$method->setAccessible( true );
+			}
 			$method->invoke( new Syndication_CLI_Command() );
 		} finally {
 			$wp_object_cache = $original_cache;

@@ -79,7 +79,9 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		$this->table->prepare_items();
 
 		$method = new ReflectionMethod( $this->table, '_create_months_dropdown' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		ob_start();
 		$method->invoke( $this->table );
@@ -106,7 +108,9 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		$this->table->prepare_items();
 
 		$method = new ReflectionMethod( $this->table, '_create_months_dropdown' );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
 		ob_start();
 		$method->invoke( $this->table );
@@ -184,7 +188,9 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		ob_start();
 		foreach ( array( '_create_months_dropdown', '_create_types_dropdown' ) as $method_name ) {
 			$method = new ReflectionMethod( $this->table, $method_name );
-			$method->setAccessible( true );
+			if ( PHP_VERSION_ID < 80100 ) {
+				$method->setAccessible( true );
+			}
 			$method->invoke( $this->table );
 		}
 		$output = ob_get_clean();
