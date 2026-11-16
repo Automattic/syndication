@@ -1230,21 +1230,38 @@ class WP_Push_Syndication_Server {
 
 		// @TODO if sitegroup is deleted?
 
-		$results = new WP_Query(
-			array(
-				'post_type'      => 'syn_site',
-				'posts_per_page' => 100,
-				'tax_query'      => array(
-					array(
-						'taxonomy' => 'syn_sitegroup',
-						'field'    => 'slug',
-						'terms'    => $sitegroup,
-					),
-				),
-			)
-		);
+		$sites = array();
+		$paged = 1;
 
-		return (array) $results->posts;
+		// Fetch in batches so a large sitegroup never needs one unbounded query.
+		do {
+			$results = new WP_Query(
+				array(
+					'post_type'      => 'syn_site',
+					'posts_per_page' => 100,
+					'paged'          => $paged,
+					'no_found_rows'  => true,
+					// The ID tie-break keeps the order stable across pages.
+					'orderby'        => array(
+						'date' => 'DESC',
+						'ID'   => 'DESC',
+					),
+					'tax_query'      => array(
+						array(
+							'taxonomy' => 'syn_sitegroup',
+							'field'    => 'slug',
+							'terms'    => $sitegroup,
+						),
+					),
+				)
+			);
+
+			$sites      = array_merge( $sites, $results->posts );
+			$batch_size = count( $results->posts );
+			++$paged;
+		} while ( 100 === $batch_size );
+
+		return $sites;
 	}
 
 	/**
