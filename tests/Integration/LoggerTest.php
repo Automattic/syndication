@@ -168,6 +168,68 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Reading one site's log returns the same shape as reading every site's log.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_for_one_site_returns_its_entries_and_applies_filters(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'First failure' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Second failure' );
+
+		$log_entries = Syndication_Logger::get_messages( null, null, $site_id );
+
+		$this->assertCount( 2, $log_entries[ $site_id ] );
+		$this->assertSame( 'First failure', $log_entries[ $site_id ][0]['message'] );
+
+		$log_entries = Syndication_Logger::get_messages( null, 'error', $site_id, 'post', null, null, null, 'Second' );
+
+		$this->assertSame( array( 1 ), array_keys( $log_entries[ $site_id ] ) );
+	}
+
+	/**
+	 * A site with no log yet returns an empty list rather than failing.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_for_a_site_without_a_log_returns_no_entries(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$this->assertSame( array( $site_id => array() ), Syndication_Logger::get_messages( null, null, $site_id ) );
+	}
+
+	/**
+	 * Backslashes in a message survive being written, and being written again with later entries.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_log_keeps_backslashes_in_messages(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Failed to parse feed at C:\\feeds\\a.xml' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Second failure' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Third failure' );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'Failed to parse feed at C:\\feeds\\a.xml', $log[0]['message'] );
+	}
+
+	/**
+	 * log_post_success() is callable statically, like its error and info siblings.
+	 *
+	 * @covers Syndication_Logger::log_post_success
+	 */
+	public function test_log_post_success_can_be_called_statically(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_success( $site_id, 'ok', 'Pushed' );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'success', $log[0]['msg_type'] );
+	}
+
+	/**
 	 * Test that a stored value the plugin did not write is not turned into an object.
 	 *
 	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be

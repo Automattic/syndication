@@ -266,7 +266,7 @@ class Syndication_Logger {
 	 * @param  string $log_time Time of event.
 	 * @param  array  $extra    Additional data.
 	 */
-	public function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
+	public static function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'success', $post_id, $status, $message, $log_time, $extra );
 	}
 
@@ -385,7 +385,8 @@ class Syndication_Logger {
 
 					$log[] = $log_entry;
 				}
-				update_post_meta( $post->ID, 'syn_log', $log );
+				// update_post_meta() unslashes its value, so slash it to keep backslashes in messages.
+				update_post_meta( $post->ID, 'syn_log', wp_slash( $log ) );
 
 				if ( 'success' == $msg_type ) {
 					update_post_meta( $post->ID, 'syn_log_errors', 0 );
@@ -472,7 +473,9 @@ class Syndication_Logger {
 		if ( 'object' == $storage_type ) {
 			if ( 'post' == $object_type ) {
 				if ( ! empty( $object_id ) ) {
-					$log_entries[ $object_id ] = get_post_meta( $object_id, 'syn_log' );
+					$log = get_post_meta( $object_id, 'syn_log', true );
+
+					$log_entries[ $object_id ] = is_array( $log ) ? $log : array();
 				} else {
 					global $wpdb;
 					/**
