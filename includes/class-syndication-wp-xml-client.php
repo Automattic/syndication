@@ -270,18 +270,17 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$xml = simplexml_load_string( $feed, null, LIBXML_NONET, $namespace, false );
 
 		if ( false === $xml ) {
-			$xml_errors = '';
-
-			// Retrieve errors.
-			foreach ( libxml_get_errors() as $error ) {
-				$xml_errors .= $error->message . '\n';
-			}
+			$xml_errors = implode( '; ', array_map( 'trim', wp_list_pluck( libxml_get_errors(), 'message' ) ) );
 
 			// Clear libxml error buffer.
 			libxml_clear_errors();
 
-			// translators: 1: Feed URL, 2: List of XML parser errors.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			Syndication_Logger::log_post_error(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'error',
+				/* translators: 1: Feed URL, 2: Semicolon-separated list of XML parser errors. */
+				sprintf( __( 'Failed to parse feed at %1$s. Errors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors )
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
