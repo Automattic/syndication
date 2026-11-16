@@ -91,4 +91,17 @@ class RssClientTest extends WPIntegrationTestCase {
 		$this->assertArrayNotHasKey( 'post_date', $posts[0] );
 		$this->assertArrayNotHasKey( 'post_date_gmt', $posts[0] );
 	}
+
+	/**
+	 * Saving a form that omits a field stores an empty value without a warning.
+	 */
+	public function test_save_settings_tolerates_missing_fields(): void {
+		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$_POST = array( 'feed_url' => 'https://example.com/feed/' );
+
+		$this->assertTrue( \Syndication_WP_RSS_Client::save_settings( $site_id ) );
+		$this->assertSame( 'https://example.com/feed/', get_post_meta( $site_id, 'syn_feed_url', true ) );
+		$this->assertSame( '', get_post_meta( $site_id, 'syn_default_cat_status', true ) );
+	}
 }

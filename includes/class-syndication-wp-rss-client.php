@@ -225,12 +225,15 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public static function save_settings( $site_ID ) {
 
-		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_cat_status', sanitize_text_field( $_POST['default_cat_status'] ) );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- WP_Push_Syndication_Server::save_site_settings() verifies the nonce before calling this.
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_feed_url', isset( $_POST['feed_url'] ) ? esc_url_raw( wp_unslash( $_POST['feed_url'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_type', isset( $_POST['default_post_type'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_type'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_status', isset( $_POST['default_post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_cat_status', isset( $_POST['default_cat_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_cat_status'] ) ) : '' );
+		// phpcs:enable
 		return true;
 	}
 
