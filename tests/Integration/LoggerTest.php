@@ -332,6 +332,31 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * An entry without a status or message is still formatted for the PHP error log.
+	 *
+	 * @covers Syndication_Logger::log_post_info
+	 */
+	public function test_php_error_log_line_tolerates_missing_status_and_message(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_filter( 'syn_use_php_error_logging', '__return_true' );
+		add_filter(
+			'syn_pre_debug_level',
+			static function () {
+				return 'info';
+			}
+		);
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_info( $site_id );
+			}
+		);
+
+		$this->assertStringContainsString( "SYN_INFO:post,{$site_id},\n", $output );
+	}
+
+	/**
 	 * Run a callback with the PHP error log redirected to a temporary file.
 	 *
 	 * @param callable $callback Code that may write to the error log.

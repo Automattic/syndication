@@ -455,6 +455,14 @@ class Syndication_Logger {
 	 * @return string            Formatted log message
 	 */
 	private function format_log_message( $msg_type, $log_entry ) {
+		// log() leaves out any of these that are empty.
+		$log_entry += array(
+			'object_type' => '',
+			'object_id'   => 0,
+			'status'      => '',
+			'message'     => '',
+		);
+
 		$msg = apply_filters( 'syn_error_log_message_format', sprintf( 'SYN_%s:%s,%d,%s%s', strtoupper( $msg_type ), $log_entry['object_type'], $log_entry['object_id'], $log_entry['status'], $log_entry['message'] ? ',' . $log_entry['message'] : '' ), $msg_type, $log_entry );
 		return $msg;
 	}
