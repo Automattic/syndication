@@ -33,18 +33,34 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	private $table;
 
 	/**
-	 * Set up the list table.
+	 * Admin menu globals that add_submenu_page() writes.
+	 *
+	 * @var array
+	 */
+	private $menu_globals = array();
+
+	/**
+	 * Set up the list table and save the admin menu globals.
 	 */
 	public function set_up(): void {
 		parent::set_up();
 		$this->table = new Syndication_Logger_List_Table();
+
+		foreach ( array( 'submenu', '_registered_pages', '_parent_pages' ) as $name ) {
+			$this->menu_globals[ $name ] = $GLOBALS[ $name ] ?? null;
+		}
 	}
 
 	/**
-	 * Clean up request superglobals.
+	 * Clean up request superglobals and the admin menu globals.
 	 */
 	public function tear_down(): void {
 		unset( $_GET['orderby'], $_GET['order'], $_GET['page'], $_REQUEST['s'] );
+
+		foreach ( $this->menu_globals as $name => $value ) {
+			$GLOBALS[ $name ] = $value; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring what the test changed.
+		}
+
 		parent::tear_down();
 	}
 
@@ -166,7 +182,6 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		( new Syndication_Logger_Viewer() )->add_menu_items();
 
 		$logs_item = wp_list_filter( $submenu['edit.php?post_type=syn_site'] ?? array(), array( 2 => 'syndication_dashboard' ) );
-		$submenu   = array();
 
 		$this->assertSame( array( 'edit_others_posts' ), wp_list_pluck( $logs_item, 1 ) );
 	}

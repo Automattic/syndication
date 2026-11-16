@@ -17,6 +17,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class PullPostTargetTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * The syn_site post pulled from.
 	 *
@@ -38,6 +40,16 @@ class PullPostTargetTest extends WPIntegrationTestCase {
 		);
 		update_post_meta( $this->site_id, 'syn_site_enabled', 'on' );
 		update_post_meta( $this->site_id, 'syn_transport_type', 'Mock' );
+	}
+
+	/**
+	 * Clear the mock feed and the test post type, even when an assertion failed.
+	 */
+	public function tear_down(): void {
+		\Syndication_Mock_Client::set_posts( array() );
+		unregister_post_type( 'syn_test_article' );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -187,8 +199,6 @@ class PullPostTargetTest extends WPIntegrationTestCase {
 			)
 		);
 
-		$push_syndication_server->push_syndicate_settings['update_pulled_posts'] = 'off';
-
 		$this->assertSame( 'post', get_post_type( $created->ID ) );
 		$this->assertSame( 'From the feed', get_post( $created->ID )->post_title );
 	}
@@ -201,8 +211,6 @@ class PullPostTargetTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 'page', $this->pull_new( array( 'post_type' => 'page' ) )->post_type );
 		$this->assertContains( 'syn_test_article', \WP_Push_Syndication_Server::get_pull_post_types() );
-
-		unregister_post_type( 'syn_test_article' );
 	}
 
 	/**

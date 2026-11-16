@@ -23,6 +23,16 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	use RestoresServerState;
 
 	/**
+	 * Clear the mock feed and the recording client.
+	 */
+	public function tear_down(): void {
+		\Syndication_Mock_Client::set_posts( array() );
+		\Syndication_Recording_Client::reset();
+
+		parent::tear_down();
+	}
+
+	/**
 	 * Create an enabled site.
 	 *
 	 * @param string $transport_type Transport type.
@@ -192,8 +202,6 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 		);
 
 		$push_syndication_server->pull_content( array( $site_id ) );
-
-		\Syndication_Mock_Client::set_posts( array() );
 
 		$this->assertSame( array(), $cleaned, 'Only posts that were saved should have their cache cleaned.' );
 	}

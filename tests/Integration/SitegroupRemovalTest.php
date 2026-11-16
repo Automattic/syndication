@@ -31,6 +31,15 @@ class SitegroupRemovalTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Clear any results a test configured on the recording client.
+	 */
+	public function tear_down(): void {
+		Syndication_Recording_Client::reset();
+
+		parent::tear_down();
+	}
+
+	/**
 	 * Create a sitegroup.
 	 *
 	 * @param string $slug   Slug.
