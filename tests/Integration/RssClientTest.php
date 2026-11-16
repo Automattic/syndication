@@ -61,6 +61,28 @@ class RssClientTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A category that appears between the lookup and the insert is still attached.
+	 *
+	 * Another pull can create the term after get_term_by() misses it, so
+	 * wp_insert_term() reports term_exists with the existing term's ID.
+	 */
+	public function test_category_created_concurrently_is_attached(): void {
+		$raced_id = 0;
+		$racer    = function ( $term, $taxonomy ) use ( &$racer, &$raced_id ) {
+			remove_filter( 'pre_insert_term', $racer );
+			$raced_id = wp_insert_term( $term, $taxonomy )['term_id'];
+
+			return $term;
+		};
+		add_filter( 'pre_insert_term', $racer, 10, 2 );
+
+		$posts = $this->make_client( '<item><guid>a</guid><title>A</title><category>Raced Category</category></item>' )->get_posts();
+
+		$this->assertNotSame( 0, $raced_id, 'The concurrent insert should have run.' );
+		$this->assertSame( array( $raced_id ), $posts[0]['post_category'] );
+	}
+
+	/**
 	 * An item with no categories is pulled without a warning.
 	 */
 	public function test_item_without_categories_has_none(): void {

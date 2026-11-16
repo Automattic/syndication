@@ -357,6 +357,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 				$result = wp_insert_term( $cat->term, 'category' );
 				if ( ! is_wp_error( $result ) ) {
 					$ids['cats'][] = $result['term_id'];
+				} elseif ( 'term_exists' === $result->get_error_code() ) {
+					// Created since the lookup above; the error data is its ID.
+					$ids['cats'][] = (int) $result->get_error_data();
 				}
 			}
 		}
