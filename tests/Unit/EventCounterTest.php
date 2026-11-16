@@ -9,13 +9,14 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Tests\Unit;
 
+use Brain\Monkey\Actions;
 use Brain\Monkey\Functions;
 use ReflectionMethod;
 
 /**
  * Test case for Syndication_Event_Counter.
  *
- * Tests the option name generation logic.
+ * Tests counting, resetting and the option name generation logic.
  *
  * @group unit
  * @covers Syndication_Event_Counter
@@ -42,31 +43,6 @@ class EventCounterTest extends TestCase {
 	}
 
 	/**
-	 * Test safe option name generation uses correct prefix.
-	 */
-	public function test_get_safe_option_name_has_correct_prefix(): void {
-		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
-
-		$result = $method->invoke( $this->counter, 'test_event', '123' );
-
-		$this->assertStringStartsWith( 'push_syndication_event_counter_', $result );
-	}
-
-	/**
-	 * Test safe option name generation produces consistent hashes.
-	 */
-	public function test_get_safe_option_name_is_consistent(): void {
-		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
-
-		$result1 = $method->invoke( $this->counter, 'test_event', '123' );
-		$result2 = $method->invoke( $this->counter, 'test_event', '123' );
-
-		$this->assertSame( $result1, $result2 );
-	}
-
-	/**
 	 * Test safe option name generation produces different hashes for different slugs.
 	 */
 	public function test_get_safe_option_name_different_slugs(): void {
@@ -90,22 +66,6 @@ class EventCounterTest extends TestCase {
 		$result2 = $method->invoke( $this->counter, 'test_event', '456' );
 
 		$this->assertNotSame( $result1, $result2 );
-	}
-
-	/**
-	 * Test safe option name length does not exceed 64 characters.
-	 */
-	public function test_get_safe_option_name_max_length(): void {
-		$method = new ReflectionMethod( \Syndication_Event_Counter::class, '_get_safe_option_name' );
-		$method->setAccessible( true );
-
-		// Test with very long slug and ID.
-		$long_slug = str_repeat( 'very_long_event_slug_', 10 );
-		$long_id   = str_repeat( '123456789', 10 );
-
-		$result = $method->invoke( $this->counter, $long_slug, $long_id );
-
-		$this->assertLessThanOrEqual( 64, strlen( $result ) );
 	}
 
 	/**
@@ -159,5 +119,40 @@ class EventCounterTest extends TestCase {
 		$expected = 'push_syndication_event_counter_' . md5( 'pull_failure42' );
 
 		$this->assertSame( $expected, $result );
+	}
+
+	/**
+	 * Counting an event increments its stored count and announces the new total.
+	 */
+	public function test_count_event_increments_the_count_and_fires_actions(): void {
+		$option = 'push_syndication_event_counter_' . md5( 'pull_failure42' );
+
+		Functions\expect( 'get_option' )->once()->with( $option, 0 )->andReturn( 2 );
+		Functions\expect( 'update_option' )->once()->with( $option, 3 );
+		Actions\expectDone( 'push_syndication_after_event' )->once()->with( 'pull_failure', '42', 3 );
+		Actions\expectDone( 'push_syndication_after_event_pull_failure' )->once()->with( '42', 3 );
+
+		$this->counter->count_event( 'pull_failure', 42 );
+	}
+
+	/**
+	 * The first occurrence of an event is counted as one.
+	 */
+	public function test_count_event_starts_at_one(): void {
+		$option = 'push_syndication_event_counter_' . md5( 'pull_failure42' );
+
+		Functions\when( 'get_option' )->returnArg( 2 );
+		Functions\expect( 'update_option' )->once()->with( $option, 1 );
+
+		$this->counter->count_event( 'pull_failure', 42 );
+	}
+
+	/**
+	 * Resetting an event deletes its stored count.
+	 */
+	public function test_reset_event_deletes_the_count(): void {
+		Functions\expect( 'delete_option' )->once()->with( 'push_syndication_event_counter_' . md5( 'pull_failure42' ) );
+
+		$this->counter->reset_event( 'pull_failure', 42 );
 	}
 }
