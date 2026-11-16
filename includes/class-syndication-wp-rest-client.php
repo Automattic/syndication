@@ -240,7 +240,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
+	 * @param string $mysql_date GMT date in MySQL format (Y-m-d H:i:s).
 	 * @return string Date in ISO 8601 format, or empty string if invalid.
 	 */
 	private function format_date_for_api( $mysql_date ) {
@@ -248,7 +248,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return '';
 		}
 
-		return mysql2date( 'c', $mysql_date, false );
+		// The date is GMT, so read it as UTC. mysql2date() would read it in the
+		// site's timezone and shift the post by the site's UTC offset.
+		$timestamp = strtotime( $mysql_date . ' UTC' );
+
+		return false === $timestamp ? '' : gmdate( 'c', $timestamp );
 	}
 
 	/**
