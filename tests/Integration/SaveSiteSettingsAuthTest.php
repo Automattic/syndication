@@ -20,6 +20,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class SaveSiteSettingsAuthTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * ID of the syn_site post under test.
 	 *

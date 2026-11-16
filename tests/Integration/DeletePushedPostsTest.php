@@ -23,17 +23,12 @@ require_once __DIR__ . '/Syndication_Recording_Client.php';
  */
 class DeletePushedPostsTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * Remote post ID of the pushed copy.
 	 */
 	const EXT_ID = 55;
-
-	/**
-	 * Settings before the test.
-	 *
-	 * @var array
-	 */
-	private $original_settings;
 
 	/**
 	 * Site the post was pushed to.
@@ -55,9 +50,6 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 	public function set_up(): void {
 		parent::set_up();
 
-		global $push_syndication_server;
-		$this->original_settings = $push_syndication_server->push_syndicate_settings;
-
 		Syndication_Recording_Client::reset();
 
 		$this->site_id = self::factory()->post->create(
@@ -75,16 +67,6 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 			'_syn_slave_post_states',
 			array( 'success' => array( $this->site_id => array( 'ext_ID' => self::EXT_ID ) ) )
 		);
-	}
-
-	/**
-	 * Restore the settings.
-	 */
-	public function tear_down(): void {
-		global $push_syndication_server;
-		$push_syndication_server->push_syndicate_settings = $this->original_settings;
-
-		parent::tear_down();
 	}
 
 	/**

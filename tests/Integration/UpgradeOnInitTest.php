@@ -17,6 +17,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class UpgradeOnInitTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * Times the upgrade routine has written syn_version.
 	 *

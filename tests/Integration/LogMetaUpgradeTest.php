@@ -18,28 +18,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class LogMetaUpgradeTest extends WPIntegrationTestCase {
 
-	/**
-	 * The server's stored version before the test changed it.
-	 *
-	 * @var string|false
-	 */
-	private $original_version;
-
-	/**
-	 * Remember the server's version so the test can pretend to upgrade from an older one.
-	 */
-	public function set_up(): void {
-		parent::set_up();
-		$this->original_version = $this->version_property()->getValue( $GLOBALS['push_syndication_server'] );
-	}
-
-	/**
-	 * Restore the server's version.
-	 */
-	public function tear_down(): void {
-		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], $this->original_version );
-		parent::tear_down();
-	}
+	use RestoresServerState;
 
 	/**
 	 * A site's existing log, error count and overall error count move to the protected keys.

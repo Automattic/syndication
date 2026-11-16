@@ -21,28 +21,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  */
 class UpgradeXmlSiteStatusTest extends WPIntegrationTestCase {
 
-	/**
-	 * The server's stored version before the test changed it.
-	 *
-	 * @var mixed
-	 */
-	private $original_version;
-
-	/**
-	 * Remember the server's stored version.
-	 */
-	public function set_up(): void {
-		parent::set_up();
-		$this->original_version = $this->version_property()->getValue( $GLOBALS['push_syndication_server'] );
-	}
-
-	/**
-	 * Restore the server's stored version.
-	 */
-	public function tear_down(): void {
-		$this->version_property()->setValue( $GLOBALS['push_syndication_server'], $this->original_version );
-		parent::tear_down();
-	}
+	use RestoresServerState;
 
 	/**
 	 * Get the server's private version property.

@@ -20,6 +20,8 @@ require_once __DIR__ . '/Syndication_Recording_Client.php';
  */
 class PullCronScheduleTest extends WPIntegrationTestCase {
 
+	use RestoresServerState;
+
 	/**
 	 * Create an enabled site.
 	 *
