@@ -19,7 +19,7 @@ Pulls run in the background, so a pull starts on the next cron run after it's du
 
 For each enabled site, the plugin fetches the feed and turns each item into a post array. Then, for each item:
 
-1. It looks for a post already pulled from the same item, by the item's unique ID (its GUID). Items without a unique ID are skipped and logged. The lookup covers every pulled post, not just those from this site, so two feeds that use the same IDs update each other's posts.
+1. It looks for a post already pulled from the same item, by the item's unique ID (its GUID). Items without a unique ID are skipped and logged. The lookup only covers posts pulled from this site, so a feed can't overwrite another feed's posts by reusing their IDs. If you replace a site with a new one for the same feed, the new site pulls its items again as new posts; to have it update the old site's posts instead, use [`syn_pre_find_post_by_guid`](hooks.md#syn_pre_find_post_by_guid).
 2. **New item:** a post is created, and the item's unique ID and the site's ID are stored on it, in `syn_post_guid` and `syn_source_site_id`.
 3. **Item pulled before:** the post is updated, if **Update pulled posts** is ticked under **Pull Options**. Otherwise the item is skipped. Updating replaces the post's fields with the feed's, including its status: if an editor has changed a pulled post's status, the next update puts it back.
 

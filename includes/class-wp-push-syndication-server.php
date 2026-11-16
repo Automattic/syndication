@@ -1894,8 +1894,16 @@ class WP_Push_Syndication_Server {
 			return $post_id;
 		}
 
-		// A direct query here is way more efficient than WP_Query, because we don't have to do all the extra processing, filters, and JOIN.
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_post_guid' AND meta_value = %s LIMIT 1", $guid ) );
+		// Only posts pulled from this site: a feed must not overwrite another feed's posts by reusing their GUIDs.
+		// A direct query avoids the processing and filters of WP_Query.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Must see posts pulled earlier in the same run.
+		$post_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT guid.post_id FROM $wpdb->postmeta guid INNER JOIN $wpdb->postmeta source ON source.post_id = guid.post_id AND source.meta_key = 'syn_source_site_id' AND source.meta_value = %s WHERE guid.meta_key = 'syn_post_guid' AND guid.meta_value = %s LIMIT 1",
+				(string) $site->ID,
+				$guid
+			)
+		);
 
 		if ( $post_id ) {
 			return $post_id;
