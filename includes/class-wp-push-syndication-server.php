@@ -194,7 +194,7 @@ class WP_Push_Syndication_Server {
 		$new_columns['cb']            = '<input type="checkbox" />';
 		$new_columns['title']         = _x( 'Site Name', 'column name', 'push-syndication' );
 		$new_columns['client-type']   = _x( 'Client Type', 'column name', 'push-syndication' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Site Groups', 'column name', 'push-syndication' );
 		$new_columns['site_status']   = _x( 'Status', 'column name', 'push-syndication' );
 		$new_columns['date']          = _x( 'Date', 'column name', 'push-syndication' );
 		return $new_columns;
@@ -208,7 +208,7 @@ class WP_Push_Syndication_Server {
 				try {
 					$client      = Syndication_Client_Factory::get_client( $transport_type, $id );
 					$client_data = $client->get_client_data();
-					echo esc_html( sprintf( '%s (%s)', $client_data['name'], array_shift( $client_data['modes'] ) ) );
+					echo esc_html( $this->get_transport_label( $client_data['name'], array_shift( $client_data['modes'] ) ) );
 				} catch ( Exception $e ) {
 					// translators: %s: Transport type of the site.
 					printf( esc_html__( 'Unknown (%s)', 'push-syndication' ), esc_html( $transport_type ) );
@@ -220,9 +220,9 @@ class WP_Push_Syndication_Server {
 			case 'site_status':
 				$site_status = get_post_meta( $id, 'syn_site_enabled', true );
 				if ( ! filter_var( $site_status, FILTER_VALIDATE_BOOLEAN ) ) {
-					esc_html_e( 'disabled', 'push-syndication' );
+					esc_html_e( 'Disabled', 'push-syndication' );
 				} else {
-					esc_html_e( 'enabled', 'push-syndication' );
+					esc_html_e( 'Enabled', 'push-syndication' );
 				}
 				break;
 			default:
@@ -377,7 +377,7 @@ class WP_Push_Syndication_Server {
 	public function display_syndicate_settings() {
 
 		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select site groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options', 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options', array( 'label_for' => 'pull_time_interval' ) );
@@ -398,7 +398,7 @@ class WP_Push_Syndication_Server {
 
 		<div class="wrap">
 
-			<h1><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h1>
+			<h1><?php esc_html_e( 'Push Syndication Settings', 'push-syndication' ); ?></h1>
 
 			<form action="options.php" method="post">
 
@@ -428,7 +428,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_pull_sitegroups_description() {
-		echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+		echo esc_html__( 'Select the site groups to pull content from', 'push-syndication' );
 	}
 
 	public function display_pull_sitegroups_selection() {
@@ -445,7 +445,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -553,7 +553,14 @@ class WP_Push_Syndication_Server {
 
 	public function display_apitoken_description() {
 		// @TODO add client type information.
-		echo '<p>' . esc_html__( 'To syndicate content to WordPress.com you must ', 'push-syndication' ) . '<a href="https://developer.wordpress.com/apps/new/">' . esc_html__( 'create a new application', 'push-syndication' ) . '</a></p>';
+		echo '<p>' . wp_kses(
+			sprintf(
+				/* translators: %s: URL of the WordPress.com page for creating an application. */
+				__( 'To syndicate content to WordPress.com you must <a href="%s">create a new application</a>.', 'push-syndication' ),
+				esc_url( 'https://developer.wordpress.com/apps/new/' )
+			),
+			array( 'a' => array( 'href' => array() ) )
+		) . '</p>';
 		echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
 		echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
 	}
@@ -642,15 +649,15 @@ class WP_Push_Syndication_Server {
 		<table class="form-table">
 			<tbody>
 			<tr valign="top">
-				<th scope="row">Access token</th>
+				<th scope="row"><?php esc_html_e( 'Access token', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->access_token ); ?></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row">Blog ID</th>
+				<th scope="row"><?php esc_html_e( 'Blog ID', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->blog_id ); ?></td>
 			</tr>
 			<tr valign="top">
-				<th scope="row">Blog URL</th>
+				<th scope="row"><?php esc_html_e( 'Blog URL', 'push-syndication' ); ?></th>
 				<td><?php echo esc_html( $result->blog_url ); ?></td>
 			</tr>
 			</tbody>
@@ -658,12 +665,24 @@ class WP_Push_Syndication_Server {
 
 		<?php
 
-		echo '<p>' . esc_html__( 'Enter the above details in relevant fields when registering a ', 'push-syndication' ) . '<a href="http://wordpress.com" target="_blank">WordPress.com</a>' . esc_html__( 'site', 'push-syndication' ) . '</p>';
+		echo '<p>' . wp_kses(
+			sprintf(
+				/* translators: %s: Link to WordPress.com. */
+				__( 'Enter the above details in the relevant fields when registering a %s site.', 'push-syndication' ),
+				'<a href="https://wordpress.com" target="_blank">WordPress.com</a>'
+			),
+			array(
+				'a' => array(
+					'href'   => array(),
+					'target' => array(),
+				),
+			)
+		) . '</p>';
 	}
 
 	public function display_sitegroups_selection() {
 
-		echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Select site groups', 'push-syndication' ) . '</h3>';
 
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array();
@@ -680,7 +699,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -805,7 +824,7 @@ class WP_Push_Syndication_Server {
 		try {
 			Syndication_Client_Factory::display_client_settings( $post, $transport_type );
 		} catch ( Exception $e ) {
-			echo esc_html( $e->getMessage() );
+			esc_html_e( 'Transport class not found!', 'push-syndication' );
 		}
 
 		?>
@@ -825,10 +844,30 @@ class WP_Push_Syndication_Server {
 		$max_len = 0;
 		foreach ( $this->push_syndicate_transports as $key => $value ) {
 			$mode = array_shift( $value['modes'] );
-			// translators: 1: Client name, 2: Client mode.
-			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . sprintf( esc_html__( '%1$s (%2$s)', 'push-syndication' ), esc_html( $value['name'] ), esc_html( $mode ) ) . '</option>';
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $key, $transport_type, false ) . '>' . esc_html( $this->get_transport_label( $value['name'], $mode ) ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * Label a transport with its name and mode, as shown in the admin.
+	 *
+	 * @param string $name Client name.
+	 * @param string $mode Client mode: push or pull.
+	 * @return string
+	 */
+	private function get_transport_label( $name, $mode ) {
+		$mode_labels = array(
+			'push' => _x( 'push', 'transport mode', 'push-syndication' ),
+			'pull' => _x( 'pull', 'transport mode', 'push-syndication' ),
+		);
+
+		return sprintf(
+			/* translators: 1: Client name, 2: Client mode. */
+			__( '%1$s (%2$s)', 'push-syndication' ),
+			$name,
+			isset( $mode_labels[ $mode ] ) ? $mode_labels[ $mode ] : $mode
+		);
 	}
 
 	/**
@@ -962,7 +1001,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -1797,8 +1836,16 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( is_array( $posts ) && count( $posts ) > 0 ) {
-				// translators: 1: Site post ID, 2: Number of posts in the feed.
-				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %1$d with %2$d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info(
+					$site_id,
+					'start_import',
+					sprintf(
+						/* translators: 1: Site post ID, 2: Number of posts in the feed. */
+						_n( 'starting import for site id %1$d with %2$s post', 'starting import for site id %1$d with %2$s posts', count( $posts ), 'push-syndication' ),
+						$site_id,
+						number_format_i18n( count( $posts ) )
+					)
+				);
 			} else {
 				// translators: %d: Site post ID.
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );

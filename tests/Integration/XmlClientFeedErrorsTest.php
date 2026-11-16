@@ -24,6 +24,13 @@ class XmlClientFeedErrorsTest extends WPIntegrationTestCase {
 	private $feed_body = '';
 
 	/**
+	 * The HTTP status code returned with the feed body.
+	 *
+	 * @var int
+	 */
+	private $status = 200;
+
+	/**
 	 * Intercept the feed fetch.
 	 */
 	public function set_up(): void {
@@ -38,8 +45,8 @@ class XmlClientFeedErrorsTest extends WPIntegrationTestCase {
 					'headers'  => array(),
 					'body'     => $this->feed_body,
 					'response' => array(
-						'code'    => 200,
-						'message' => 'OK',
+						'code'    => $this->status,
+						'message' => get_status_header_desc( $this->status ),
 					),
 					'cookies'  => array(),
 					'filename' => '',
@@ -108,5 +115,43 @@ class XmlClientFeedErrorsTest extends WPIntegrationTestCase {
 		}
 
 		$this->assertEmpty( get_post_meta( $site_id, 'syn_site_enabled', true ) );
+	}
+
+	/**
+	 * Fetch errors reach the Logs screen, so they go through the text domain.
+	 *
+	 * @dataProvider data_fetch_errors
+	 *
+	 * @param int    $status   HTTP status code of the response.
+	 * @param string $body     Response body.
+	 * @param string $expected Expected error message, marked as translated.
+	 */
+	public function test_fetch_errors_are_translatable( int $status, string $body, string $expected ): void {
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translation ) {
+				return '[' . $translation . ']';
+			}
+		);
+
+		$this->status    = $status;
+		$this->feed_body = $body;
+
+		$error = ( new \Syndication_WP_XML_Client( $this->make_site() ) )->fetch_feed();
+
+		$this->assertWPError( $error );
+		$this->assertSame( $expected, $error->get_error_message() );
+	}
+
+	/**
+	 * Responses the fetch refuses, and the message each gives.
+	 *
+	 * @return array<string, array{int, string, string}>
+	 */
+	public static function data_fetch_errors(): array {
+		return array(
+			'HTTP error status' => array( 500, '', '[Failed to fetch XML feed; HTTP status 500.]' ),
+			'Doctype in feed'   => array( 200, '<!DOCTYPE rss><rss></rss>', '[Refused XML feed: it declares a document type.]' ),
+		);
 	}
 }

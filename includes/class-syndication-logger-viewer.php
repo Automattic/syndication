@@ -361,7 +361,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 				while ( $month_pointer <= $max_month ) { 
 					?>
 					<option
-						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( $month_pointer->format( 'F Y' ) ); ?></option>
+						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( wp_date( 'F Y', $month_pointer->getTimestamp(), new DateTimeZone( 'UTC' ) ) ); ?></option>
 					<?php
 					$month_pointer->modify( '+1 month' );
 				}

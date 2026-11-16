@@ -105,8 +105,19 @@ class Failed_Syndication_Auto_Retry {
 				// Run in one minute by default.
 				$auto_retry_interval = apply_filters( 'syndication_failure_auto_retry_interval', $time_now + MINUTE_IN_SECONDS );
 
-				// translators: 1: Current retry number, 2: Maximum number of retries, 3: Site URL, 4: Human-readable time until the retry runs.
-				Syndication_Logger::log_post_info( $site->ID, $status = 'start_auto_retry', $message = sprintf( __( 'Connection retry %1$d of %2$d to %3$s in %4$s..', 'push-syndication' ), $site_auto_retry_count + 1, $auto_retry_limit, $site_url, human_time_diff( $time_now, $auto_retry_interval ) ), $log_time, $extra = array() );
+				Syndication_Logger::log_post_info(
+					$site->ID,
+					'start_auto_retry',
+					sprintf(
+						/* translators: 1: Current retry number, 2: Maximum number of retries, 3: Site URL, 4: Human-readable time until the retry runs. */
+						__( 'Connection retry %1$d of %2$d to %3$s in %4$s.', 'push-syndication' ),
+						$site_auto_retry_count + 1,
+						$auto_retry_limit,
+						$site_url,
+						human_time_diff( $time_now, $auto_retry_interval )
+					),
+					$log_time
+				);
 
 				// Schedule a pull retry for one minute in the future.
 				wp_schedule_single_event(
@@ -139,8 +150,17 @@ class Failed_Syndication_Auto_Retry {
 			// Remove the auto retry if there was one.
 			delete_post_meta( $site->ID, 'syn_failed_auto_retry_attempts' );
 
-			// translators: 1: Number of failed reconnection attempts, 2: Site URL.
-			Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %1$d times to reconnect to %2$s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
+			Syndication_Logger::log_post_error(
+				$site->ID,
+				'end_auto_retry',
+				sprintf(
+					/* translators: 1: Number of failed reconnection attempts, 2: Site URL. */
+					_n( 'Failed %1$s time to reconnect to %2$s', 'Failed %1$s times to reconnect to %2$s', (int) $site_auto_retry_count, 'push-syndication' ),
+					number_format_i18n( (int) $site_auto_retry_count ),
+					$site_url
+				),
+				$log_time
+			);
 		}
 	}
 

@@ -76,6 +76,7 @@ class AutoRetryTest extends TestCase {
 		Functions\stubs(
 			array(
 				'add_action',
+				'number_format_i18n',
 				'human_time_diff' => '1 min',
 			)
 		);

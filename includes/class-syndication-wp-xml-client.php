@@ -259,8 +259,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		} else {
-			// translators: %d: Size of the fetched feed, in bytes.
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+			$feed_size = strlen( $feed );
+			Syndication_Logger::log_post_info(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'fetch_feed',
+				sprintf(
+					/* translators: %s: Size of the fetched feed, in bytes. */
+					_n( 'fetched feed with %s byte', 'fetched feed with %s bytes', $feed_size, 'push-syndication' ),
+					number_format_i18n( $feed_size )
+				)
+			);
 		}
 
 		// Enable libxml to retrieve xml errors.
@@ -270,18 +278,17 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$xml = simplexml_load_string( $feed, null, LIBXML_NONET, $namespace, false );
 
 		if ( false === $xml ) {
-			$xml_errors = '';
-
-			// Retrieve errors.
-			foreach ( libxml_get_errors() as $error ) {
-				$xml_errors .= $error->message . '\n';
-			}
+			$xml_errors = implode( '; ', array_map( 'trim', wp_list_pluck( libxml_get_errors(), 'message' ) ) );
 
 			// Clear libxml error buffer.
 			libxml_clear_errors();
 
-			// translators: 1: Feed URL, 2: List of XML parser errors.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			Syndication_Logger::log_post_error(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'error',
+				/* translators: 1: Feed URL, 2: Semicolon-separated list of XML parser errors. */
+				sprintf( __( 'Failed to parse feed at %1$s. Errors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors )
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -322,8 +329,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
-			// translators: %s: XPath expression used to locate the post root.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			Syndication_Logger::log_post_error(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'error',
+				/* translators: %s: XPath expression used to locate the post root. */
+				sprintf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root )
+			);
 			return array();
 		} else {
 			// translators: %d: Number of items found in the feed.
@@ -746,16 +757,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				<span><?php esc_html_e( 'XPath Expression', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Item', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Item', 'XPath mapping column: the XPath is relative to each feed item', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Enc.', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Enc.', 'XPath mapping column: abbreviation of Enclosure', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Meta', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Meta', 'XPath mapping column: store the value as a custom field', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Tax', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Tax', 'XPath mapping column: abbreviation of Taxonomy', 'push-syndication' ); ?></span>
 			</li>
 			<li class="text">
 				<span><?php esc_html_e( 'Field in Post', 'push-syndication' ); ?></span>
@@ -1156,7 +1167,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		if ( is_wp_error( $request ) ) {
 			return $request;
 		} elseif ( 200 != wp_remote_retrieve_response_code( $request ) ) {
-			return new WP_Error( 'syndication-fetch-failure', 'Failed to fetch XML Feed; HTTP code: ' . wp_remote_retrieve_response_code( $request ) );
+			/* translators: %d: HTTP status code. */
+			return new WP_Error( 'syndication-fetch-failure', sprintf( __( 'Failed to fetch XML feed; HTTP status %d.', 'push-syndication' ), wp_remote_retrieve_response_code( $request ) ) );
 		}
 
 		$body = wp_remote_retrieve_body( $request );
@@ -1165,7 +1177,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// older libxml builds an external entity declaration is resolved at parse
 		// time, turning a MITM'd http:// feed into local file disclosure or SSRF.
 		if ( preg_match( '/<!\s*(DOCTYPE|ENTITY)/i', $body ) ) {
-			return new WP_Error( 'syndication-fetch-failure', 'Refused XML feed: it declares a document type.' );
+			return new WP_Error( 'syndication-fetch-failure', __( 'Refused XML feed: it declares a document type.', 'push-syndication' ) );
 		}
 
 		return $body;

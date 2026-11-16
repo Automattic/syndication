@@ -1,5 +1,5 @@
 .syn-xml-client-xpath-new {
-	clear: left;
+	clear: inline-start;
 }
 .syn-xml-client-list-head {
 	font-weight: bold;
@@ -10,14 +10,14 @@
 }
 .syn-xml-client-list li,
 .syn-xml-client-list-head li {
-	float: left;
+	float: inline-start;
 	width: 50px;
 	text-align: center;
 }
 .syn-xml-client-list li.text,
 .syn-xml-client-list-head li.text {
 	width: 200px;
-	text-align: left;
+	text-align: start;
 }
 .syn-xml-client-list li.wide,
 .syn-xml-client-list-head li.wide {

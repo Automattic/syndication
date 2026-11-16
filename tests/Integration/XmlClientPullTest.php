@@ -130,6 +130,7 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 		$entry = $this->last_log_entry( $site_id );
 		$this->assertSame( 'error', $entry['msg_type'] );
 		$this->assertStringContainsString( 'Failed to parse feed', $entry['message'] );
+		$this->assertStringNotContainsString( '\\n', $entry['message'], 'The message should not contain a literal backslash-n.' );
 	}
 
 	/**

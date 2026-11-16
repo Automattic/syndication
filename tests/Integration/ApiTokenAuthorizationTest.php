@@ -136,6 +136,34 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The closing instruction reads as one sentence, with a space after the link.
+	 */
+	public function test_success_instruction_is_one_sentence(): void {
+		$this->assertStringContainsString(
+			'when registering a <a href="https://wordpress.com" target="_blank">WordPress.com</a> site.',
+			$this->render()
+		);
+	}
+
+	/**
+	 * The labels of the token details go through the text domain.
+	 */
+	public function test_token_detail_labels_are_translatable(): void {
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translation ) {
+				return '[' . $translation . ']';
+			}
+		);
+
+		$html = $this->render();
+
+		foreach ( array( 'Access token', 'Blog ID', 'Blog URL' ) as $label ) {
+			$this->assertStringContainsString( ">[{$label}]</th>", $html );
+		}
+	}
+
+	/**
 	 * Without a code, only the Authorize button is shown.
 	 */
 	public function test_shows_authorize_button_without_code(): void {

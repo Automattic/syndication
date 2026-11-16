@@ -90,6 +90,34 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Month names in the date filter come from the site's locale.
+	 *
+	 * @covers Syndication_Logger_List_Table::_create_months_dropdown
+	 */
+	public function test_months_dropdown_uses_localized_month_names(): void {
+		global $wp_locale;
+
+		$original_month       = $wp_locale->month['01'];
+		$wp_locale->month['01'] = 'Januar';
+
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Only', '2026-01-15 12:00:00' );
+
+		$this->table->prepare_items();
+
+		$method = new ReflectionMethod( $this->table, '_create_months_dropdown' );
+		$method->setAccessible( true );
+
+		ob_start();
+		$method->invoke( $this->table );
+		$output = ob_get_clean();
+
+		$wp_locale->month['01'] = $original_month;
+
+		$this->assertStringContainsString( '>Januar 2026</option>', $output );
+	}
+
+	/**
 	 * The search box filters entries by message, as plain text rather than a pattern.
 	 *
 	 * @covers Syndication_Logger_List_Table::prepare_items

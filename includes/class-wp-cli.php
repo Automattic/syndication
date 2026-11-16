@@ -10,16 +10,16 @@ WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 /**
  * Pushes and pulls syndicated content.
  *
- * Pushes posts to the sites in their selected sitegroups, one at a time or
- * in bulk, and pulls content from a site or a whole sitegroup.
+ * Pushes posts to the sites in their selected site groups, one at a time or
+ * in bulk, and pulls content from a site or a whole site group.
  */
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
 	/**
-	 * Pushes all posts of a given type to the sites in their selected sitegroups.
+	 * Pushes all posts of a given type to the sites in their selected site groups.
 	 *
-	 * Works through the posts 150 at a time. Posts with no selected sitegroups
+	 * Works through the posts 150 at a time. Posts with no selected site groups
 	 * are skipped with a warning, and the run carries on.
 	 *
 	 * ## OPTIONS
@@ -77,9 +77,9 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Pushes a post to the sites in its selected sitegroups.
+	 * Pushes a post to the sites in its selected site groups.
 	 *
-	 * A post with no selected sitegroups, or none with enabled sites, is skipped
+	 * A post with no selected site groups, or none with enabled sites, is skipped
 	 * with a warning. A site that rejects the push is reported with a warning.
 	 *
 	 * ## OPTIONS
@@ -119,7 +119,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		// The server always returns an array, so check for sites rather than emptiness.
 		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
 			/* translators: %d: post ID. */
-			WP_CLI::warning( sprintf( __( 'Post %d has no selected sitegroups with enabled sites; skipping.', 'push-syndication' ), $post_id ) );
+			WP_CLI::warning( sprintf( __( 'Post %d has no selected site groups with enabled sites; skipping.', 'push-syndication' ), $post_id ) );
 			return;
 		}
 
@@ -172,12 +172,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Pulls content from every site in a sitegroup.
+	 * Pulls content from every site in a site group.
 	 *
 	 * ## OPTIONS
 	 *
 	 * --sitegroup=<sitegroup>
-	 * : Slug of the sitegroup to pull from.
+	 * : Slug of the site group to pull from.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -200,12 +200,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$sitegroup = sanitize_key( $assoc_args['sitegroup'] );
 
 		if ( empty( $sitegroup ) ) {
-			WP_CLI::error( 'Please specify a valid sitegroup' );
+			WP_CLI::error( 'Please specify a valid site group' );
 		}
 
 		if ( ! get_term_by( 'slug', $sitegroup, 'syn_sitegroup' ) ) {
 			/* translators: %s: sitegroup slug. */
-			WP_CLI::error( sprintf( __( 'Sitegroup "%s" does not exist.', 'push-syndication' ), $sitegroup ) );
+			WP_CLI::error( sprintf( __( 'Site group "%s" does not exist.', 'push-syndication' ), $sitegroup ) );
 		}
 
 		$server = $this->_get_syndication_server();
@@ -214,7 +214,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		// pull_content() treats an empty list as "every scheduled site", so stop here.
 		if ( empty( $sites ) ) {
 			/* translators: %s: sitegroup slug. */
-			WP_CLI::warning( sprintf( __( 'Sitegroup "%s" has no sites; nothing to pull.', 'push-syndication' ), $sitegroup ) );
+			WP_CLI::warning( sprintf( __( 'Site group "%s" has no sites; nothing to pull.', 'push-syndication' ), $sitegroup ) );
 			return;
 		}
 
