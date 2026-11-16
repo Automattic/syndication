@@ -4,9 +4,7 @@ namespace Automattic\Syndication\Tests;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 /**
- * Class EncryptorMCryptTest
- *
- * @requires extension mcrypt
+ * Shared tests for each encryptor.
  */
 abstract class EncryptorTestCase extends WPIntegrationTestCase {
 	protected $simple_string;
