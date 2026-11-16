@@ -472,7 +472,9 @@ class Syndication_Logger {
 		if ( 'object' == $storage_type ) {
 			if ( 'post' == $object_type ) {
 				if ( ! empty( $object_id ) ) {
-					$log_entries[ $object_id ] = get_post_meta( $object_id, 'syn_log' );
+					$log = get_post_meta( $object_id, 'syn_log', true );
+
+					$log_entries[ $object_id ] = is_array( $log ) ? $log : array();
 				} else {
 					global $wpdb;
 					/**
