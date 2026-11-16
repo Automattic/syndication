@@ -559,17 +559,27 @@ class WP_Push_Syndication_Server {
 	public function get_api_token() {
 
 		$redirect_uri           = menu_page_url( 'push-syndicate-settings', false );
-		$authorization_endpoint = 'https://public-api.wordpress.com/oauth2/authorize?client_id=' . $this->push_syndicate_settings['client_id'] . '&redirect_uri=' . $redirect_uri . '&response_type=code';
+		$authorization_endpoint = add_query_arg(
+			array(
+				'client_id'     => rawurlencode( $this->push_syndicate_settings['client_id'] ),
+				'redirect_uri'  => rawurlencode( $redirect_uri ),
+				'response_type' => 'code',
+			),
+			'https://public-api.wordpress.com/oauth2/authorize'
+		);
 
 		echo '<h3>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h3>';
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect from WordPress.com, which cannot carry a nonce.
+		$code = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+
 		// if code is not found return or settings updated return.
-		if ( empty( $_GET['code'] ) || ! empty( $_GET['settings-updated'] ) ) {
+		if ( '' === $code || ! empty( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check.
 			echo '<p>' . esc_html__( 'Click the authorize button to generate api token', 'push-syndication' ) . '</p>';
 
 			?>
 
-			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
+			<a class="button button-primary" href="<?php echo esc_url( $authorization_endpoint ); ?>"><?php esc_html_e( 'Authorize', 'push-syndication' ); ?></a>
 
 			<?php
 
@@ -583,20 +593,33 @@ class WP_Push_Syndication_Server {
 					'client_id'     => $this->push_syndicate_settings['client_id'],
 					'redirect_uri'  => $redirect_uri,
 					'client_secret' => $this->get_client_secret(),
-					'code'          => $_GET['code'],
+					'code'          => $code,
 					'grant_type'    => 'authorization_code',
 				),
 			) 
 		);
 
-		$result = json_decode( $response['body'] );
+		$result = is_wp_error( $response ) ? null : json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( ! empty( $result->error ) ) {
-			echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
+		if ( ! isset( $result->access_token, $result->blog_id, $result->blog_url ) ) {
+			if ( is_wp_error( $response ) ) {
+				$reason = $response->get_error_message();
+			} elseif ( ! empty( $result->error_description ) ) {
+				$reason = $result->error_description;
+			} elseif ( ! empty( $result->error ) ) {
+				$reason = $result->error;
+			} else {
+				/* translators: %d: HTTP status code. */
+				$reason = sprintf( __( 'Unexpected response from WordPress.com (HTTP status %d).', 'push-syndication' ), wp_remote_retrieve_response_code( $response ) );
+			}
+
+			/* translators: %s: Reason the token request failed. */
+			echo '<p>' . esc_html( sprintf( __( 'Error retrieving API token: %s', 'push-syndication' ), $reason ) ) . '</p>';
+			echo '<p>' . esc_html__( 'Please authorize again.', 'push-syndication' ) . '</p>';
 
 			?>
 
-			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
+			<a class="button button-primary" href="<?php echo esc_url( $authorization_endpoint ); ?>"><?php esc_html_e( 'Authorize', 'push-syndication' ); ?></a>
 
 			<?php
 
