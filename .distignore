@@ -4,6 +4,7 @@
 /.github/
 /.wordpress-org/
 /bin/
+/docs/
 /node_modules/
 /tests/
 /vendor/
