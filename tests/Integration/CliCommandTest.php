@@ -99,7 +99,18 @@ class CliCommandTest extends WPIntegrationTestCase {
 		list( $syndicated ) = $this->create_post_with_site( 'Failing site', 'Failing_Mock' );
 		$last_unsyndicated  = $this->factory()->post->create();
 
+		$pauses = array();
+		add_filter(
+			'syndication_cli_push_all_posts_pause',
+			static function ( $seconds ) use ( &$pauses ) {
+				$pauses[] = $seconds;
+				return 0;
+			}
+		);
+
 		( new Syndication_CLI_Command() )->push_all_posts( array(), array() );
+
+		$this->assertSame( array( 2 ), $pauses, 'One batch should pause once, for two seconds by default.' );
 
 		$warnings = implode( "\n", WP_CLI::messages( 'warning' ) );
 		$this->assertStringContainsString( "Post {$first_unsyndicated} ", $warnings );
