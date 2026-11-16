@@ -158,9 +158,9 @@ class PullMetaKeyGuardTest extends WPIntegrationTestCase {
 	 *
 	 * @dataProvider data_meta_writers
 	 *
-	 * @param callable $writer Meta writer under test.
+	 * @param array $writer Meta writer under test, as a class and static method name.
 	 */
-	public function test_writers_skip_disallowed_keys( callable $writer ): void {
+	public function test_writers_skip_disallowed_keys( array $writer ): void {
 		$post_id = self::factory()->post->create();
 		update_post_meta( $post_id, '_wp_page_template', 'original.php' );
 		update_post_meta( $post_id, 'syn_post_guid', 'original-guid' );
@@ -177,7 +177,10 @@ class PullMetaKeyGuardTest extends WPIntegrationTestCase {
 			),
 		);
 
-		call_user_func( $writer, $post_id, $post, null, 'WP_XML', null );
+		// The writers only act on posts pulled by their own client, so pass one, unconstructed.
+		$client = ( new \ReflectionClass( $writer[0] ) )->newInstanceWithoutConstructor();
+
+		call_user_func( $writer, $post_id, $post, null, 'WP_XML', $client );
 
 		$this->assertSame( 'From the feed', get_post_meta( $post_id, 'source_byline', true ) );
 		$this->assertSame( 'original.php', get_post_meta( $post_id, '_wp_page_template', true ) );
