@@ -816,20 +816,23 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// TODO: validate saved values (e.g. valid post_type? valid status?)
 		// TODO: actually check if saving was successful or not and return a proper bool.
 
-		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
-		update_post_meta( $site_ID, 'syn_id_field', sanitize_text_field( $_POST['id_field'] ) );
-		update_post_meta( $site_ID, 'syn_enc_field', sanitize_text_field( $_POST['enc_field'] ) );
-		update_post_meta( $site_ID, 'syn_enc_is_photo', isset( $_POST['enc_is_photo'] ) ? sanitize_text_field( $_POST['enc_is_photo'] ) : null );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified in WP_Push_Syndication_Server::save_site_settings().
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_feed_url', isset( $_POST['feed_url'] ) ? esc_url_raw( wp_unslash( $_POST['feed_url'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_type', isset( $_POST['default_post_type'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_type'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_status', isset( $_POST['default_post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_id_field', isset( $_POST['id_field'] ) ? sanitize_text_field( wp_unslash( $_POST['id_field'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_enc_field', isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_enc_is_photo', isset( $_POST['enc_is_photo'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_is_photo'] ) ) : null );
 
-
-		$node_changes = $_POST['node'];
+		// Each row is sanitized field by field below.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$node_changes = isset( $_POST['node'] ) && is_array( $_POST['node'] ) ? wp_unslash( $_POST['node'] ) : array();
 		$node_config  = array();
 		$custom_nodes = array();
-		if ( isset( $node_changes ) ) {
+		if ( ! empty( $node_changes ) ) {
 			foreach ( $node_changes as $row ) {
 				$row_data = array();
 
@@ -859,12 +862,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 		}
 
-		$node_config['namespace']  = sanitize_text_field( $_POST['namespace'] );
-		$node_config['post_root']  = sanitize_text_field( $_POST['post_root'] );
-		$node_config['enc_parent'] = sanitize_text_field( $_POST['enc_parent'] );
-		$node_config['categories'] = is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
+		$node_config['namespace']  = isset( $_POST['namespace'] ) ? sanitize_text_field( wp_unslash( $_POST['namespace'] ) ) : '';
+		$node_config['post_root']  = isset( $_POST['post_root'] ) ? sanitize_text_field( wp_unslash( $_POST['post_root'] ) ) : '';
+		$node_config['enc_parent'] = isset( $_POST['enc_parent'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_parent'] ) ) : '';
+		$node_config['categories'] = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
 		$node_config['nodes']      = $custom_nodes;
 		update_post_meta( $site_ID, 'syn_node_config', $node_config );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 		return true;
 	}
 

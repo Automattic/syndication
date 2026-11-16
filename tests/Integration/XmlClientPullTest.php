@@ -51,6 +51,14 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Clean up the request superglobal.
+	 */
+	public function tear_down(): void {
+		$_POST = array();
+		parent::tear_down();
+	}
+
+	/**
 	 * Build a node mapping row.
 	 *
 	 * @param string $field   Field the value is stored in.
@@ -267,5 +275,34 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 		$html = ob_get_clean();
 
 		$this->assertStringContainsString( 'name="post_root"', $html );
+	}
+
+	/**
+	 * Saving settings tolerates absent fields and stores values without request slashes.
+	 */
+	public function test_save_settings_unslashes_and_tolerates_missing_fields(): void {
+		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$_POST = wp_slash(
+			array(
+				'feed_url'  => 'http://example.com/feed.xml',
+				'post_root' => '//item[@type="news"]',
+				'node'      => array(
+					array(
+						'xpath'   => 'media[@width="75"]/@url',
+						'is_meta' => 'true',
+						'field'   => 'thumbnail',
+					),
+				),
+			)
+		);
+
+		$this->assertTrue( \Syndication_WP_XML_Client::save_settings( $site_id ) );
+
+		$config = get_post_meta( $site_id, 'syn_node_config', true );
+		$this->assertSame( '//item[@type="news"]', $config['post_root'] );
+		$this->assertSame( array( 'media[@width="75"]/@url' ), array_keys( $config['nodes'] ) );
+		$this->assertSame( array(), $config['categories'] );
+		$this->assertSame( 'http://example.com/feed.xml', get_post_meta( $site_id, 'syn_feed_url', true ) );
 	}
 }
