@@ -596,7 +596,7 @@ class WP_Push_Syndication_Server {
 			'https://public-api.wordpress.com/oauth2/authorize'
 		);
 
-		echo '<h3>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h3>';
+		echo '<h2>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h2>';
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect from WordPress.com, which cannot carry a nonce.
 		$code = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';

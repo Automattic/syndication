@@ -353,4 +353,26 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 			'REST site settings'                     => array( 'rest' ),
 		);
 	}
+
+	/**
+	 * Headings sit one level below the heading of the section they're in.
+	 */
+	public function test_headings_follow_their_section(): void {
+		$xpath = $this->render(
+			function () {
+				$this->server()->get_api_token();
+			}
+		);
+		// The settings screen's sections are h2s under its h1, and Authorization is another section.
+		$this->assertSame( 1, $xpath->query( '//h2[normalize-space()="Authorization"]' )->length );
+
+		$xpath = $this->render(
+			function () {
+				\Syndication_WP_XML_Client::display_settings( $this->site );
+			}
+		);
+		// Meta box titles are h2s, so a heading inside the Site Settings box is an h3.
+		$this->assertSame( 0, $xpath->query( '//h1 | //h2' )->length );
+		$this->assertSame( 1, $xpath->query( '//h3[normalize-space()="XPath-to-Data Mapping"]' )->length );
+	}
 }

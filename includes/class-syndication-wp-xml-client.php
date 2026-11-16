@@ -728,7 +728,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			?>
 		</p>
 
-		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
+		<h3><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h3>
 
 		<?php
 		$rejected_keys = get_transient( 'syn_rejected_meta_keys_' . $site->ID );
