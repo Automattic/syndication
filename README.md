@@ -93,7 +93,28 @@ Yes, Syndication works with WordPress multisite installations. You can syndicate
 
 ## Changelog
 
-See [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md) for the full changelog.
+The highlights of recent releases are below. Every change, including older releases, is listed in [CHANGELOG.md](https://github.com/Automattic/syndication/blob/main/CHANGELOG.md).
+
+### 2.2.2
+
+- **Fixed:** PHP warnings logged when a post is pushed or deleted.
+- **Fixed:** Push deletions are now recorded in the site's syndication log.
+
+### 2.2.1
+
+- **Security:** Hardened the XML-RPC thumbnail methods, the log viewer, site and plugin settings, stored credentials, WordPress.com API requests and XML feed parsing.
+- **Changed:** XML-RPC thumbnails are fetched with `wp_safe_remote_get()`, so thumbnails from a source on a private address need that host allowed through the `http_request_host_is_external` filter.
+- **Fixed:** Filtering and pagination on the Syndication Logs screen.
+
+## Upgrade Notice
+
+### 2.2.2
+
+Fixes PHP warnings when pushing or deleting syndicated posts, and records push deletions in the site's syndication log.
+
+### 2.2.1
+
+Security release. If you syndicate from a host on a private address, thumbnails will stop until you allow that host through the http_request_host_is_external filter.
 
 ## Contributing
 
