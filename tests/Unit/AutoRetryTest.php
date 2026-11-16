@@ -80,6 +80,13 @@ class AutoRetryTest extends TestCase {
 			)
 		);
 
+		// Mark site-time output, so tests can tell it apart from UTC.
+		Functions\when( 'wp_date' )->alias(
+			static function ( $format, $timestamp ) {
+				return 'site ' . gmdate( $format, $timestamp );
+			}
+		);
+
 		$this->handler = new \Failed_Syndication_Auto_Retry();
 	}
 
@@ -271,5 +278,17 @@ class AutoRetryTest extends TestCase {
 		$this->assertSame( 'error', LoggerSpy::$entries[0][0] );
 		$this->assertSame( 'end_auto_retry', LoggerSpy::$entries[0][2] );
 		$this->assertNotEmpty( LoggerSpy::$entries[0][4], 'The cleanup entry should carry the same log time as the others.' );
+	}
+
+	/**
+	 * Auto-retry entries are stamped in site time, like every other log entry.
+	 */
+	public function test_log_entries_use_site_time() {
+		$this->given_site();
+		Functions\when( 'wp_schedule_single_event' )->justReturn( true );
+
+		$this->handler->handle_pull_failure_event( 123, 1 );
+
+		$this->assertStringStartsWith( 'site ', LoggerSpy::$entries[0][4] );
 	}
 }

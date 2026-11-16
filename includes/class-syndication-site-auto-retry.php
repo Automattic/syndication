@@ -83,12 +83,12 @@ class Failed_Syndication_Auto_Retry {
 		// Store the current time for repeated use below.
 		$time_now = time();
 
-		// Create a string time to be sent to the logger.
+		// Create a string time to be sent to the logger, in site time as the logger's own entries are.
 		// Add 1 so our log items appear to occur a second later.
 		// and hence order better in the log viewer.
 		// Without this, sometimes when the pull occurs quickly.
 		// these log items appear to occur at the same time as the failure.
-		$log_time = gmdate( 'Y-m-d H:i:s', $time_now + 1 );
+		$log_time = wp_date( 'Y-m-d H:i:s', $time_now + 1 );
 
 		// Only proceed if we haven't hit the pull attempt ceiling.
 		if ( $failed_attempts < $max_pull_attempts ) {
