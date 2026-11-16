@@ -98,6 +98,19 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Run pull_site on a feed whose post fails to save.
+	 *
+	 * pull_content() casts each result to int after firing the pull hooks, so a
+	 * WP_Error raises a PHP warning there (a server-side defect, not the
+	 * command's). Silence it so the test checks only what the command reports.
+	 *
+	 * @param int $site_id Site ID.
+	 */
+	private function pull_site_despite_server_cast( int $site_id ): void {
+		@( new Syndication_CLI_Command() )->pull_site( array(), array( 'site_id' => $site_id ) );
+	}
+
+	/**
 	 * A mistyped sitegroup is an error, and pulls nothing.
 	 *
 	 * @covers ::pull_sitegroup
@@ -145,5 +158,69 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 		$warnings = WP_CLI::messages( 'warning' );
 		$this->assertCount( 1, $warnings );
 		$this->assertStringContainsString( (string) $site_id, $warnings[0] );
+	}
+
+	/**
+	 * A pulled post that can't be inserted is reported with its error, not as post #1.
+	 *
+	 * @covers ::pull_site
+	 */
+	public function test_pull_site_reports_failed_insert(): void {
+		$site_id = $this->create_site( 'some-group' );
+		Syndication_Mock_Client::set_posts(
+			array(
+				array(
+					'post_guid'    => 'https://example.com/?p=1',
+					'post_type'    => 'post',
+					'post_title'   => '',
+					'post_content' => '',
+					'post_excerpt' => '',
+				),
+			)
+		);
+
+		$this->pull_site_despite_server_cast( $site_id );
+
+		$this->assertSame(
+			array( '-- Failed to add post https://example.com/?p=1: Content, title, and excerpt are empty.' ),
+			WP_CLI::messages( 'warning' )
+		);
+		foreach ( WP_CLI::messages( 'log' ) as $line ) {
+			$this->assertStringNotContainsString( 'New post', $line );
+		}
+	}
+
+	/**
+	 * A pulled post that can't be updated is reported with its error, not as post #1.
+	 *
+	 * @covers ::pull_site
+	 */
+	public function test_pull_site_reports_failed_update(): void {
+		$GLOBALS['push_syndication_server']->push_syndicate_settings['update_pulled_posts'] = 'on';
+
+		$site_id = $this->create_site( 'some-group' );
+		$post_id = $this->factory()->post->create();
+		update_post_meta( $post_id, 'syn_post_guid', 'https://example.com/?p=2' );
+		Syndication_Mock_Client::set_posts(
+			array(
+				array(
+					'post_guid'    => 'https://example.com/?p=2',
+					'post_type'    => 'post',
+					'post_title'   => '',
+					'post_content' => '',
+					'post_excerpt' => '',
+				),
+			)
+		);
+
+		$this->pull_site_despite_server_cast( $site_id );
+
+		$this->assertSame(
+			array( '-- Failed to update post https://example.com/?p=2: Content, title, and excerpt are empty.' ),
+			WP_CLI::messages( 'warning' )
+		);
+		foreach ( WP_CLI::messages( 'log' ) as $line ) {
+			$this->assertStringNotContainsString( 'Updated post', $line );
+		}
 	}
 }

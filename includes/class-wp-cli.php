@@ -196,6 +196,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_new_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to add post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- New post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
@@ -205,6 +211,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_edit_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to update post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
