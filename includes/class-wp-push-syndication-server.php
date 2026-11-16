@@ -1836,8 +1836,16 @@ class WP_Push_Syndication_Server {
 			$post_types_processed = array();
 
 			if ( is_array( $posts ) && count( $posts ) > 0 ) {
-				// translators: 1: Site post ID, 2: Number of posts in the feed.
-				Syndication_Logger::log_post_info( $site_id, $status = 'start_import', $message = sprintf( __( 'starting import for site id %1$d with %2$d posts', 'push-syndication' ), $site_id, count( $posts ) ), $log_time = null, $extra = array() );
+				Syndication_Logger::log_post_info(
+					$site_id,
+					'start_import',
+					sprintf(
+						/* translators: 1: Site post ID, 2: Number of posts in the feed. */
+						_n( 'starting import for site id %1$d with %2$s post', 'starting import for site id %1$d with %2$s posts', count( $posts ), 'push-syndication' ),
+						$site_id,
+						number_format_i18n( count( $posts ) )
+					)
+				);
 			} else {
 				// translators: %d: Site post ID.
 				Syndication_Logger::log_post_info( $site_id, $status = 'no_posts', $message = sprintf( __( 'no posts for site id %d', 'push-syndication' ), $site_id ), $log_time = null, $extra = array() );

@@ -259,8 +259,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 			return array();
 		} else {
-			// translators: %d: Size of the fetched feed, in bytes.
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $feed ) ), $log_time = null, $extra = array() );
+			$feed_size = strlen( $feed );
+			Syndication_Logger::log_post_info(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'fetch_feed',
+				sprintf(
+					/* translators: %s: Size of the fetched feed, in bytes. */
+					_n( 'fetched feed with %s byte', 'fetched feed with %s bytes', $feed_size, 'push-syndication' ),
+					number_format_i18n( $feed_size )
+				)
+			);
 		}
 
 		// Enable libxml to retrieve xml errors.

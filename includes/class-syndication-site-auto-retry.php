@@ -139,8 +139,17 @@ class Failed_Syndication_Auto_Retry {
 			// Remove the auto retry if there was one.
 			delete_post_meta( $site->ID, 'syn_failed_auto_retry_attempts' );
 
-			// translators: 1: Number of failed reconnection attempts, 2: Site URL.
-			Syndication_Logger::log_post_error( $site->ID, $status = 'end_auto_retry', $message = sprintf( __( 'Failed %1$d times to reconnect to %2$s', 'push-syndication' ), $site_auto_retry_count, $site_url ), $log_time, $extra = array() );
+			Syndication_Logger::log_post_error(
+				$site->ID,
+				'end_auto_retry',
+				sprintf(
+					/* translators: 1: Number of failed reconnection attempts, 2: Site URL. */
+					_n( 'Failed %1$s time to reconnect to %2$s', 'Failed %1$s times to reconnect to %2$s', (int) $site_auto_retry_count, 'push-syndication' ),
+					number_format_i18n( (int) $site_auto_retry_count ),
+					$site_url
+				),
+				$log_time
+			);
 		}
 	}
 

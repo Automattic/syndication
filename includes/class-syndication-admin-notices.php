@@ -206,8 +206,12 @@ add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10
  */
 function syn_add_site_disabled_notice( $site_id, $count ) {
 	Syndication_Logger_Admin_Notice::add_notice(
-		/* translators: 1: Site post ID, 2: Number of failed pull attempts. */
-		sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ),
+		sprintf(
+			/* translators: 1: Site post ID, 2: Number of failed pull attempts. */
+			_n( 'Site %1$d disabled after %2$s pull failure.', 'Site %1$d disabled after %2$s pull failures.', (int) $count, 'push-syndication' ),
+			(int) $site_id,
+			number_format_i18n( (int) $count )
+		),
 		__( 'Syndication site disabled', 'push-syndication' ),
 		'error',
 		false

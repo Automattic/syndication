@@ -74,4 +74,23 @@ class PullFailureCounterTest extends WPIntegrationTestCase {
 
 		$this->assertEmpty( get_post_meta( $site_id, 'syn_site_enabled', true ) );
 	}
+
+	/**
+	 * A site disabled after one failure says so in the singular, in the log and the admin notice.
+	 *
+	 * @covers ::syn_add_site_disabled_notice
+	 */
+	public function test_disabling_message_uses_the_singular_for_one_failure(): void {
+		$site_id = $this->make_site();
+		update_option( 'push_syndication_max_pull_attempts', 1 );
+
+		$this->pull( 'pull_failure', $site_id );
+
+		$expected = "Site {$site_id} disabled after 1 pull failure.";
+
+		$this->assertContains( $expected, wp_list_pluck( get_post_meta( $site_id, '_syn_log', true ), 'message' ) );
+
+		$notices = get_option( 'syn_notices' );
+		$this->assertSame( array( $expected ), array_values( wp_list_pluck( $notices['Syndication site disabled'], 'message_text' ) ) );
+	}
 }

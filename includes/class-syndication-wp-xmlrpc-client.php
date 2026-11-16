@@ -609,8 +609,12 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		Syndication_Logger::log_post_error(
 			$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
 			'loop_guard_incomplete',
-			/* translators: 1: meta value searched for, 2: number of remote posts checked */
-			sprintf( __( 'Stopped looking for %1$s on the remote site after %2$d posts without a match. Pushing the post.', 'push-syndication' ), $meta_value, count( $seen_ids ) )
+			sprintf(
+				/* translators: 1: meta value searched for, 2: number of remote posts checked */
+				_n( 'Stopped looking for %1$s on the remote site after %2$s post without a match. Pushing the post.', 'Stopped looking for %1$s on the remote site after %2$s posts without a match. Pushing the post.', count( $seen_ids ), 'push-syndication' ),
+				$meta_value,
+				number_format_i18n( count( $seen_ids ) )
+			)
 		);
 
 		return false;
