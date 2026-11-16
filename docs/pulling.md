@@ -59,7 +59,7 @@ An XML site needs to know where each post is in the feed, and which elements hol
 
 - **Enter feed URL:** the feed's address.
 - **Select post type**, **Select post status**, **Select comment status** and **Select ping status:** applied to every pulled post.
-- **Enter XML namespace:** the namespace URI to use, if the feed's elements are in a namespace.
+- **Enter XML namespace:** if the feed's elements are in a namespace, such as an Atom feed's `http://www.w3.org/2005/Atom`, its URI. Then refer to those elements in every XPath with the `syn:` prefix, for example `/syn:feed/syn:entry` and `syn:title`. Prefixes the feed declares itself, such as `media:`, work as they are.
 - **Enter XPath to post root:** an XPath that matches each item in the feed, for example `//item`. Each match becomes one post.
 - **Enter post meta key for unique post identifier:** the custom field (from your mappings below) that holds each item's unique ID. If you leave it blank, map an element to the `post_guid` field instead. Items without a unique ID are skipped.
 - **Enter parent element for enclosures**, **Enter meta name for enclosures** and **Enclosure is an image file:** see [Enclosures](#enclosures).
