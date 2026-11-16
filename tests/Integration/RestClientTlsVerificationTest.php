@@ -144,7 +144,7 @@ class RestClientTlsVerificationTest extends WPIntegrationTestCase {
 		$this->assertNotEmpty( $this->requests, 'Expected the method to make an outbound request.' );
 
 		foreach ( $this->requests as $request ) {
-			$this->assertNotFalse(
+			$this->assertTrue(
 				$request['args']['sslverify'],
 				sprintf(
 					'Request to %s was sent with certificate verification disabled, exposing the bearer token to on-path attackers.',
@@ -165,6 +165,8 @@ class RestClientTlsVerificationTest extends WPIntegrationTestCase {
 		$post_id = self::factory()->post->create();
 
 		$invoke( $this->client, $post_id );
+
+		$this->assertNotEmpty( $this->requests, 'Expected the method to make an outbound request.' );
 
 		foreach ( $this->requests as $request ) {
 			$this->assertStringStartsWith( 'https://', $request['url'] );
