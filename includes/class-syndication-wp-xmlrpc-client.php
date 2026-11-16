@@ -23,6 +23,13 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	private $site_ID;
 
+	/**
+	 * Whether to push the post's thumbnails after a successful push.
+	 *
+	 * @var bool
+	 */
+	private $send_thumbnail;
+
 	public function __construct( $site_ID ) {
 
 		// @TODO check port, timeout etc.
@@ -39,11 +46,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		parent::__construct( $server );
 
-		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
-			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			// TODO: on delete post, delete thumbnail.
-		}
+		// Sent directly by new_post() and edit_post(), not from the shared success actions:
+		// a callback there would also run for every other XML-RPC client created in the same request.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Existing public hook and parameter names.
+		$this->send_thumbnail = true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this );
+		// TODO: on delete post, delete thumbnail.
 	}
 
 	private function get_thumbnail_meta_keys( $post_id ) {
@@ -169,6 +176,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$remote_post_id = (int) $this->getResponse();
 
+		if ( $this->send_thumbnail ) {
+			$this->post_push_send_thumbnail( $remote_post_id, $post_ID );
+		}
+
 		do_action( 'syn_xmlrpc_push_new_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
@@ -257,6 +268,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		if ( ! $result ) {
 			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
+		}
+
+		if ( $this->send_thumbnail ) {
+			$this->post_push_send_thumbnail( $remote_post_id, $post_ID );
 		}
 
 		do_action( 'syn_xmlrpc_push_edit_post_success', $remote_post_id, $post_ID );
