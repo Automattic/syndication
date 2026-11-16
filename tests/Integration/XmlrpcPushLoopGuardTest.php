@@ -42,6 +42,13 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 	private $ignore_offset = false;
 
 	/**
+	 * Whether wp.getPosts returns a fault on the fake remote.
+	 *
+	 * @var bool
+	 */
+	private $get_posts_fails = false;
+
+	/**
 	 * The syn_site post for the remote.
 	 *
 	 * @var \WP_Post
@@ -63,7 +70,8 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->calls         = array();
 		$this->remote_posts  = array();
-		$this->ignore_offset = false;
+		$this->ignore_offset   = false;
+		$this->get_posts_fails = false;
 
 		$this->site = self::factory()->post->create_and_get( array( 'post_type' => 'syn_site' ) );
 		update_post_meta( $this->site->ID, 'syn_transport_type', 'WP_XMLRPC' );
@@ -109,11 +117,17 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 				$response = true;
 		}
 
-		$value = new \IXR_Value( $response );
+		if ( 'wp.getPosts' === $message->methodName && $this->get_posts_fails ) {
+			$error = new \IXR_Error( 500, 'Failed.' );
+			$body  = $error->getXml();
+		} else {
+			$value = new \IXR_Value( $response );
+			$body  = '<?xml version="1.0"?><methodResponse><params><param><value>' . $value->getXml() . '</value></param></params></methodResponse>';
+		}
 
 		return array(
 			'headers'  => array(),
-			'body'     => '<?xml version="1.0"?><methodResponse><params><param><value>' . $value->getXml() . '</value></param></params></methodResponse>',
+			'body'     => $body,
 			'response' => array(
 				'code'    => 200,
 				'message' => 'OK',
@@ -250,5 +264,72 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->assertContains( 'wp.getPosts', $this->calls );
 		$this->assertNotContains( 'wp.newPost', $this->calls );
+	}
+
+	/**
+	 * The client used for direct calls to is_source_site_post().
+	 *
+	 * @return \Syndication_WP_XMLRPC_Client
+	 */
+	private function client(): \Syndication_WP_XMLRPC_Client {
+		return new \Syndication_WP_XMLRPC_Client( $this->site->ID );
+	}
+
+	/**
+	 * Without both a meta key and value there is nothing to look for, so no request is made.
+	 */
+	public function test_is_source_site_post_needs_key_and_value(): void {
+		$this->assertFalse( $this->client()->is_source_site_post( '', 'abc123' ) );
+		$this->assertFalse( $this->client()->is_source_site_post( 'post_uniqueid', '' ) );
+		$this->assertSame( array(), $this->calls );
+	}
+
+	/**
+	 * A failed request counts as not found.
+	 */
+	public function test_is_source_site_post_is_false_when_request_fails(): void {
+		$this->get_posts_fails = true;
+
+		$this->assertFalse( $this->client()->is_source_site_post( 'post_uniqueid', 'abc123' ) );
+	}
+
+	/**
+	 * The key and value must match on the same custom field.
+	 */
+	public function test_is_source_site_post_needs_key_and_value_on_one_field(): void {
+		$this->remote_posts = array(
+			array(
+				'post_id'       => '1',
+				'custom_fields' => array(
+					array(
+						'key'   => 'post_uniqueid',
+						'value' => 'other',
+					),
+					array(
+						'key'   => 'other_key',
+						'value' => 'abc123',
+					),
+				),
+			),
+		);
+
+		$this->assertFalse( $this->client()->is_source_site_post( 'post_uniqueid', 'abc123' ) );
+	}
+
+	/**
+	 * Posts without custom fields are skipped, and a later post can still match.
+	 */
+	public function test_is_source_site_post_skips_posts_without_custom_fields(): void {
+		$this->remote_posts = array_merge(
+			array(
+				array(
+					'post_id'       => '1',
+					'custom_fields' => array(),
+				),
+			),
+			$this->remote_posts( 1, 0 )
+		);
+
+		$this->assertTrue( $this->client()->is_source_site_post( 'post_uniqueid', 'abc123' ) );
 	}
 }
