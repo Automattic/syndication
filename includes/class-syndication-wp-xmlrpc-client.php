@@ -496,44 +496,51 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return false;
 		}
 
-		// Use filter to limit posts returned and request custom_fields.
+		// wp.getPosts can't filter by meta, so page through every remote post.
+		// ponytail: one request per 100 remote posts on a first push; a custom remote method could look the meta up directly.
 		$filter = array(
 			'number' => 100,
+			'offset' => 0,
 		);
 
-		$result = $this->query(
-			'wp.getPosts',
-			'1',
-			$this->username,
-			$this->password,
-			$filter,
-			array( 'post_id', 'custom_fields' )
-		);
+		do {
+			$result = $this->query(
+				'wp.getPosts',
+				'1',
+				$this->username,
+				$this->password,
+				$filter,
+				array( 'post_id', 'custom_fields' )
+			);
 
-		if ( ! $result ) {
-			return false;
-		}
-
-		$posts_list = $this->getResponse();
-
-		if ( empty( $posts_list ) ) {
-			return false;
-		}
-
-		foreach ( $posts_list as $post ) {
-			if ( empty( $post['custom_fields'] ) ) {
-				continue;
+			if ( ! $result ) {
+				return false;
 			}
 
-			foreach ( $post['custom_fields'] as $field ) {
-				if ( isset( $field['key'], $field['value'] ) &&
-					$meta_key === $field['key'] &&
-					$meta_value === $field['value']
-				) {
-					return true;
+			$posts_list = $this->getResponse();
+
+			if ( empty( $posts_list ) ) {
+				return false;
+			}
+
+			foreach ( $posts_list as $post ) {
+				if ( empty( $post['custom_fields'] ) ) {
+					continue;
+				}
+
+				foreach ( $post['custom_fields'] as $field ) {
+					if ( isset( $field['key'], $field['value'] ) &&
+						$meta_key === $field['key'] &&
+						$meta_value === $field['value']
+					) {
+						return true;
+					}
 				}
 			}
-		}
+
+			$is_full_page      = count( $posts_list ) === $filter['number'];
+			$filter['offset'] += $filter['number'];
+		} while ( $is_full_page );
 
 		return false;
 	}

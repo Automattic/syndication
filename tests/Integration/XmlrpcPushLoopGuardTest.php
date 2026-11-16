@@ -172,6 +172,29 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A new post is not pushed to a site where it already exists, even beyond the first 100 remote posts.
+	 */
+	public function test_new_post_is_not_pushed_when_source_post_is_beyond_first_page(): void {
+		$this->remote_posts = $this->remote_posts( 250, 180 );
+
+		$this->push();
+
+		$this->assertNotContains( 'wp.newPost', $this->calls );
+	}
+
+	/**
+	 * A new post is pushed when no remote post carries its unique ID.
+	 */
+	public function test_new_post_is_pushed_when_no_remote_post_matches(): void {
+		$this->remote_posts = $this->remote_posts( 250 );
+
+		$this->push();
+
+		$this->assertSame( 3, count( array_keys( $this->calls, 'wp.getPosts', true ) ), 'Every page of remote posts should be checked.' );
+		$this->assertContains( 'wp.newPost', $this->calls );
+	}
+
+	/**
 	 * A post that failed to push the first time is still checked by the guard.
 	 */
 	public function test_guard_runs_for_new_error_state(): void {
