@@ -26,6 +26,16 @@ require_once __DIR__ . '/interface-syndication-client.php';
 class Syndication_WP_XML_Client implements Syndication_Client {
 
 	/**
+	 * Prefix that XPath expressions use for elements in the site's XML namespace.
+	 *
+	 * XPath 1.0 has no default namespace, so in a feed declaring xmlns="..." an
+	 * unprefixed name such as //item matches nothing; //syn:item does.
+	 *
+	 * @var string
+	 */
+	const XPATH_NAMESPACE_PREFIX = 'syn';
+
+	/**
 	 * @var int
 	 */
 	private $site_ID;
@@ -284,6 +294,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing hook and property names.
 		do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
 
+		self::register_xpath_namespace( $xml, $namespace );
+
 		// TODO: handle constant strings in XML.
 		foreach ( $abs_nodes as $abs_node ) {
 			$values = self::evaluate_xpath( $xml, $abs_node['xpath'] );
@@ -320,6 +332,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		foreach ( $items as $item ) {
+			self::register_xpath_namespace( $item, $namespace );
+
 			$item_fields            = array();
 			$enclosures             = array();
 			$meta_data              = array();
@@ -337,7 +351,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					return array();
 				}
 
-				$meta_data['enclosures'] = $this->get_encs( $feed_enclosures, $enc_nodes );
+				$meta_data['enclosures'] = $this->get_encs( $feed_enclosures, $enc_nodes, $namespace );
 
 				if ( false === $meta_data['enclosures'] ) {
 					return array();
@@ -407,13 +421,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	/**
 	 * Get enclosures (images/attachments) from a feed.
 	 *
-	 * @param array $feed_enclosures Optional.
-	 * @param array $enc_nodes Optional.
+	 * @param array       $feed_enclosures Optional.
+	 * @param array       $enc_nodes       Optional.
+	 * @param string|null $xml_namespace   Optional. The site's XML namespace.
 	 * @return array|false The list of enclosures in the feed, or false if an XPath expression is invalid.
 	 */
-	private function get_encs( $feed_enclosures = array(), $enc_nodes = array() ) {
+	private function get_encs( $feed_enclosures = array(), $enc_nodes = array(), $xml_namespace = null ) {
 		$enclosures = array();
 		foreach ( $feed_enclosures as $count => $enc ) {
+			self::register_xpath_namespace( $enc, $xml_namespace );
+
 			if ( isset( $this->enc_is_photo ) && 1 == $this->enc_is_photo ) {
 				$enc_array = array(
 					'caption'     => '',
@@ -479,6 +496,21 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
 		Syndication_Logger::log_post_error( $this->site_ID, 'error', $message );
+	}
+
+	/**
+	 * Register the site's XML namespace for XPath on an element.
+	 *
+	 * Registrations don't carry over to the elements xpath() returns, so every
+	 * context an expression is evaluated against needs its own.
+	 *
+	 * @param SimpleXMLElement $element       The element XPath will be evaluated against.
+	 * @param string|null      $xml_namespace The site's XML namespace, if any.
+	 */
+	private static function register_xpath_namespace( $element, $xml_namespace ) {
+		if ( ! empty( $xml_namespace ) ) {
+			$element->registerXPathNamespace( self::XPATH_NAMESPACE_PREFIX, $xml_namespace );
+		}
 	}
 
 	/**
@@ -610,7 +642,13 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<label for="namespace"><?php esc_html_e( 'Enter XML namespace', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="text" size="75" name="namespace" id="namespace" value="<?php echo esc_attr( $namespace ); ?>" />
+			<input type="text" size="75" name="namespace" id="namespace" aria-describedby="namespace-description" value="<?php echo esc_attr( $namespace ); ?>" />
+		</p>
+		<p class="description" id="namespace-description">
+			<?php
+			// translators: 1: XPath namespace prefix, 2: Example XPath expression.
+			echo esc_html( sprintf( __( 'Use the %1$s: prefix for elements in this namespace, for example %2$s.', 'push-syndication' ), self::XPATH_NAMESPACE_PREFIX, '//' . self::XPATH_NAMESPACE_PREFIX . ':item' ) );
+			?>
 		</p>
 
 		<p>
