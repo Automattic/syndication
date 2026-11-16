@@ -559,7 +559,14 @@ class WP_Push_Syndication_Server {
 	public function get_api_token() {
 
 		$redirect_uri           = menu_page_url( 'push-syndicate-settings', false );
-		$authorization_endpoint = 'https://public-api.wordpress.com/oauth2/authorize?client_id=' . $this->push_syndicate_settings['client_id'] . '&redirect_uri=' . $redirect_uri . '&response_type=code';
+		$authorization_endpoint = add_query_arg(
+			array(
+				'client_id'     => rawurlencode( $this->push_syndicate_settings['client_id'] ),
+				'redirect_uri'  => rawurlencode( $redirect_uri ),
+				'response_type' => 'code',
+			),
+			'https://public-api.wordpress.com/oauth2/authorize'
+		);
 
 		echo '<h3>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h3>';
 
@@ -572,7 +579,7 @@ class WP_Push_Syndication_Server {
 
 			?>
 
-			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
+			<a class="button button-primary" href="<?php echo esc_url( $authorization_endpoint ); ?>"><?php esc_html_e( 'Authorize', 'push-syndication' ); ?></a>
 
 			<?php
 
@@ -612,7 +619,7 @@ class WP_Push_Syndication_Server {
 
 			?>
 
-			<input type="button" class="button-primary" onClick="parent.location='<?php echo esc_url( $authorization_endpoint ); ?>'" value="<?php esc_attr_e( 'Authorize', 'push-syndication' ); ?>">
+			<a class="button button-primary" href="<?php echo esc_url( $authorization_endpoint ); ?>"><?php esc_html_e( 'Authorize', 'push-syndication' ); ?></a>
 
 			<?php
 

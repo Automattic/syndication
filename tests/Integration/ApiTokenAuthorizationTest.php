@@ -226,4 +226,37 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 'auth-code', $this->requests[0]['args']['body']['code'] );
 	}
+
+	/**
+	 * Values from the response are escaped.
+	 */
+	public function test_response_values_are_escaped(): void {
+		$this->response = self::response(
+			200,
+			wp_json_encode(
+				array(
+					'access_token' => '<b>token</b>',
+					'blog_id'      => 1,
+					'blog_url'     => 'https://example.com/"><script>alert(1)</script>',
+				)
+			)
+		);
+
+		$html = $this->render();
+
+		$this->assertStringNotContainsString( '<b>token</b>', $html );
+		$this->assertStringNotContainsString( '<script>', $html );
+	}
+
+	/**
+	 * The client ID cannot break out of the Authorize button.
+	 */
+	public function test_client_id_cannot_break_out_of_authorize_button(): void {
+		unset( $_GET['code'] );
+		$GLOBALS['push_syndication_server']->push_syndicate_settings['client_id'] = "42');alert(1);//";
+
+		$html = $this->render();
+
+		$this->assertStringNotContainsString( 'alert(1)', html_entity_decode( $html, ENT_QUOTES ) );
+	}
 }
