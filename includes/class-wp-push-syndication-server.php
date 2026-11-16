@@ -1913,6 +1913,23 @@ class WP_Push_Syndication_Server {
 			update_option( 'syn_version', '2.1' );
 		}
 
+		// Upgrade to 2.2.3: XML pulls now apply the site's status settings instead of
+		// publishing every new post with the default comment and ping status. Save
+		// those as the settings, so existing XML sites keep pulling the way they did.
+		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off upgrade, covering sites in any status.
+			$xml_site_ids = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_transport_type' AND meta_value = 'WP_XML'" );
+
+			foreach ( $xml_site_ids as $site_id ) {
+				$post_type = get_post_meta( $site_id, 'syn_default_post_type', true );
+				$post_type = empty( $post_type ) ? 'post' : $post_type;
+
+				update_post_meta( $site_id, 'syn_default_post_status', 'publish' );
+				update_post_meta( $site_id, 'syn_default_comment_status', get_default_comment_status( $post_type ) );
+				update_post_meta( $site_id, 'syn_default_ping_status', get_default_comment_status( $post_type, 'pingback' ) );
+			}
+		}
+
 		update_option( 'syn_version', SYNDICATION_VERSION );
 	}
 }

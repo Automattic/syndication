@@ -102,7 +102,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
-		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'publish_pulled_post' ), 10, 5 );
 	}
 
 	/**
@@ -327,6 +326,17 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$tax_data               = array();
 
 			$item_fields['post_type'] = $this->default_post_type;
+
+			// Pulled posts used to be force-published, so a site with no saved status keeps publishing.
+			$item_fields['post_status'] = empty( $this->default_post_status ) ? 'publish' : $this->default_post_status;
+
+			// An empty value would close comments and pings on update, so only pass saved settings.
+			$item_fields += array_filter(
+				array(
+					'comment_status' => $this->default_comment_status,
+					'ping_status'    => $this->default_ping_status,
+				)
+			);
 
 			// save photos as enclosures in meta.
 			if ( ( isset( $enc_parent ) && strlen( $enc_parent ) ) && ! empty( $enc_nodes ) ) {
@@ -923,19 +933,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	}
 
 	/**
-	 * Publish the remote post to the local site.
-	 *
-	 * @param int                          $result         The local post ID.
-	 * @param array                        $post           The post data.
-	 * @param WP_Post                      $site           The site post object.
-	 * @param string                       $transport_type The transport type identifier.
-	 * @param Syndication_Client_Interface $client         The syndication client.
-	 */
-	public static function publish_pulled_post( $result, $post, $site, $transport_type, $client ) {
-		wp_publish_post( $result );
-	}
-
-	/**
 	 * Save post meta for the specified post.
 	 *
 	 * @param int|WP_Error                 $result         The local post ID or error.
@@ -947,6 +944,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function save_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
@@ -988,6 +989,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function update_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
@@ -1049,6 +1054,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function save_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
@@ -1074,6 +1083,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return mixed|false False if an error or if the data to save isn't passed.
 	 */
 	public static function update_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
