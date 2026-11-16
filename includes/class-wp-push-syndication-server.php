@@ -1271,22 +1271,23 @@ class WP_Push_Syndication_Server {
 	 * new-error    -> new-error
 	 * remove-error -> new-error
 	 *
-	 * @param int|WP_Error                 $result            The result from creating the post.
+	 * @param int|bool|WP_Error            $result            The remote post ID, or true or false if no remote post was created.
 	 * @param array                        $slave_post_states Array of slave post states, passed by reference.
 	 * @param int                          $site_ID           The site ID.
 	 * @param Syndication_Client_Interface $client            The syndication client.
 	 *
-	 * @return int|WP_Error The result.
+	 * @return int|bool|WP_Error The result.
 	 */
 	public function validate_result_new_post( $result, &$slave_post_states, $site_ID, $client ) {
 
 		if ( is_wp_error( $result ) ) {
 			$slave_post_states['new-error'][ $site_ID ] = $result;
-		} else {
+		} elseif ( is_numeric( $result ) && (int) $result > 0 ) {
 			$slave_post_states['success'][ $site_ID ] = array(
 				'ext_ID' => (int) $result,
 			);
 		}
+		// Anything else created no remote post: true when a push filter skipped it, false from a pull-only client.
 
 		return $result;
 	}
