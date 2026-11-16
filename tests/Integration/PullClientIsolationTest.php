@@ -213,4 +213,40 @@ class PullClientIsolationTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 'publish', $this->pulled_post( 'xml-1' )->post_status );
 	}
+
+	/**
+	 * Each client's meta and taxonomy callbacks ignore posts pulled by the other client.
+	 */
+	public function test_callbacks_ignore_posts_from_another_client(): void {
+		$xml_site   = $this->make_xml_site();
+		$rss_site   = $this->make_site( 'WP_RSS', array( 'syn_feed_url' => $this->rss_file ) );
+		$xml_client = new \Syndication_WP_XML_Client( $xml_site->ID );
+		$rss_client = new \Syndication_WP_RSS_Client( $rss_site->ID );
+		$post_data  = array(
+			'post_category' => array(),
+			'postmeta'      => array( 'origin' => 'pulled' ),
+			'tax'           => array( 'post_tag' => 'pulled' ),
+		);
+
+		$callbacks = array(
+			array( 'Syndication_WP_XML_Client', 'WP_RSS', $rss_site, $rss_client ),
+			array( 'Syndication_WP_RSS_Client', 'WP_XML', $xml_site, $xml_client ),
+		);
+		foreach ( $callbacks as list( $class, $transport, $site, $client ) ) {
+			foreach ( array( 'save_meta', 'update_meta', 'save_tax', 'update_tax' ) as $method ) {
+				$post_id = self::factory()->post->create();
+
+				$this->assertFalse( $class::$method( $post_id, $post_data, $site, $transport, $client ), "$class::$method should ignore a $transport post." );
+				$this->assertSame( '', get_post_meta( $post_id, 'origin', true ), "$class::$method wrote meta for a $transport post." );
+				$this->assertSame( array(), wp_get_post_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) ), "$class::$method set terms for a $transport post." );
+			}
+		}
+
+		// Each client still handles its own posts.
+		$post_id = self::factory()->post->create();
+		\Syndication_WP_XML_Client::save_meta( $post_id, $post_data, $xml_site, 'WP_XML', $xml_client );
+		\Syndication_WP_RSS_Client::save_tax( $post_id, $post_data, $rss_site, 'WP_RSS', $rss_client );
+		$this->assertSame( 'pulled', get_post_meta( $post_id, 'origin', true ) );
+		$this->assertSame( array( 'pulled' ), wp_get_post_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) ) );
+	}
 }

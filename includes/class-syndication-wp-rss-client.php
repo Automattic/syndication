@@ -412,6 +412,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function save_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
@@ -453,6 +457,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function update_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
@@ -494,6 +502,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function save_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
@@ -518,6 +530,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function update_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
