@@ -1986,6 +1986,20 @@ class WP_Push_Syndication_Server {
 			}
 		}
 
+		// Upgrade to 2.2.3. Trashing a pushed post used to delete its remote copies whatever
+		// the "Delete pushed posts" setting said, so turn the setting on for existing installs
+		// to keep that behavior visible and switchable. New installs keep the default.
+		if ( ! empty( $this->version ) && version_compare( $this->version, '2.2.3', '<' ) ) {
+			$this->push_syndicate_settings['delete_pushed_posts'] = 'on';
+
+			// Skip the settings validation, which would encrypt the stored client secret again.
+			$validating = remove_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
+			update_option( 'push_syndicate_settings', $this->push_syndicate_settings );
+			if ( $validating ) {
+				add_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
+			}
+		}
+
 		update_option( 'syn_version', SYNDICATION_VERSION );
 	}
 }

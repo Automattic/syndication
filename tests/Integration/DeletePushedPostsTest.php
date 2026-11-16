@@ -7,6 +7,7 @@
 
 namespace Automattic\Syndication\Tests;
 
+use ReflectionClass;
 use Syndication_Recording_Client;
 use WP_Error;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
@@ -216,5 +217,85 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 		$push_syndication_server->delete_content( $this->post_id );
 
 		$this->assertSame( array( $this->site_id => array( self::EXT_ID ) ), get_option( 'syn_delete_error_sites' ) );
+	}
+
+	/**
+	 * Run the private upgrade routine as if upgrading from a given version.
+	 *
+	 * @param string $from_version Stored syn_version, or '' for a new install.
+	 */
+	private function upgrade_from( string $from_version ): void {
+		global $push_syndication_server;
+
+		$reflection = new ReflectionClass( $push_syndication_server );
+
+		$version = $reflection->getProperty( 'version' );
+		$version->setAccessible( true );
+		$version->setValue( $push_syndication_server, $from_version );
+
+		$upgrade = $reflection->getMethod( 'upgrade' );
+		$upgrade->setAccessible( true );
+		$upgrade->invoke( $push_syndication_server );
+	}
+
+	/**
+	 * Store settings as admin_init would find them, with the validation callback registered.
+	 *
+	 * @param array $settings Stored settings.
+	 */
+	private function store_settings( array $settings ): void {
+		global $push_syndication_server;
+
+		update_option( 'push_syndicate_settings', $settings );
+		$push_syndication_server->push_syndicate_settings = wp_parse_args( $settings, $push_syndication_server->push_syndicate_default_settings );
+		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $push_syndication_server, 'push_syndicate_settings_validate' ) );
+	}
+
+	/**
+	 * Existing installs keep deleting on trash, now through the setting.
+	 */
+	public function test_upgrade_turns_the_setting_on_for_existing_installs(): void {
+		global $push_syndication_server;
+
+		$this->store_settings(
+			array(
+				'delete_pushed_posts' => 'off',
+				'client_secret'       => 'stored-encrypted-secret',
+			)
+		);
+
+		$this->upgrade_from( '2.2.1' );
+
+		$stored = get_option( 'push_syndicate_settings' );
+		$this->assertSame( 'on', $stored['delete_pushed_posts'] );
+		$this->assertSame( 'stored-encrypted-secret', $stored['client_secret'], 'The stored secret is not re-encrypted.' );
+		$this->assertSame( 'on', $push_syndication_server->push_syndicate_settings['delete_pushed_posts'] );
+	}
+
+	/**
+	 * New installs keep the off default.
+	 */
+	public function test_upgrade_leaves_the_setting_off_for_new_installs(): void {
+		global $push_syndication_server;
+
+		delete_option( 'push_syndicate_settings' );
+		$push_syndication_server->push_syndicate_settings = $push_syndication_server->push_syndicate_default_settings;
+
+		$this->upgrade_from( '' );
+
+		$this->assertFalse( get_option( 'push_syndicate_settings' ) );
+		$this->assertSame( 'off', $push_syndication_server->push_syndicate_settings['delete_pushed_posts'] );
+	}
+
+	/**
+	 * Installs already on 2.2.3 or later keep whatever they chose.
+	 */
+	public function test_upgrade_leaves_the_setting_alone_from_2_2_3(): void {
+		$this->store_settings( array( 'delete_pushed_posts' => 'off' ) );
+
+		$this->upgrade_from( '2.2.3' );
+
+		$stored = get_option( 'push_syndicate_settings' );
+		$this->assertSame( 'off', $stored['delete_pushed_posts'] );
 	}
 }
