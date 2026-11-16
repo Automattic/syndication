@@ -106,4 +106,35 @@ class XmlrpcThumbnailAuthTest extends WPIntegrationTestCase {
 			$this->assertFalse( $this->http_attempted, $method . ' should not fetch the URL before the capability check.' );
 		}
 	}
+
+	/**
+	 * Error messages are escaped once, by IXR_Error, so a translation with an apostrophe survives.
+	 */
+	public function test_error_message_is_escaped_once(): void {
+		$translation = "Vous n'avez pas le droit de téléverser des fichiers.";
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translated, $text ) use ( $translation ) {
+				return 'Sorry, you are not allowed to upload files.' === $text ? $translation : $translated;
+			},
+			10,
+			2
+		);
+
+		$password = 'test-password';
+		wp_set_current_user(
+			self::factory()->user->create(
+				array(
+					'role'       => 'subscriber',
+					'user_login' => 'syndication-translated',
+					'user_pass'  => $password,
+				)
+			)
+		);
+
+		$args   = $this->method_args( 'syndication-translated', $password )['xmlrpc_add_thumbnail'];
+		$result = \Syndication_WP_XMLRPC_Client_Extensions::xmlrpc_add_thumbnail( $args );
+
+		$this->assertSame( htmlspecialchars( $translation ), $result->message );
+	}
 }

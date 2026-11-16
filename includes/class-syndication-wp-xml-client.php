@@ -329,8 +329,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$items         = $xml->xpath( $post_root );
 
 		if ( empty( $items ) ) {
-			// translators: %s: XPath expression used to locate the post root.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			Syndication_Logger::log_post_error(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'error',
+				/* translators: %s: XPath expression used to locate the post root. */
+				sprintf( __( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), $post_root )
+			);
 			return array();
 		} else {
 			// translators: %d: Number of items found in the feed.

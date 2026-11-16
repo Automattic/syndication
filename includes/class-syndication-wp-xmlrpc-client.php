@@ -200,7 +200,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
 		if ( ! $remote_post ) {
-			return new WP_Error( 'syn-remote-post-not-found', esc_html__( 'Remote post doesn\'t exist.', 'push-syndication' ) );
+			return new WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'push-syndication' ) );
 		}
 
 		// Delete existing metadata to avoid duplicates.
@@ -755,16 +755,16 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
 		}
 
 		if ( ! $post_ID ) {
-			return new IXR_Error( 500, esc_html__( 'Please specify a valid post_ID.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'push-syndication' ) );
 		}
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -791,12 +791,12 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		// mw_newMediaObject only requires `upload_files`, so check the caller may edit the target post before writing to it.
 		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
 		}
 
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 		}
 
 		if ( '_thumbnail_id' == $meta_key ) {
@@ -890,12 +890,12 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
 		}
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -921,7 +921,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 		}
 		
 		$args = array(
