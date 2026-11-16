@@ -241,7 +241,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		// Catch attempts to pull content from a file which doesn't exist.
 		// TODO: kill feed client if too many failures.
-		$site_post = get_post( $this->site_ID );
 		if ( is_wp_error( $feed ) ) {
 			// translators: 1: Feed URL, 2: Error message.
 			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Could not reach feed at: %1$s | Error: %2$s', 'push-syndication' ), $this->feed_url, $feed->get_error_message() ), $log_time = null, $extra = array() );
@@ -276,7 +275,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			libxml_clear_errors();
 
 			// translators: 1: Feed URL, 2: List of XML parser errors.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %1$s \nErrors: %2$s', 'push-syndication' ), $this->feed_url, $xml_errors ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -315,7 +314,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		if ( empty( $items ) ) {
 			// translators: %s: XPath expression used to locate the post root.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = $site_post->postmeta['is_update'], $extra = array() );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( esc_html__( 'No post nodes found using XPath "%s" in feed', 'push-syndication' ), esc_html( $post_root ) ), $log_time = null, $extra = array() ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
 			return array();
 		} else {
 			// translators: %d: Number of items found in the feed.
