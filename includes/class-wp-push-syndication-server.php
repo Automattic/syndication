@@ -194,7 +194,7 @@ class WP_Push_Syndication_Server {
 		$new_columns['cb']            = '<input type="checkbox" />';
 		$new_columns['title']         = _x( 'Site Name', 'column name', 'push-syndication' );
 		$new_columns['client-type']   = _x( 'Client Type', 'column name', 'push-syndication' );
-		$new_columns['syn_sitegroup'] = _x( 'Groups', 'column name', 'push-syndication' );
+		$new_columns['syn_sitegroup'] = _x( 'Site Groups', 'column name', 'push-syndication' );
 		$new_columns['site_status']   = _x( 'Status', 'column name', 'push-syndication' );
 		$new_columns['date']          = _x( 'Date', 'column name', 'push-syndication' );
 		return $new_columns;
@@ -377,7 +377,7 @@ class WP_Push_Syndication_Server {
 	public function display_syndicate_settings() {
 
 		add_settings_section( 'push_syndicate_pull_sitegroups', esc_html__( 'Site Groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_description' ), 'push_syndicate_pull_sitegroups' );
-		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select sitegroups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
+		add_settings_field( 'pull_sitegroups_selection', esc_html__( 'Select site groups', 'push-syndication' ), array( $this, 'display_pull_sitegroups_selection' ), 'push_syndicate_pull_sitegroups', 'push_syndicate_pull_sitegroups' );
 
 		add_settings_section( 'push_syndicate_pull_options', esc_html__( 'Pull Options', 'push-syndication' ), array( $this, 'display_pull_options_description' ), 'push_syndicate_pull_options' );
 		add_settings_field( 'pull_time_interval', esc_html__( 'Specify time interval in seconds', 'push-syndication' ), array( $this, 'display_time_interval_selection' ), 'push_syndicate_pull_options', 'push_syndicate_pull_options', array( 'label_for' => 'pull_time_interval' ) );
@@ -428,7 +428,7 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_pull_sitegroups_description() {
-		echo esc_html__( 'Select the sitegroups to pull content', 'push-syndication' );
+		echo esc_html__( 'Select the site groups to pull content from', 'push-syndication' );
 	}
 
 	public function display_pull_sitegroups_selection() {
@@ -445,7 +445,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -682,7 +682,7 @@ class WP_Push_Syndication_Server {
 
 	public function display_sitegroups_selection() {
 
-		echo '<h3>' . esc_html__( 'Select Sitegroups', 'push-syndication' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Select site groups', 'push-syndication' ) . '</h3>';
 
 		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
 		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array();
@@ -699,7 +699,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
@@ -1001,7 +1001,7 @@ class WP_Push_Syndication_Server {
 
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No sitegroups defined yet. You must group your sites into sitegroups to syndicate content', 'push-syndication' ) . '</p>';
+			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
 			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
 			return;
 		}
