@@ -7,7 +7,6 @@
 
 namespace Automattic\Syndication\Tests;
 
-use ReflectionProperty;
 use Syndication_Logger;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
@@ -18,13 +17,6 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers Syndication_Logger::log_update
  */
 class LoggerSkippedPushTest extends WPIntegrationTestCase {
-
-	/**
-	 * Debug level before the test.
-	 *
-	 * @var string
-	 */
-	private $original_debug_level;
 
 	/**
 	 * Log entries recorded against a site.
@@ -44,31 +36,18 @@ class LoggerSkippedPushTest extends WPIntegrationTestCase {
 	/**
 	 * Set the logger's debug level.
 	 *
+	 * The logger reads `syn_pre_debug_level` each time it logs, and the test case
+	 * restores hooks after each test, so nothing needs resetting.
+	 *
 	 * @param string $level 'info' to record info entries, 'default' for errors and successes only.
 	 */
 	private function set_debug_level( string $level ): void {
-		$property = new ReflectionProperty( Syndication_Logger::class, 'debug_level' );
-		$property->setAccessible( true );
-		$property->setValue( Syndication_Logger::instance(), $level );
-	}
-
-	/**
-	 * Remember the debug level.
-	 */
-	public function set_up(): void {
-		parent::set_up();
-
-		$property = new ReflectionProperty( Syndication_Logger::class, 'debug_level' );
-		$property->setAccessible( true );
-		$this->original_debug_level = $property->getValue( Syndication_Logger::instance() );
-	}
-
-	/**
-	 * Restore the debug level.
-	 */
-	public function tear_down(): void {
-		$this->set_debug_level( $this->original_debug_level );
-		parent::tear_down();
+		add_filter(
+			'syn_pre_debug_level',
+			static function () use ( $level ) {
+				return $level;
+			}
+		);
 	}
 
 	/**
