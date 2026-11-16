@@ -93,4 +93,18 @@ class SaveSyndicateSettingsTest extends WPIntegrationTestCase {
 
 		$this->assertSame( '', get_post_meta( $editor_post, '_syn_selected_sitegroups', true ) );
 	}
+
+	/**
+	 * A malformed sitegroup selection is treated as none rather than causing a fatal error.
+	 */
+	public function test_non_array_selection_is_treated_as_none(): void {
+		$post_id = self::factory()->post->create();
+
+		$this->post_syndicate_metabox();
+		$_POST['selected_sitegroups'] = 'test-sitegroup';
+
+		do_action( 'transition_post_status', 'publish', 'publish', get_post( $post_id ) );
+
+		$this->assertSame( '', get_post_meta( $post_id, '_syn_selected_sitegroups', true ) );
+	}
 }
