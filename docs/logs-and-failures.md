@@ -21,7 +21,7 @@ The screen shows the logs of up to 100 sites, fewer if some sites' logs haven't 
 
 ### What's logged
 
-- **Pushes:** each post created, updated or deleted on each site, or the error if it failed.
+- **Pushes:** each post created, updated or deleted on each site, including copies removed because a sitegroup was unticked, or the error if it failed. Pushes skipped by a filter are information entries (`skip_new`, `skip_update`).
 - **Pulls:**
   - **The run:** the start of each site's pull, with the number of items in the feed, and feeds with no items.
   - **Posts:** each post created or updated.
