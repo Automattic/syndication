@@ -60,7 +60,7 @@ When a site reaches the limit:
 
 - it's set to **Disabled**, so it's no longer pulled;
 - an error is logged;
-- users with the syndication capability see an admin notice, "Site N disabled after N pull failure(s).", on every admin screen until someone chooses **Hide Notice**. Hiding it hides it for everyone.
+- users with the syndication capability see an admin notice, "Site N disabled after N pull failures.", on every admin screen until someone chooses **Hide Notice**. Hiding it hides it for everyone.
 
 Fix the feed or the site's settings, then edit the site and set its status back to **Enabled**.
 
