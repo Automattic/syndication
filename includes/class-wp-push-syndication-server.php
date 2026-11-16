@@ -731,39 +731,14 @@ class WP_Push_Syndication_Server {
 		?>
 		<div class="submitbox" id="submitpost">
 			<div id="minor-publishing">
-				<div id="misc-publishing-actions">
-					<div class="misc-pub-section">
-						<label for="post_status"><?php esc_html_e( 'Status:', 'push-syndication' ); ?></label>
-						<span id="post-status-display">
-						<?php
-						switch ( $site_enabled ) {
-							case 'on':
-								esc_html_e( 'Enabled', 'push-syndication' );
-								break;
-							case 'off':
-							default:
-								esc_html_e( 'Disabled', 'push-syndication' );
-								break;
-						}
-						?>
-						</span>
-
-						<a href="#post_status" class="edit-post-status hide-if-no-js"><?php esc_html_e( 'Edit', 'push-syndication' ); ?></a>
-
-						<div id="post-status-select" class="hide-if-js">
-							<input type="hidden" name="post_status" value="publish" />
-							<select name='site_enabled' id='post_status'>
-								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php esc_html_e( 'Enabled', 'push-syndication' ); ?></option>
-								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php esc_html_e( 'Disabled', 'push-syndication' ); ?></option>
-							</select>
-							<a href="#post_status" class="save-post-status hide-if-no-js button"><?php esc_html_e( 'OK', 'push-syndication' ); ?></a>
-						</div>
-
-					</div>
-
-					<div id="timestampdiv" class="hide-if-js"><?php touch_time( 0, 1, 0 ); ?></div>
+				<div class="misc-pub-section">
+					<input type="hidden" name="post_status" value="publish" />
+					<label for="syn-site-enabled"><?php esc_html_e( 'Status:', 'push-syndication' ); ?></label>
+					<select name="site_enabled" id="syn-site-enabled">
+						<option<?php selected( $site_enabled, 'on' ); ?> value="on"><?php esc_html_e( 'Enabled', 'push-syndication' ); ?></option>
+						<option<?php selected( $site_enabled, 'off' ); ?> value="off"><?php esc_html_e( 'Disabled', 'push-syndication' ); ?></option>
+					</select>
 				</div>
-				<div class="clear"></div>
 			</div>
 
 			<div id="major-publishing-actions">
@@ -773,7 +748,7 @@ class WP_Push_Syndication_Server {
 				</div>
 
 				<div id="publishing-action">
-					<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading" id="ajax-loading" alt="" />
+					<span class="spinner"></span>
 					<?php
 					if ( ! in_array( $site_enabled, array( 'on', 'off' ) ) || 0 == $site->ID ) { 
 						?>

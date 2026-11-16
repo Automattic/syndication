@@ -76,4 +76,23 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 		$this->assertSame( 0, $xpath->query( '//*[@tabindex > 0]' )->length, 'Positive tabindex found.' );
 		$this->assertSame( 0, $xpath->query( '//*[@accesskey]' )->length, 'accesskey found.' );
 	}
+
+	/**
+	 * The site status is a labeled select, shown without having to reveal it first.
+	 */
+	public function test_site_status_select_is_labeled_and_shown(): void {
+		update_post_meta( $this->site->ID, 'syn_site_enabled', 'off' );
+
+		$xpath = $this->render(
+			function () {
+				$this->server()->add_site_status_metabox( $this->site );
+			}
+		);
+
+		$select = $xpath->query( '//select[@name="site_enabled"]' )->item( 0 );
+		$this->assertNotNull( $select );
+		$this->assertSame( 1, $xpath->query( '//label[@for="' . $select->getAttribute( 'id' ) . '"]' )->length, 'Status select has no label.' );
+		$this->assertSame( 0, $xpath->query( 'ancestor::*[contains(concat(" ", @class, " "), " hide-if-js ")]', $select )->length, 'Status select is hidden until revealed.' );
+		$this->assertSame( 'off', $xpath->query( './/option[@selected]', $select )->item( 0 )->getAttribute( 'value' ) );
+	}
 }
