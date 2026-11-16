@@ -87,13 +87,14 @@ composer coverage-ci          # Coverage via wp-env
 
 ### Running integration tests
 
-`wp-env start` must be running first. The `test:integration*` scripts hardcode
-`--env-cwd=wp-content/plugins/syndication`, but wp-env mounts the plugin under
-the *checkout directory name*. In a worktree or differently named clone, run
-phpunit directly instead:
+`wp-env start` must be running first. wp-env mounts the plugin under the
+*checkout directory name*, not `syndication`, so the `test:integration*` and
+`coverage-ci` scripts derive `--env-cwd` from the directory they run in. They
+work unchanged in a worktree or a differently named clone:
 
 ```bash
-wp-env run tests-cli --env-cwd=wp-content/plugins/<dir-name> ./vendor/bin/phpunit --testsuite integration
+composer test:integration
+composer test:integration-ms
 ```
 
 ## Conventions
