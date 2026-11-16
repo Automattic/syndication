@@ -31,15 +31,16 @@ class RssClientTest extends WPIntegrationTestCase {
 	/**
 	 * Build a client that parses the given items instead of fetching a feed.
 	 *
-	 * @param string $items The <item> elements of the feed.
+	 * @param string $items      The <item> elements of the feed.
+	 * @param string $cat_status Whether to import categories: yes or no.
 	 * @return \Syndication_WP_RSS_Client
 	 */
-	private function make_client( string $items ) {
+	private function make_client( string $items, string $cat_status = 'yes' ) {
 		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
 
 		update_post_meta( $site_id, 'syn_default_post_type', 'post' );
 		update_post_meta( $site_id, 'syn_default_post_status', 'publish' );
-		update_post_meta( $site_id, 'syn_default_cat_status', 'yes' );
+		update_post_meta( $site_id, 'syn_default_cat_status', $cat_status );
 
 		$client           = new \Syndication_WP_RSS_Client( $site_id );
 		$client->feed_url = null;
@@ -112,6 +113,35 @@ class RssClientTest extends WPIntegrationTestCase {
 
 		$this->assertArrayNotHasKey( 'post_date', $posts[0] );
 		$this->assertArrayNotHasKey( 'post_date_gmt', $posts[0] );
+	}
+
+	/**
+	 * Meta is saved for a filtered post that has no post_category key.
+	 *
+	 * The client always sets post_category, but a syn_rss_pull_filter_post
+	 * callback may return its own array without it.
+	 */
+	public function test_filtered_meta_is_saved_without_post_category(): void {
+		add_filter(
+			'syn_rss_pull_filter_post',
+			static function ( $post ) {
+				return array(
+					'post_title'  => $post['post_title'],
+					'post_status' => 'publish',
+					'post_guid'   => $post['post_guid'],
+					'postmeta'    => array( 'source_label' => 'Wire' ),
+				);
+			}
+		);
+
+		$client  = $this->make_client( '<item><guid>a</guid><title>A</title><pubDate>Mon, 15 Jan 2024 12:34:56 +0000</pubDate></item>', 'no' );
+		$posts   = $client->get_posts();
+		$post_id = wp_insert_post( $posts[0] );
+
+		do_action( 'syn_post_pull_new_post', $post_id, $posts[0], null, 'WP_RSS', $client );
+		do_action( 'syn_post_pull_edit_post', $post_id, $posts[0], null, 'WP_RSS', $client );
+
+		$this->assertSame( 'Wire', get_post_meta( $post_id, 'source_label', true ) );
 	}
 
 	/**

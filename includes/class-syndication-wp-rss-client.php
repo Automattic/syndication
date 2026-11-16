@@ -380,8 +380,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
 		$metas = $post['postmeta'];
 
 		// handle enclosures separately first.
@@ -420,8 +421,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
 		$metas = $post['postmeta'];
 
 		// handle enclosures separately first.
