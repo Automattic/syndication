@@ -737,6 +737,27 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		return $methods;
 	}
 
+	/**
+	 * Whether the current user may write a thumbnail under the given meta key.
+	 *
+	 * The key comes from the caller, so any key other than the featured image's
+	 * gets the checks core applies to custom fields: permission to edit the post,
+	 * and protected keys (starting with an underscore) refused unless registered
+	 * with an auth callback that allows them.
+	 *
+	 * @param string $capability Meta capability: edit_post_meta or delete_post_meta.
+	 * @param int    $post_id    Post the thumbnail belongs to.
+	 * @param string $meta_key   Meta key that holds the thumbnail ID.
+	 * @return bool
+	 */
+	private static function can_write_thumbnail_meta( $capability, $post_id, $meta_key ) {
+		if ( '_thumbnail_id' === $meta_key ) {
+			return current_user_can( 'edit_post', $post_id );
+		}
+
+		return current_user_can( $capability, $post_id, $meta_key );
+	}
+
 	public static function xmlrpc_add_thumbnail( $args ) {
 		global $wp_xmlrpc_server, $wpdb;
 
@@ -765,6 +786,10 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'push-syndication' ) );
 		}
 
+		if ( ! self::can_write_thumbnail_meta( 'edit_post_meta', $post_ID, $meta_key ) ) {
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
+		}
+
 		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
 			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
@@ -790,11 +815,6 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		if ( ! is_array( $image ) || empty( $image['url'] ) ) {
 			return $image;
-		}
-
-		// mw_newMediaObject only requires `upload_files`, so check the caller may edit the target post before writing to it.
-		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
-			return new IXR_Error( 401, __( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
 		}
 
 		$thumbnail_id = (int) $image['id'];
@@ -850,7 +870,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return $wp_xmlrpc_server->error;
 		}
 
-		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
+		if ( ! self::can_write_thumbnail_meta( 'delete_post_meta', $post_ID, $meta_key ) ) {
 			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.', 'push-syndication' ) );
 		}
 

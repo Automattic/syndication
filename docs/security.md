@@ -53,7 +53,7 @@ The encryption is AES-256-CBC, with the key and a fixed initialization vector bo
 Feed content is treated as untrusted:
 
 - Feed values can't be written to protected custom fields (keys starting with an underscore) or to the plugin's own `syn_` and `_syn_` fields.
-- A feed can't choose which existing post to overwrite: `ID` and `import_id` are removed from every pulled post.
+- A feed can't choose which existing post to overwrite: `ID` and `import_id` are removed from every pulled post, and an item only updates a post pulled from the same site.
 - Pulled posts can only be posts, pages or custom post types with an admin screen, not WordPress's internal types such as templates, global styles and reusable blocks. Other plugins' post types with an admin screen are allowed. The [`syndication_pull_post_types`](hooks.md#syndication_pull_post_types) filter changes the list.
 - XML feeds are parsed without network access, and feeds containing a `DOCTYPE` or entity declarations are refused.
 - Pulled posts are saved like any other post, so WordPress filters their HTML according to the user running the pull. A scheduled pull runs with no user, so the HTML is filtered as for a user without `unfiltered_html`.
@@ -73,7 +73,7 @@ Feeds on private addresses are allowed so that intranet feeds work. That means a
 
 ## XML-RPC methods
 
-Syndication adds three XML-RPC methods to every site it's active on, so that sites pushing to it can send featured images and gallery images: `syndication.addThumbnail`, `syndication.deleteThumbnail` and `syndication.postGalleryImage`. Each needs a username and password. Adding a featured image needs `upload_files` and permission to edit the post, removing one needs permission to edit the post, and uploading a gallery image needs `upload_files`.
+Syndication adds three XML-RPC methods to every site it's active on, so that sites pushing to it can send featured images and gallery images: `syndication.addThumbnail`, `syndication.deleteThumbnail` and `syndication.postGalleryImage`. Each needs a username and password. Adding a featured image needs `upload_files` and permission to edit the post, removing one needs permission to edit the post, and uploading a gallery image needs `upload_files`. A thumbnail stored under a custom field other than `_thumbnail_id`, such as one from the Multiple Post Thumbnails plugin, also needs permission to edit that custom field, so protected custom fields (names starting with an underscore) are refused unless registered with an `auth_callback` that allows them.
 
 If nothing pushes to a site, you can remove them:
 

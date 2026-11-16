@@ -337,7 +337,8 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 	 */
 	public function test_new_tab_links_say_so( string $render ): void {
 		// get_api_token() shows its new-tab link once WordPress.com returns a token.
-		$_GET['code'] = 'code';
+		$_GET['code']  = 'code';
+		$_GET['state'] = wp_create_nonce( 'syndication_wpcom_authorize' );
 		add_filter(
 			'pre_http_request',
 			function () {
@@ -364,7 +365,7 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 			}
 		);
 
-		unset( $_GET['code'] );
+		unset( $_GET['code'], $_GET['state'] );
 
 		$links = $xpath->query( '//a[@target="_blank"]' );
 		$this->assertGreaterThan( 0, $links->length );

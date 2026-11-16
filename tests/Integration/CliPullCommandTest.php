@@ -188,6 +188,7 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 		$site_id = $this->create_site( 'some-group' );
 		$post_id = $this->factory()->post->create();
 		update_post_meta( $post_id, 'syn_post_guid', 'https://example.com/?p=2' );
+		update_post_meta( $post_id, 'syn_source_site_id', $site_id );
 		Syndication_Mock_Client::set_posts(
 			array(
 				array(

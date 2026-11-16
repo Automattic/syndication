@@ -295,7 +295,7 @@ Filters the items read from a site's feed, before any are saved.
 
 ### syn_pre_find_post_by_guid
 
-Filters the post an item updates. Return a post ID to use that post, or `false` to let the plugin look it up by the item's unique ID in `syn_post_guid`.
+Filters the post an item updates. Return a post ID to use that post, or `false` to let the plugin look it up by the item's unique ID in `syn_post_guid`, among the posts pulled from `$site`.
 
 - `int|false $post_ID` Default `false`.
 - `string $guid`, `array $post`, `WP_Post $site`

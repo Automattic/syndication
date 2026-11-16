@@ -592,14 +592,16 @@ class WP_Push_Syndication_Server {
 				'client_id'     => rawurlencode( $this->push_syndicate_settings['client_id'] ),
 				'redirect_uri'  => rawurlencode( $redirect_uri ),
 				'response_type' => 'code',
+				// WordPress.com returns the state with the code, so a code this user didn't ask for is refused.
+				'state'         => wp_create_nonce( 'syndication_wpcom_authorize' ),
 			),
 			'https://public-api.wordpress.com/oauth2/authorize'
 		);
 
 		echo '<h2>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h2>';
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect from WordPress.com, which cannot carry a nonce.
-		$code = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+		$state = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
+		$code  = isset( $_GET['code'] ) && wp_verify_nonce( $state, 'syndication_wpcom_authorize' ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
 
 		// if code is not found return or settings updated return.
 		if ( '' === $code || ! empty( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check.
@@ -1020,11 +1022,11 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
-		if ( ! $this->current_user_can_syndicate() ) {
+		if ( ! $this->current_user_can_syndicate() || ! current_user_can( 'edit_post', $post->ID ) ) {
 			return;
 		}
 
-		$selected_sitegroups = ! empty( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '';
+		$selected_sitegroups = ! empty( $_POST['selected_sitegroups'] ) && is_array( $_POST['selected_sitegroups'] ) ? array_map( 'sanitize_key', $_POST['selected_sitegroups'] ) : '';
 		update_post_meta( $post->ID, '_syn_selected_sitegroups', $selected_sitegroups );
 
 		if ( '' === get_post_meta( $post->ID, 'post_uniqueid', true ) ) {
@@ -1897,8 +1899,16 @@ class WP_Push_Syndication_Server {
 			return $post_id;
 		}
 
-		// A direct query here is way more efficient than WP_Query, because we don't have to do all the extra processing, filters, and JOIN.
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'syn_post_guid' AND meta_value = %s LIMIT 1", $guid ) );
+		// Only posts pulled from this site: a feed must not overwrite another feed's posts by reusing their GUIDs.
+		// A direct query avoids the processing and filters of WP_Query.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Must see posts pulled earlier in the same run.
+		$post_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT guid.post_id FROM $wpdb->postmeta guid INNER JOIN $wpdb->postmeta source ON source.post_id = guid.post_id AND source.meta_key = 'syn_source_site_id' AND source.meta_value = %s WHERE guid.meta_key = 'syn_post_guid' AND guid.meta_value = %s LIMIT 1",
+				(string) $site->ID,
+				$guid
+			)
+		);
 
 		if ( $post_id ) {
 			return $post_id;
