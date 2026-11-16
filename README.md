@@ -17,7 +17,7 @@ Syndication copies posts between sites. Choose the groups of sites a post should
 
 - **Push to WordPress sites** over XML-RPC, including other sites on the same multisite network, and to WordPress.com sites over the WordPress.com REST API.
 - **Pull feeds:** any RSS or Atom feed, or any XML feed, mapped onto posts with XPath.
-- **Sitegroups:** organize sites into groups, and push a post to whole groups at once.
+- **Site groups:** organize sites into groups, and push a post to whole groups at once.
 - **Kept up to date:** edits are pushed to the copies, scheduled posts are pushed when they publish, and copies can be deleted when the original is.
 - **Loop prevention:** two sites can push to each other without posts bouncing back and forth.
 - **Logs and failure handling:** every push and pull is logged under **Sites → Logs**, failed pulls are retried, and feeds that keep failing can be disabled automatically.
@@ -29,7 +29,7 @@ Stored passwords and tokens are encrypted. Define `PUSH_SYNDICATE_KEY` before ad
 
 Guides for site owners and developers live in the [`docs/` directory on GitHub](https://github.com/Automattic/syndication/blob/main/docs/README.md):
 
-- [Setting up sites](https://github.com/Automattic/syndication/blob/main/docs/setting-up-sites.md): the four transports, connection tests and sitegroups
+- [Setting up sites](https://github.com/Automattic/syndication/blob/main/docs/setting-up-sites.md): the four transports, connection tests and site groups
 - [Pushing posts](https://github.com/Automattic/syndication/blob/main/docs/pushing.md): when posts are pushed, what's sent, updates and deletions
 - [Pulling feeds](https://github.com/Automattic/syndication/blob/main/docs/pulling.md): scheduling pulls, and mapping RSS and XML feeds onto posts
 - [Logs and failures](https://github.com/Automattic/syndication/blob/main/docs/logs-and-failures.md), and [security and credentials](https://github.com/Automattic/syndication/blob/main/docs/security.md)
@@ -45,17 +45,17 @@ Guides for site owners and developers live in the [`docs/` directory on GitHub](
    define( 'PUSH_SYNDICATE_KEY', 'a-long-random-string' );
    ~~~
 
-3. Go to **Sites → Site Groups** and create a sitegroup.
-4. Go to **Sites → Add Site**, choose a transport, fill in its settings, tick the sitegroup and set the status to **Enabled**. Saving tests the connection.
+3. Go to **Sites → Site Groups** and create a site group.
+4. Go to **Sites → Add Site**, choose a transport, fill in its settings, tick the site group and set the status to **Enabled**. Saving tests the connection.
 
 To push posts:
 
 1. On **Settings → Push Syndication**, under **Post Types**, tick the post types to push.
-2. When you edit a post, tick sitegroups in the **Syndicate** box. The post is pushed when you save it, in whatever status it has.
+2. When you edit a post, tick site groups in the **Syndicate** box. The post is pushed when you save it, in whatever status it has.
 
 To pull feeds:
 
-1. On **Settings → Push Syndication**, under **Site Groups**, tick the sitegroups to pull, and set the interval under **Pull Options**.
+1. On **Settings → Push Syndication**, under **Site Groups**, tick the site groups to pull, and set the interval under **Pull Options**.
 2. Choose **Pull Now**, or wait for the first scheduled pull.
 
 Pushes and pulls run in WP-Cron, so make sure it's running.
@@ -76,11 +76,11 @@ Over XML-RPC: the title, content, excerpt, status, password, date, post type, ca
 
 ### Why are my drafts appearing on other sites?
 
-A post is pushed whenever it's saved with sitegroups ticked, in whatever status it has, so a draft becomes a draft on the other sites. Tick sitegroups when the post is ready, or [only push published posts](https://github.com/Automattic/syndication/blob/main/docs/customizing.md#only-push-published-posts).
+A post is pushed whenever it's saved with site groups ticked, in whatever status it has, so a draft becomes a draft on the other sites. Tick site groups when the post is ready, or [only push published posts](https://github.com/Automattic/syndication/blob/main/docs/customizing.md#only-push-published-posts).
 
 ### Why isn't my feed being pulled?
 
-Scheduled pulls only cover the sitegroups ticked under **Site Groups** on **Settings → Push Syndication**, and only enabled sites. Check **Sites → Logs** for errors, or run `wp syndication pull-site --site_id=<id>` to pull it now.
+Scheduled pulls only cover the site groups ticked under **Site Groups** on **Settings → Push Syndication**, and only enabled sites. Check **Sites → Logs** for errors, or run `wp syndication pull-site --site_id=<id>` to pull it now.
 
 ### What happens when I delete a post?
 
@@ -88,15 +88,15 @@ If **Delete pushed posts** is ticked on **Settings → Push Syndication**, its c
 
 ### Does it work with multisite?
 
-Yes. Each site on the network has its own sites, sitegroups and settings. To syndicate between sites on the network, add them as WordPress XML-RPC sites.
+Yes. Each site on the network has its own sites, site groups and settings. To syndicate between sites on the network, add them as WordPress XML-RPC sites.
 
 ## Screenshots
 
-1. [The settings screen, covering pull sitegroups, pull scheduling, pushable post types and WordPress.com application credentials](.wordpress-org/screenshot-1.png)
-2. [The Sites list, showing each destination's transport, sitegroup and status](.wordpress-org/screenshot-2.png)
+1. [The settings screen, covering pull site groups, pull scheduling, pushable post types and WordPress.com application credentials](.wordpress-org/screenshot-1.png)
+2. [The Sites list, showing each destination's transport, site group and status](.wordpress-org/screenshot-2.png)
 3. [Registering a standalone WordPress install over XML-RPC](.wordpress-org/screenshot-3.png)
 4. [Registering a WordPress.com site over the REST API](.wordpress-org/screenshot-4.png)
-5. [The Syndicate panel in the post editor, for choosing which sitegroups a post goes to](.wordpress-org/screenshot-5.png)
+5. [The Syndicate panel in the post editor, for choosing which site groups a post goes to](.wordpress-org/screenshot-5.png)
 
 ## Changelog
 

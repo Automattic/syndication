@@ -1,6 +1,6 @@
 # Setting up sites
 
-Every place Syndication pushes to or pulls from is a **site**. Sites live under **Sites** in the admin, and you group them into **sitegroups**. You push a post to sitegroups, not to individual sites, and you schedule pulls by sitegroup.
+Every place Syndication pushes to or pulls from is a **site**. Sites live under **Sites** in the admin, and you group them into **site groups**. You push a post to site groups, not to individual sites, and you schedule pulls by site group.
 
 Managing sites needs the capability set by the `syn_syndicate_cap` filter, which is `manage_options` by default. See [Security and credentials](security.md#who-can-do-what).
 
@@ -9,7 +9,7 @@ Managing sites needs the capability set by the `syn_syndicate_cap` filter, which
 1. Go to **Sites → Add Site** and give the site a title. The title is only for you; it's shown in the sites list and in the logs.
 2. Under **Select a transport type**, choose how to connect. Changing the transport reloads the form with that transport's fields, so choose it first.
 3. Fill in the transport's fields, described below.
-4. In the **Site Groups** box, tick the sitegroups the site belongs to. To create a sitegroup, go to **Sites → Site Groups**.
+4. In the **Site Groups** box, tick the site groups the site belongs to. To create a site group, go to **Sites → Site Groups**.
 5. In the **Site Status** box, set the status to **Enabled**, then choose **Add Site**.
 
 When you save, the plugin tests the connection:
@@ -17,7 +17,7 @@ When you save, the plugin tests the connection:
 - If the test passes, you'll see **Connection Successful!** and the site keeps the status you chose.
 - If it fails, you'll see why (for an XML-RPC site, for example, a wrong username or password, or XML-RPC switched off on the other site) and the site is saved as **Disabled**. Fix the settings and save again.
 
-Only enabled sites are pushed to or pulled from. The **Sites** list shows each site's transport, sitegroups and status.
+Only enabled sites are pushed to or pulled from. The **Sites** list shows each site's transport, site groups and status.
 
 ## Transports
 
@@ -79,16 +79,16 @@ Pulls items from any XML feed. You describe where each post is in the feed, and 
 
 The connection test fetches the feed and checks that it parses as XML. It doesn't check your XPath mappings: run a pull and check the [logs](logs-and-failures.md) for that.
 
-## Sitegroups
+## Site groups
 
-A sitegroup is a named set of sites. A site can be in several sitegroups, and sitegroups can be nested: a sitegroup includes the sites in its child sitegroups, so pushing to or pulling a parent sitegroup also covers its children.
+A site group is a named set of sites. A site can be in several site groups, and site groups can be nested: a site group includes the sites in its child site groups, so pushing to or pulling a parent site group also covers its children.
 
-- When you edit a post, the **Syndicate** box lists every sitegroup. The post is pushed to every enabled site in the sitegroups you tick. See [Pushing posts](pushing.md).
-- On **Settings → Push Syndication**, the **Site Groups** section chooses which sitegroups are pulled on a schedule. See [Pulling feeds](pulling.md).
+- When you edit a post, the **Syndicate** box lists every site group. The post is pushed to every enabled site in the site groups you tick. See [Pushing posts](pushing.md).
+- On **Settings → Push Syndication**, the **Site Groups** section chooses which site groups are pulled on a schedule. See [Pulling feeds](pulling.md).
 
-Sitegroups can mix transports, but keep push sites and pull sites in separate sitegroups: pushing to a feed site logs an error for every push, and pulling from an XML-RPC site finds nothing.
+Site groups can mix transports, but keep push sites and pull sites in separate site groups: pushing to a feed site logs an error for every push, and pulling from an XML-RPC site finds nothing.
 
-Creating, editing and deleting sitegroups needs `manage_categories`, as for categories.
+Creating, editing and deleting site groups needs `manage_categories`, as for categories.
 
 ## Turn a site off
 
@@ -96,6 +96,6 @@ To stop pushing to or pulling from a site without deleting it, edit it and set *
 
 A pull site can also be disabled automatically after repeated failures. See [Logs and failures](logs-and-failures.md#disabling-failing-sites).
 
-Copies of your posts on a disabled push site aren't deleted when you delete the posts or untick the site's sitegroup.
+Copies of your posts on a disabled push site aren't deleted when you delete the posts or untick the site group it's in.
 
 Deleting a site doesn't delete anything on the other site, or any posts already pulled from it.

@@ -81,7 +81,7 @@ In the descriptions below:
 
 ### syn_syndicate_cap
 
-Filters the capability needed to manage sites, change the settings, choose a post's sitegroups, read the logs and see admin notices. The `syn_site` post type's capabilities are set from it on `init`, so add the filter before then.
+Filters the capability needed to manage sites, change the settings, choose a post's site groups, read the logs and see admin notices. The `syn_site` post type's capabilities are set from it on `init`, so add the filter before then.
 
 - `string $capability` Default `manage_options`.
 
@@ -154,14 +154,14 @@ Fires when a post's remote copies are about to be scheduled for deletion, becaus
 
 ### syn_pre_push_delete_post_shortcircuit
 
-Filters whether to skip deleting one remote copy, whether it's being deleted because the post was trashed or deleted, or because its sitegroup was unticked. Return `true` to skip; the copy's record is kept, so a later push can still update or remove it.
+Filters whether to skip deleting one remote copy, whether it's being deleted because the post was trashed or deleted, or because its site group was unticked. Return `true` to skip; the copy's record is kept, so a later push can still update or remove it.
 
 - `bool $skip` Default `false`.
 - `int $ext_ID`, `int $post_ID`, `int $site_ID`, `string $transport_type`, `$client`
 
 ### syn_post_push_delete_post
 
-Fires after a remote copy is deleted, because the post was trashed or deleted or because its sitegroup was unticked, whether it succeeded or not.
+Fires after a remote copy is deleted, because the post was trashed or deleted or because its site group was unticked, whether it succeeded or not.
 
 - `true|WP_Error $result`
 - `int $ext_ID`, `int $post_ID`, `int $site_ID`, `string $transport_type`, `$client`

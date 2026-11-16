@@ -21,7 +21,7 @@ The screen shows the logs of up to 100 sites, fewer if some sites' logs haven't 
 
 ### What's logged
 
-- **Pushes:** each post created, updated or deleted on each site, including copies removed because a sitegroup was unticked, or the error if it failed. Pushes skipped by a filter are information entries (`skip_new`, `skip_update`).
+- **Pushes:** each post created, updated or deleted on each site, including copies removed because a site group was unticked, or the error if it failed. Pushes skipped by a filter are information entries (`skip_new`, `skip_update`).
 - **Pulls:**
   - **The run:** the start of each site's pull, with the number of items in the feed, and feeds with no items.
   - **Posts:** each post created or updated.
@@ -60,7 +60,7 @@ When a site reaches the limit:
 
 - it's set to **Disabled**, so it's no longer pulled;
 - an error is logged;
-- users with the syndication capability see an admin notice, "Site N disabled after N pull failure(s).", on every admin screen until someone chooses **Hide Notice**. Hiding it hides it for everyone.
+- users with the syndication capability see an admin notice, "Site N disabled after N pull failures.", on every admin screen until someone chooses **Hide Notice**. Hiding it hides it for everyone.
 
 Fix the feed or the site's settings, then edit the site and set its status back to **Enabled**.
 
@@ -75,13 +75,13 @@ The [`pull_syndication_failure_auto_retry_limit`](hooks.md#pull_syndication_fail
 **Nothing is pushed.**
 
 - Check that the post type is ticked under **Post Types** on **Settings → Push Syndication**.
-- Check that the post has sitegroups ticked in its **Syndicate** box.
-- Check that the sites in those sitegroups are enabled push sites.
+- Check that the post has site groups ticked in its **Syndicate** box.
+- Check that the sites in those site groups are enabled push sites.
 - Pushes run in WP-Cron, so check that WP-Cron is running: with `DISABLE_WP_CRON` set, a system cron job must call it.
 
 **A feed is never pulled.**
 
-- Check that its sitegroup is ticked under **Site Groups** on **Settings → Push Syndication**.
+- Check that its site group is ticked under **Site Groups** on **Settings → Push Syndication**.
 - Check that the site is enabled.
 - Check that WP-Cron is running.
 - Run [`wp syndication pull_site`](wp-cli.md#pull_site) to pull it now and see what happens.

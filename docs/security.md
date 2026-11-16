@@ -6,10 +6,10 @@
 | --- | --- |
 | Add, edit and delete sites | The syndication capability |
 | Change **Settings → Push Syndication** | The syndication capability |
-| See the **Syndicate** box and choose a post's sitegroups | The syndication capability |
+| See the **Syndicate** box and choose a post's site groups | The syndication capability |
 | Read **Sites → Logs**, and see and hide Syndication's admin notices | The syndication capability |
-| Create, edit and delete sitegroups | `manage_categories` |
-| Push changes to a post that already has sitegroups | Being able to edit the post |
+| Create, edit and delete site groups | `manage_categories` |
+| Push changes to a post that already has site groups | Being able to edit the post |
 | Delete a post's remote copies, when **Delete pushed posts** is ticked | Being able to trash or delete the post |
 
 The syndication capability is `manage_options` by default. To use another capability, return it from the `syn_syndicate_cap` filter, early, before `init`:

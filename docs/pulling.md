@@ -4,14 +4,14 @@ Pulling imports items from a feed into this site as posts, on a schedule. Each f
 
 ## Schedule pulls
 
-1. [Add each feed as a site](setting-up-sites.md#add-a-site), enable it, and put it in a sitegroup.
-2. On **Settings → Push Syndication**, under **Site Groups**, tick the sitegroups to pull.
+1. [Add each feed as a site](setting-up-sites.md#add-a-site), enable it, and put it in a site group.
+2. On **Settings → Push Syndication**, under **Site Groups**, tick the site groups to pull.
 3. Under **Pull Options**, set **Specify time interval in seconds**: how often each site is pulled. The default is 3600 (an hour), and the shortest allowed is 300 (five minutes).
 4. Choose **Pull Now** or **Save Changes**.
 
-Only the sitegroups ticked here are pulled on a schedule. A feed site in any other sitegroup is never pulled automatically, though you can pull it with [WP-CLI](wp-cli.md#pulling).
+Only the site groups ticked here are pulled on a schedule. A feed site in any other site group is never pulled automatically, though you can pull it with [WP-CLI](wp-cli.md#pulling).
 
-Each site gets its own WP-Cron event, repeating at the interval. Saving the settings reschedules every site's event to run straight away, which is all **Pull Now** does. Adding, editing or deleting a site, or creating or deleting a sitegroup, reschedules them a minute later.
+Each site gets its own WP-Cron event, repeating at the interval. Saving the settings reschedules every site's event to run straight away, which is all **Pull Now** does. Adding, editing or deleting a site, or creating or deleting a site group, reschedules them a minute later.
 
 Pulls run in the background, so a pull starts on the next cron run after it's due. If you run WP-Cron from a system cron job, pulls happen on that schedule.
 
@@ -119,4 +119,4 @@ Where the enclosures are stored depends on **Enter meta name for enclosures**:
 
 ## Pulling now
 
-To pull a site or a sitegroup immediately, from the shell, use [`wp syndication pull_site` or `wp syndication pull_sitegroup`](wp-cli.md#pulling).
+To pull a site or a site group immediately, from the shell, use [`wp syndication pull_site` or `wp syndication pull_sitegroup`](wp-cli.md#pulling).

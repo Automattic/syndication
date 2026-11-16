@@ -14,7 +14,7 @@ Anyone with this capability can see and change the credentials of every site, an
 
 ## Only push published posts
 
-Posts are pushed in whatever status they have, so a draft with sitegroups ticked creates drafts on the other sites. To wait until a post is published before its first push:
+Posts are pushed in whatever status they have, so a draft with site groups ticked creates drafts on the other sites. To wait until a post is published before its first push:
 
 ```php
 add_filter(

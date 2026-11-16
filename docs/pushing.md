@@ -1,22 +1,22 @@
 # Pushing posts
 
-Pushing copies a post from this site to other sites, and keeps those copies up to date. You choose where a post goes by ticking sitegroups in its **Syndicate** box; the plugin pushes to every enabled push site in those sitegroups.
+Pushing copies a post from this site to other sites, and keeps those copies up to date. You choose where a post goes by ticking site groups in its **Syndicate** box; the plugin pushes to every enabled push site in those site groups.
 
-To push, you need at least one [WordPress XML-RPC or WordPress.com REST site](setting-up-sites.md#transports) in a sitegroup.
+To push, you need at least one [WordPress XML-RPC or WordPress.com REST site](setting-up-sites.md#transports) in a site group.
 
 ## Choose which post types can be pushed
 
-On **Settings → Push Syndication**, under **Post Types**, tick the post types that can be pushed. Posts are ticked by default. The **Syndicate** box appears only on the edit screens of these post types. Unticking a type hides the box, but posts of that type that already have sitegroups keep being pushed: untick their sitegroups first.
+On **Settings → Push Syndication**, under **Post Types**, tick the post types that can be pushed. Posts are ticked by default. The **Syndicate** box appears only on the edit screens of these post types. Unticking a type hides the box, but posts of that type that already have site groups keep being pushed: untick their site groups first.
 
 ## Choose where a post goes
 
-When you edit a post, the **Syndicate** box lists every sitegroup. Tick the sitegroups the post should go to, and save. If the post was pushed to this site from another one over XML-RPC, the box also shows that site's host.
+When you edit a post, the **Syndicate** box lists every site group. Tick the site groups the post should go to, and save. If the post was pushed to this site from another one over XML-RPC, the box also shows that site's host.
 
-Only users with the syndication capability see the box and can change its sitegroups. That's `manage_options` by default; see [Security and credentials](security.md#who-can-do-what). Once a post has sitegroups, edits by any user who can edit the post are pushed.
+Only users with the syndication capability see the box and can change its site groups. That's `manage_options` by default; see [Security and credentials](security.md#who-can-do-what). Once a post has site groups, edits by any user who can edit the post are pushed.
 
 ## When posts are pushed
 
-A post with sitegroups is pushed whenever it's saved or changes status:
+A post with site groups is pushed whenever it's saved or changes status:
 
 - when you save it in the editor, whatever its status;
 - when a scheduled post is published;
@@ -32,7 +32,7 @@ To push a post now, or push many posts at once, use [WP-CLI](wp-cli.md#pushing).
 
 ### Drafts and other statuses
 
-The post's status is sent as it is. Saving a draft with sitegroups ticked creates a draft on each remote site, a scheduled post creates a scheduled post, and a private post creates a private post. Tick sitegroups only when you're happy for the remote sites to have the post in its current status.
+The post's status is sent as it is. Saving a draft with site groups ticked creates a draft on each remote site, a scheduled post creates a scheduled post, and a private post creates a private post. Tick site groups only when you're happy for the remote sites to have the post in its current status.
 
 ## Updates
 
@@ -40,11 +40,11 @@ The plugin remembers the ID of each remote copy, per site. Later pushes update t
 
 When a remote site can't be reached or refuses a push, the error is recorded and the next push tries again. Errors appear in the [logs](logs-and-failures.md).
 
-## Removing a post from a sitegroup
+## Removing a post from a site group
 
-If you untick a sitegroup and save, the post's copies on that sitegroup's sites are deleted on the next push, except on sites that are also in a sitegroup that's still ticked. Removals are logged like other deletions. If a removal fails, the plugin keeps trying on later pushes until it succeeds.
+If you untick a site group and save, the post's copies on that site group's sites are deleted on the next push, except on sites that are also in a site group that's still ticked. Removals are logged like other deletions. If a removal fails, the plugin keeps trying on later pushes until it succeeds.
 
-Copies on disabled sites are left alone, whether you untick a sitegroup or delete the post, and aren't deleted later if the site is enabled again.
+Copies on disabled sites are left alone, whether you untick a site group or delete the post, and aren't deleted later if the site is enabled again.
 
 ## Deleting posts
 
@@ -115,4 +115,4 @@ Two sites can push to each other. To stop a post going back to the site it came 
 - Only categories and tags are sent. Custom taxonomies aren't.
 - WordPress.com REST sends no custom fields, featured images or post type.
 - A push goes site by site in one background run. With many sites, or slow ones, it can take a while.
-- If a site is in two of a post's sitegroups, the post is pushed to it twice in the same run. The second push updates the copy the first created.
+- If a site is in two of a post's site groups, the post is pushed to it twice in the same run. The second push updates the copy the first created.

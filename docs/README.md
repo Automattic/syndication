@@ -4,7 +4,7 @@ What Syndication does, and how to install it, is covered in the [README](../READ
 
 ## Using Syndication
 
-- [Setting up sites](setting-up-sites.md): adding destination and source sites, the four transports, connection tests, and sitegroups.
+- [Setting up sites](setting-up-sites.md): adding destination and source sites, the four transports, connection tests, and site groups.
 - [Pushing posts](pushing.md): choosing where a post goes, when it's pushed, what each transport sends, updates, deletions, and loop prevention.
 - [Pulling feeds](pulling.md): scheduling pulls, how RSS and XML feed items become posts, mapping XML with XPath, and updating pulled posts.
 - [Logs and failures](logs-and-failures.md): the Logs screen, what's recorded, retries, and how failing sites are disabled.
@@ -28,7 +28,7 @@ What Syndication does, and how to install it, is covered in the [README](../READ
 
 - **Site:** another place content is pushed to or pulled from: a WordPress site, a WordPress.com site, or a feed. Each site is stored as a `syn_site` post, which isn't public, managed under **Sites** in the admin.
 - **Transport:** how the plugin talks to a site. There are four: WordPress XML-RPC and WordPress.com REST for pushing, and RSS and XML for pulling.
-- **Sitegroup:** a named group of sites. Posts are pushed to sitegroups, not to individual sites, and pulls are scheduled by sitegroup.
-- **Push:** copying a post from this site to every enabled site in the sitegroups chosen for it, and keeping those copies up to date.
+- **Site group:** a named group of sites. Posts are pushed to site groups, not to individual sites, and pulls are scheduled by site group.
+- **Push:** copying a post from this site to every enabled site in the site groups chosen for it, and keeping those copies up to date.
 - **Pull:** importing items from a feed site into this site as posts, on a schedule.
 - **Remote copy:** the post a push creates on another site. The plugin remembers each copy's ID, so later pushes update it rather than creating another.
