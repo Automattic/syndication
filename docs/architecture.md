@@ -19,9 +19,9 @@ There's no autoloader. `push-syndication.php` loads everything from `includes/`:
 
 ## Data
 
-### Sites and sitegroups
+### Sites and site groups
 
-Each site is a `syn_site` post, which isn't public. Its title is the site's name, and its settings are custom fields on it. Sitegroups are terms in the hierarchical `syn_sitegroup` taxonomy, attached to `syn_site` posts.
+Each site is a `syn_site` post, which isn't public. Its title is the site's name, and its settings are custom fields on it. Site groups are terms in the hierarchical `syn_sitegroup` taxonomy, attached to `syn_site` posts.
 
 Custom fields on a `syn_site` post:
 
@@ -44,8 +44,8 @@ Custom fields on posts on this site:
 
 | Key | On | Holds |
 | --- | --- | --- |
-| `_syn_selected_sitegroups` | Pushed posts | Slugs of the sitegroups ticked in the **Syndicate** box. |
-| `_syn_old_sitegroups` | Pushed posts | The sitegroups at the last push, to work out which were unticked. |
+| `_syn_selected_sitegroups` | Pushed posts | Slugs of the site groups ticked in the **Syndicate** box. |
+| `_syn_old_sitegroups` | Pushed posts | The site groups at the last push, to work out which were unticked. |
 | `_syn_slave_post_states` | Pushed posts | The post's state on each site (below), with each remote copy's ID. |
 | `post_uniqueid` | Pushed posts | A unique ID used to [avoid loops](pushing.md#avoiding-loops). XML-RPC copies it to the remote copy. |
 | `_syn_push_thumb_{key}` | Pushed posts | For each site, the remote attachment ID of each featured image sent. |
@@ -65,7 +65,7 @@ A pushed post's state on each site is one of:
 
 | Option | Holds |
 | --- | --- |
-| `push_syndicate_settings` | The settings screen: pull sitegroups, push post types, delete pushed posts, pull interval, update pulled posts, WordPress.com client ID, and the encrypted client secret. |
+| `push_syndicate_settings` | The settings screen: pull site groups, push post types, delete pushed posts, pull interval, update pulled posts, WordPress.com client ID, and the encrypted client secret. |
 | `push_syndication_max_pull_attempts` | **Maximum pull attempts**. |
 | `syn_version` | The version the data was last upgraded to. |
 | `syn_delete_error_sites` | Remote copies whose deletion failed, by site. Recorded but not shown anywhere. |
@@ -80,17 +80,17 @@ Nothing is removed when the plugin is deleted: there's no uninstall routine.
 | Transient | Holds |
 | --- | --- |
 | `syn_syndicate_lock` | Set while a push runs, for up to five minutes. |
-| `syn_pull_jobs_refresh_pending` | Set for two minutes after a site or sitegroup changes, so that a burst of changes reschedules the pull jobs only once. |
+| `syn_pull_jobs_refresh_pending` | Set for two minutes after a site or site group changes, so that a burst of changes reschedules the pull jobs only once. |
 | `syn_rejected_meta_keys_{site ID}` | XML mapping rows refused on save, shown once on the site's settings screen. |
 
 ## Scheduled events
 
 | Event | When | Arguments |
 | --- | --- | --- |
-| `syn_push_content` | Single, straight after a post with sitegroups is saved, or a minute later if a push is already running. | One array: `post_ID`, and the sites to push to and remove from as `WP_Post` objects. |
+| `syn_push_content` | Single, straight after a post with site groups is saved, or a minute later if a push is already running. | One array: `post_ID`, and the sites to push to and remove from as `WP_Post` objects. |
 | `syn_delete_content` | Single, straight after a post is trashed or deleted, when **Delete pushed posts** is ticked. | The post ID, and the remote copies to delete, by site. |
-| `syn_pull_content` | Repeating, one per site in the sitegroups pulled on a schedule, on the `syn_pull_time_interval` schedule (**Specify time interval in seconds**). Also single, for automatic retries. | The site's ID. Automatic retries, and jobs scheduled before 2.2.3, carry the whole site post instead; both work. |
-| `syn_refresh_pull_jobs` | Single, a minute after a site or sitegroup changes. | None. |
+| `syn_pull_content` | Repeating, one per site in the site groups pulled on a schedule, on the `syn_pull_time_interval` schedule (**Specify time interval in seconds**). Also single, for automatic retries. | The site's ID. Automatic retries, and jobs scheduled before 2.2.3, carry the whole site post instead; both work. |
+| `syn_refresh_pull_jobs` | Single, a minute after a site or site group changes. | None. |
 
 Saving the settings, or `syn_refresh_pull_jobs` running, clears every `syn_pull_content` job and schedules one per site again.
 
