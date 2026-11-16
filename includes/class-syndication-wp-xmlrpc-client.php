@@ -140,7 +140,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$args['post_excerpt']  = $post['post_excerpt'];
 		$args['post_status']   = $post['post_status'];
 		$args['post_type']     = $post['post_type'];
-		$args['wp_password']   = $post['post_password'];
+		$args['post_password'] = $post['post_password'];
 		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
@@ -228,7 +228,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$args['post_excerpt']  = $post['post_excerpt'];
 		$args['post_status']   = $post['post_status'];
 		$args['post_type']     = $post['post_type'];
-		$args['wp_password']   = $post['post_password'];
+		$args['post_password'] = $post['post_password'];
 		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
