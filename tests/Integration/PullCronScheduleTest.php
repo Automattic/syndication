@@ -156,6 +156,42 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A post that fails to insert is not treated as post ID 1.
+	 */
+	public function test_pull_content_ignores_posts_that_fail_to_insert(): void {
+		global $push_syndication_server;
+
+		$site_id = $this->create_site( 'Mock' );
+
+		// Empty title, content and excerpt make wp_insert_post() return a WP_Error.
+		\Syndication_Mock_Client::set_posts(
+			array(
+				array(
+					'post_guid'    => 'https://example.com/?p=1',
+					'post_type'    => 'post',
+					'post_title'   => '',
+					'post_content' => '',
+					'post_excerpt' => '',
+				),
+			)
+		);
+
+		$cleaned = array();
+		add_action(
+			'clean_post_cache',
+			function ( $post_id ) use ( &$cleaned ) {
+				$cleaned[] = $post_id;
+			}
+		);
+
+		$push_syndication_server->pull_content( array( $site_id ) );
+
+		\Syndication_Mock_Client::set_posts( array() );
+
+		$this->assertNotContains( 1, $cleaned );
+	}
+
+	/**
 	 * Upgrading from before 2.2.3 drops the stored site objects and refreshes the jobs.
 	 */
 	public function test_upgrade_clears_stored_site_objects_and_refreshes_jobs(): void {

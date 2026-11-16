@@ -1771,7 +1771,9 @@ class WP_Push_Syndication_Server {
 
 						do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
 
-						$updated_post_ids[] = (int) $result;
+						if ( ! is_wp_error( $result ) ) {
+							$updated_post_ids[] = (int) $result;
+						}
 					} else {
 						$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
 						if ( true === $pull_new_shortcircuit ) {
@@ -1794,9 +1796,8 @@ class WP_Push_Syndication_Server {
 						if ( ! is_wp_error( $result ) ) {
 							update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
 							update_post_meta( $result, 'syn_source_site_id', $site_id );
+							$updated_post_ids[] = (int) $result;
 						}
-
-						$updated_post_ids[] = (int) $result;
 					}
 				}
 
