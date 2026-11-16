@@ -167,7 +167,7 @@ class PullPostTargetTest extends WPIntegrationTestCase {
 		$this->pull( array( 'post_type' => $post_type ) );
 
 		$this->assertSame( array(), $this->pulled_posts() );
-		$this->assertContains( 'invalid_post_type', array_column( get_post_meta( $this->site_id, 'syn_log', true ), 'status' ) );
+		$this->assertContains( 'invalid_post_type', array_column( get_post_meta( $this->site_id, '_syn_log', true ), 'status' ) );
 	}
 
 	/**

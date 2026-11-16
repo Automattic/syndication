@@ -211,7 +211,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		Syndication_Logger::log_post_error( $site_id, 'error', 'Second failure' );
 		Syndication_Logger::log_post_error( $site_id, 'error', 'Third failure' );
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertSame( 'Failed to parse feed at C:\\feeds\\a.xml', $log[0]['message'] );
 	}
 
@@ -225,7 +225,7 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		Syndication_Logger::log_post_success( $site_id, 'ok', 'Pushed' );
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertSame( 'success', $log[0]['msg_type'] );
 	}
 
@@ -386,7 +386,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		);
 		Syndication_Logger::log_post_info( $site_id, 'fetch_feed', 'Logged at info level' );
 
-		$this->assertSame( 'Logged at info level', get_post_meta( $site_id, 'syn_log', true )[0]['message'] );
+		$this->assertSame( 'Logged at info level', get_post_meta( $site_id, '_syn_log', true )[0]['message'] );
 
 		add_filter(
 			'syn_pre_debug_level',
@@ -397,7 +397,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		);
 		Syndication_Logger::log_post_info( $site_id, 'fetch_feed', 'Not logged at default level' );
 
-		$this->assertCount( 1, get_post_meta( $site_id, 'syn_log', true ) );
+		$this->assertCount( 1, get_post_meta( $site_id, '_syn_log', true ) );
 	}
 
 	/**
