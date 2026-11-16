@@ -31,6 +31,13 @@ foreach ( $argv_local as $arg ) {
 	}
 }
 
+// A test run in a separate process gets no --testsuite argument, so pass the suite on to it.
+if ( '' === $testsuite ) {
+	$testsuite = (string) getenv( 'SYNDICATION_TESTSUITE' );
+} else {
+	putenv( 'SYNDICATION_TESTSUITE=' . $testsuite ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_putenv
+}
+
 $is_unit        = 'Unit' === $testsuite;
 $is_integration = 'integration' === $testsuite;
 
