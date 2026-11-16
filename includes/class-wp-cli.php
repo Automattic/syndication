@@ -159,6 +159,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please select a valid site.' );
 		}
 
+		if ( 'on' !== get_post_meta( $site_id, 'syn_site_enabled', true ) ) {
+			/* translators: %d: site ID. */
+			WP_CLI::warning( sprintf( __( 'Site %d is disabled; nothing to pull.', 'push-syndication' ), $site_id ) );
+			return;
+		}
+
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
 
@@ -197,8 +203,20 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please specify a valid sitegroup' );
 		}
 
+		if ( ! get_term_by( 'slug', $sitegroup, 'syn_sitegroup' ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::error( sprintf( __( 'Sitegroup "%s" does not exist.', 'push-syndication' ), $sitegroup ) );
+		}
+
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_sitegroup( $sitegroup );
+
+		// pull_content() treats an empty list as "every scheduled site", so stop here.
+		if ( empty( $sites ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::warning( sprintf( __( 'Sitegroup "%s" has no sites; nothing to pull.', 'push-syndication' ), $sitegroup ) );
+			return;
+		}
 
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
@@ -235,6 +253,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_new_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to add post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- New post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
@@ -244,6 +268,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_edit_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to update post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
