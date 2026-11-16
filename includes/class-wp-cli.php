@@ -224,6 +224,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_push_new_post',
 			function ( $result, $post_ID, $site, $transport_type, $client, $info ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: site title, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to add remote post on %1$s: %2$s', 'push-syndication' ), $site->post_title, $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
 			},
 			10,
@@ -233,6 +239,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_push_edit_post',
 			function ( $result, $post_ID, $site, $transport_type, $client, $info ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: site title, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to update remote post on %1$s: %2$s', 'push-syndication' ), $site->post_title, $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
 			},
 			10,

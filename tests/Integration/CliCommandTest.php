@@ -103,4 +103,43 @@ class CliCommandTest extends WPIntegrationTestCase {
 		$this->assertStringContainsString( "Post {$last_unsyndicated} ", $warnings );
 		$this->assertContains( "Processing post_id #{$syndicated} (" . get_the_title( $syndicated ) . ')', WP_CLI::messages( 'log' ) );
 	}
+
+	/**
+	 * A failed push of a new post is reported, not logged as a success.
+	 *
+	 * @covers ::push_post
+	 */
+	public function test_push_post_reports_failed_new_post(): void {
+		list( $post_id ) = $this->create_post_with_failing_site( 'Failing site' );
+
+		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
+
+		$this->assertSame(
+			array( '-- Failed to add remote post on Failing site: Remote site rejected the post' ),
+			WP_CLI::messages( 'warning' )
+		);
+		foreach ( WP_CLI::messages( 'log' ) as $line ) {
+			$this->assertStringNotContainsString( 'Added remote post', $line );
+		}
+	}
+
+	/**
+	 * A failed update of a previously pushed post is reported, not logged as a success.
+	 *
+	 * @covers ::push_post
+	 */
+	public function test_push_post_reports_failed_edit_post(): void {
+		list( $post_id, $site_id ) = $this->create_post_with_failing_site( 'Failing site' );
+		update_post_meta( $post_id, '_syn_slave_post_states', array( 'success' => array( $site_id => array( 'ext_ID' => 42 ) ) ) );
+
+		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
+
+		$this->assertSame(
+			array( '-- Failed to update remote post on Failing site: Remote site rejected the update' ),
+			WP_CLI::messages( 'warning' )
+		);
+		foreach ( WP_CLI::messages( 'log' ) as $line ) {
+			$this->assertStringNotContainsString( 'Updated remote post', $line );
+		}
+	}
 }
