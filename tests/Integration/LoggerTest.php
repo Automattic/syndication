@@ -296,4 +296,147 @@ class LoggerTest extends WPIntegrationTestCase {
 		Syndication_Logger::log_post_error( $post_id, 'error', 'still logging' );
 		$this->assertNotEmpty( get_post_meta( $post_id, 'syn_log', true ) );
 	}
+
+	/**
+	 * The debug level filter is read when logging, so a theme or later plugin can set it.
+	 *
+	 * @covers Syndication_Logger::log_post_info
+	 */
+	public function test_debug_level_filter_added_after_load_is_honored(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_filter(
+			'syn_pre_debug_level',
+			static function () {
+				return 'info';
+			}
+		);
+		Syndication_Logger::log_post_info( $site_id, 'fetch_feed', 'Logged at info level' );
+
+		$this->assertSame( 'Logged at info level', get_post_meta( $site_id, 'syn_log', true )[0]['message'] );
+
+		add_filter(
+			'syn_pre_debug_level',
+			static function () {
+				return 'default';
+			},
+			20
+		);
+		Syndication_Logger::log_post_info( $site_id, 'fetch_feed', 'Not logged at default level' );
+
+		$this->assertCount( 1, get_post_meta( $site_id, 'syn_log', true ) );
+	}
+
+	/**
+	 * The PHP error logging filter is read when logging, so a theme or later plugin can set it.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_php_error_logging_filter_added_after_load_is_honored(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_filter( 'syn_use_php_error_logging', '__return_true' );
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_error( $site_id, 'error', 'Sent to the PHP error log' );
+			}
+		);
+
+		$this->assertStringContainsString( "SYN_ERROR:post,{$site_id},error,Sent to the PHP error log", $output );
+	}
+
+	/**
+	 * Returning false from the PHP error logging filter turns it off, even under WP_DEBUG.
+	 *
+	 * WP_DEBUG is a constant, so the test can't switch it on. Instead it checks that the
+	 * filter's default is distinct from false, which is what lets false mean "off".
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_php_error_logging_filter_false_turns_it_off(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$default = 'unset';
+
+		add_filter(
+			'syn_use_php_error_logging',
+			static function ( $value ) use ( &$default ) {
+				$default = $value;
+				return false;
+			}
+		);
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_error( $site_id, 'error', 'Not sent to the PHP error log' );
+			}
+		);
+
+		$this->assertNull( $default );
+		$this->assertSame( '', $output );
+	}
+
+	/**
+	 * With no filter, PHP error logging follows WP_DEBUG.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_php_error_logging_follows_wp_debug_by_default(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_error( $site_id, 'error', 'Maybe sent to the PHP error log' );
+			}
+		);
+
+		$this->assertSame( defined( 'WP_DEBUG' ) && WP_DEBUG, '' !== $output );
+	}
+
+	/**
+	 * An entry without a status or message is still formatted for the PHP error log.
+	 *
+	 * @covers Syndication_Logger::log_post_info
+	 */
+	public function test_php_error_log_line_tolerates_missing_status_and_message(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_filter( 'syn_use_php_error_logging', '__return_true' );
+		add_filter(
+			'syn_pre_debug_level',
+			static function () {
+				return 'info';
+			}
+		);
+
+		$output = $this->capture_error_log(
+			static function () use ( $site_id ) {
+				Syndication_Logger::log_post_info( $site_id );
+			}
+		);
+
+		$this->assertStringContainsString( "SYN_INFO:post,{$site_id},\n", $output );
+	}
+
+	/**
+	 * Run a callback with the PHP error log redirected to a temporary file.
+	 *
+	 * @param callable $callback Code that may write to the error log.
+	 * @return string What was written to the error log.
+	 */
+	private function capture_error_log( callable $callback ): string {
+		$log_file     = wp_tempnam( 'syn-error-log' );
+		$original_log = ini_set( 'error_log', $log_file );
+
+		try {
+			$callback();
+		} finally {
+			ini_set( 'error_log', $original_log );
+		}
+
+		$output = (string) file_get_contents( $log_file );
+		unlink( $log_file );
+
+		return $output;
+	}
 }
