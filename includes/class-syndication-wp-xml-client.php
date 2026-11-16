@@ -833,10 +833,20 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<script>
 			jQuery( document ).ready( function ( $ ) {
-				$( '.syn-pull-xpath-delete' ).on( 'click', function ( e ) {
+				// Delegated, so rows added with Add new can be deleted too.
+				$( document ).on( 'click', '.syn-pull-xpath-delete', function ( e ) {
+					var $row = $( this ).closest( '.syn-xml-client-xpath-form' );
+
 					e.preventDefault();
 
-					$( this ).closest( '.syn-xml-client-xpath-form' ).remove();
+					// Add new copies the last row, so always keep one: empty it instead.
+					if ( 1 === $( '.syn-xml-client-xpath-form' ).length ) {
+						$row.find( 'input[type="text"]' ).val( '' );
+						$row.find( 'input[type="checkbox"]' ).prop( 'checked', false );
+						return;
+					}
+
+					$row.remove();
 				} );
 
 				$( '.syn-pull-xpath-add-new' ).on( 'click', function ( e ) {
