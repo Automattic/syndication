@@ -1220,10 +1220,17 @@ class WP_Push_Syndication_Server {
 					do_action( 'syn_post_push_delete_post', $result, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
 					if ( is_wp_error( $result ) ) {
-						$slave_post_states['remove-error'][ $site->ID ] = $result;
-						$this->update_slave_post_states( $post_ID, $slave_post_states );
+						// Keep the remote ID, so the next push can retry the removal.
+						$slave_post_states['remove-error'][ $site->ID ] = array(
+							'error'  => $result,
+							'ext_ID' => (int) $info['ext_ID'],
+						);
 					}
+				} else {
+					// Nothing is left to remove, so forget any earlier failure.
+					unset( $slave_post_states['remove-error'][ $site->ID ] );
 				}
+				$this->update_slave_post_states( $post_ID, $slave_post_states );
 			}
 		}
 
@@ -1282,6 +1289,19 @@ class WP_Push_Syndication_Server {
 						$data['removed_sites'][] = $site;
 						$listed_site_ids[]       = $site->ID;
 					}
+				}
+			}
+		}
+
+		// Retry removals that failed on an earlier push, as their sitegroups are no longer in the diff.
+		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
+		if ( ! empty( $slave_post_states['remove-error'] ) ) {
+			$listed_site_ids = wp_list_pluck( array_merge( $data['selected_sites'], $data['removed_sites'] ), 'ID' );
+
+			foreach ( array_keys( $slave_post_states['remove-error'] ) as $site_id ) {
+				$site = get_post( $site_id );
+				if ( $site && ! in_array( $site->ID, $listed_site_ids, true ) && 'on' === get_post_meta( $site->ID, 'syn_site_enabled', true ) ) {
+					$data['removed_sites'][] = $site;
 				}
 			}
 		}

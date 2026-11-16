@@ -9,6 +9,7 @@ namespace Automattic\Syndication\Tests;
 
 use RuntimeException;
 use Syndication_Recording_Client;
+use WP_Error;
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 
 require_once __DIR__ . '/Syndication_Recording_Client.php';
@@ -146,5 +147,47 @@ class PushContentTest extends WPIntegrationTestCase {
 		$push_syndication_server->delete_content( $post_id );
 
 		$this->assertCount( 1, Syndication_Recording_Client::calls_to( 'delete_post' ) );
+	}
+
+	/**
+	 * A removal that fails keeps the remote ID and is retried on the next push.
+	 *
+	 * @covers WP_Push_Syndication_Server::get_sites_by_post_ID
+	 */
+	public function test_a_failed_removal_is_retried_on_the_next_push(): void {
+		global $push_syndication_server;
+
+		self::factory()->term->create(
+			array(
+				'taxonomy' => 'syn_sitegroup',
+				'slug'     => 'group-a',
+				'name'     => 'Group A',
+			)
+		);
+		$site_id = $this->create_site( 'Recording', 'group-a' );
+		$post_id = self::factory()->post->create();
+
+		// Pushed to group-a, which has since been unticked.
+		update_post_meta( $post_id, '_syn_old_sitegroups', array( 'group-a' ) );
+		update_post_meta( $post_id, '_syn_selected_sitegroups', array() );
+		update_post_meta( $post_id, '_syn_slave_post_states', array( 'success' => array( $site_id => array( 'ext_ID' => 77 ) ) ) );
+
+		Syndication_Recording_Client::$results['delete_post'] = new WP_Error( 'delete-failed', 'Nope' );
+		$push_syndication_server->push_content( $push_syndication_server->get_sites_by_post_ID( $post_id ) );
+
+		$states = get_post_meta( $post_id, '_syn_slave_post_states', true );
+		$this->assertSame( 77, $states['remove-error'][ $site_id ]['ext_ID'] );
+
+		// The next push retries the removal, and it succeeds.
+		Syndication_Recording_Client::reset();
+		$sites = $push_syndication_server->get_sites_by_post_ID( $post_id );
+		$this->assertSame( array( $site_id ), wp_list_pluck( $sites['removed_sites'], 'ID' ) );
+
+		$push_syndication_server->push_content( $sites );
+		$this->assertSame( array( array( 'delete_post', $site_id, array( 77 ) ) ), Syndication_Recording_Client::calls_to( 'delete_post' ) );
+
+		// Once removed, there is nothing left to retry.
+		$sites = $push_syndication_server->get_sites_by_post_ID( $post_id );
+		$this->assertSame( array(), $sites['removed_sites'] );
 	}
 }
