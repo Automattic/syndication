@@ -2067,6 +2067,41 @@ class WP_Push_Syndication_Server {
 			$this->schedule_deferred_pull_jobs_refresh();
 		}
 
+		// Upgrade to 2.2.3: keep site logs under protected meta keys.
+		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+			$this->upgrade_log_meta_keys();
+		}
+
 		update_option( 'syn_version', SYNDICATION_VERSION );
+	}
+
+	/**
+	 * Move each site's log from the unprotected syn_log meta keys to protected _syn_log keys.
+	 *
+	 * A site that has logged since the update already has the new key, which the logger
+	 * seeded from the old one, so for that site the old key is simply removed.
+	 */
+	private function upgrade_log_meta_keys() {
+		global $wpdb;
+
+		$meta_keys = array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off upgrade query.
+		$site_ids = $wpdb->get_col( "SELECT DISTINCT pm.post_id FROM $wpdb->postmeta pm INNER JOIN $wpdb->posts p ON p.ID = pm.post_id WHERE pm.meta_key IN ( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) AND p.post_type = 'syn_site'" );
+
+		foreach ( $site_ids as $site_id ) {
+			foreach ( $meta_keys as $meta_key ) {
+				if ( ! metadata_exists( 'post', $site_id, $meta_key ) ) {
+					continue;
+				}
+
+				if ( ! metadata_exists( 'post', $site_id, '_' . $meta_key ) ) {
+					// update_post_meta() unslashes its value, so slash it to keep any backslashes in the log.
+					update_post_meta( $site_id, '_' . $meta_key, wp_slash( get_post_meta( $site_id, $meta_key, true ) ) );
+				}
+
+				delete_post_meta( $site_id, $meta_key );
+			}
+		}
 	}
 }

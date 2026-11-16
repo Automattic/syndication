@@ -47,7 +47,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		);
 
 		// Verify the log was stored.
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertIsArray( $log );
 		$this->assertNotEmpty( $log );
 	}
@@ -84,7 +84,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		);
 
 		// Verify both logs exist.
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertIsArray( $log );
 		$this->assertCount( 2, $log );
 	}
@@ -110,12 +110,12 @@ class LoggerTest extends WPIntegrationTestCase {
 			array()
 		);
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertIsArray( $log );
 		$this->assertNotEmpty( $log );
 
 		// Error count should be tracked.
-		$errors = get_post_meta( $site_id, 'syn_log_errors', true );
+		$errors = get_post_meta( $site_id, '_syn_log_errors', true );
 		$this->assertEquals( 1, (int) $errors );
 	}
 
@@ -130,7 +130,7 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		do_action( 'syn_post_push_new_post', 456, $post_id, get_post( $site_id ), 'WP_XMLRPC', null, array() );
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertSame( 'success', $log[0]['msg_type'] );
 		$this->assertSame( get_the_guid( $post_id ) . ',456', $log[0]['message'] );
 	}
@@ -146,7 +146,7 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		do_action( 'syn_post_push_delete_post', true, 789, $post_id, $site_id, 'WP_XMLRPC', null );
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertSame( 'success', $log[0]['msg_type'] );
 		$this->assertSame( 'delete', $log[0]['status'] );
 	}
@@ -162,9 +162,9 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		do_action( 'syn_post_push_delete_post', false, 789, $post_id, $site_id, 'WP_XMLRPC', null );
 
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		$this->assertSame( 'error', $log[0]['msg_type'] );
-		$this->assertSame( 1, (int) get_post_meta( $site_id, 'syn_log_errors', true ) );
+		$this->assertSame( 1, (int) get_post_meta( $site_id, '_syn_log_errors', true ) );
 	}
 
 	/**
@@ -232,8 +232,8 @@ class LoggerTest extends WPIntegrationTestCase {
 	/**
 	 * Test that a stored value the plugin did not write is not turned into an object.
 	 *
-	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be
-	 * well-formed log data. Some values are stored verbatim rather than re-serialized,
+	 * The log was kept under an unprotected meta key before 2.2.3, so its contents cannot
+	 * be assumed to be well-formed log data. Some values are stored verbatim rather than re-serialized,
 	 * and reading one back must yield an array, never an object graph.
 	 *
 	 * @covers Syndication_Logger::get_messages
@@ -244,10 +244,10 @@ class LoggerTest extends WPIntegrationTestCase {
 		$inner   = 'x:i:0;a:1:{i:0;s:3:"pwn";};m:a:0:{}';
 		$payload = 'C:11:"ArrayObject":' . strlen( $inner ) . ':{' . $inner . '}';
 
-		add_post_meta( $post_id, 'syn_log', $payload );
+		add_post_meta( $post_id, '_syn_log', $payload );
 
 		// Confirm the value was stored verbatim rather than re-serialized on the way in.
-		$this->assertSame( $payload, get_post_meta( $post_id, 'syn_log', true ) );
+		$this->assertSame( $payload, get_post_meta( $post_id, '_syn_log', true ) );
 
 		$log_entries = Syndication_Logger::get_messages();
 
@@ -274,6 +274,66 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * The log is kept under protected meta keys, which core's Custom Fields UI won't write.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_log_is_stored_under_protected_meta_keys(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Failed' );
+
+		foreach ( array( '_syn_log', '_syn_log_errors', '_syn_log_errors_overall' ) as $meta_key ) {
+			$this->assertTrue( is_protected_meta( $meta_key, 'post' ), $meta_key );
+			$this->assertTrue( metadata_exists( 'post', $site_id, $meta_key ), $meta_key );
+			$this->assertFalse( metadata_exists( 'post', $site_id, substr( $meta_key, 1 ) ), $meta_key );
+		}
+	}
+
+	/**
+	 * Logging before the upgrade routine has run carries the existing history forward.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_logging_before_the_upgrade_carries_old_history_forward(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_post_meta( $site_id, 'syn_log', array( array( 'msg_type' => 'error', 'message' => 'Before the update' ) ) );
+		add_post_meta( $site_id, 'syn_log_errors', 2 );
+		add_post_meta( $site_id, 'syn_log_errors_overall', 5 );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'After the update' );
+
+		$log = get_post_meta( $site_id, '_syn_log', true );
+		$this->assertSame( array( 'Before the update', 'After the update' ), wp_list_pluck( $log, 'message' ) );
+		$this->assertSame( 3, (int) get_post_meta( $site_id, '_syn_log_errors', true ) );
+		$this->assertSame( 6, (int) get_post_meta( $site_id, '_syn_log_errors_overall', true ) );
+	}
+
+	/**
+	 * Logs not yet moved by the upgrade routine are still shown, without duplicating newer ones.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_reads_logs_not_yet_upgraded(): void {
+		$old_site_id  = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$both_site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		add_post_meta( $old_site_id, 'syn_log', array( array( 'object_type' => 'post', 'message' => 'Old key only' ) ) );
+		add_post_meta( $both_site_id, '_syn_log', array( array( 'object_type' => 'post', 'message' => 'New key' ) ) );
+		add_post_meta( $both_site_id, 'syn_log', array( array( 'object_type' => 'post', 'message' => 'Stale old key' ) ) );
+
+		$log_entries = Syndication_Logger::get_messages();
+
+		$this->assertSame( array( 'Old key only' ), wp_list_pluck( $log_entries[ $old_site_id ], 'message' ) );
+		$this->assertSame( array( 'New key' ), wp_list_pluck( $log_entries[ $both_site_id ], 'message' ) );
+
+		$log_entries = Syndication_Logger::get_messages( null, null, $old_site_id );
+
+		$this->assertSame( array( 'Old key only' ), wp_list_pluck( $log_entries[ $old_site_id ], 'message' ) );
+	}
+
+	/**
 	 * The log meta keys must not be writable through capability-checked paths.
 	 *
 	 * This is what keeps them out of the Custom Fields panel, the add/delete meta
@@ -295,7 +355,7 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		$post_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
 
-		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+		foreach ( array( '_syn_log', '_syn_log_errors', '_syn_log_errors_overall', 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
 			$this->assertFalse( current_user_can( 'add_post_meta', $post_id, $meta_key ), $meta_key );
 			$this->assertFalse( current_user_can( 'edit_post_meta', $post_id, $meta_key ), $meta_key );
 			$this->assertFalse( current_user_can( 'delete_post_meta', $post_id, $meta_key ), $meta_key );
@@ -307,7 +367,7 @@ class LoggerTest extends WPIntegrationTestCase {
 		// The logger writes via update_post_meta(), which does not consult the auth
 		// callback, so normal logging is unaffected.
 		Syndication_Logger::log_post_error( $post_id, 'error', 'still logging' );
-		$this->assertNotEmpty( get_post_meta( $post_id, 'syn_log', true ) );
+		$this->assertNotEmpty( get_post_meta( $post_id, '_syn_log', true ) );
 	}
 
 	/**
