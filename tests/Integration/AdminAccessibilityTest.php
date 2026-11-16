@@ -24,6 +24,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers Syndication_WP_REST_Client::display_settings
  * @covers Syndication_WP_XMLRPC_Client::display_settings
  * @covers WP_Push_Syndication_Server::get_api_token
+ * @covers WP_Push_Syndication_Server::display_syndicate_settings
+ * @covers WP_Push_Syndication_Server::display_apitoken_description
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -374,5 +376,31 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 		// Meta box titles are h2s, so a heading inside the Site Settings box is an h3.
 		$this->assertSame( 0, $xpath->query( '//h1 | //h2' )->length );
 		$this->assertSame( 1, $xpath->query( '//h3[normalize-space()="XPath-to-Data Mapping"]' )->length );
+	}
+
+	/**
+	 * The settings screen's markup is well formed, with no id used twice.
+	 */
+	public function test_settings_screen_markup_is_well_formed(): void {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		ob_start();
+		$this->server()->display_syndicate_settings();
+		$html = ob_get_clean();
+
+		$dom = new \DOMDocument();
+		libxml_use_internal_errors( true );
+		$dom->loadHTML( '<?xml encoding="utf-8"?>' . $html );
+		$errors = array_map(
+			function ( $error ) {
+				return trim( $error->message );
+			},
+			libxml_get_errors()
+		);
+		libxml_clear_errors();
+
+		// libxml doesn't know HTML5 elements, so only count the errors that mean broken markup.
+		$this->assertSame( array(), preg_grep( '/^(Unexpected end tag|ID .* already defined|Opening and ending tag mismatch)/', $errors ) );
 	}
 }

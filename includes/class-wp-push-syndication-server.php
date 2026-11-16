@@ -410,7 +410,7 @@ class WP_Push_Syndication_Server {
 
 				<?php do_settings_sections( 'push_syndicate_pull_options' ); ?>
 
-				<?php submit_button( __( 'Pull Now', 'push-syndication' ) ); ?>
+				<?php submit_button( __( 'Pull Now', 'push-syndication' ), 'primary', 'submit', true, array( 'id' => 'syn-pull-now' ) ); ?>
 
 				<?php do_settings_sections( 'push_syndicate_post_types' ); ?>
 
@@ -569,7 +569,7 @@ class WP_Push_Syndication_Server {
 			array( 'a' => array( 'href' => array() ) )
 		) . '</p>';
 		echo '<p>' . esc_html__( 'Enter the Redirect URI as follows', 'push-syndication' ) . '</p>';
-		echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</p></b>';
+		echo '<p><b>' . esc_html( menu_page_url( 'push-syndicate-settings', false ) ) . '</b></p>';
 	}
 
 	public function display_client_id() {
