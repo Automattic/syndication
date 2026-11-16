@@ -13,6 +13,8 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * Class PullMetaKeyGuardTest
  *
  * @covers Syndication_WP_XML_Client::is_allowed_meta_key
+ * @covers Syndication_WP_XML_Client::save_settings
+ * @covers Syndication_WP_XML_Client::display_settings
  * @covers Syndication_WP_XML_Client::save_meta
  * @covers Syndication_WP_XML_Client::update_meta
  * @covers Syndication_WP_RSS_Client::save_meta
@@ -59,6 +61,72 @@ class PullMetaKeyGuardTest extends WPIntegrationTestCase {
 	public function test_ordinary_keys_are_allowed(): void {
 		$this->assertTrue( \Syndication_WP_XML_Client::is_allowed_meta_key( 'source_byline' ) );
 		$this->assertTrue( \Syndication_WP_XML_Client::is_allowed_meta_key( 'synopsis' ) );
+	}
+
+	/**
+	 * Saving the node config drops rows that target a disallowed key, and the form reports them.
+	 */
+	public function test_save_settings_rejects_disallowed_keys_and_reports_them(): void {
+		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		$_POST = array(
+			'feed_url'               => 'https://example.com/feed.xml',
+			'default_post_type'      => 'post',
+			'default_post_status'    => 'draft',
+			'default_comment_status' => 'closed',
+			'default_ping_status'    => 'closed',
+			'id_field'               => 'guid',
+			'enc_field'              => '_syn_slave_post_states',
+			'namespace'              => '',
+			'post_root'              => '//item',
+			'enc_parent'             => '',
+			'categories'             => array(),
+			'node'                   => array(
+				array(
+					'xpath'   => 'byline',
+					'is_item' => 'true',
+					'is_meta' => 'true',
+					'field'   => 'source_byline',
+				),
+				array(
+					'xpath'   => 'image',
+					'is_item' => 'true',
+					'is_meta' => 'true',
+					'field'   => '_thumbnail_id',
+				),
+				array(
+					'xpath'   => 'log',
+					'is_item' => 'true',
+					'is_meta' => 'true',
+					'field'   => 'syn_log',
+				),
+				array(
+					'xpath'   => 'title',
+					'is_item' => 'true',
+					'field'   => 'post_title',
+				),
+			),
+		);
+
+		\Syndication_WP_XML_Client::save_settings( $site_id );
+
+		$this->assertSame( '', get_post_meta( $site_id, 'syn_enc_field', true ) );
+
+		$nodes = get_post_meta( $site_id, 'syn_node_config', true )['nodes'];
+		$this->assertSame( array( 'byline', 'title' ), array_keys( $nodes ) );
+		$this->assertSame( 'source_byline', $nodes['byline'][0]['field'] );
+
+		ob_start();
+		\Syndication_WP_XML_Client::display_settings( get_post( $site_id ) );
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( '_syn_slave_post_states, _thumbnail_id, syn_log', $html );
+
+		ob_start();
+		\Syndication_WP_XML_Client::display_settings( get_post( $site_id ) );
+		$this->assertStringNotContainsString( '_thumbnail_id', ob_get_clean(), 'The report is shown once.' );
+
+		$_POST = array();
 	}
 
 	/**

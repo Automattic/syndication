@@ -670,6 +670,21 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
 
+		<?php
+		$rejected_keys = get_transient( 'syn_rejected_meta_keys_' . $site->ID );
+		if ( $rejected_keys ) :
+			delete_transient( 'syn_rejected_meta_keys_' . $site->ID );
+			?>
+			<div class="notice notice-error inline">
+				<p>
+					<?php
+					// translators: %s: Comma-separated list of meta keys.
+					echo esc_html( sprintf( __( 'These meta keys were not saved, because they are protected or reserved for Syndication: %s', 'push-syndication' ), implode( ', ', $rejected_keys ) ) );
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
+
 		<p>
 			<?php
 			// translators: 1: Comma-separated list of required field names, 2: The is_permalink field name, 3: The string keyword used to wrap a static value.
@@ -835,7 +850,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_id_field', isset( $_POST['id_field'] ) ? sanitize_text_field( wp_unslash( $_POST['id_field'] ) ) : '' );
-		update_post_meta( $site_ID, 'syn_enc_field', isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '' );
+
+		// Meta keys that the config names but pulled data may not be written to.
+		$rejected_keys = array();
+
+		$enc_field = isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '';
+		if ( '' !== $enc_field && ! self::is_allowed_meta_key( $enc_field ) ) {
+			$rejected_keys[] = $enc_field;
+			$enc_field       = '';
+		}
+		update_post_meta( $site_ID, 'syn_enc_field', $enc_field );
 		update_post_meta( $site_ID, 'syn_enc_is_photo', isset( $_POST['enc_is_photo'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_is_photo'] ) ) : null );
 
 		// Each row is sanitized field by field below.
@@ -864,6 +888,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 					$row_data['field'] = sanitize_text_field( $row['field'] );
 
+					if ( $row_data['is_meta'] && '' !== $row_data['field'] && ! self::is_allowed_meta_key( $row_data['field'] ) ) {
+						$rejected_keys[] = $row_data['field'];
+						continue;
+					}
+
 					if ( ! isset( $custom_nodes[ $xpath ] ) ) {
 						$custom_nodes[ $xpath ] = array();
 					}
@@ -879,6 +908,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$node_config['categories'] = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
 		$node_config['nodes']      = $custom_nodes;
 		update_post_meta( $site_ID, 'syn_node_config', $node_config );
+
+		if ( $rejected_keys ) {
+			set_transient( 'syn_rejected_meta_keys_' . $site_ID, $rejected_keys, 5 * MINUTE_IN_SECONDS );
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 		return true;
 	}
