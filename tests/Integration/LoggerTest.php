@@ -200,6 +200,20 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * log_post_success() is callable statically, like its error and info siblings.
+	 *
+	 * @covers Syndication_Logger::log_post_success
+	 */
+	public function test_log_post_success_can_be_called_statically(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_success( $site_id, 'ok', 'Pushed' );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'success', $log[0]['msg_type'] );
+	}
+
+	/**
 	 * Test that a stored value the plugin did not write is not turned into an object.
 	 *
 	 * `syn_log` is an unprotected meta key, so its contents cannot be assumed to be

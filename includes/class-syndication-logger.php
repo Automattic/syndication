@@ -266,7 +266,7 @@ class Syndication_Logger {
 	 * @param  string $log_time Time of event.
 	 * @param  array  $extra    Additional data.
 	 */
-	public function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
+	public static function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'success', $post_id, $status, $message, $log_time, $extra );
 	}
 
