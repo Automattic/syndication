@@ -1474,6 +1474,65 @@ class WP_Push_Syndication_Server {
 	}
 
 	/**
+	 * Post types that pulled content may be written as.
+	 *
+	 * Types with an admin UI, except core's internal ones (templates, global styles,
+	 * patterns, navigation menus and attachments) and syn_site, which holds the
+	 * plugin's own endpoints.
+	 *
+	 * @return string[] Post type names.
+	 */
+	public static function get_pull_post_types() {
+		$post_types = array_merge(
+			array( 'post', 'page' ),
+			get_post_types(
+				array(
+					'show_ui'  => true,
+					'_builtin' => false,
+				)
+			)
+		);
+
+		/**
+		 * Filters the post types that pulled content may be written as.
+		 *
+		 * @param string[] $post_types Post type names.
+		 */
+		return (array) apply_filters( 'syndication_pull_post_types', array_values( array_diff( $post_types, array( 'syn_site' ) ) ) );
+	}
+
+	/**
+	 * Whether a pulled post may be written with its post type, logging an error if not.
+	 *
+	 * @param array $post    Post data for wp_insert_post() or wp_update_post().
+	 * @param int   $site_id The site post pulled from.
+	 * @return bool
+	 */
+	private function is_pull_post_type_allowed( $post, $site_id ) {
+		if ( ! empty( $post['post_type'] ) ) {
+			$post_type = $post['post_type'];
+		} else {
+			// Mirror the type core will use: the existing post's on update, otherwise 'post'.
+			$post_type = empty( $post['ID'] ) ? 'post' : get_post_type( $post['ID'] );
+		}
+
+		if ( in_array( $post_type, self::get_pull_post_types(), true ) ) {
+			return true;
+		}
+
+		Syndication_Logger::log_post_error(
+			$site_id,
+			'invalid_post_type',
+			// translators: %s: Post type name.
+			sprintf( __( 'skipping post with disallowed post type %s', 'push-syndication' ), $post_type ),
+			null,
+			array( 'post' => $post )
+		);
+
+		return false;
+	}
+
+	/**
 	 * Check if the current user has syndication capability.
 	 *
 	 * @return bool Whether the current user can syndicate.
@@ -1645,6 +1704,10 @@ class WP_Push_Syndication_Server {
 
 						$post = apply_filters( 'syn_pull_edit_post', $post, $site, $client );
 
+						if ( ! $this->is_pull_post_type_allowed( $post, $site_id ) ) {
+							continue;
+						}
+
 						$result = wp_update_post( $post, true );
 
 						do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
@@ -1660,6 +1723,10 @@ class WP_Push_Syndication_Server {
 
 						// Pulled data must not pick the local post: an ID would overwrite an existing one.
 						unset( $post['ID'], $post['import_id'] );
+
+						if ( ! $this->is_pull_post_type_allowed( $post, $site_id ) ) {
+							continue;
+						}
 
 						$result = wp_insert_post( $post, true );
 

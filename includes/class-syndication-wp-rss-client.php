@@ -191,7 +191,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 			<?php
 
-			$post_types = get_post_types();
+			$post_types = WP_Push_Syndication_Server::get_pull_post_types();
 
 			foreach ( $post_types as $post_type ) {
 				echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $default_post_type ) . '>' . esc_html( $post_type ) . '</option>';

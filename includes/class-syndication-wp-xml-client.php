@@ -564,7 +564,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		<p>
 			<select name="default_post_type" id="default_post_type">
 			<?php
-			$post_types = get_post_types();
+			$post_types = WP_Push_Syndication_Server::get_pull_post_types();
 
 			foreach ( $post_types as $post_type ) {
 				?>
