@@ -17,6 +17,15 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 class PullContentTest extends WPIntegrationTestCase {
 
 	/**
+	 * Clear the mock feed.
+	 */
+	public function tear_down(): void {
+		\Syndication_Mock_Client::set_posts( array() );
+
+		parent::tear_down();
+	}
+
+	/**
 	 * Test that pull_content handles non-array posts without PHP warnings.
 	 *
 	 * This tests the fix for PHP warnings that occurred when a client's

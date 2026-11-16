@@ -29,6 +29,18 @@ class Syndication_Logger_Admin_Notice {
 	}
 
 	/**
+	 * Get a notices option as an array, even before anything has been saved to it.
+	 *
+	 * @param string $option Option name.
+	 * @return array The option value, or an empty array.
+	 */
+	private static function get_array_option( $option ) {
+		$value = get_option( $option, array() );
+
+		return is_array( $value ) ? $value : array();
+	}
+
+	/**
 	 * Create a admin notice
 	 *
 	 * @param string  $message_text       The message you would like to show.
@@ -37,11 +49,11 @@ class Syndication_Logger_Admin_Notice {
 	 * @param boolean $summarize_multiple Setting this to true allows summarizing messages of the same message_type into one message. The message text is then passed through the syn_message_text_multiple filter and all messages of this type can be dismissed at once.
 	 */
 	public static function add_notice( $message_text, $message_type = 'Syndication', $class = 'updated', $summarize_multiple = false ) {
-		$notices = get_option( self::$notice_option );
+		$notices = self::get_array_option( self::$notice_option );
 
 		$changed     = false;
 		$message_key = md5( $message_type . $message_text );
-		if ( ! is_array( $notices ) || ! isset( $notices[ $message_type ] ) || ! isset( $notices[ $message_type ][ $message_key ] ) ) {
+		if ( ! isset( $notices[ $message_type ] ) || ! isset( $notices[ $message_type ][ $message_key ] ) ) {
 			$notices[ $message_type ][ $message_key ] = array(
 				'message_text'       => sanitize_text_field( $message_text ),
 				'summarize_multiple' => (bool) $summarize_multiple,
@@ -64,12 +76,12 @@ class Syndication_Logger_Admin_Notice {
 	public static function display_valid_notices() {
 		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' );
 
-		$messages               = get_option( self::$notice_option );
-		$notice_bundles         = get_option( self::$notice_bundles_option );
+		$messages               = self::get_array_option( self::$notice_option );
+		$notice_bundles         = self::get_array_option( self::$notice_bundles_option );
 		$messages_to_display    = array();
 		$notice_bundles_changed = false;
 
-		if ( ! is_array( $messages ) || empty( $messages ) ) {
+		if ( empty( $messages ) ) {
 			return;
 		}
 
@@ -141,12 +153,12 @@ class Syndication_Logger_Admin_Notice {
 		// Add nonce.
 		if ( isset( $_GET[ self::$dismiss_parameter ] ) && current_user_can( $capability ) ) {
 			$dismiss_key   = esc_attr( $_GET[ self::$dismiss_parameter ] );
-			$dismiss_nonce = esc_attr( $_GET['syn_dismiss_nonce'] );
+			$dismiss_nonce = isset( $_GET['syn_dismiss_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['syn_dismiss_nonce'] ) ) : '';
 			if ( ! wp_verify_nonce( $dismiss_nonce, $dismiss_key ) ) {
 				wp_die( esc_html__( 'Invalid security check', 'push-syndication' ) );
 			}
-			$messages       = get_option( self::$notice_option );
-			$notice_bundles = get_option( self::$notice_bundles_option );
+			$messages       = self::get_array_option( self::$notice_option );
+			$notice_bundles = self::get_array_option( self::$notice_bundles_option );
 
 			$dismiss_items = array();
 			if ( isset( $notice_bundles[ $dismiss_key ] ) ) {
@@ -193,6 +205,15 @@ add_action( 'push_syndication_site_disabled', 'syn_add_site_disabled_notice', 10
  * @param int $count   The number of failed pull attempts.
  */
 function syn_add_site_disabled_notice( $site_id, $count ) {
-	// translators: 1: Site post ID, 2: Number of failed pull attempts.
-	Syndication_Logger_Admin_Notice::add_notice( $message_text = sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ), $message_type = 'Syndication site disabled', $class = 'error', $summarize_multiple = false );
+	Syndication_Logger_Admin_Notice::add_notice(
+		sprintf(
+			/* translators: 1: Site post ID, 2: Number of failed pull attempts. */
+			_n( 'Site %1$d disabled after %2$s pull failure.', 'Site %1$d disabled after %2$s pull failures.', (int) $count, 'push-syndication' ),
+			(int) $site_id,
+			number_format_i18n( (int) $count )
+		),
+		__( 'Syndication site disabled', 'push-syndication' ),
+		'error',
+		false
+	);
 }

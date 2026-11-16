@@ -30,20 +30,6 @@ class Syndication_Logger {
 	private $log_entry_limit = 150;
 
 	/**
-	 * Level of information to log. Can be info for all and default for errors/success.
-	 *
-	 * @var string
-	 */
-	private $debug_level = null;
-
-	/**
-	 * If true log messages will also be sent to php error log.
-	 *
-	 * @var boolean
-	 */
-	private $use_php_error_logging = null;
-
-	/**
 	 * Filter variables for retrieving log messages.
 	 *
 	 * @var array
@@ -60,7 +46,7 @@ class Syndication_Logger {
 	/**
 	 * Constructor.
 	 *
-	 * Sets up logging action hooks for syndication events and configures the debug level.
+	 * Sets up logging action hooks for syndication events.
 	 */
 	public function __construct() {
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
@@ -68,28 +54,50 @@ class Syndication_Logger {
 		add_action( 'syn_post_push_delete_post', array( __CLASS__, 'log_delete' ), 10, 6 );
 		add_action( 'syn_post_push_new_post', array( __CLASS__, 'log_new' ), 10, 5 );
 		add_action( 'syn_post_push_edit_post', array( __CLASS__, 'log_update' ), 10, 5 );
+	}
 
+	/**
+	 * Get the level of information to log: info for everything, default for errors and successes.
+	 *
+	 * The logger is set up while the plugin loads, before themes and later plugins, so the
+	 * filter is read each time it's needed rather than once in the constructor.
+	 *
+	 * @return string The debug level.
+	 */
+	private function get_debug_level() {
 		// Allow setting of a debug_level (info || default).
-		$this->debug_level = apply_filters( 'syn_pre_debug_level', false );
+		$debug_level = apply_filters( 'syn_pre_debug_level', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
-		if ( false === $this->debug_level ) {
+		if ( false === $debug_level ) {
 			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->debug_level = 'info';    // Log everything.
+				$debug_level = 'info';    // Log everything.
 			} else {
-				$this->debug_level = 'default'; // Log only errors + success.
+				$debug_level = 'default'; // Log only errors + success.
 			}
 		}
 
-		// Allow setting of use_php_error_logging.
-		$this->use_php_error_logging = apply_filters( 'syn_use_php_error_logging', false );
+		return $debug_level;
+	}
 
-		if ( false === $this->use_php_error_logging ) {
-			if ( defined( 'WP_DEBUG' ) && true === WP_DEBUG ) {
-				$this->use_php_error_logging = true;    // Log also with error_log().
-			} else {
-				$this->use_php_error_logging = false;   // Log only in db.
-			}
+	/**
+	 * Whether log messages should also be sent to the PHP error log.
+	 *
+	 * Read each time it's needed, for the same reason as get_debug_level().
+	 *
+	 * @return bool True to also log with error_log().
+	 */
+	private function use_php_error_logging() {
+		/*
+		 * Allow setting of use_php_error_logging. The default is null rather than false, so
+		 * that returning false turns PHP error logging off even when WP_DEBUG is on.
+		 */
+		$use_php_error_logging = apply_filters( 'syn_use_php_error_logging', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+
+		if ( null === $use_php_error_logging ) {
+			return defined( 'WP_DEBUG' ) && true === WP_DEBUG;
 		}
+
+		return true === $use_php_error_logging;
 	}
 
 	/**
@@ -112,9 +120,10 @@ class Syndication_Logger {
 	/**
 	 * Register the log meta keys with an auth callback that always denies.
 	 *
-	 * These keys are read back and rendered on the Syndication Logs screen, and
-	 * get_messages() queries them across the whole of postmeta without constraining
-	 * the post type, so their values must not be writable by whoever can edit a post.
+	 * These keys are read back and rendered on the Syndication Logs screen, so their
+	 * values must not be writable by whoever can edit a post. The leading underscore
+	 * already makes the current keys protected; the unprotected keys they replaced in
+	 * 2.3.0 are still read until the upgrade routine has moved them, so stay registered.
 	 *
 	 * map_meta_cap() consults the auth callback for add_post_meta, edit_post_meta and
 	 * delete_post_meta, which keeps the keys out of the Custom Fields panel, the
@@ -126,7 +135,7 @@ class Syndication_Logger {
 	 * actually prevents a planted payload from executing.
 	 */
 	public static function register_log_meta() {
-		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+		foreach ( array( '_syn_log', '_syn_log_errors', '_syn_log_errors_overall', 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
 			register_meta(
 				'post',
 				$meta_key,
@@ -147,6 +156,25 @@ class Syndication_Logger {
 			self::$__instance = new self();
 		}
 		return self::$__instance;
+	}
+
+	/**
+	 * Read one of a site's log meta values.
+	 *
+	 * 2.3.0 moved the log to protected meta keys, and its upgrade routine moves existing
+	 * values across. Until that has run, fall back to the old unprotected key, so that
+	 * logging in the meantime carries the history forward rather than starting afresh.
+	 *
+	 * @param int    $post_id  Post ID the log is attached to.
+	 * @param string $meta_key Protected meta key, such as `_syn_log`.
+	 * @return mixed The meta value, or an empty string when neither key is set.
+	 */
+	private static function get_log_meta( $post_id, $meta_key ) {
+		if ( ! metadata_exists( 'post', $post_id, $meta_key ) ) {
+			$meta_key = substr( $meta_key, 1 );
+		}
+
+		return get_post_meta( $post_id, $meta_key, true );
 	}
 
 
@@ -229,7 +257,10 @@ class Syndication_Logger {
 			'client'         => $client,
 		);
 
-		if ( false == $result || is_wp_error( $result ) ) {
+		if ( true === $result && 'delete' !== $event ) {
+			// The push clients return true, not a remote ID, when a syn_*_push_filter_* callback skipped the post.
+			self::log_post_info( $site_id, 'skip_' . $event, __( 'skipped by a push filter', 'push-syndication' ), $log_time, $extra );
+		} elseif ( false == $result || is_wp_error( $result ) ) {
 			if ( is_wp_error( $result ) ) {
 				$message = $result->get_error_message();
 			} else {
@@ -266,7 +297,7 @@ class Syndication_Logger {
 	 * @param  string $log_time Time of event.
 	 * @param  array  $extra    Additional data.
 	 */
-	public function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
+	public static function log_post_success( $post_id, $status = 'ok', $message = '', $log_time = '', $extra = array() ) {
 		self::instance()->log_post( 'success', $post_id, $status, $message, $log_time, $extra );
 	}
 
@@ -312,7 +343,7 @@ class Syndication_Logger {
 	 */
 	private function log( $storage_type, $msg_type, $object_type, $object_id, $status, $message, $log_time, $extra ) {
 		// Don't log infos depending on debug level.
-		if ( 'info' == $msg_type && 'info' != $this->debug_level ) {
+		if ( 'info' === $msg_type && 'info' !== $this->get_debug_level() ) {
 			return;
 		}
 
@@ -349,7 +380,7 @@ class Syndication_Logger {
 		}
 
 
-		if ( true === $this->use_php_error_logging ) {
+		if ( $this->use_php_error_logging() ) {
 			error_log( $this->format_log_message( $msg_type, $log_entry ) );
 		}
 
@@ -366,7 +397,7 @@ class Syndication_Logger {
 					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
-				$log = get_post_meta( $post->ID, 'syn_log', true );
+				$log = self::get_log_meta( $post->ID, '_syn_log' );
 
 				// When no meta exists, get_post_meta() with $single=true returns ''.
 				// Initialize as empty array for first log entry.
@@ -385,19 +416,20 @@ class Syndication_Logger {
 
 					$log[] = $log_entry;
 				}
-				update_post_meta( $post->ID, 'syn_log', $log );
+				// update_post_meta() unslashes its value, so slash it to keep backslashes in messages.
+				update_post_meta( $post->ID, '_syn_log', wp_slash( $log ) );
 
 				if ( 'success' == $msg_type ) {
-					update_post_meta( $post->ID, 'syn_log_errors', 0 );
+					update_post_meta( $post->ID, '_syn_log_errors', 0 );
 				} elseif ( 'error' == $msg_type ) {
 					// track failures since last success.
-					$errors = get_post_meta( $post->ID, 'syn_log_errors', true );
+					$errors = self::get_log_meta( $post->ID, '_syn_log_errors' );
 					$errors = (int) $errors + 1;
-					update_post_meta( $post->ID, 'syn_log_errors', $errors );
+					update_post_meta( $post->ID, '_syn_log_errors', $errors );
 					// track overall failures.
-					$errors = get_post_meta( $post->ID, 'syn_log_errors_overall', true );
+					$errors = self::get_log_meta( $post->ID, '_syn_log_errors_overall' );
 					$errors = (int) $errors + 1;
-					update_post_meta( $post->ID, 'syn_log_errors_overall', $errors );
+					update_post_meta( $post->ID, '_syn_log_errors_overall', $errors );
 				}
 
 				// @TODO log error counter.
@@ -447,6 +479,14 @@ class Syndication_Logger {
 	 * @return string            Formatted log message
 	 */
 	private function format_log_message( $msg_type, $log_entry ) {
+		// log() leaves out any of these that are empty.
+		$log_entry += array(
+			'object_type' => '',
+			'object_id'   => 0,
+			'status'      => '',
+			'message'     => '',
+		);
+
 		$msg = apply_filters( 'syn_error_log_message_format', sprintf( 'SYN_%s:%s,%d,%s%s', strtoupper( $msg_type ), $log_entry['object_type'], $log_entry['object_id'], $log_entry['status'], $log_entry['message'] ? ',' . $log_entry['message'] : '' ), $msg_type, $log_entry );
 		return $msg;
 	}
@@ -461,7 +501,7 @@ class Syndication_Logger {
 	 * @param  string $status       Status entry.
 	 * @param  string $date_start   Date string for starting date filter.
 	 * @param  string $date_end     Date string for ending date filter.
-	 * @param  string $message      Regular expression for message text matching.
+	 * @param  string $message      Text the message must contain, matched case-insensitively.
 	 * @param  string $storage_type Where the log entry will be stored. Object or option.
 	 * @return array                Array of matching log entries
 	 */
@@ -472,7 +512,9 @@ class Syndication_Logger {
 		if ( 'object' == $storage_type ) {
 			if ( 'post' == $object_type ) {
 				if ( ! empty( $object_id ) ) {
-					$log_entries[ $object_id ] = get_post_meta( $object_id, 'syn_log' );
+					$log = self::get_log_meta( $object_id, '_syn_log' );
+
+					$log_entries[ $object_id ] = is_array( $log ) ? $log : array();
 				} else {
 					global $wpdb;
 					/**
@@ -482,12 +524,25 @@ class Syndication_Logger {
 					 * unnecessary.
 					 *
 					 * @TODO implement walker
+					 *
+					 * Only sites' logs are read: log meta on any other post is not something this plugin
+					 * wrote. Rows are ordered by meta_id alone, and the newest row for a site wins below,
+					 * so the result doesn't depend on how MySQL picks a row within a GROUP BY.
+					 *
+					 * The unprotected `syn_log` key is read too, until the 2.3.0 upgrade routine has moved
+					 * it, but sorts after `_syn_log`: a site that has both has logged since the update,
+					 * and its `_syn_log` already carries the older history forward.
 					 */
-					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // Cache pass (see note above).
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- See note above.
+					$all_log_entries = $wpdb->get_results( "SELECT pm.post_id, pm.meta_value FROM $wpdb->postmeta pm INNER JOIN $wpdb->posts p ON p.ID = pm.post_id WHERE pm.meta_key IN ( '_syn_log', 'syn_log' ) AND p.post_type = 'syn_site' ORDER BY pm.meta_key = 'syn_log', pm.meta_id DESC LIMIT 0, 100" );
 					foreach ( $all_log_entries as $log_entry ) {
+						if ( isset( $log_entries[ $log_entry->post_id ] ) ) {
+							continue;
+						}
+
 						/*
-						 * Never unserialize the raw column directly. `syn_log` is an unprotected meta key,
-						 * so its contents cannot be assumed to be something this plugin wrote.
+						 * Never unserialize the raw column directly. Before 2.3.0 the log was kept under an
+						 * unprotected meta key, so its contents cannot be assumed to be something this plugin wrote.
 						 * `maybe_unserialize()` applies the same gate as every other meta read, and the
 						 * array check discards anything that did not round-trip as a log array.
 						 */
@@ -554,7 +609,7 @@ class Syndication_Logger {
 					}
 					break;
 				case 'message':
-					if ( ! isset( $data['message'] ) || ! preg_match( '#' . preg_quote( $value, '#' ) . '#', $data['message'] ) ) {
+					if ( ! isset( $data['message'] ) || ! preg_match( '#' . preg_quote( $value, '#' ) . '#i', $data['message'] ) ) {
 						return false;
 					}
 					break;

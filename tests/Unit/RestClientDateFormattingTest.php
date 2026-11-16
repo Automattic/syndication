@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for REST client date formatting.
+ * Unit tests for the Syndication_WP_REST_Client formatting helpers.
  *
  * @package Syndication
  */
@@ -9,145 +9,143 @@ declare( strict_types=1 );
 
 namespace Automattic\Syndication\Tests\Unit;
 
-use Brain\Monkey\Functions;
-
 /**
- * Tests for the format_date_for_api method.
+ * Exercises the real private formatting helpers through Reflection.
  *
+ * @covers \Syndication_WP_REST_Client
  * @group unit
  */
 class RestClientDateFormattingTest extends TestCase {
 
 	/**
-	 * Test double instance that replicates the date formatting logic.
+	 * PHP default timezone before each test, restored afterwards.
 	 *
-	 * @var object
+	 * @var string
 	 */
-	private $client;
+	private $original_timezone;
 
 	/**
-	 * Set up test fixtures.
+	 * Load the class under test.
 	 */
-	protected function setUp(): void {
-		parent::setUp();
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-		// Create a test double that replicates the exact method.
-		$this->client = new class() {
-			/**
-			 * Format a MySQL date string for the WordPress.com REST API.
-			 *
-			 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
-			 * @return string Date in ISO 8601 format, or empty string if invalid.
-			 */
-			public function format_date_for_api( $mysql_date ) {
-				if ( empty( $mysql_date ) || '0000-00-00 00:00:00' === $mysql_date ) {
-					return '';
-				}
-
-				return mysql2date( 'c', $mysql_date, false );
-			}
-		};
+		require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-wp-rest-client.php';
 	}
 
 	/**
-	 * Test that empty date returns empty string.
+	 * Run each test in a non-UTC PHP timezone, so nothing can pass by assuming UTC.
 	 */
-	public function test_empty_date_returns_empty_string() {
-		Functions\expect( 'mysql2date' )->never();
+	protected function set_up() {
+		parent::set_up();
 
-		$result = $this->client->format_date_for_api( '' );
-
-		$this->assertSame( '', $result );
+		$this->original_timezone = date_default_timezone_get();
+		date_default_timezone_set( 'America/New_York' ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
 	}
 
 	/**
-	 * Test that null date returns empty string.
+	 * Restore the PHP timezone.
 	 */
-	public function test_null_date_returns_empty_string() {
-		Functions\expect( 'mysql2date' )->never();
+	protected function tear_down() {
+		date_default_timezone_set( $this->original_timezone ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
 
-		$result = $this->client->format_date_for_api( null );
-
-		$this->assertSame( '', $result );
+		parent::tear_down();
 	}
 
 	/**
-	 * Test that zero date returns empty string.
+	 * Call a private method on a client built without its constructor.
+	 *
+	 * @param string $method Method name.
+	 * @param mixed  $arg    Single argument.
+	 * @return mixed
 	 */
-	public function test_zero_date_returns_empty_string() {
-		Functions\expect( 'mysql2date' )->never();
+	private function call( string $method, $arg ) {
+		$class  = new \ReflectionClass( \Syndication_WP_REST_Client::class );
+		$client = $class->newInstanceWithoutConstructor();
+		$method = $class->getMethod( $method );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 
-		$result = $this->client->format_date_for_api( '0000-00-00 00:00:00' );
-
-		$this->assertSame( '', $result );
+		return $method->invoke( $client, $arg );
 	}
 
 	/**
-	 * Test that valid date is converted to ISO 8601 format.
+	 * Unset and zero dates have nothing to send.
+	 *
+	 * @dataProvider data_empty_dates
+	 *
+	 * @param mixed $date The stored date.
 	 */
-	public function test_valid_date_returns_iso_8601_format() {
-		$mysql_date    = '2024-06-15 14:30:00';
-		$expected_date = '2024-06-15T14:30:00+00:00';
-
-		Functions\expect( 'mysql2date' )
-			->once()
-			->with( 'c', $mysql_date, false )
-			->andReturn( $expected_date );
-
-		$result = $this->client->format_date_for_api( $mysql_date );
-
-		$this->assertSame( $expected_date, $result );
+	public function test_empty_date_returns_empty_string( $date ): void {
+		$this->assertSame( '', $this->call( 'format_date_for_api', $date ) );
 	}
 
 	/**
-	 * Test that future date (scheduled post) is formatted correctly.
+	 * Dates that mean "no date".
+	 *
+	 * @return array<string, array{0: mixed}>
 	 */
-	public function test_future_date_is_formatted_correctly() {
-		$mysql_date    = '2025-12-25 10:00:00';
-		$expected_date = '2025-12-25T10:00:00+00:00';
-
-		Functions\expect( 'mysql2date' )
-			->once()
-			->with( 'c', $mysql_date, false )
-			->andReturn( $expected_date );
-
-		$result = $this->client->format_date_for_api( $mysql_date );
-
-		$this->assertSame( $expected_date, $result );
+	public function data_empty_dates(): array {
+		return array(
+			'empty string' => array( '' ),
+			'null'         => array( null ),
+			'zero date'    => array( '0000-00-00 00:00:00' ),
+		);
 	}
 
 	/**
-	 * Test that mysql2date is called with correct parameters.
+	 * The GMT date is sent as UTC, whatever timezone the server or site is in.
+	 *
+	 * @dataProvider data_gmt_dates
+	 *
+	 * @param string $gmt      Stored post_date_gmt.
+	 * @param string $expected ISO 8601 date the API should receive.
 	 */
-	public function test_mysql2date_called_with_iso_format_code() {
-		$mysql_date = '2024-01-01 00:00:00';
-
-		Functions\expect( 'mysql2date' )
-			->once()
-			->with(
-				'c',      // ISO 8601 format code
-				$mysql_date,
-				false     // Don't translate
-			)
-			->andReturn( '2024-01-01T00:00:00+00:00' );
-
-		$this->client->format_date_for_api( $mysql_date );
+	public function test_gmt_date_is_sent_as_utc( string $gmt, string $expected ): void {
+		$this->assertSame( $expected, $this->call( 'format_date_for_api', $gmt ) );
 	}
 
 	/**
-	 * Test that date with timezone offset is handled.
+	 * GMT dates and their ISO 8601 form.
+	 *
+	 * @return array<string, array{0: string, 1: string}>
 	 */
-	public function test_date_with_timezone_offset() {
-		$mysql_date    = '2024-03-15 08:45:30';
-		$expected_date = '2024-03-15T08:45:30-05:00';
+	public function data_gmt_dates(): array {
+		return array(
+			'winter'         => array( '2024-01-15 10:00:00', '2024-01-15T10:00:00+00:00' ),
+			'summer'         => array( '2024-06-15 14:30:00', '2024-06-15T14:30:00+00:00' ),
+			'scheduled post' => array( '2030-12-25 23:59:59', '2030-12-25T23:59:59+00:00' ),
+		);
+	}
 
-		Functions\expect( 'mysql2date' )
-			->once()
-			->with( 'c', $mysql_date, false )
-			->andReturn( $expected_date );
+	/**
+	 * Terms are joined into a list with no trailing separator.
+	 */
+	public function test_terms_are_joined_without_trailing_comma(): void {
+		$this->assertSame( 'News,Sport', $this->call( '_prepare_terms', array( 'News', 'Sport' ) ) );
+	}
 
-		$result = $this->client->format_date_for_api( $mysql_date );
+	/**
+	 * No terms, or a failed term lookup, sends an empty list.
+	 *
+	 * @dataProvider data_no_terms
+	 *
+	 * @param mixed $terms Result of wp_get_object_terms().
+	 */
+	public function test_no_terms_returns_empty_string( $terms ): void {
+		$this->assertSame( '', $this->call( '_prepare_terms', $terms ) );
+	}
 
-		$this->assertSame( $expected_date, $result );
+	/**
+	 * Term lookups with nothing to send.
+	 *
+	 * @return array<string, array{0: mixed}>
+	 */
+	public function data_no_terms(): array {
+		return array(
+			'empty array' => array( array() ),
+			'error'       => array( new \stdClass() ),
+		);
 	}
 }

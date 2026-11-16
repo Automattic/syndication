@@ -20,6 +20,20 @@ class Syndication_Site_Failure_Monitor {
 	 */
 	public function __construct() {
 		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
+		add_action( 'push_syndication_after_event_pull_success', array( $this, 'handle_pull_success_event' ) );
+	}
+
+	/**
+	 * Reset the failure count after a successful pull.
+	 *
+	 * Only consecutive failures should disable a site, not occasional ones
+	 * spread over weeks of successful pulls.
+	 *
+	 * @param int $site_id The site ID.
+	 */
+	public function handle_pull_success_event( $site_id ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing hook, handled by Syndication_Event_Counter.
+		do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 	}
 
 	/**
@@ -47,8 +61,16 @@ class Syndication_Site_Failure_Monitor {
 			do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 
 			// Log what happened.
-			// translators: 1: Site post ID, 2: Number of failed pull attempts.
-			Syndication_Logger::log_post_error( $site_id, 'error', sprintf( __( 'Site %1$d disabled after %2$d pull failure(s).', 'push-syndication' ), (int) $site_id, (int) $count ) );
+			Syndication_Logger::log_post_error(
+				$site_id,
+				'error',
+				sprintf(
+					/* translators: 1: Site post ID, 2: Number of failed pull attempts. */
+					_n( 'Site %1$d disabled after %2$s pull failure.', 'Site %1$d disabled after %2$s pull failures.', (int) $count, 'push-syndication' ),
+					(int) $site_id,
+					number_format_i18n( (int) $count )
+				)
+			);
 
 			do_action( 'push_syndication_site_disabled', $site_id, $count );
 		}

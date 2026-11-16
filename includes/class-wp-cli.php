@@ -8,16 +8,31 @@
 WP_CLI::add_command( 'syndication', 'Syndication_CLI_Command' );
 
 /**
- * Class Syndication_CLI_Command
+ * Pushes and pulls syndicated content.
  *
- * Provides WP-CLI commands for managing content syndication,
- * including bulk push operations and syndication status checks.
+ * Pushes posts to the sites in their selected site groups, one at a time or
+ * in bulk, and pulls content from a site or a whole site group.
  */
 class Syndication_CLI_Command extends WP_CLI_Command {
 	var $enabled_verbosity = false;
 
 	/**
-	 * Pushes all posts of a given type.
+	 * Pushes all posts of a given type to the sites in their selected site groups.
+	 *
+	 * Works through the posts 150 at a time. Posts with no selected site groups
+	 * are skipped with a warning, and the run carries on.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--post_type=<post-type>]
+	 * : Post type to push. Default: post.
+	 *
+	 * [--paged=<page>]
+	 * : Page of 150 posts to start from, to resume an interrupted run. Default: 1.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication push-all-posts --post_type=page
 	 *
 	 * @subcommand push-all-posts
 	 * @synopsis [--post_type=<post-type>] [--paged=<page>]
@@ -53,7 +68,17 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 
 			$this->stop_the_insanity();
 
-			sleep( 2 );
+			/**
+			 * Filters how many seconds push-all-posts pauses between batches of 150 posts.
+			 *
+			 * @since 2.3.0
+			 *
+			 * @param int $seconds Seconds to pause. Default 2.
+			 */
+			$pause = (int) apply_filters( 'syndication_cli_push_all_posts_pause', 2 );
+			if ( $pause > 0 ) {
+				sleep( $pause );
+			}
 
 			++$query_args['paged'];
 
@@ -62,7 +87,22 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Push a post to syndicated sites.
+	 * Pushes a post to the sites in its selected site groups.
+	 *
+	 * A post with no selected site groups, or none with enabled sites, is skipped
+	 * with a warning. A site that rejects the push is reported with a warning.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --post_id=<post-id>
+	 * : ID of the post to push.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication push-post --post_id=123
+	 *
+	 * @alias push-post
+	 * @synopsis --post_id=<post-id>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including post_id.
@@ -86,15 +126,30 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_post_ID( $post_id );
 
-		if ( empty( $sites ) ) {
-			WP_CLI::error( __( 'Post has no selected sitegroups / sites', 'push-syndication' ) );
+		// The server always returns an array, so check for sites rather than emptiness.
+		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
+			/* translators: %d: post ID. */
+			WP_CLI::warning( sprintf( __( 'Post %d has no selected site groups with enabled sites; skipping.', 'push-syndication' ), $post_id ) );
+			return;
 		}
 
 		$server->push_content( $sites );
 	}
 
 	/**
-	 * Pull content from a syndicated site.
+	 * Pulls content from a site.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --site_id=<site-id>
+	 * : ID of the site (a syn_site post) to pull from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication pull-site --site_id=45
+	 *
+	 * @alias pull-site
+	 * @synopsis --site_id=<site-id>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including site_id.
@@ -114,6 +169,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please select a valid site.' );
 		}
 
+		if ( 'on' !== get_post_meta( $site_id, 'syn_site_enabled', true ) ) {
+			/* translators: %d: site ID. */
+			WP_CLI::warning( sprintf( __( 'Site %d is disabled; nothing to pull.', 'push-syndication' ), $site_id ) );
+			return;
+		}
+
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
 
@@ -121,7 +182,19 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Pull content from all sites in a sitegroup.
+	 * Pulls content from every site in a site group.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --sitegroup=<sitegroup>
+	 * : Slug of the site group to pull from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp syndication pull-sitegroup --sitegroup=news-partners
+	 *
+	 * @alias pull-sitegroup
+	 * @synopsis --sitegroup=<sitegroup>
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments including sitegroup.
@@ -137,11 +210,23 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$sitegroup = sanitize_key( $assoc_args['sitegroup'] );
 
 		if ( empty( $sitegroup ) ) {
-			WP_CLI::error( 'Please specify a valid sitegroup' );
+			WP_CLI::error( 'Please specify a valid site group' );
+		}
+
+		if ( ! get_term_by( 'slug', $sitegroup, 'syn_sitegroup' ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::error( sprintf( __( 'Site group "%s" does not exist.', 'push-syndication' ), $sitegroup ) );
 		}
 
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_sitegroup( $sitegroup );
+
+		// pull_content() treats an empty list as "every scheduled site", so stop here.
+		if ( empty( $sites ) ) {
+			/* translators: %s: sitegroup slug. */
+			WP_CLI::warning( sprintf( __( 'Site group "%s" has no sites; nothing to pull.', 'push-syndication' ), $sitegroup ) );
+			return;
+		}
 
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
@@ -178,6 +263,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_new_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to add post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- New post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
@@ -187,6 +278,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_pull_edit_post',
 			function ( $result, $post, $site, $transport_type, $client ) {
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: post GUID, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to update post %1$s: %2$s', 'push-syndication' ), $post['post_guid'], $result->get_error_message() ) );
+					return;
+				}
+
 				WP_CLI::log( sprintf( '-- Updated post #%d (%s)', $result, $post['post_guid'] ) );
 			},
 			10,
@@ -221,7 +318,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_push_new_post',
 			function ( $result, $post_ID, $site, $transport_type, $client, $info ) {
-				WP_CLI::log( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: site title, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to add remote post on %1$s: %2$s', 'push-syndication' ), $site->post_title, $result->get_error_message() ) );
+					return;
+				}
+
+				WP_CLI::log( sprintf( '-- Added remote post #%d for post #%d (%s)', $result, $post_ID, $site->post_title ) );
 			},
 			10,
 			6 
@@ -230,7 +333,13 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		add_action(
 			'syn_post_push_edit_post',
 			function ( $result, $post_ID, $site, $transport_type, $client, $info ) {
-				WP_CLI::log( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
+				if ( is_wp_error( $result ) ) {
+					/* translators: 1: site title, 2: error message. */
+					WP_CLI::warning( sprintf( __( '-- Failed to update remote post on %1$s: %2$s', 'push-syndication' ), $site->post_title, $result->get_error_message() ) );
+					return;
+				}
+
+				WP_CLI::log( sprintf( '-- Updated remote post #%d for post #%d (%s)', $info['ext_ID'], $post_ID, $site->post_title ) );
 			},
 			10,
 			6 
@@ -266,7 +375,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$wp_object_cache->memcache_debug = array();
 		$wp_object_cache->cache          = array();
 
-		if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
+		if ( is_callable( array( $wp_object_cache, '__remoteset' ) ) ) {
 			$wp_object_cache->__remoteset(); // Important.
 		}
 	}

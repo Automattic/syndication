@@ -50,8 +50,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	 * Output CSS styles for the log list table columns.
 	 */
 	public function admin_header() {
-		$current_page = ( isset( $_GET['page'] ) ) ? (int) $_GET['page'] : false;
-		if ( 'syndication_dashboard' != $current_page ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only decides whether to print styles.
+		$current_page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( 'syndication_dashboard' !== $current_page ) {
 			return;
 		}
 
@@ -202,7 +203,7 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		$log_status   = null;
 		$date_start   = null;
 		$date_end     = null;
-		$message      = null;
+		$message      = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only search on an admin list table.
 		$storage_type = 'object';
 
 		$log_data = Syndication_Logger::instance()->get_messages(
@@ -349,17 +350,18 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		?>
 		<label class="screen-reader-text" for="filter-by-month"><?php esc_html_e( 'Filter by month', 'push-syndication' ); ?></label>
 		<select name="month" id="filter-by-month">
-			<option value="">All dates</option>
+			<option value=""><?php esc_html_e( 'All dates', 'push-syndication' ); ?></option>
 
 			<?php
 			if ( $this->_min_date && $this->_max_date ) {
-				$month_pointer = new DateTime( '@' . $this->_min_date );
-				$max_month     = new DateTime( '@' . $this->_max_date );
+				// Step from the first of each month, so adding a month never skips a short one.
+				$month_pointer = new DateTime( gmdate( 'Y-m-01', $this->_min_date ) );
+				$max_month     = new DateTime( gmdate( 'Y-m-01', $this->_max_date ) );
 
 				while ( $month_pointer <= $max_month ) { 
 					?>
 					<option
-						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( $month_pointer->format( 'F Y' ) ); ?></option>
+						value='<?php echo esc_attr( $month_pointer->format( 'Y-m' ) ); ?>' <?php selected( $requested_month, $month_pointer->format( 'Y-m' ) ); ?>><?php echo esc_html( wp_date( 'F Y', $month_pointer->getTimestamp(), new DateTimeZone( 'UTC' ) ) ); ?></option>
 					<?php
 					$month_pointer->modify( '+1 month' );
 				}
@@ -377,12 +379,12 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 		?>
 		<label class="screen-reader-text" for="filter-by-type"><?php esc_html_e( 'Filter by type', 'push-syndication' ); ?></label>
 		<select name="type" id="filter-by-type">
-			<option value="">All types</option>
+			<option value=""><?php esc_html_e( 'All types', 'push-syndication' ); ?></option>
 			<?php 
 			foreach ( array(
-				'success' => 'Success',
-				'info'    => 'Information',
-				'error'   => 'Error',
+				'success' => __( 'Success', 'push-syndication' ),
+				'info'    => __( 'Information', 'push-syndication' ),
+				'error'   => __( 'Error', 'push-syndication' ),
 			) as $key => $label ) : 
 				?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $requested_type, $key ); ?>><?php echo esc_html( $label ); ?></option>
@@ -411,7 +413,9 @@ class Syndication_Logger_Viewer {
 	 * Register the Logs submenu page under Syndication Sites.
 	 */
 	public function add_menu_items() {
-		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', 'activate_plugins', 'syndication_dashboard', array( $this, 'render_list_page' ) );
+		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+
+		$hook = add_submenu_page( 'edit.php?post_type=syn_site', esc_html__( 'Logs', 'push-syndication' ), esc_html__( 'Logs', 'push-syndication' ), $capability, 'syndication_dashboard', array( $this, 'render_list_page' ) );
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
 	}
 
@@ -467,7 +471,7 @@ class Syndication_Logger_Viewer {
 				<input type="hidden" name="post_type" value="syn_site">
 				<input type="hidden" name="page" value="syndication_dashboard">
 				<?php
-				$this->syndication_logger_table->search_box( 'search', 'search_id' );
+				$this->syndication_logger_table->search_box( __( 'Search Logs', 'push-syndication' ), 'search_id' );
 
 				$this->syndication_logger_table->display();
 				?>

@@ -61,9 +61,10 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 *
 	 * @param string $meta_key   The meta key to search for.
 	 * @param string $meta_value The meta value to match.
+	 * @param string $post_type  Optional. Post type to search. Default empty, which searches the API's default, 'post'.
 	 * @return bool True if post exists on target site, false otherwise.
 	 */
-	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+	public function is_source_site_post( $meta_key = '', $meta_value = '', $post_type = '' ) {
 
 		// If meta key or value are empty.
 		if ( empty( $meta_key ) || empty( $meta_value ) ) {
@@ -77,6 +78,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			rawurlencode( $meta_key ),
 			rawurlencode( $meta_value )
 		);
+		if ( $post_type ) {
+			$url .= '&type=' . rawurlencode( $post_type );
+		}
 
 		$response = wp_remote_get(
 			$url,
@@ -148,13 +152,17 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return $response;
 		}
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
+		$response = $this->parse_response( $response, 'rest-push-new-fail' );
 
-		if ( empty( $response->error ) ) {
-			return $response->ID;
-		} else {
-			return new WP_Error( 'rest-push-new-fail', $response->message );
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
+
+		if ( empty( $response->ID ) ) {
+			return new WP_Error( 'rest-push-new-fail', __( 'WordPress.com did not return the ID of the new post.', 'push-syndication' ) );
+		}
+
+		return $response->ID;
 	}
 
 	/**
@@ -200,17 +208,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
+		$response = $this->parse_response( $response, 'rest-push-edit-fail' );
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return $post_ID;
-		} else {
-			return new WP_Error( 'rest-push-edit-fail', $response->message );
-		}
+		return is_wp_error( $response ) ? $response : $post_ID;
 	}
 
 	/**
@@ -222,13 +222,36 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 */
 	private function _prepare_terms( $terms ) {
 
-		$terms_csv = '';
+		return is_array( $terms ) ? implode( ',', $terms ) : '';
+	}
 
-		foreach ( $terms as $term ) {
-			$terms_csv .= $term . ',';
+	/**
+	 * Decode a WordPress.com REST API response, turning any failure into a WP_Error.
+	 *
+	 * @param array|WP_Error $response   Response from wp_remote_*().
+	 * @param string         $error_code Error code for a failed response.
+	 * @return object|WP_Error The decoded body, or WP_Error on failure.
+	 */
+	private function parse_response( $response, $error_code ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
 		}
 
-		return $terms_csv;
+		$status = (int) wp_remote_retrieve_response_code( $response );
+		$body   = json_decode( wp_remote_retrieve_body( $response ) );
+
+		if ( $status >= 200 && $status < 300 && is_object( $body ) && empty( $body->error ) ) {
+			return $body;
+		}
+
+		if ( is_object( $body ) && ! empty( $body->message ) && is_string( $body->message ) ) {
+			$message = $body->message;
+		} else {
+			/* translators: %d: HTTP status code. */
+			$message = sprintf( __( 'Unexpected response from WordPress.com (HTTP status %d).', 'push-syndication' ), $status );
+		}
+
+		return new WP_Error( $error_code, $message );
 	}
 
 	/**
@@ -240,7 +263,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param string $mysql_date Date in MySQL format (Y-m-d H:i:s).
+	 * @param string $mysql_date GMT date in MySQL format (Y-m-d H:i:s).
 	 * @return string Date in ISO 8601 format, or empty string if invalid.
 	 */
 	private function format_date_for_api( $mysql_date ) {
@@ -248,7 +271,11 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			return '';
 		}
 
-		return mysql2date( 'c', $mysql_date, false );
+		// The date is GMT, so read it as UTC. mysql2date() would read it in the
+		// site's timezone and shift the post by the site's UTC offset.
+		$timestamp = strtotime( $mysql_date . ' UTC' );
+
+		return false === $timestamp ? '' : gmdate( 'c', $timestamp );
 	}
 
 	/**
@@ -270,17 +297,9 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
+		$response = $this->parse_response( $response, 'rest-push-delete-fail' );
 
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return new WP_Error( 'rest-push-delete-fail', $response->message );
-		}
+		return is_wp_error( $response ) ? $response : true;
 	}
 
 	/**
@@ -301,18 +320,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		// TODO: return WP_Error.
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return ! is_wp_error( $this->parse_response( $response, 'rest-test-connection-fail' ) );
 	}
 
 	/**
@@ -334,17 +342,10 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			) 
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $response->error ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		// Only a 404 says the post is gone. The caller recreates a missing post, so
+		// treating a timeout or outage as missing would duplicate it on the remote
+		// site; assume it exists and let the following edit or delete report the error.
+		return 404 !== wp_remote_retrieve_response_code( $response );
 	}
 
 	/**
@@ -363,15 +364,33 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 		?>
 
 		<p>
-			<?php echo esc_html__( 'To generate the following information automatically please visit the ', 'push-syndication' ); ?>
-			<a href="<?php echo esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) ); ?>" target="_blank"><?php esc_html_e( 'settings page', 'push-syndication' ); ?></a>
+			<?php
+			echo wp_kses(
+				sprintf(
+					/* translators: 1: URL of the plugin settings page, 2: Screen reader text saying the link opens in a new tab. */
+					__( 'To generate the following information automatically, visit the <a href="%1$s" target="_blank">settings page%2$s</a>.', 'push-syndication' ),
+					esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) ),
+					' <span class="screen-reader-text">' . esc_html__( '(opens in a new tab)', 'push-syndication' ) . '</span>'
+				),
+				array(
+					'a'    => array(
+						'href'   => array(),
+						'target' => array(),
+					),
+					'span' => array( 'class' => array() ),
+				)
+			);
+			?>
 		</p>
 		<p>
 			<label for="site_token"><?php echo esc_html__( 'Enter API Token', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="password" class="widefat" name="site_token" id="site_token" size="100" autocomplete="off" value="" placeholder="<?php echo $has_token ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
+			<input type="password" class="widefat" name="site_token" id="site_token" size="100" autocomplete="off" value=""<?php echo $has_token ? ' aria-describedby="site_token-description"' : ''; ?> />
 		</p>
+		<?php if ( $has_token ) : ?>
+			<p class="description" id="site_token-description"><?php esc_html_e( 'Leave blank to keep the saved value.', 'push-syndication' ); ?></p>
+		<?php endif; ?>
 		<p>
 			<label for="site_id"><?php echo esc_html__( 'Enter Blog ID', 'push-syndication' ); ?></label>
 		</p>

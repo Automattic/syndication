@@ -37,6 +37,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 		$this->set_feed_url( get_post_meta( $site_ID, 'syn_feed_url', true ) );
 
+		// Every pull reads the feed afresh. SimplePie otherwise caches it for an
+		// hour, so shorter pull intervals and Pull Now would miss new items.
+		$this->enable_cache( false );
+
 		// Mirrors core's fetch_feed(). SimplePie 1.3 deprecated set_cache_class()
 		// in favour of a registered cache location, and WP_Feed_Cache is itself
 		// deprecated in favour of WP_Feed_Cache_Transient. The old call emitted a
@@ -45,6 +49,12 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		require_once ABSPATH . WPINC . '/class-wp-feed-cache-transient.php';
 		SimplePie_Cache::register( 'wp_transient', 'WP_Feed_Cache_Transient' );
 		$this->set_cache_location( 'wp_transient' );
+
+		// Fetch through the HTTP API, as fetch_feed() does, so proxy settings, the
+		// pull user agent and the HTTP API filters apply. The legacy 'File' name
+		// works with every SimplePie version core has bundled since 6.4.
+		require_once ABSPATH . WPINC . '/class-wp-simplepie-file.php';
+		$this->registry->register( 'File', 'WP_SimplePie_File', true );
 
 		$this->default_post_type      = get_post_meta( $site_ID, 'syn_default_post_type', true );
 		$this->default_post_status    = get_post_meta( $site_ID, 'syn_default_post_status', true );
@@ -56,6 +66,51 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+	}
+
+	/**
+	 * Set the feed URL, unless the site has none yet.
+	 *
+	 * SimplePie can't parse an empty URL, and on PHP 8.5 trying raises a deprecation.
+	 *
+	 * @param string|string[] $url Feed URL.
+	 */
+	public function set_feed_url( $url ) {
+		if ( '' === $url ) {
+			return;
+		}
+
+		parent::set_feed_url( $url );
+	}
+
+	/**
+	 * Fetch and parse the feed.
+	 *
+	 * WP_SimplePie_File uses wp_safe_remote_request(), which refuses private
+	 * addresses. Feeds on an intranet have always worked, and the XML client
+	 * uses wp_remote_get(), so allow them for the duration of the fetch.
+	 *
+	 * @return bool True if the feed was fetched and parsed.
+	 */
+	public function init() {
+		// phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Only reject_unsafe_urls changes; the timeout is untouched.
+		add_filter( 'http_request_args', array( __CLASS__, 'allow_private_feed_hosts' ) );
+		$result = parent::init();
+		remove_filter( 'http_request_args', array( __CLASS__, 'allow_private_feed_hosts' ) );
+
+		return $result;
+	}
+
+	/**
+	 * Let a feed request reach a private address, as wp_remote_get() does.
+	 *
+	 * @param array $args HTTP request arguments.
+	 * @return array The arguments, with unsafe URLs allowed.
+	 */
+	public static function allow_private_feed_hosts( $args ) {
+		$args['reject_unsafe_urls'] = false;
+
+		return $args;
 	}
 
 	/**
@@ -108,11 +163,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	/**
 	 * Test the connection to the remote site.
 	 *
-	 * @return bool True (always succeeds for RSS).
+	 * @return bool True if the feed was fetched and parsed; false otherwise.
 	 */
 	public function test_connection() {
-		// TODO: Implement test_connection() method.
-		return true;
+		return true === $this->init();
 	}
 
 	/**
@@ -156,7 +210,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 			<?php
 
-			$post_types = get_post_types();
+			$post_types = WP_Push_Syndication_Server::get_pull_post_types();
 
 			foreach ( $post_types as $post_type ) {
 				echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $default_post_type ) . '>' . esc_html( $post_type ) . '</option>';
@@ -225,12 +279,15 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public static function save_settings( $site_ID ) {
 
-		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_cat_status', sanitize_text_field( $_POST['default_cat_status'] ) );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- WP_Push_Syndication_Server::save_site_settings() verifies the nonce before calling this.
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_feed_url', isset( $_POST['feed_url'] ) ? esc_url_raw( wp_unslash( $_POST['feed_url'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_type', isset( $_POST['default_post_type'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_type'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_status', isset( $_POST['default_post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_cat_status', isset( $_POST['default_cat_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_cat_status'] ) ) : '' );
+		// phpcs:enable
 		return true;
 	}
 
@@ -251,19 +308,25 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public function get_posts( $args = array() ) {
 
-		$site_post = get_post( $this->site_ID );
-
 		$rss_init = $this->init();
 
 		if ( false === $rss_init ) {
 			// translators: %s: Feed URL.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = isset( $site_post->postmeta['is_update'] ) ? $site_post->postmeta['is_update'] : null, $extra = array( 'error' => $this->error() ) );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = null, $extra = array( 'error' => $this->error() ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- site_ID predates the naming rule.
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
 		} else {
-			// translators: %d: Size of the fetched feed, in bytes.
-			Syndication_Logger::log_post_info( $this->site_ID, $status = 'fetch_feed', $message = sprintf( __( 'fetched feed with %d bytes', 'push-syndication' ), strlen( $this->get_raw_data() ) ), $log_time = null, $extra = array() );
+			$feed_size = strlen( $this->get_raw_data() );
+			Syndication_Logger::log_post_info(
+				$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+				'fetch_feed',
+				sprintf(
+					/* translators: %s: Size of the fetched feed, in bytes. */
+					_n( 'fetched feed with %s byte', 'fetched feed with %s bytes', $feed_size, 'push-syndication' ),
+					number_format_i18n( $feed_size )
+				)
+			);
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_success', $this->site_ID );
@@ -284,18 +347,27 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			}
 
 			$post = array(
-				'post_title'     => $item->get_title(),
-				'post_content'   => $item->get_content(),
-				'post_excerpt'   => $item->get_description(),
+				// SimplePie returns null for a missing field; WordPress expects strings.
+				'post_title'     => (string) $item->get_title(),
+				'post_content'   => (string) $item->get_content(),
+				'post_excerpt'   => (string) $item->get_description(),
 				'post_type'      => $this->default_post_type,
 				'post_status'    => $this->default_post_status,
-				'post_date'      => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
 				'comment_status' => $this->default_comment_status,
 				'ping_status'    => $this->default_ping_status,
 				'post_guid'      => $item->get_id(),
 				'post_category'  => $taxonomy['cats'],
 				'tags_input'     => $taxonomy['tags'],
 			);
+
+			// Without a date, leave it to WordPress: the current time for a new post,
+			// and the existing date for an update.
+			$post_date_gmt = $item->get_gmdate( 'Y-m-d H:i:s' );
+			if ( null !== $post_date_gmt ) {
+				$post['post_date_gmt'] = $post_date_gmt;
+				$post['post_date']     = get_date_from_gmt( $post_date_gmt );
+			}
+
 			/**
 			 * Exclude or alter posts during an RSS syndication pull.
 			 *
@@ -324,7 +396,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return array Array of category and tag IDs.
 	 */
 	public function set_taxonomy( $item ) {
-		$cats = $item->get_categories();
+		// SimplePie returns null, not an empty array, for an item with no categories.
+		$cats = (array) $item->get_categories();
 		$ids  = array(
 			'cats' => array(),
 			'tags' => array(),
@@ -343,8 +416,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			} else {
 				// creates if not.
 				$result = wp_insert_term( $cat->term, 'category' );
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
+				if ( ! is_wp_error( $result ) ) {
+					$ids['cats'][] = $result['term_id'];
+				} elseif ( 'term_exists' === $result->get_error_code() ) {
+					// Created since the lookup above; the error data is its ID.
+					$ids['cats'][] = (int) $result->get_error_data();
 				}
 			}
 		}
@@ -364,15 +440,20 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function save_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
+		$metas = array_filter( $post['postmeta'], array( 'Syndication_WP_XML_Client', 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && Syndication_WP_XML_Client::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates) if any.
@@ -404,15 +485,20 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function update_meta( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
+		$metas = array_filter( $post['postmeta'], array( 'Syndication_WP_XML_Client', 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && Syndication_WP_XML_Client::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates).
@@ -444,6 +530,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function save_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}
@@ -468,6 +558,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return false|void False if conditions not met.
 	 */
 	public static function update_tax( $result, $post, $site, $transport_type, $client ) {
+		// The pull hooks are shared, so ignore posts pulled by another client.
+		if ( ! $client instanceof self ) {
+			return false;
+		}
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['tax'] ) ) {
 			return false;
 		}

@@ -23,6 +23,13 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 	private $site_ID;
 
+	/**
+	 * Whether to push the post's thumbnails after a successful push.
+	 *
+	 * @var bool
+	 */
+	private $send_thumbnail;
+
 	public function __construct( $site_ID ) {
 
 		// @TODO check port, timeout etc.
@@ -39,11 +46,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		parent::__construct( $server );
 
-		if ( true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this ) ) {
-			add_action( 'syn_xmlrpc_push_new_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			add_action( 'syn_xmlrpc_push_edit_post_success', array( $this, 'post_push_send_thumbnail' ), 10, 6 );
-			// TODO: on delete post, delete thumbnail.
-		}
+		// Sent directly by new_post() and edit_post(), not from the shared success actions:
+		// a callback there would also run for every other XML-RPC client created in the same request.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Existing public hook and parameter names.
+		$this->send_thumbnail = true === apply_filters( 'syn_xmlrpc_push_send_thumbnail', true, $site_ID, $this );
+		// TODO: on delete post, delete thumbnail.
 	}
 
 	private function get_thumbnail_meta_keys( $post_id ) {
@@ -77,8 +84,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 						$thumbnail_meta
 					);
 
-					unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); 
-					update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					// Keep tracking the remote thumbnail until it's gone, so a failed delete is retried on the next push.
+					if ( $result ) {
+						unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+						update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					}
 				}
 				continue;
 			}
@@ -132,6 +142,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		
 		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+		if ( is_wp_error( $post['post_content'] ) ) {
+			return $post['post_content'];
+		}
 
 		// rearranging arguments.
 		$args                  = array();
@@ -140,7 +153,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$args['post_excerpt']  = $post['post_excerpt'];
 		$args['post_status']   = $post['post_status'];
 		$args['post_type']     = $post['post_type'];
-		$args['wp_password']   = $post['post_password'];
+		$args['post_password'] = $post['post_password'];
 		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
@@ -163,6 +176,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		$remote_post_id = (int) $this->getResponse();
 
+		if ( $this->send_thumbnail ) {
+			$this->post_push_send_thumbnail( $remote_post_id, $post_ID );
+		}
+
 		do_action( 'syn_xmlrpc_push_new_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
@@ -183,7 +200,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$remote_post = $this->get_remote_post( $remote_post_id );
 
 		if ( ! $remote_post ) {
-			return new WP_Error( 'syn-remote-post-not-found', esc_html__( 'Remote post doesn\'t exist.', 'push-syndication' ) );
+			return new WP_Error( 'syn-remote-post-not-found', __( 'Remote post doesn\'t exist.', 'push-syndication' ) );
 		}
 
 		// Delete existing metadata to avoid duplicates.
@@ -221,6 +238,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+		if ( is_wp_error( $post['post_content'] ) ) {
+			return $post['post_content'];
+		}
 
 		// rearranging arguments.
 		$args['post_title']    = $post['post_title'];
@@ -228,7 +248,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		$args['post_excerpt']  = $post['post_excerpt'];
 		$args['post_status']   = $post['post_status'];
 		$args['post_type']     = $post['post_type'];
-		$args['wp_password']   = $post['post_password'];
+		$args['post_password'] = $post['post_password'];
 		$args['post_date_gmt'] = $this->convert_date_gmt( $post['post_date_gmt'], $post['post_date'] );
 
 		$args['terms_names'] = $this->_get_post_terms( $post_ID );
@@ -250,6 +270,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			return new WP_Error( $this->getErrorCode(), $this->getErrorMessage() );
 		}
 
+		if ( $this->send_thumbnail ) {
+			$this->post_push_send_thumbnail( $remote_post_id, $post_ID );
+		}
+
 		do_action( 'syn_xmlrpc_push_edit_post_success', $remote_post_id, $post_ID );
 
 		return $remote_post_id;
@@ -262,7 +286,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 * @access private
 	 * @uses $shortcode_tags global variable
 	 * @param string $post_content Post to be syndicated.
-	 * @return string $post_content - post content with replaced gallery shortcodes
+	 * @return string|WP_Error Post content with replaced gallery shortcodes, or the error from a failed image upload.
 	 */
 	private function syndicate_gallery_images( $post_content ) {
 		$attachment_ids = array();
@@ -317,6 +341,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// replace old gallery code with a new one.
 		$lenght = count( $matches[0] );
 		for ( $i = 0; $i < $lenght; $i++ ) {
+			// A gallery without ids shows the post's attached images, so there is nothing to replace.
+			if ( ! isset( $image_ids[ $i ] ) ) {
+				continue;
+			}
+
 			$shortcode = $matches[0][ $i ];
 			// WP regex matches attribute with leading space, required here.
 			$attribute     = ' ids="' . implode( ',', $image_ids[ $i ] ) . '"';
@@ -487,53 +516,106 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 *
 	 * @param string $meta_key   The meta key to search for.
 	 * @param string $meta_value The meta value to match.
+	 * @param string $post_type  Optional. Post type to search. Default empty, which searches the remote's default, 'post'.
 	 * @return bool True if post exists on target site, false otherwise.
 	 */
-	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+	public function is_source_site_post( $meta_key = '', $meta_value = '', $post_type = '' ) {
 
 		// If meta key or value are empty.
 		if ( empty( $meta_key ) || empty( $meta_value ) ) {
 			return false;
 		}
 
-		// Use filter to limit posts returned and request custom_fields.
+		// wp.getPosts can't filter by meta, so page through the remote posts.
+		// ponytail: one request per 100 remote posts on a first push; a custom remote method could look the meta up directly.
 		$filter = array(
 			'number' => 100,
+			'offset' => 0,
 		);
-
-		$result = $this->query(
-			'wp.getPosts',
-			'1',
-			$this->username,
-			$this->password,
-			$filter,
-			array( 'post_id', 'custom_fields' )
-		);
-
-		if ( ! $result ) {
-			return false;
+		if ( $post_type ) {
+			$filter['post_type'] = $post_type;
 		}
 
-		$posts_list = $this->getResponse();
+		/**
+		 * Filters how many pages of 100 remote posts the XML-RPC loop guard checks.
+		 *
+		 * If the limit is reached without a match, the post is treated as not
+		 * found on the remote, so it is pushed.
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param int $max_pages Maximum number of pages to request. Default 100.
+		 * @param int $site_id   ID of the syn_site post being pushed to.
+		 */
+		$max_pages = (int) apply_filters( 'syndication_xmlrpc_loop_guard_max_pages', 100, $this->site_ID ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+		$seen_ids  = array();
 
-		if ( empty( $posts_list ) ) {
-			return false;
-		}
+		for ( $page = 0; $page < $max_pages; $page++ ) {
+			$filter['offset'] = $page * $filter['number'];
 
-		foreach ( $posts_list as $post ) {
-			if ( empty( $post['custom_fields'] ) ) {
-				continue;
+			$result = $this->query(
+				'wp.getPosts',
+				'1',
+				$this->username,
+				$this->password,
+				$filter,
+				array( 'post_id', 'custom_fields' )
+			);
+
+			if ( ! $result ) {
+				return false;
 			}
 
-			foreach ( $post['custom_fields'] as $field ) {
-				if ( isset( $field['key'], $field['value'] ) &&
-					$meta_key === $field['key'] &&
-					$meta_value === $field['value']
-				) {
-					return true;
+			$posts_list = $this->getResponse();
+
+			if ( empty( $posts_list ) ) {
+				return false;
+			}
+
+			$has_unseen_posts = false;
+
+			foreach ( $posts_list as $post ) {
+				if ( isset( $seen_ids[ $post['post_id'] ] ) ) {
+					continue;
+				}
+				$seen_ids[ $post['post_id'] ] = true;
+				$has_unseen_posts             = true;
+
+				if ( empty( $post['custom_fields'] ) ) {
+					continue;
+				}
+
+				foreach ( $post['custom_fields'] as $field ) {
+					if ( isset( $field['key'], $field['value'] ) &&
+						$meta_key === $field['key'] &&
+						$meta_value === $field['value']
+					) {
+						return true;
+					}
 				}
 			}
+
+			// A short page is the last one.
+			if ( count( $posts_list ) < $filter['number'] ) {
+				return false;
+			}
+
+			// A page of posts already seen means the remote is ignoring the offset.
+			if ( ! $has_unseen_posts ) {
+				break;
+			}
 		}
+
+		Syndication_Logger::log_post_error(
+			$this->site_ID, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+			'loop_guard_incomplete',
+			sprintf(
+				/* translators: 1: meta value searched for, 2: number of remote posts checked */
+				_n( 'Stopped looking for %1$s on the remote site after %2$s post without a match. Pushing the post.', 'Stopped looking for %1$s on the remote site after %2$s posts without a match. Pushing the post.', count( $seen_ids ), 'push-syndication' ),
+				$meta_value,
+				number_format_i18n( count( $seen_ids ) )
+			)
+		);
 
 		return false;
 	}
@@ -586,8 +668,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<label for="site_password"><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="" placeholder="<?php echo $has_password ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
+			<input type="password" class="widefat" name="site_password" id="site_password" size="100" autocomplete="off" value=""<?php echo $has_password ? ' aria-describedby="site_password-description"' : ''; ?> />
 		</p>
+		<?php if ( $has_password ) : ?>
+			<p class="description" id="site_password-description"><?php esc_html_e( 'Leave blank to keep the saved value.', 'push-syndication' ); ?></p>
+		<?php endif; ?>
 
 		<?php
 
@@ -605,14 +690,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password sanitized with wp_strip_all_tags.
 		$password = isset( $_POST['site_password'] ) ? wp_strip_all_tags( wp_unslash( $_POST['site_password'] ) ) : '';
 
-		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
-		update_post_meta( $site_ID, 'syn_site_username', $username );
-		// The password field is write-only: a blank submission keeps the stored password.
-		if ( '' !== $password ) {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
-			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
-		}
-
+		// Validate before saving anything, so an invalid URL never replaces a working one.
 		if ( ! filter_var( $site_url, FILTER_VALIDATE_URL ) ) {
 			add_filter(
 				'redirect_post_location',
@@ -621,6 +699,16 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 				}
 			);
 			return false;
+		}
+
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_site_url', esc_url_raw( $site_url ) );
+		update_post_meta( $site_ID, 'syn_site_username', $username );
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		// The password field is write-only: a blank submission keeps the stored password.
+		if ( '' !== $password ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+			update_post_meta( $site_ID, 'syn_site_password', push_syndicate_encrypt( $password ) );
 		}
 
 		return true;
@@ -649,6 +737,27 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		return $methods;
 	}
 
+	/**
+	 * Whether the current user may write a thumbnail under the given meta key.
+	 *
+	 * The key comes from the caller, so any key other than the featured image's
+	 * gets the checks core applies to custom fields: permission to edit the post,
+	 * and protected keys (starting with an underscore) refused unless registered
+	 * with an auth callback that allows them.
+	 *
+	 * @param string $capability Meta capability: edit_post_meta or delete_post_meta.
+	 * @param int    $post_id    Post the thumbnail belongs to.
+	 * @param string $meta_key   Meta key that holds the thumbnail ID.
+	 * @return bool
+	 */
+	private static function can_write_thumbnail_meta( $capability, $post_id, $meta_key ) {
+		if ( '_thumbnail_id' === $meta_key ) {
+			return current_user_can( 'edit_post', $post_id );
+		}
+
+		return current_user_can( $capability, $post_id, $meta_key );
+	}
+
 	public static function xmlrpc_add_thumbnail( $args ) {
 		global $wp_xmlrpc_server, $wpdb;
 
@@ -670,16 +779,20 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
 		}
 
 		if ( ! $post_ID ) {
-			return new IXR_Error( 500, esc_html__( 'Please specify a valid post_ID.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Please specify a valid post_ID.', 'push-syndication' ) );
+		}
+
+		if ( ! self::can_write_thumbnail_meta( 'edit_post_meta', $post_ID, $meta_key ) ) {
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
 		}
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -704,14 +817,9 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return $image;
 		}
 
-		// mw_newMediaObject only requires `upload_files`, so check the caller may edit the target post before writing to it.
-		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to edit this post.', 'push-syndication' ) );
-		}
-
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 		}
 
 		if ( '_thumbnail_id' == $meta_key ) {
@@ -762,7 +870,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 			return $wp_xmlrpc_server->error;
 		}
 
-		if ( ! current_user_can( 'edit_post', $post_ID ) ) {
+		if ( ! self::can_write_thumbnail_meta( 'delete_post_meta', $post_ID, $meta_key ) ) {
 			return new IXR_Error( 401, __( 'Sorry, you are not allowed to post on this site.', 'push-syndication' ) );
 		}
 
@@ -805,12 +913,12 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 		}
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			return new IXR_Error( 401, esc_html__( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
+			return new IXR_Error( 401, __( 'Sorry, you are not allowed to upload files.', 'push-syndication' ) );
 		}
 
 		$thumbnail_raw = wp_remote_retrieve_body( wp_safe_remote_get( $thumbnail_url ) );
 		if ( ! $thumbnail_raw ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, the image URL provided was incorrect.', 'push-syndication' ) );
 		}
 
 		$thumbnail_filename = basename( $thumbnail_url );
@@ -836,7 +944,7 @@ class Syndication_WP_XMLRPC_Client_Extensions {
 
 		$thumbnail_id = (int) $image['id'];
 		if ( empty( $thumbnail_id ) ) {
-			return new IXR_Error( 500, esc_html__( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
+			return new IXR_Error( 500, __( 'Sorry, looks like the image upload failed.', 'push-syndication' ) );
 		}
 		
 		$args = array(

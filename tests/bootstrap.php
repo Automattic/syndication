@@ -31,6 +31,13 @@ foreach ( $argv_local as $arg ) {
 	}
 }
 
+// A test run in a separate process gets no --testsuite argument, so pass the suite on to it.
+if ( '' === $testsuite ) {
+	$testsuite = (string) getenv( 'SYNDICATION_TESTSUITE' );
+} else {
+	putenv( 'SYNDICATION_TESTSUITE=' . $testsuite ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_putenv
+}
+
 $is_unit        = 'Unit' === $testsuite;
 $is_integration = 'integration' === $testsuite;
 
@@ -45,6 +52,7 @@ if ( $is_unit ) {
 
 	// Load classes needed for unit tests (those without WordPress dependencies).
 	require_once dirname( __DIR__ ) . '/includes/class-syndication-event-counter.php';
+	require_once dirname( __DIR__ ) . '/includes/class-syndication-site-auto-retry.php';
 	require_once __DIR__ . '/Unit/TestCase.php';
 
 	return;
@@ -75,4 +83,5 @@ if ( $is_integration ) {
 	 */
 	require_once __DIR__ . '/Integration/EncryptorTestCase.php';
 	require_once __DIR__ . '/Integration/Syndication_Mock_Client.php';
+	require_once __DIR__ . '/Integration/RestoresServerState.php';
 }
