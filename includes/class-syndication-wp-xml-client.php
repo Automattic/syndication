@@ -283,8 +283,6 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			return array();
 		}
 
-		$abs_post_fields['enclosures_as_strings'] = $enclosures_as_strings;
-
 		// TODO: handle constant strings in XML.
 		foreach ( $abs_nodes as $abs_node ) {
 			$values = self::evaluate_xpath( $xml, $abs_node['xpath'] );
@@ -368,6 +366,9 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					$item_fields[ $save_location['field'] ] = $values[0];
 				}
 			}
+
+			// Feed-level post fields apply to every item, unless the item supplies its own.
+			$item_fields += $abs_post_fields;
 
 			$meta_data = array_merge( $meta_data, $abs_meta_data );
 			$tax_data  = array_merge( $tax_data, $abs_tax_data );

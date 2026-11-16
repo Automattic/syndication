@@ -197,6 +197,32 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Feed-level post fields fill in every item, and an item's own value wins.
+	 */
+	public function test_feed_level_post_fields_are_item_defaults(): void {
+		$this->feed_body = '<?xml version="1.0"?><rss><channel><title>Channel</title><author>Desk</author>'
+			. '<item><title>First</title></item>'
+			. '<item><description>No title here</description></item>'
+			. '</channel></rss>';
+
+		$site_id = $this->make_site(
+			array(
+				'title'                => $this->node( 'post_title', array( 'is_item' ) ),
+				'/rss/channel/title'   => $this->node( 'post_title', array() ),
+				'/rss/channel/author'  => $this->node( 'post_excerpt', array() ),
+				'string(Feed default)' => $this->node( 'post_content', array() ),
+			)
+		);
+
+		$posts = ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts();
+
+		$this->assertSame( array( 'First', 'Channel' ), array_column( $posts, 'post_title' ) );
+		$this->assertSame( array( 'Desk', 'Desk' ), array_column( $posts, 'post_excerpt' ) );
+		$this->assertSame( array( 'Feed default', 'Feed default' ), array_column( $posts, 'post_content' ) );
+		$this->assertArrayNotHasKey( 'enclosures_as_strings', $posts[0] );
+	}
+
+	/**
 	 * Enclosures are still collected, and an invalid enclosure XPath aborts the pull.
 	 */
 	public function test_enclosures_are_parsed_and_invalid_enclosure_xpath_aborts(): void {
