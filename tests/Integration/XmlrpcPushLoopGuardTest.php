@@ -213,6 +213,7 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->push();
 
+		$this->assertSame( 2, count( array_keys( $this->calls, 'wp.getPosts', true ) ), 'The guard should find the match on the second page.' );
 		$this->assertNotContains( 'wp.newPost', $this->calls );
 	}
 
@@ -293,6 +294,7 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->push();
 
+		$this->assertContains( 'wp.getPosts', $this->calls, 'The guard should run.' );
 		$this->assertNotContains( 'wp.newPost', $this->calls );
 	}
 
