@@ -33,6 +33,7 @@ class WP_Push_Syndication_Server {
 
 		// initialization.
 		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'maybe_upgrade' ), 11 ); // After init(), which loads the stored version.
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 		// custom columns.
@@ -257,9 +258,6 @@ class WP_Push_Syndication_Server {
 		// register settings.
 		register_setting( 'push_syndicate_settings', 'push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 		register_setting( 'push_syndicate_settings', 'push_syndication_max_pull_attempts', array( $this, 'validate_max_pull_attempts' ) );
-
-		// Maybe run upgrade.
-		$this->upgrade();
 	}
 
 	public function load_scripts_and_styles( $hook ) {
@@ -1719,6 +1717,37 @@ class WP_Push_Syndication_Server {
 		// Clear any existing scheduled refresh and schedule a new one.
 		wp_clear_scheduled_hook( 'syn_refresh_pull_jobs' );
 		wp_schedule_single_event( time() + 60, 'syn_refresh_pull_jobs' );
+	}
+
+	/**
+	 * Run the upgrade routine if the stored version is older than the plugin.
+	 *
+	 * Runs on every request, not just in wp-admin, so cron, WP-CLI and REST
+	 * requests never run new code against settings that haven't been migrated.
+	 *
+	 * @return void
+	 * @throws Throwable Anything the upgrade throws, after releasing the lock.
+	 */
+	public function maybe_upgrade() {
+		if ( version_compare( $this->version, SYNDICATION_VERSION, '>=' ) ) {
+			return;
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+		// Only one request upgrades. After a successful upgrade the lock is left to expire, so a
+		// request that read the old version before the upgrade finished can't run it again.
+		if ( ! WP_Upgrader::create_lock( 'syn_upgrade', 5 * MINUTE_IN_SECONDS ) ) {
+			return;
+		}
+
+		try {
+			$this->upgrade();
+		} catch ( Throwable $e ) {
+			// Let the next request try again.
+			WP_Upgrader::release_lock( 'syn_upgrade' );
+			throw $e;
+		}
 	}
 
 	private function upgrade() {
