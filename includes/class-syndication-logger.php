@@ -123,7 +123,7 @@ class Syndication_Logger {
 	 * These keys are read back and rendered on the Syndication Logs screen, so their
 	 * values must not be writable by whoever can edit a post. The leading underscore
 	 * already makes the current keys protected; the unprotected keys they replaced in
-	 * 2.2.3 are still read until the upgrade routine has moved them, so stay registered.
+	 * 2.3.0 are still read until the upgrade routine has moved them, so stay registered.
 	 *
 	 * map_meta_cap() consults the auth callback for add_post_meta, edit_post_meta and
 	 * delete_post_meta, which keeps the keys out of the Custom Fields panel, the
@@ -161,7 +161,7 @@ class Syndication_Logger {
 	/**
 	 * Read one of a site's log meta values.
 	 *
-	 * 2.2.3 moved the log to protected meta keys, and its upgrade routine moves existing
+	 * 2.3.0 moved the log to protected meta keys, and its upgrade routine moves existing
 	 * values across. Until that has run, fall back to the old unprotected key, so that
 	 * logging in the meantime carries the history forward rather than starting afresh.
 	 *
@@ -529,7 +529,7 @@ class Syndication_Logger {
 					 * wrote. Rows are ordered by meta_id alone, and the newest row for a site wins below,
 					 * so the result doesn't depend on how MySQL picks a row within a GROUP BY.
 					 *
-					 * The unprotected `syn_log` key is read too, until the 2.2.3 upgrade routine has moved
+					 * The unprotected `syn_log` key is read too, until the 2.3.0 upgrade routine has moved
 					 * it, but sorts after `_syn_log`: a site that has both has logged since the update,
 					 * and its `_syn_log` already carries the older history forward.
 					 */
@@ -541,7 +541,7 @@ class Syndication_Logger {
 						}
 
 						/*
-						 * Never unserialize the raw column directly. Before 2.2.3 the log was kept under an
+						 * Never unserialize the raw column directly. Before 2.3.0 the log was kept under an
 						 * unprotected meta key, so its contents cannot be assumed to be something this plugin wrote.
 						 * `maybe_unserialize()` applies the same gate as every other meta read, and the
 						 * array check discards anything that did not round-trip as a log array.

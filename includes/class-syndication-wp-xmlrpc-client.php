@@ -542,7 +542,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		 * If the limit is reached without a match, the post is treated as not
 		 * found on the remote, so it is pushed.
 		 *
-		 * @since 2.2.3
+		 * @since 2.3.0
 		 *
 		 * @param int $max_pages Maximum number of pages to request. Default 100.
 		 * @param int $site_id   ID of the syn_site post being pushed to.

@@ -107,7 +107,7 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Jobs scheduled with whole site objects, before 2.2.3, are cleared on reschedule.
+	 * Jobs scheduled with whole site objects, before 2.3.0, are cleared on reschedule.
 	 */
 	public function test_rescheduling_clears_jobs_scheduled_with_site_objects(): void {
 		global $push_syndication_server;
@@ -141,7 +141,7 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * A pull job scheduled before 2.2.3, with a site object, still pulls that site.
+	 * A pull job scheduled before 2.3.0, with a site object, still pulls that site.
 	 */
 	public function test_pull_content_still_accepts_site_objects(): void {
 		global $push_syndication_server;
@@ -221,7 +221,7 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Upgrading from before 2.2.3 drops the stored site objects and refreshes the jobs.
+	 * Upgrading from before 2.3.0 drops the stored site objects and refreshes the jobs.
 	 */
 	public function test_upgrade_clears_stored_site_objects_and_refreshes_jobs(): void {
 		global $push_syndication_server;

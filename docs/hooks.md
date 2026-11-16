@@ -173,7 +173,7 @@ Filters how many seconds [`wp syndication push-all-posts`](wp-cli.md#push-all-po
 
 - `int $seconds` Default `2`.
 
-Since 2.2.3.
+Since 2.3.0.
 
 ## WordPress XML-RPC pushes
 
@@ -191,7 +191,7 @@ Filters the data sent to `wp.newPost`.
 - `array $args` `post_title`, `post_content`, `post_excerpt`, `post_status`, `post_type`, `post_password`, `post_date_gmt`, `terms_names` and `custom_fields`.
 - `array $post` The post, as for `syn_xmlrpc_push_filter_new_post`.
 
-Before 2.2.3 the password was sent as `wp_password`, which WordPress ignored. It's now `post_password`.
+Before 2.3.0 the password was sent as `wp_password`, which WordPress ignored. It's now `post_password`.
 
 ### syn_xmlrpc_push_new_post_success
 
@@ -250,7 +250,7 @@ Filters how many pages of 100 posts the [loop check](pushing.md#avoiding-loops) 
 - `int $max_pages` Default `100`.
 - `int $site_ID`
 
-Since 2.2.3.
+Since 2.3.0.
 
 ## WordPress.com REST pushes
 
@@ -348,7 +348,7 @@ Filters the post types pulled posts can be. Items of any other type are skipped 
 
 - `string[] $post_types`
 
-Since 2.2.3.
+Since 2.3.0.
 
 ### syn_pull_user_agent
 
@@ -444,7 +444,7 @@ Filters whether entries are also written to the PHP error log. Read each time so
 
 - `bool|null $enabled` Default `null`, which follows `WP_DEBUG`. Return `true` or `false` to override it.
 
-Before 2.2.3 the default was `false`, and returning `false` couldn't turn logging off when `WP_DEBUG` was on.
+Before 2.3.0 the default was `false`, and returning `false` couldn't turn logging off when `WP_DEBUG` was on.
 
 ### syn_error_log_message_format
 

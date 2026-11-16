@@ -12,7 +12,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 /**
  * Class UpgradeXmlSiteStatusTest
  *
- * Before 2.2.3 the XML client ignored its status settings: every new pulled
+ * Before 2.3.0 the XML client ignored its status settings: every new pulled
  * post was published, with the default comment and ping status for its post
  * type. Now the settings apply, so the upgrade saves what has actually been
  * happening as the settings.
@@ -111,12 +111,12 @@ class UpgradeXmlSiteStatusTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * A site already on 2.2.3 keeps the settings an admin has chosen since.
+	 * A site already on 2.3.0 keeps the settings an admin has chosen since.
 	 */
 	public function test_upgrade_does_not_run_again(): void {
 		$site_id = $this->make_site( 'WP_XML' );
 
-		$this->upgrade_from( '2.2.3' );
+		$this->upgrade_from( '2.3.0' );
 
 		$this->assertSame( array( 'draft', 'closed', 'closed' ), $this->statuses( $site_id ) );
 	}

@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for the 2.2.3 upgrade step that moves the log to protected meta keys.
+ * Tests for the 2.3.0 upgrade step that moves the log to protected meta keys.
  *
  * @package Automattic\Syndication\Tests
  */

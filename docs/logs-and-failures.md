@@ -17,7 +17,7 @@ Each entry shows:
 
 You can filter by log ID, month and type, and search the messages. The search matches plain text, ignoring case.
 
-The screen shows the logs of up to 100 sites, fewer if some sites' logs haven't yet been moved to their 2.2.3 storage.
+The screen shows the logs of up to 100 sites, fewer if some sites' logs haven't yet been moved to their 2.3.0 storage.
 
 ### What's logged
 
