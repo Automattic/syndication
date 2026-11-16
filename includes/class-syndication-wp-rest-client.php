@@ -222,13 +222,7 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 	 */
 	private function _prepare_terms( $terms ) {
 
-		$terms_csv = '';
-
-		foreach ( $terms as $term ) {
-			$terms_csv .= $term . ',';
-		}
-
-		return $terms_csv;
+		return is_array( $terms ) ? implode( ',', $terms ) : '';
 	}
 
 	/**

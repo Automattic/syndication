@@ -116,4 +116,34 @@ class RestClientDateFormattingTest extends TestCase {
 			'scheduled post' => array( '2030-12-25 23:59:59', '2030-12-25T23:59:59+00:00' ),
 		);
 	}
+
+	/**
+	 * Terms are joined into a list with no trailing separator.
+	 */
+	public function test_terms_are_joined_without_trailing_comma(): void {
+		$this->assertSame( 'News,Sport', $this->call( '_prepare_terms', array( 'News', 'Sport' ) ) );
+	}
+
+	/**
+	 * No terms, or a failed term lookup, sends an empty list.
+	 *
+	 * @dataProvider data_no_terms
+	 *
+	 * @param mixed $terms Result of wp_get_object_terms().
+	 */
+	public function test_no_terms_returns_empty_string( $terms ): void {
+		$this->assertSame( '', $this->call( '_prepare_terms', $terms ) );
+	}
+
+	/**
+	 * Term lookups with nothing to send.
+	 *
+	 * @return array<string, array{0: mixed}>
+	 */
+	public function data_no_terms(): array {
+		return array(
+			'empty array' => array( array() ),
+			'error'       => array( new \stdClass() ),
+		);
+	}
 }

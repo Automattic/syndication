@@ -139,4 +139,15 @@ class RestClientPushTest extends WPIntegrationTestCase {
 
 		$this->assertSame( '2024-01-15T10:00:00+00:00', $this->requests[0]['args']['body']['date'] );
 	}
+
+	/**
+	 * Categories and tags are sent without a trailing comma.
+	 */
+	public function test_new_post_sends_terms_without_trailing_comma(): void {
+		$post_id = self::factory()->post->create( array( 'tags_input' => array( 'News', 'Sport' ) ) );
+
+		$this->client->new_post( $post_id );
+
+		$this->assertSame( 'News,Sport', $this->requests[0]['args']['body']['tags'] );
+	}
 }
