@@ -1,6 +1,6 @@
 # Syndication
 
-Stable tag: 2.2.1  
+Stable tag: 2.2.2  
 Requires at least: 6.4  
 Tested up to: 7.1  
 Requires PHP: 7.4  
