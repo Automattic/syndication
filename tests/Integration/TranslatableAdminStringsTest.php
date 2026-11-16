@@ -89,7 +89,7 @@ class TranslatableAdminStringsTest extends WPIntegrationTestCase {
 			}
 		);
 
-		$this->assertMatchesRegularExpression( '#\[To generate the following information automatically, visit the <a href="[^"]+" target="_blank">settings page</a>\.\]#', $html );
+		$this->assertMatchesRegularExpression( '#\[To generate the following information automatically, visit the <a href="[^"]+" target="_blank">settings page <span class="screen-reader-text">\[\(opens in a new tab\)\]</span></a>\.\]#', $html );
 	}
 
 	/**

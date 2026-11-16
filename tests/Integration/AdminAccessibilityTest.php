@@ -23,6 +23,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers WP_Push_Syndication_Server::display_client_secret
  * @covers Syndication_WP_REST_Client::display_settings
  * @covers Syndication_WP_XMLRPC_Client::display_settings
+ * @covers WP_Push_Syndication_Server::get_api_token
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -290,6 +291,66 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 			'saved client secret'   => array( 'client_secret', 'display_client_secret' ),
 			'saved REST API token'  => array( 'site_token', 'rest' ),
 			'saved XML-RPC password' => array( 'site_password', 'xmlrpc' ),
+		);
+	}
+
+	/**
+	 * Links that open a new tab say so.
+	 *
+	 * @dataProvider data_new_tab_links
+	 *
+	 * @param string $render Which screen to render.
+	 */
+	public function test_new_tab_links_say_so( string $render ): void {
+		// get_api_token() shows its new-tab link once WordPress.com returns a token.
+		$_GET['code'] = 'code';
+		add_filter(
+			'pre_http_request',
+			function () {
+				return array(
+					'response' => array( 'code' => 200 ),
+					'body'     => wp_json_encode(
+						array(
+							'access_token' => 'token',
+							'blog_id'      => 1,
+							'blog_url'     => 'https://example.wordpress.com',
+						)
+					),
+				);
+			}
+		);
+
+		$xpath = $this->render(
+			function () use ( $render ) {
+				if ( 'rest' === $render ) {
+					\Syndication_WP_REST_Client::display_settings( $this->site );
+				} else {
+					$this->server()->$render();
+				}
+			}
+		);
+
+		unset( $_GET['code'] );
+
+		$links = $xpath->query( '//a[@target="_blank"]' );
+		$this->assertGreaterThan( 0, $links->length );
+
+		foreach ( $links as $link ) {
+			$this->assertStringContainsString( '(opens in a new tab)', $link->textContent );
+		}
+	}
+
+	/**
+	 * Screens with links that open a new tab. With no sitegroups, the sitegroup lists link to create one.
+	 *
+	 * @return array[]
+	 */
+	public static function data_new_tab_links(): array {
+		return array(
+			'pull sitegroups on the settings screen' => array( 'display_pull_sitegroups_selection' ),
+			'sitegroups in the Syndicate meta box'   => array( 'add_syndicate_metabox' ),
+			'API token on the settings screen'       => array( 'get_api_token' ),
+			'REST site settings'                     => array( 'rest' ),
 		);
 	}
 }

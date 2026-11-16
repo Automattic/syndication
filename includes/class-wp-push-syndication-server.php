@@ -448,7 +448,7 @@ class WP_Push_Syndication_Server {
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
-			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . ' <span class="screen-reader-text">' . esc_html__( '(opens in a new tab)', 'push-syndication' ) . '</span></a></p>';
 			return;
 		}
 
@@ -679,13 +679,14 @@ class WP_Push_Syndication_Server {
 			sprintf(
 				/* translators: %s: Link to WordPress.com. */
 				__( 'Enter the above details in the relevant fields when registering a %s site.', 'push-syndication' ),
-				'<a href="https://wordpress.com" target="_blank">WordPress.com</a>'
+				'<a href="https://wordpress.com" target="_blank">WordPress.com <span class="screen-reader-text">' . esc_html__( '(opens in a new tab)', 'push-syndication' ) . '</span></a>'
 			),
 			array(
-				'a' => array(
+				'a'    => array(
 					'href'   => array(),
 					'target' => array(),
 				),
+				'span' => array( 'class' => array() ),
 			)
 		) . '</p>';
 	}
@@ -945,7 +946,7 @@ class WP_Push_Syndication_Server {
 		// if there are no sitegroups defined return.
 		if ( empty( $sitegroups ) ) {
 			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
-			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
+			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . ' <span class="screen-reader-text">' . esc_html__( '(opens in a new tab)', 'push-syndication' ) . '</span></a></p>';
 			return;
 		}
 

@@ -367,15 +367,17 @@ class Syndication_WP_REST_Client implements Syndication_Client {
 			<?php
 			echo wp_kses(
 				sprintf(
-					/* translators: %s: URL of the plugin settings page. */
-					__( 'To generate the following information automatically, visit the <a href="%s" target="_blank">settings page</a>.', 'push-syndication' ),
-					esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) )
+					/* translators: 1: URL of the plugin settings page, 2: Screen reader text saying the link opens in a new tab. */
+					__( 'To generate the following information automatically, visit the <a href="%1$s" target="_blank">settings page%2$s</a>.', 'push-syndication' ),
+					esc_url( admin_url( 'options-general.php?page=push-syndicate-settings' ) ),
+					' <span class="screen-reader-text">' . esc_html__( '(opens in a new tab)', 'push-syndication' ) . '</span>'
 				),
 				array(
-					'a' => array(
+					'a'    => array(
 						'href'   => array(),
 						'target' => array(),
 					),
+					'span' => array( 'class' => array() ),
 				)
 			);
 			?>
