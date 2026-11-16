@@ -487,9 +487,10 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 *
 	 * @param string $meta_key   The meta key to search for.
 	 * @param string $meta_value The meta value to match.
+	 * @param string $post_type  Optional. Post type to search. Default empty, which searches the remote's default, 'post'.
 	 * @return bool True if post exists on target site, false otherwise.
 	 */
-	public function is_source_site_post( $meta_key = '', $meta_value = '' ) {
+	public function is_source_site_post( $meta_key = '', $meta_value = '', $post_type = '' ) {
 
 		// If meta key or value are empty.
 		if ( empty( $meta_key ) || empty( $meta_value ) ) {
@@ -502,6 +503,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			'number' => 100,
 			'offset' => 0,
 		);
+		if ( $post_type ) {
+			$filter['post_type'] = $post_type;
+		}
 
 		/**
 		 * Filters how many pages of 100 remote posts the XML-RPC loop guard checks.

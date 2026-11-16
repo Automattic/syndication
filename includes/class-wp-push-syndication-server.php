@@ -1082,7 +1082,7 @@ class WP_Push_Syndication_Server {
 				if ( in_array( $info['state'], array( 'new', 'new-error' ), true ) && in_array( $transport_type, array( 'WP_REST', 'WP_XMLRPC' ), true ) ) {
 					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
 
-					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id ) ) {
+					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id, get_post_type( $post_ID ) ) ) {
 						continue;
 					}
 				}

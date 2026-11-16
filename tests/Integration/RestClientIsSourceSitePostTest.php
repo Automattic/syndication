@@ -108,6 +108,18 @@ class RestClientIsSourceSitePostTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A post type, when given, limits the query to that type.
+	 */
+	public function test_queries_the_given_post_type(): void {
+		$this->client->is_source_site_post( 'post_uniqueid', 'abc123', 'page' );
+
+		$this->assertSame(
+			'https://public-api.wordpress.com/rest/v1/sites/42/posts/?meta_key=post_uniqueid&meta_value=abc123&type=page',
+			$this->requests[0]['url']
+		);
+	}
+
+	/**
 	 * A match is reported when the API finds posts.
 	 */
 	public function test_true_when_posts_found(): void {

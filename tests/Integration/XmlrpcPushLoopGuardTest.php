@@ -49,6 +49,13 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 	private $get_posts_fails = false;
 
 	/**
+	 * Post type of every post on the fake remote.
+	 *
+	 * @var string
+	 */
+	private $remote_post_type = 'post';
+
+	/**
 	 * The syn_site post for the remote.
 	 *
 	 * @var \WP_Post
@@ -71,7 +78,8 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 		$this->calls         = array();
 		$this->remote_posts  = array();
 		$this->ignore_offset   = false;
-		$this->get_posts_fails = false;
+		$this->get_posts_fails  = false;
+		$this->remote_post_type = 'post';
 
 		$this->site = self::factory()->post->create_and_get( array( 'post_type' => 'syn_site' ) );
 		update_post_meta( $this->site->ID, 'syn_transport_type', 'WP_XMLRPC' );
@@ -109,6 +117,10 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 				$filter   = $message->params[3];
 				$offset   = isset( $filter['offset'] ) && ! $this->ignore_offset ? (int) $filter['offset'] : 0;
 				$response = array_slice( $this->remote_posts, $offset, (int) $filter['number'] );
+				// Like core, wp.getPosts returns only posts of type 'post' unless asked for another type.
+				if ( ( isset( $filter['post_type'] ) ? $filter['post_type'] : 'post' ) !== $this->remote_post_type ) {
+					$response = array();
+				}
 				break;
 			case 'wp.newPost':
 				$response = '99';
@@ -263,6 +275,24 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 		$this->push();
 
 		$this->assertContains( 'wp.getPosts', $this->calls );
+		$this->assertNotContains( 'wp.newPost', $this->calls );
+	}
+
+	/**
+	 * A page is checked against the remote's pages, not its posts.
+	 */
+	public function test_guard_checks_the_posts_own_type(): void {
+		wp_update_post(
+			array(
+				'ID'        => $this->post_id,
+				'post_type' => 'page',
+			)
+		);
+		$this->remote_post_type = 'page';
+		$this->remote_posts     = $this->remote_posts( 1, 0 );
+
+		$this->push();
+
 		$this->assertNotContains( 'wp.newPost', $this->calls );
 	}
 
