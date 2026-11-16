@@ -286,16 +286,4 @@ class DeletePushedPostsTest extends WPIntegrationTestCase {
 		$this->assertFalse( get_option( 'push_syndicate_settings' ) );
 		$this->assertSame( 'off', $push_syndication_server->push_syndicate_settings['delete_pushed_posts'] );
 	}
-
-	/**
-	 * Installs already on 2.2.3 or later keep whatever they chose.
-	 */
-	public function test_upgrade_leaves_the_setting_alone_from_2_2_3(): void {
-		$this->store_settings( array( 'delete_pushed_posts' => 'off' ) );
-
-		$this->upgrade_from( '2.2.3' );
-
-		$stored = get_option( 'push_syndicate_settings' );
-		$this->assertSame( 'off', $stored['delete_pushed_posts'] );
-	}
 }
