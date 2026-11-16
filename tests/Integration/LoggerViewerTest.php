@@ -11,6 +11,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
 use ReflectionMethod;
 use Syndication_Logger;
 use Syndication_Logger_List_Table;
+use Syndication_Logger_Viewer;
 
 require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-logger-viewer.php';
 
@@ -112,6 +113,30 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		$table         = new Syndication_Logger_List_Table();
 		$table->prepare_items();
 		$this->assertSame( array(), $table->items );
+	}
+
+	/**
+	 * The Logs screen is available to whoever has the plugin's capability.
+	 *
+	 * @covers Syndication_Logger_Viewer::add_menu_items
+	 */
+	public function test_logs_menu_uses_the_syndicate_capability(): void {
+		global $submenu;
+
+		add_filter(
+			'syn_syndicate_cap',
+			static function () {
+				return 'edit_others_posts';
+			}
+		);
+		wp_set_current_user( $this->factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		( new Syndication_Logger_Viewer() )->add_menu_items();
+
+		$logs_item = wp_list_filter( $submenu['edit.php?post_type=syn_site'] ?? array(), array( 2 => 'syndication_dashboard' ) );
+		$submenu   = array();
+
+		$this->assertSame( array( 'edit_others_posts' ), wp_list_pluck( $logs_item, 1 ) );
 	}
 
 	/**

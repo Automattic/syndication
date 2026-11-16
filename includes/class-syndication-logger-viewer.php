@@ -413,7 +413,9 @@ class Syndication_Logger_Viewer {
 	 * Register the Logs submenu page under Syndication Sites.
 	 */
 	public function add_menu_items() {
-		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', 'activate_plugins', 'syndication_dashboard', array( $this, 'render_list_page' ) );
+		$capability = apply_filters( 'syn_syndicate_cap', 'manage_options' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+
+		$hook = add_submenu_page( 'edit.php?post_type=syn_site', 'Logs', 'Logs', $capability, 'syndication_dashboard', array( $this, 'render_list_page' ) );
 		add_action( "load-$hook", array( $this, 'initialize_list_table' ) );
 	}
 
