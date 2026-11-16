@@ -86,8 +86,11 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 		$server = $this->_get_syndication_server();
 		$sites  = $server->get_sites_by_post_ID( $post_id );
 
-		if ( empty( $sites ) ) {
-			WP_CLI::error( __( 'Post has no selected sitegroups / sites', 'push-syndication' ) );
+		// The server always returns an array, so check for sites rather than emptiness.
+		if ( empty( $sites['selected_sites'] ) && empty( $sites['removed_sites'] ) ) {
+			/* translators: %d: post ID. */
+			WP_CLI::warning( sprintf( __( 'Post %d has no selected sitegroups with enabled sites; skipping.', 'push-syndication' ), $post_id ) );
+			return;
 		}
 
 		$server->push_content( $sites );
