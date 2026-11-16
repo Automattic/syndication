@@ -69,6 +69,21 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	}
 
 	/**
+	 * Set the feed URL, unless the site has none yet.
+	 *
+	 * SimplePie can't parse an empty URL, and on PHP 8.5 trying raises a deprecation.
+	 *
+	 * @param string|string[] $url Feed URL.
+	 */
+	public function set_feed_url( $url ) {
+		if ( '' === $url ) {
+			return;
+		}
+
+		parent::set_feed_url( $url );
+	}
+
+	/**
 	 * Fetch and parse the feed.
 	 *
 	 * WP_SimplePie_File uses wp_safe_remote_request(), which refuses private
