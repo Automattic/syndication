@@ -589,10 +589,23 @@ class WP_Push_Syndication_Server {
 			) 
 		);
 
-		$result = json_decode( $response['body'] );
+		$result = is_wp_error( $response ) ? null : json_decode( wp_remote_retrieve_body( $response ) );
 
-		if ( ! empty( $result->error ) ) {
-			echo '<p>' . esc_html__( 'Error retrieving API token ', 'push-syndication' ) . esc_html( $result->error_description ) . esc_html__( 'Please authorize again', 'push-syndication' ) . '</p>';
+		if ( ! isset( $result->access_token, $result->blog_id, $result->blog_url ) ) {
+			if ( is_wp_error( $response ) ) {
+				$reason = $response->get_error_message();
+			} elseif ( ! empty( $result->error_description ) ) {
+				$reason = $result->error_description;
+			} elseif ( ! empty( $result->error ) ) {
+				$reason = $result->error;
+			} else {
+				/* translators: %d: HTTP status code. */
+				$reason = sprintf( __( 'Unexpected response from WordPress.com (HTTP status %d).', 'push-syndication' ), wp_remote_retrieve_response_code( $response ) );
+			}
+
+			/* translators: %s: Reason the token request failed. */
+			echo '<p>' . esc_html( sprintf( __( 'Error retrieving API token: %s', 'push-syndication' ), $reason ) ) . '</p>';
+			echo '<p>' . esc_html__( 'Please authorize again.', 'push-syndication' ) . '</p>';
 
 			?>
 
