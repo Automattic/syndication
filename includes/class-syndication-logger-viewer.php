@@ -50,8 +50,9 @@ class Syndication_Logger_List_Table extends WP_List_Table {
 	 * Output CSS styles for the log list table columns.
 	 */
 	public function admin_header() {
-		$current_page = ( isset( $_GET['page'] ) ) ? (int) $_GET['page'] : false;
-		if ( 'syndication_dashboard' != $current_page ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only decides whether to print styles.
+		$current_page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( 'syndication_dashboard' !== $current_page ) {
 			return;
 		}
 

@@ -41,8 +41,25 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	 * Clean up request superglobals.
 	 */
 	public function tear_down(): void {
-		unset( $_GET['orderby'], $_GET['order'] );
+		unset( $_GET['orderby'], $_GET['order'], $_GET['page'] );
 		parent::tear_down();
+	}
+
+	/**
+	 * The column widths are output on the Logs screen, and only there.
+	 *
+	 * @covers Syndication_Logger_List_Table::admin_header
+	 */
+	public function test_admin_header_outputs_column_styles_only_on_the_logs_screen(): void {
+		$_GET['page'] = 'syndication_dashboard';
+		ob_start();
+		$this->table->admin_header();
+		$this->assertStringContainsString( '.column-message', ob_get_clean() );
+
+		$_GET['page'] = 'push-syndicate-settings';
+		ob_start();
+		$this->table->admin_header();
+		$this->assertSame( '', ob_get_clean() );
 	}
 
 	/**
