@@ -237,7 +237,10 @@ class Syndication_Logger {
 			'client'         => $client,
 		);
 
-		if ( false == $result || is_wp_error( $result ) ) {
+		if ( true === $result && 'delete' !== $event ) {
+			// The push clients return true, not a remote ID, when a syn_*_push_filter_* callback skipped the post.
+			self::log_post_info( $site_id, 'skip_' . $event, __( 'skipped by a push filter', 'push-syndication' ), $log_time, $extra );
+		} elseif ( false == $result || is_wp_error( $result ) ) {
 			if ( is_wp_error( $result ) ) {
 				$message = $result->get_error_message();
 			} else {
