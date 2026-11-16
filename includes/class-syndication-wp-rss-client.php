@@ -324,7 +324,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return array Array of category and tag IDs.
 	 */
 	public function set_taxonomy( $item ) {
-		$cats = $item->get_categories();
+		// SimplePie returns null, not an empty array, for an item with no categories.
+		$cats = (array) $item->get_categories();
 		$ids  = array(
 			'cats' => array(),
 			'tags' => array(),
