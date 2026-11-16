@@ -77,4 +77,20 @@ class SaveSyndicateSettingsTest extends WPIntegrationTestCase {
 		$this->assertNotEmpty( get_post_meta( $transitioned, 'post_uniqueid', true ) );
 		$this->assertSame( '', get_post_meta( $other_id, 'post_uniqueid', true ) );
 	}
+
+	/**
+	 * A user who can syndicate but can't edit the post doesn't change its sitegroups.
+	 */
+	public function test_skips_post_the_user_cannot_edit(): void {
+		add_filter( 'syn_syndicate_cap', fn () => 'edit_posts' );
+
+		$editor_post = self::factory()->post->create( array( 'post_author' => self::factory()->user->create( array( 'role' => 'editor' ) ) ) );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'author' ) ) );
+
+		$this->post_syndicate_metabox();
+
+		do_action( 'transition_post_status', 'publish', 'publish', get_post( $editor_post ) );
+
+		$this->assertSame( '', get_post_meta( $editor_post, '_syn_selected_sitegroups', true ) );
+	}
 }

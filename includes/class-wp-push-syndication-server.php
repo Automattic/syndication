@@ -1019,7 +1019,7 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
-		if ( ! $this->current_user_can_syndicate() ) {
+		if ( ! $this->current_user_can_syndicate() || ! current_user_can( 'edit_post', $post->ID ) ) {
 			return;
 		}
 
