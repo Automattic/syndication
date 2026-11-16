@@ -120,9 +120,10 @@ class Syndication_Logger {
 	/**
 	 * Register the log meta keys with an auth callback that always denies.
 	 *
-	 * These keys are read back and rendered on the Syndication Logs screen, and
-	 * get_messages() queries them across the whole of postmeta without constraining
-	 * the post type, so their values must not be writable by whoever can edit a post.
+	 * These keys are read back and rendered on the Syndication Logs screen, so their
+	 * values must not be writable by whoever can edit a post. The leading underscore
+	 * already makes the current keys protected; the unprotected keys they replaced in
+	 * 2.2.3 are still read until the upgrade routine has moved them, so stay registered.
 	 *
 	 * map_meta_cap() consults the auth callback for add_post_meta, edit_post_meta and
 	 * delete_post_meta, which keeps the keys out of the Custom Fields panel, the
@@ -134,7 +135,7 @@ class Syndication_Logger {
 	 * actually prevents a planted payload from executing.
 	 */
 	public static function register_log_meta() {
-		foreach ( array( 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
+		foreach ( array( '_syn_log', '_syn_log_errors', '_syn_log_errors_overall', 'syn_log', 'syn_log_errors', 'syn_log_errors_overall' ) as $meta_key ) {
 			register_meta(
 				'post',
 				$meta_key,
@@ -155,6 +156,25 @@ class Syndication_Logger {
 			self::$__instance = new self();
 		}
 		return self::$__instance;
+	}
+
+	/**
+	 * Read one of a site's log meta values.
+	 *
+	 * 2.2.3 moved the log to protected meta keys, and its upgrade routine moves existing
+	 * values across. Until that has run, fall back to the old unprotected key, so that
+	 * logging in the meantime carries the history forward rather than starting afresh.
+	 *
+	 * @param int    $post_id  Post ID the log is attached to.
+	 * @param string $meta_key Protected meta key, such as `_syn_log`.
+	 * @return mixed The meta value, or an empty string when neither key is set.
+	 */
+	private static function get_log_meta( $post_id, $meta_key ) {
+		if ( ! metadata_exists( 'post', $post_id, $meta_key ) ) {
+			$meta_key = substr( $meta_key, 1 );
+		}
+
+		return get_post_meta( $post_id, $meta_key, true );
 	}
 
 
@@ -377,7 +397,7 @@ class Syndication_Logger {
 					return new WP_Error( 'logger_no_post', __( 'The post_id provided does not exist.', 'push-syndication' ) );
 				}
 
-				$log = get_post_meta( $post->ID, 'syn_log', true );
+				$log = self::get_log_meta( $post->ID, '_syn_log' );
 
 				// When no meta exists, get_post_meta() with $single=true returns ''.
 				// Initialize as empty array for first log entry.
@@ -397,19 +417,19 @@ class Syndication_Logger {
 					$log[] = $log_entry;
 				}
 				// update_post_meta() unslashes its value, so slash it to keep backslashes in messages.
-				update_post_meta( $post->ID, 'syn_log', wp_slash( $log ) );
+				update_post_meta( $post->ID, '_syn_log', wp_slash( $log ) );
 
 				if ( 'success' == $msg_type ) {
-					update_post_meta( $post->ID, 'syn_log_errors', 0 );
+					update_post_meta( $post->ID, '_syn_log_errors', 0 );
 				} elseif ( 'error' == $msg_type ) {
 					// track failures since last success.
-					$errors = get_post_meta( $post->ID, 'syn_log_errors', true );
+					$errors = self::get_log_meta( $post->ID, '_syn_log_errors' );
 					$errors = (int) $errors + 1;
-					update_post_meta( $post->ID, 'syn_log_errors', $errors );
+					update_post_meta( $post->ID, '_syn_log_errors', $errors );
 					// track overall failures.
-					$errors = get_post_meta( $post->ID, 'syn_log_errors_overall', true );
+					$errors = self::get_log_meta( $post->ID, '_syn_log_errors_overall' );
 					$errors = (int) $errors + 1;
-					update_post_meta( $post->ID, 'syn_log_errors_overall', $errors );
+					update_post_meta( $post->ID, '_syn_log_errors_overall', $errors );
 				}
 
 				// @TODO log error counter.
@@ -492,7 +512,7 @@ class Syndication_Logger {
 		if ( 'object' == $storage_type ) {
 			if ( 'post' == $object_type ) {
 				if ( ! empty( $object_id ) ) {
-					$log = get_post_meta( $object_id, 'syn_log', true );
+					$log = self::get_log_meta( $object_id, '_syn_log' );
 
 					$log_entries[ $object_id ] = is_array( $log ) ? $log : array();
 				} else {
@@ -504,12 +524,25 @@ class Syndication_Logger {
 					 * unnecessary.
 					 *
 					 * @TODO implement walker
+					 *
+					 * Only sites' logs are read: log meta on any other post is not something this plugin
+					 * wrote. Rows are ordered by meta_id alone, and the newest row for a site wins below,
+					 * so the result doesn't depend on how MySQL picks a row within a GROUP BY.
+					 *
+					 * The unprotected `syn_log` key is read too, until the 2.2.3 upgrade routine has moved
+					 * it, but sorts after `_syn_log`: a site that has both has logged since the update,
+					 * and its `_syn_log` already carries the older history forward.
 					 */
-					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // Cache pass (see note above).
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- See note above.
+					$all_log_entries = $wpdb->get_results( "SELECT pm.post_id, pm.meta_value FROM $wpdb->postmeta pm INNER JOIN $wpdb->posts p ON p.ID = pm.post_id WHERE pm.meta_key IN ( '_syn_log', 'syn_log' ) AND p.post_type = 'syn_site' ORDER BY pm.meta_key = 'syn_log', pm.meta_id DESC LIMIT 0, 100" );
 					foreach ( $all_log_entries as $log_entry ) {
+						if ( isset( $log_entries[ $log_entry->post_id ] ) ) {
+							continue;
+						}
+
 						/*
-						 * Never unserialize the raw column directly. `syn_log` is an unprotected meta key,
-						 * so its contents cannot be assumed to be something this plugin wrote.
+						 * Never unserialize the raw column directly. Before 2.2.3 the log was kept under an
+						 * unprotected meta key, so its contents cannot be assumed to be something this plugin wrote.
 						 * `maybe_unserialize()` applies the same gate as every other meta read, and the
 						 * array check discards anything that did not round-trip as a log array.
 						 */

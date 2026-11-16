@@ -113,7 +113,7 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 	 * @return array<string, mixed>
 	 */
 	private function last_log_entry( int $site_id ): array {
-		$log = get_post_meta( $site_id, 'syn_log', true );
+		$log = get_post_meta( $site_id, '_syn_log', true );
 		return end( $log );
 	}
 

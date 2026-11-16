@@ -239,7 +239,7 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 2, count( array_keys( $this->calls, 'wp.getPosts', true ) ), 'The guard should stop at the first page with nothing new.' );
 		$this->assertContains( 'wp.newPost', $this->calls );
-		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, 'syn_log', true ), 'status' ) );
+		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, '_syn_log', true ), 'status' ) );
 	}
 
 	/**
@@ -258,7 +258,7 @@ class XmlrpcPushLoopGuardTest extends WPIntegrationTestCase {
 
 		$this->assertSame( 1, count( array_keys( $this->calls, 'wp.getPosts', true ) ) );
 		$this->assertContains( 'wp.newPost', $this->calls );
-		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, 'syn_log', true ), 'status' ) );
+		$this->assertContains( 'loop_guard_incomplete', array_column( (array) get_post_meta( $this->site->ID, '_syn_log', true ), 'status' ) );
 	}
 
 	/**
