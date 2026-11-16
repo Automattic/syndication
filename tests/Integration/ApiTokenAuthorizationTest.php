@@ -79,14 +79,15 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 
 		$GLOBALS['push_syndication_server']->push_syndicate_settings['client_id'] = '42';
 
-		$_GET['code'] = 'auth-code';
+		$_GET['code']  = 'auth-code';
+		$_GET['state'] = wp_create_nonce( 'syndication_wpcom_authorize' );
 	}
 
 	/**
 	 * Restore settings and superglobals.
 	 */
 	public function tear_down(): void {
-		unset( $_GET['code'], $_GET['settings-updated'] );
+		unset( $_GET['code'], $_GET['state'], $_GET['settings-updated'] );
 
 		$GLOBALS['push_syndication_server']->push_syndicate_settings = $this->original_settings;
 
@@ -174,6 +175,51 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 
 		$this->assert_authorize_button( $html );
 		$this->assertEmpty( $this->requests );
+	}
+
+	/**
+	 * The Authorize button carries a nonce in the state parameter.
+	 */
+	public function test_authorize_button_carries_state(): void {
+		unset( $_GET['code'] );
+
+		$html = $this->render();
+
+		$this->assertStringContainsString( 'state=' . wp_create_nonce( 'syndication_wpcom_authorize' ), html_entity_decode( $html ) );
+	}
+
+	/**
+	 * A code that comes back without a valid state is not exchanged.
+	 *
+	 * @dataProvider data_invalid_states
+	 *
+	 * @param string|null $state State parameter, or null for none.
+	 */
+	public function test_code_without_valid_state_is_not_exchanged( ?string $state ): void {
+		if ( null === $state ) {
+			unset( $_GET['state'] );
+		} else {
+			$_GET['state'] = $state;
+		}
+
+		$html = $this->render();
+
+		$this->assertEmpty( $this->requests );
+		$this->assert_authorize_button( $html );
+		$this->assertStringNotContainsString( 'the-token', $html );
+	}
+
+	/**
+	 * State parameters that don't prove this user started the authorization.
+	 *
+	 * @return array<string, array{0: string|null}>
+	 */
+	public function data_invalid_states(): array {
+		return array(
+			'missing' => array( null ),
+			'empty'   => array( '' ),
+			'forged'  => array( 'not-a-nonce' ),
+		);
 	}
 
 	/**

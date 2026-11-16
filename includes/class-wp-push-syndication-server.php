@@ -592,14 +592,16 @@ class WP_Push_Syndication_Server {
 				'client_id'     => rawurlencode( $this->push_syndicate_settings['client_id'] ),
 				'redirect_uri'  => rawurlencode( $redirect_uri ),
 				'response_type' => 'code',
+				// WordPress.com returns the state with the code, so a code this user didn't ask for is refused.
+				'state'         => wp_create_nonce( 'syndication_wpcom_authorize' ),
 			),
 			'https://public-api.wordpress.com/oauth2/authorize'
 		);
 
 		echo '<h2>' . esc_html__( 'Authorization', 'push-syndication' ) . '</h2>';
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect from WordPress.com, which cannot carry a nonce.
-		$code = isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
+		$state = isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : '';
+		$code  = isset( $_GET['code'] ) && wp_verify_nonce( $state, 'syndication_wpcom_authorize' ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : '';
 
 		// if code is not found return or settings updated return.
 		if ( '' === $code || ! empty( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check.
