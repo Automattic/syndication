@@ -678,8 +678,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			<div class="notice notice-error inline">
 				<p>
 					<?php
-					// translators: %s: Comma-separated list of meta keys.
-					echo esc_html( sprintf( __( 'These meta keys were not saved, because they are protected or reserved for Syndication: %s', 'push-syndication' ), implode( ', ', $rejected_keys ) ) );
+					// translators: %s: Comma-separated list of post fields and meta keys.
+					echo esc_html( sprintf( __( 'These fields were not saved, because pulled content may not be written to them: %s', 'push-syndication' ), implode( ', ', $rejected_keys ) ) );
 					?>
 				</p>
 			</div>
@@ -851,7 +851,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_id_field', isset( $_POST['id_field'] ) ? sanitize_text_field( wp_unslash( $_POST['id_field'] ) ) : '' );
 
-		// Meta keys that the config names but pulled data may not be written to.
+		// Fields that the config names but pulled data may not be written to.
 		$rejected_keys = array();
 
 		$enc_field = isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '';
@@ -888,7 +888,12 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 					$row_data['field'] = sanitize_text_field( $row['field'] );
 
-					if ( $row_data['is_meta'] && '' !== $row_data['field'] && ! self::is_allowed_meta_key( $row_data['field'] ) ) {
+					// pull_content() also strips ID and import_id, which would pick the local post written to.
+					$is_disallowed = $row_data['is_meta']
+						? '' !== $row_data['field'] && ! self::is_allowed_meta_key( $row_data['field'] )
+						: in_array( $row_data['field'], array( 'ID', 'import_id' ), true );
+
+					if ( $is_disallowed ) {
 						$rejected_keys[] = $row_data['field'];
 						continue;
 					}

@@ -1658,6 +1658,9 @@ class WP_Push_Syndication_Server {
 						}
 						$post = apply_filters( 'syn_pull_new_post', $post, $site, $client );
 
+						// Pulled data must not pick the local post: an ID would overwrite an existing one.
+						unset( $post['ID'], $post['import_id'] );
+
 						$result = wp_insert_post( $post, true );
 
 						do_action( 'syn_post_pull_new_post', $result, $post, $site, $transport_type, $client );

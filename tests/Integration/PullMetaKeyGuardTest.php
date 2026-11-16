@@ -105,6 +105,16 @@ class PullMetaKeyGuardTest extends WPIntegrationTestCase {
 					'is_item' => 'true',
 					'field'   => 'post_title',
 				),
+				array(
+					'xpath'   => 'id',
+					'is_item' => 'true',
+					'field'   => 'ID',
+				),
+				array(
+					'xpath'   => 'import',
+					'is_item' => 'true',
+					'field'   => 'import_id',
+				),
 			),
 		);
 
@@ -120,7 +130,7 @@ class PullMetaKeyGuardTest extends WPIntegrationTestCase {
 		\Syndication_WP_XML_Client::display_settings( get_post( $site_id ) );
 		$html = ob_get_clean();
 
-		$this->assertStringContainsString( '_syn_slave_post_states, _thumbnail_id, syn_log', $html );
+		$this->assertStringContainsString( '_syn_slave_post_states, _thumbnail_id, syn_log, ID, import_id', $html );
 
 		ob_start();
 		\Syndication_WP_XML_Client::display_settings( get_post( $site_id ) );
