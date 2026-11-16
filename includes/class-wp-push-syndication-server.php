@@ -867,11 +867,13 @@ class WP_Push_Syndication_Server {
 					}
 				);
 			} else {
+				// Run before the default priority, so a more specific message the client added in test_connection() wins.
 				add_filter(
 					'redirect_post_location',
 					function ( $location ) {
 						return add_query_arg( 'message', 252, $location );
-					}
+					},
+					9
 				);
 				$site_enabled = 'off';
 			}

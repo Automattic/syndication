@@ -457,7 +457,17 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 * @return bool True on success; false on failure.
 	 */
 	public function test_connection() {
-		return ! is_wp_error( $this->fetch_feed() );
+		$feed = $this->fetch_feed();
+		if ( is_wp_error( $feed ) ) {
+			return false;
+		}
+
+		$use_errors = libxml_use_internal_errors( true );
+		$xml        = simplexml_load_string( $feed, null, LIBXML_NONET );
+		libxml_clear_errors();
+		libxml_use_internal_errors( $use_errors );
+
+		return false !== $xml;
 	}
 
 	/**

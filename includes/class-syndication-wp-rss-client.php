@@ -144,11 +144,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	/**
 	 * Test the connection to the remote site.
 	 *
-	 * @return bool True (always succeeds for RSS).
+	 * @return bool True if the feed was fetched and parsed; false otherwise.
 	 */
 	public function test_connection() {
-		// TODO: Implement test_connection() method.
-		return true;
+		return true === $this->init();
 	}
 
 	/**
