@@ -1123,6 +1123,9 @@ class WP_Push_Syndication_Server {
 
 		if ( ! empty( $sites['selected_sites'] ) ) {
 			foreach ( $sites['selected_sites'] as $site ) {
+				// get_site_info() drops the site's entry; a site that is skipped gets it back.
+				$states_before_site = $slave_post_states;
+
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
@@ -1133,6 +1136,7 @@ class WP_Push_Syndication_Server {
 					$unique_id = get_post_meta( $post_ID, 'post_uniqueid', true );
 
 					if ( ! empty( $unique_id ) && $client->is_source_site_post( 'post_uniqueid', $unique_id, get_post_type( $post_ID ) ) ) {
+						$slave_post_states = $states_before_site;
 						continue;
 					}
 				}
@@ -1153,6 +1157,7 @@ class WP_Push_Syndication_Server {
 				} else { // States 'success', 'edit-error' and 'remove-error'.
 					$push_edit_shortcircuit = apply_filters( 'syn_pre_push_edit_post_shortcircuit', false, $post_ID, $site, $transport_type, $client, $info );
 					if ( true === $push_edit_shortcircuit ) {
+						$slave_post_states = $states_before_site;
 						continue;
 					}
 
@@ -1168,13 +1173,26 @@ class WP_Push_Syndication_Server {
 
 		if ( ! empty( $sites['removed_sites'] ) ) {
 			foreach ( $sites['removed_sites'] as $site ) {
+				// get_site_info() drops the site's entry; a skipped removal puts it back.
+				$states_before_site = $slave_post_states;
+
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
 				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
 				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them.
 				if ( 'success' === $info['state'] || 'edit-error' === $info['state'] || 'remove-error' === $info['state'] ) {
+					// The same hooks as deleting the remote copies of a trashed post, so removals are logged.
+					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+					if ( true === $push_delete_shortcircuit ) {
+						$slave_post_states[ $info['state'] ][ $site->ID ] = $states_before_site[ $info['state'] ][ $site->ID ];
+						continue;
+					}
+
 					$result = $client->delete_post( $info['ext_ID'] );
+
+					do_action( 'syn_post_push_delete_post', $result, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
+
 					if ( is_wp_error( $result ) ) {
 						$slave_post_states['remove-error'][ $site->ID ] = $result;
 						$this->update_slave_post_states( $post_ID, $slave_post_states );
@@ -1223,6 +1241,9 @@ class WP_Push_Syndication_Server {
 			}
 		}
 
+		// A site still targeted by a ticked sitegroup, directly or through a parent, keeps its copy.
+		$listed_site_ids = wp_list_pluck( $data['selected_sites'], 'ID' );
+
 		if ( ! empty( $removed_sitegroups ) ) {
 			foreach ( $removed_sitegroups as $removed_sitegroup ) {
 
@@ -1234,8 +1255,9 @@ class WP_Push_Syndication_Server {
 
 				foreach ( $sites as $site ) {
 					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
-					if ( 'on' === $site_enabled ) {
+					if ( 'on' === $site_enabled && ! in_array( $site->ID, $listed_site_ids, true ) ) {
 						$data['removed_sites'][] = $site;
+						$listed_site_ids[]       = $site->ID;
 					}
 				}
 			}
