@@ -46,6 +46,12 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		SimplePie_Cache::register( 'wp_transient', 'WP_Feed_Cache_Transient' );
 		$this->set_cache_location( 'wp_transient' );
 
+		// Fetch through the HTTP API, as fetch_feed() does, so proxy settings, the
+		// pull user agent and the HTTP API filters apply. The legacy 'File' name
+		// works with every SimplePie version core has bundled since 6.4.
+		require_once ABSPATH . WPINC . '/class-wp-simplepie-file.php';
+		$this->registry->register( 'File', 'WP_SimplePie_File', true );
+
 		$this->default_post_type      = get_post_meta( $site_ID, 'syn_default_post_type', true );
 		$this->default_post_status    = get_post_meta( $site_ID, 'syn_default_post_status', true );
 		$this->default_comment_status = get_post_meta( $site_ID, 'syn_default_comment_status', true );
@@ -56,6 +62,36 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		add_action( 'syn_post_pull_new_post', array( __CLASS__, 'save_tax' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_meta' ), 10, 5 );
 		add_action( 'syn_post_pull_edit_post', array( __CLASS__, 'update_tax' ), 10, 5 );
+	}
+
+	/**
+	 * Fetch and parse the feed.
+	 *
+	 * WP_SimplePie_File uses wp_safe_remote_request(), which refuses private
+	 * addresses. Feeds on an intranet have always worked, and the XML client
+	 * uses wp_remote_get(), so allow them for the duration of the fetch.
+	 *
+	 * @return bool True if the feed was fetched and parsed.
+	 */
+	public function init() {
+		// phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Only reject_unsafe_urls changes; the timeout is untouched.
+		add_filter( 'http_request_args', array( __CLASS__, 'allow_private_feed_hosts' ) );
+		$result = parent::init();
+		remove_filter( 'http_request_args', array( __CLASS__, 'allow_private_feed_hosts' ) );
+
+		return $result;
+	}
+
+	/**
+	 * Let a feed request reach a private address, as wp_remote_get() does.
+	 *
+	 * @param array $args HTTP request arguments.
+	 * @return array The arguments, with unsafe URLs allowed.
+	 */
+	public static function allow_private_feed_hosts( $args ) {
+		$args['reject_unsafe_urls'] = false;
+
+		return $args;
 	}
 
 	/**
