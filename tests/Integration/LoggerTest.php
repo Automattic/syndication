@@ -200,6 +200,22 @@ class LoggerTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * Backslashes in a message survive being written, and being written again with later entries.
+	 *
+	 * @covers Syndication_Logger::log_post_error
+	 */
+	public function test_log_keeps_backslashes_in_messages(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Failed to parse feed at C:\\feeds\\a.xml' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Second failure' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Third failure' );
+
+		$log = get_post_meta( $site_id, 'syn_log', true );
+		$this->assertSame( 'Failed to parse feed at C:\\feeds\\a.xml', $log[0]['message'] );
+	}
+
+	/**
 	 * log_post_success() is callable statically, like its error and info siblings.
 	 *
 	 * @covers Syndication_Logger::log_post_success

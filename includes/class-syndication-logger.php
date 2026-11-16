@@ -385,7 +385,8 @@ class Syndication_Logger {
 
 					$log[] = $log_entry;
 				}
-				update_post_meta( $post->ID, 'syn_log', $log );
+				// update_post_meta() unslashes its value, so slash it to keep backslashes in messages.
+				update_post_meta( $post->ID, 'syn_log', wp_slash( $log ) );
 
 				if ( 'success' == $msg_type ) {
 					update_post_meta( $post->ID, 'syn_log_errors', 0 );
