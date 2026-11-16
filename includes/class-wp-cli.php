@@ -114,6 +114,12 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Please select a valid site.' );
 		}
 
+		if ( 'on' !== get_post_meta( $site_id, 'syn_site_enabled', true ) ) {
+			/* translators: %d: site ID. */
+			WP_CLI::warning( sprintf( __( 'Site %d is disabled; nothing to pull.', 'push-syndication' ), $site_id ) );
+			return;
+		}
+
 		// Enable verbosity.
 		$this->_make_em_talk_pull();
 

@@ -131,4 +131,19 @@ class CliPullCommandTest extends WPIntegrationTestCase {
 		$this->assertStringContainsString( 'empty-group', $warnings[0] );
 		$this->assertSame( '', get_post_meta( $scheduled_site, 'syn_last_pull_time', true ), 'No site should be pulled.' );
 	}
+
+	/**
+	 * A disabled site is reported rather than skipped in silence.
+	 *
+	 * @covers ::pull_site
+	 */
+	public function test_pull_site_warns_when_site_is_disabled(): void {
+		$site_id = $this->create_site( 'some-group', 'off' );
+
+		( new Syndication_CLI_Command() )->pull_site( array(), array( 'site_id' => $site_id ) );
+
+		$warnings = WP_CLI::messages( 'warning' );
+		$this->assertCount( 1, $warnings );
+		$this->assertStringContainsString( (string) $site_id, $warnings[0] );
+	}
 }
