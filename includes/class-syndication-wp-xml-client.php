@@ -517,6 +517,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$enc_field              = get_post_meta( $site->ID, 'syn_enc_field', true );
 		$enc_is_photo           = get_post_meta( $site->ID, 'syn_enc_is_photo', true );
 
+		// A site with no saved node config gets '', which unset() below can't handle.
+		if ( ! is_array( $node_config ) ) {
+			$node_config = array();
+		}
+
 		if ( isset( $node_config['namespace'] ) ) {
 			$namespace = $node_config['namespace'];
 		}
@@ -534,7 +539,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$categories = isset( $node_config['categories'] ) && ! empty( $node_config['categories'] ) ? (array) $node_config['categories'] : null;
 		unset( $node_config['categories'] );
 
-		$custom_nodes = $node_config['nodes'];
+		$custom_nodes = isset( $node_config['nodes'] ) ? $node_config['nodes'] : array();
 		?>
 		<p>
 			<label for="feed_url"><?php esc_html_e( 'Enter feed URL', 'push-syndication' ); ?></label>

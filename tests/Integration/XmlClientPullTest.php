@@ -255,4 +255,17 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 		\Syndication_WP_XML_Client::update_tax( $post_id, array( 'tax' => array( 'post_tag' => array( 'politics', 'sport' ) ) ), get_post( $site_id ), 'WP_XML', $client );
 		$this->assertEqualsCanonicalizing( array( 'politics', 'sport' ), wp_get_post_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) ) );
 	}
+
+	/**
+	 * The settings form renders for a site with no saved node configuration.
+	 */
+	public function test_settings_render_without_a_saved_node_config(): void {
+		$site_id = self::factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		ob_start();
+		\Syndication_WP_XML_Client::display_settings( get_post( $site_id ) );
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'name="post_root"', $html );
+	}
 }
