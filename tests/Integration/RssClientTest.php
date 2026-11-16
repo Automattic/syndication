@@ -49,6 +49,18 @@ class RssClientTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A category that doesn't exist yet is created and attached on the same pull.
+	 */
+	public function test_new_category_is_attached_on_the_pull_that_creates_it(): void {
+		$posts = $this->make_client( '<item><guid>a</guid><title>A</title><category>Brand New Category</category></item>' )->get_posts();
+
+		$term = get_term_by( 'name', 'Brand New Category', 'category' );
+
+		$this->assertInstanceOf( \WP_Term::class, $term, 'The category should have been created.' );
+		$this->assertSame( array( $term->term_id ), $posts[0]['post_category'] );
+	}
+
+	/**
 	 * An item with no categories is pulled without a warning.
 	 */
 	public function test_item_without_categories_has_none(): void {
