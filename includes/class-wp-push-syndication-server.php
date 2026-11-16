@@ -269,6 +269,8 @@ class WP_Push_Syndication_Server {
 				wp_enqueue_style( 'syn-edit-sites', plugins_url( 'css/sites.css', __FILE__ ), array(), $this->version );
 			} elseif ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
 				wp_enqueue_style( 'syn-edit-site', plugins_url( 'css/edit-site.css', __FILE__ ), array(), $this->version );
+				// The XML client's mapping rows announce changes with wp.a11y.speak().
+				wp_enqueue_script( 'wp-a11y' );
 			}
 		}
 	}

@@ -829,16 +829,21 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 				// Delegated, so rows added with Add new can be deleted too.
 				$rows.on( 'click', '.syn-pull-xpath-delete', function () {
-					var $row = $( this ).closest( 'tr' );
+					var $row = $( this ).closest( 'tr' ),
+						$focus = $row.next().length ? $row.next() : $row.prev();
 
 					// Add new copies the last row, so always keep one: empty it instead.
 					if ( 1 === $rows.children().length ) {
 						$row.find( 'input[type="text"]' ).val( '' );
 						$row.find( 'input[type="checkbox"]' ).prop( 'checked', false );
-						return;
+						$focus = $row;
+					} else {
+						$row.remove();
 					}
 
-					$row.remove();
+					// The focused button may be gone, so move focus to a row that's still there.
+					$focus.find( 'input' ).first().trigger( 'focus' );
+					wp.a11y.speak( '<?php echo esc_js( __( 'Mapping deleted.', 'push-syndication' ) ); ?>' );
 				} );
 
 				$( '.syn-pull-xpath-add-new' ).on( 'click', function () {
@@ -863,6 +868,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					} );
 
 					$rows.append( $row );
+					$row.find( 'input' ).first().trigger( 'focus' );
+					wp.a11y.speak( '<?php echo esc_js( __( 'Mapping added.', 'push-syndication' ) ); ?>' );
 				} );
 			} );
 		</script>

@@ -15,6 +15,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers WP_Push_Syndication_Server::add_site_status_metabox
  * @covers WP_Push_Syndication_Server::display_transports
  * @covers Syndication_WP_XML_Client::display_settings
+ * @covers WP_Push_Syndication_Server::load_scripts_and_styles
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -35,6 +36,17 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 
 		$this->site      = self::factory()->post->create_and_get( array( 'post_type' => 'syn_site' ) );
 		$GLOBALS['post'] = $this->site;
+	}
+
+	/**
+	 * Undo the screen and scripts a test set up.
+	 */
+	public function tear_down(): void {
+		unset( $GLOBALS['typenow'] );
+		wp_dequeue_script( 'wp-a11y' );
+		wp_dequeue_style( 'syn-edit-site' );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -164,5 +176,16 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 		}
 
 		$this->assertSame( 1, $xpath->query( '//button[@type="button"][contains(@class, "syn-pull-xpath-add-new")]' )->length, 'Add new is not a button.' );
+	}
+
+	/**
+	 * The site edit screen loads wp.a11y.speak(), which the mapping rows announce changes with.
+	 */
+	public function test_site_edit_screen_loads_the_speak_script(): void {
+		$GLOBALS['typenow'] = 'syn_site';
+
+		$this->server()->load_scripts_and_styles( 'post.php' );
+
+		$this->assertTrue( wp_script_is( 'wp-a11y', 'enqueued' ) );
 	}
 }
