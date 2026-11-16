@@ -8,6 +8,8 @@
 namespace Automattic\Syndication\Tests;
 
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
+use ReflectionMethod;
+use Syndication_Logger;
 use Syndication_Logger_List_Table;
 
 require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-logger-viewer.php';
@@ -60,6 +62,30 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 		ob_start();
 		$this->table->admin_header();
 		$this->assertSame( '', ob_get_clean() );
+	}
+
+	/**
+	 * Every month between the oldest and newest entry is offered, including short months.
+	 *
+	 * @covers Syndication_Logger_List_Table::_create_months_dropdown
+	 */
+	public function test_months_dropdown_lists_every_month_in_range(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Oldest', '2026-01-31 12:00:00' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Newest', '2026-03-01 08:00:00' );
+
+		$this->table->prepare_items();
+
+		$method = new ReflectionMethod( $this->table, '_create_months_dropdown' );
+		$method->setAccessible( true );
+
+		ob_start();
+		$method->invoke( $this->table );
+		$output = ob_get_clean();
+
+		preg_match_all( "/value='(\d{4}-\d{2})'/", $output, $matches );
+		$this->assertSame( array( '2026-01', '2026-02', '2026-03' ), $matches[1] );
 	}
 
 	/**
