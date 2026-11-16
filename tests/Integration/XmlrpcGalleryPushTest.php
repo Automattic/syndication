@@ -138,4 +138,28 @@ class XmlrpcGalleryPushTest extends WPIntegrationTestCase {
 
 		$this->assertSame( '[gallery] [gallery ids="77"]', $this->calls['wp.newPost'][3]['post_content'] );
 	}
+
+	/**
+	 * A failed gallery upload aborts a new push instead of sending the error as content.
+	 */
+	public function test_failed_gallery_upload_aborts_new_post(): void {
+		$this->gallery_upload_fails = true;
+
+		$result = $this->client->new_post( $this->post_with( '[gallery ids="' . $this->attachment() . '"]' ) );
+
+		$this->assertWPError( $result );
+		$this->assertArrayNotHasKey( 'wp.newPost', $this->calls );
+	}
+
+	/**
+	 * A failed gallery upload aborts an edit push instead of sending the error as content.
+	 */
+	public function test_failed_gallery_upload_aborts_edit_post(): void {
+		$this->gallery_upload_fails = true;
+
+		$result = $this->client->edit_post( $this->post_with( '[gallery ids="' . $this->attachment() . '"]' ), 99 );
+
+		$this->assertWPError( $result );
+		$this->assertArrayNotHasKey( 'wp.editPost', $this->calls );
+	}
 }
