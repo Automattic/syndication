@@ -20,6 +20,20 @@ class Syndication_Site_Failure_Monitor {
 	 */
 	public function __construct() {
 		add_action( 'push_syndication_after_event_pull_failure', array( $this, 'handle_pull_failure_event' ), 10, 2 );
+		add_action( 'push_syndication_after_event_pull_success', array( $this, 'handle_pull_success_event' ) );
+	}
+
+	/**
+	 * Reset the failure count after a successful pull.
+	 *
+	 * Only consecutive failures should disable a site, not occasional ones
+	 * spread over weeks of successful pulls.
+	 *
+	 * @param int $site_id The site ID.
+	 */
+	public function handle_pull_success_event( $site_id ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing hook, handled by Syndication_Event_Counter.
+		do_action( 'push_syndication_reset_event', 'pull_failure', $site_id );
 	}
 
 	/**

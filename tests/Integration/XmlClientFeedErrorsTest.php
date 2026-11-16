@@ -93,4 +93,20 @@ class XmlClientFeedErrorsTest extends WPIntegrationTestCase {
 
 		$this->assertSame( array(), ( new \Syndication_WP_XML_Client( $this->make_site() ) )->get_posts() );
 	}
+
+	/**
+	 * A feed that downloads but never parses counts as a failed pull every time,
+	 * not as a success that resets the count, so the site is still disabled.
+	 */
+	public function test_unparseable_feed_still_disables_the_site(): void {
+		$this->feed_body = '<rss><channel><item>';
+
+		$site_id = $this->make_site();
+
+		for ( $pull = 0; $pull < 3; $pull++ ) {
+			( new \Syndication_WP_XML_Client( $site_id ) )->get_posts();
+		}
+
+		$this->assertEmpty( get_post_meta( $site_id, 'syn_site_enabled', true ) );
+	}
 }
