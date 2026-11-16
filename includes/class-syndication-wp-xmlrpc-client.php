@@ -668,8 +668,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 			<label for="site_password"><?php echo esc_html__( 'Enter Password', 'push-syndication' ); ?></label>
 		</p>
 		<p>
-			<input type="password" class="widefat" name="site_password" id="site_password" size="100"  autocomplete="off" value="" placeholder="<?php echo $has_password ? esc_attr__( 'Leave blank to keep the saved value', 'push-syndication' ) : ''; ?>" />
+			<input type="password" class="widefat" name="site_password" id="site_password" size="100" autocomplete="off" value=""<?php echo $has_password ? ' aria-describedby="site_password-description"' : ''; ?> />
 		</p>
+		<?php if ( $has_password ) : ?>
+			<p class="description" id="site_password-description"><?php esc_html_e( 'Leave blank to keep the saved value.', 'push-syndication' ); ?></p>
+		<?php endif; ?>
 
 		<?php
 

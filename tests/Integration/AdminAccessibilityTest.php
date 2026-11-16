@@ -19,6 +19,10 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers WP_Push_Syndication_Server::display_pull_sitegroups_selection
  * @covers WP_Push_Syndication_Server::display_post_types_selection
  * @covers WP_Push_Syndication_Server::add_syndicate_metabox
+ * @covers WP_Push_Syndication_Server::display_max_pull_attempts
+ * @covers WP_Push_Syndication_Server::display_client_secret
+ * @covers Syndication_WP_REST_Client::display_settings
+ * @covers Syndication_WP_XMLRPC_Client::display_settings
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -232,6 +236,60 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 			'pull sitegroups on the settings screen' => array( 'display_pull_sitegroups_selection' ),
 			'post types on the settings screen'      => array( 'display_post_types_selection' ),
 			'sitegroups in the Syndicate meta box'   => array( 'add_syndicate_metabox' ),
+		);
+	}
+
+	/**
+	 * Help text is tied to its field, and doesn't live in a placeholder that disappears as you type.
+	 *
+	 * @dataProvider data_described_fields
+	 *
+	 * @param string $field_id ID of the field.
+	 * @param string $render   Which screen to render.
+	 */
+	public function test_help_text_describes_its_field( string $field_id, string $render ): void {
+		$original_settings = $this->server()->push_syndicate_settings;
+		$this->server()->push_syndicate_settings['client_secret'] = 'saved';
+		update_post_meta( $this->site->ID, 'syn_site_token', push_syndicate_encrypt( 'saved' ) );
+		update_post_meta( $this->site->ID, 'syn_site_password', push_syndicate_encrypt( 'saved' ) );
+
+		$xpath = $this->render(
+			function () use ( $render ) {
+				switch ( $render ) {
+					case 'rest':
+						\Syndication_WP_REST_Client::display_settings( $this->site );
+						break;
+					case 'xmlrpc':
+						\Syndication_WP_XMLRPC_Client::display_settings( $this->site );
+						break;
+					default:
+						$this->server()->$render();
+				}
+			}
+		);
+
+		$this->server()->push_syndicate_settings = $original_settings;
+
+		$field = $xpath->query( '//input[@id="' . $field_id . '"]' )->item( 0 );
+		$this->assertNotNull( $field );
+		$this->assertFalse( $field->hasAttribute( 'placeholder' ), 'Help text is in a placeholder.' );
+
+		$description = $xpath->query( '//*[@id="' . $field->getAttribute( 'aria-describedby' ) . '"]' )->item( 0 );
+		$this->assertNotNull( $description, 'Field has no description.' );
+		$this->assertNotSame( '', trim( $description->textContent ) );
+	}
+
+	/**
+	 * Fields with help text, and the screen each is on.
+	 *
+	 * @return array[]
+	 */
+	public static function data_described_fields(): array {
+		return array(
+			'maximum pull attempts' => array( 'push_syndication_max_pull_attempts', 'display_max_pull_attempts' ),
+			'saved client secret'   => array( 'client_secret', 'display_client_secret' ),
+			'saved REST API token'  => array( 'site_token', 'rest' ),
+			'saved XML-RPC password' => array( 'site_password', 'xmlrpc' ),
 		);
 	}
 }

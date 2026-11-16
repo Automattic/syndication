@@ -485,8 +485,8 @@ class WP_Push_Syndication_Server {
 	 */
 	public function display_max_pull_attempts() {
 		?>
-		<input type="text" size="10" id="push_syndication_max_pull_attempts" name="push_syndication_max_pull_attempts" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
-		<p><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
+		<input type="text" size="10" id="push_syndication_max_pull_attempts" name="push_syndication_max_pull_attempts" aria-describedby="push_syndication_max_pull_attempts-description" value="<?php echo esc_attr( get_option( 'push_syndication_max_pull_attempts', 0 ) ); ?>" />
+		<p class="description" id="push_syndication_max_pull_attempts-description"><?php echo esc_html__( 'Site will be disabled after failure threshold is reached. Set to 0 to disable.', 'push-syndication' ); ?></p>
 		<?php
 	}
 
@@ -577,8 +577,11 @@ class WP_Push_Syndication_Server {
 	}
 
 	public function display_client_secret() {
-		$placeholder = empty( $this->push_syndicate_settings['client_secret'] ) ? '' : __( 'Leave blank to keep the saved value', 'push-syndication' );
-		echo '<input type="password" size="100" id="client_secret" autocomplete="off" name="push_syndicate_settings[client_secret]" value="" placeholder="' . esc_attr( $placeholder ) . '"/>';
+		$has_secret = ! empty( $this->push_syndicate_settings['client_secret'] );
+		echo '<input type="password" size="100" id="client_secret" autocomplete="off" name="push_syndicate_settings[client_secret]" value=""' . ( $has_secret ? ' aria-describedby="client_secret-description"' : '' ) . '/>';
+		if ( $has_secret ) {
+			echo '<p class="description" id="client_secret-description">' . esc_html__( 'Leave blank to keep the saved value.', 'push-syndication' ) . '</p>';
+		}
 	}
 
 	public function get_api_token() {
