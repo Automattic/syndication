@@ -234,7 +234,9 @@ class Syndication_Logger {
 			}
 			self::log_post_error( $site->ID, $status = $event, $message, $log_time, $extra );
 		} else {
-			$message = sprintf( '%s,%d', sanitize_text_field( $post['post_guid'] ), intval( $result ) );
+			// Pulled items carry the remote post_guid; pushed posts are local, so use their own guid.
+			$guid    = $post['post_guid'] ?? $post['guid'] ?? '';
+			$message = sprintf( '%s,%d', sanitize_text_field( $guid ), intval( $result ) );
 			self::log_post_success( $site->ID, $status = $event, $message, $log_time, $extra );
 		}
 	}
