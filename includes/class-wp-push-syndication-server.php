@@ -1104,13 +1104,32 @@ class WP_Push_Syndication_Server {
 	 */
 	public function push_content( $sites ) {
 
-		// if another process running on it return.
-		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' ) {
+		// If another process holds the lock, try again shortly rather than dropping this push.
+		if ( 'locked' === get_transient( 'syn_syndicate_lock' ) ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'syn_push_content', array( $sites ) );
 			return;
 		}
 
 		// set value as locked, valid for 5 mins.
 		set_transient( 'syn_syndicate_lock', 'locked', 60 * 5 );
+
+		// Release the lock whatever happens, or every push waits for it to expire.
+		try {
+			$this->push_content_to_sites( $sites );
+		} finally {
+			delete_transient( 'syn_syndicate_lock' );
+		}
+	}
+
+	/**
+	 * Push a post to its selected sites and remove it from its removed sites.
+	 *
+	 * Callers must hold the push lock.
+	 *
+	 * @param array $sites Array of sites data to syndicate content to.
+	 * @return void
+	 */
+	private function push_content_to_sites( $sites ) {
 
 		/** Start of critical section. */
 
@@ -1128,8 +1147,11 @@ class WP_Push_Syndication_Server {
 				$states_before_site = $slave_post_states;
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				$client         = $this->get_site_client( $transport_type, $site->ID );
+				if ( ! $client ) {
+					continue;
+				}
+				$info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// Check if post already exists on target to prevent syndication loops.
 				// Only before the first push: after that the target holds our own copy, which carries the same post_uniqueid.
@@ -1178,8 +1200,11 @@ class WP_Push_Syndication_Server {
 				$states_before_site = $slave_post_states;
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				$client         = $this->get_site_client( $transport_type, $site->ID );
+				if ( ! $client ) {
+					continue;
+				}
+				$info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them.
 				if ( 'success' === $info['state'] || 'edit-error' === $info['state'] || 'remove-error' === $info['state'] ) {
@@ -1195,18 +1220,22 @@ class WP_Push_Syndication_Server {
 					do_action( 'syn_post_push_delete_post', $result, $info['ext_ID'], $post_ID, $site->ID, $transport_type, $client ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Existing public hook.
 
 					if ( is_wp_error( $result ) ) {
-						$slave_post_states['remove-error'][ $site->ID ] = $result;
-						$this->update_slave_post_states( $post_ID, $slave_post_states );
+						// Keep the remote ID, so the next push can retry the removal.
+						$slave_post_states['remove-error'][ $site->ID ] = array(
+							'error'  => $result,
+							'ext_ID' => (int) $info['ext_ID'],
+						);
 					}
+				} else {
+					// Nothing is left to remove, so forget any earlier failure.
+					unset( $slave_post_states['remove-error'][ $site->ID ] );
 				}
+				$this->update_slave_post_states( $post_ID, $slave_post_states );
 			}
 		}
 
 
 		/** End of critical section. */
-
-		// release the lock.
-		delete_transient( 'syn_syndicate_lock' );
 	}
 
 	public function get_sites_by_post_ID( $post_ID ) {
@@ -1260,6 +1289,19 @@ class WP_Push_Syndication_Server {
 						$data['removed_sites'][] = $site;
 						$listed_site_ids[]       = $site->ID;
 					}
+				}
+			}
+		}
+
+		// Retry removals that failed on an earlier push, as their sitegroups are no longer in the diff.
+		$slave_post_states = get_post_meta( $post_ID, '_syn_slave_post_states', true );
+		if ( ! empty( $slave_post_states['remove-error'] ) ) {
+			$listed_site_ids = wp_list_pluck( array_merge( $data['selected_sites'], $data['removed_sites'] ), 'ID' );
+
+			foreach ( array_keys( $slave_post_states['remove-error'] ) as $site_id ) {
+				$site = get_post( $site_id );
+				if ( $site && ! in_array( $site->ID, $listed_site_ids, true ) && 'on' === get_post_meta( $site->ID, 'syn_site_enabled', true ) ) {
+					$data['removed_sites'][] = $site;
 				}
 			}
 		}
@@ -1490,7 +1532,10 @@ class WP_Push_Syndication_Server {
 			// check whether the site is enabled.
 			if ( 'on' === $site_enabled ) {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site_ID );
+				$client         = $this->get_site_client( $transport_type, $site_ID ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Existing variable.
+				if ( ! $client ) {
+					continue;
+				}
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
@@ -1610,6 +1655,27 @@ class WP_Push_Syndication_Server {
 		return current_user_can( $syndicate_cap );
 	}
 
+	/**
+	 * Build the client for a site, logging and skipping a site whose transport is unknown.
+	 *
+	 * @param string $transport_type Transport type stored on the site.
+	 * @param int    $site_id        Site ID.
+	 * @return Syndication_Client|null The client, or null if it can't be built.
+	 */
+	private function get_site_client( $transport_type, $site_id ) {
+		try {
+			return Syndication_Client_Factory::get_client( $transport_type, $site_id );
+		} catch ( Exception $e ) {
+			Syndication_Logger::log_post_error(
+				$site_id,
+				'unknown_transport',
+				// translators: %s: Transport type of the site.
+				sprintf( __( 'skipping site with unknown transport type "%s"', 'push-syndication' ), $transport_type )
+			);
+			return null;
+		}
+	}
+
 	public function cron_add_pull_time_interval( $schedules ) {
 
 		// Only add custom interval if syndication settings are defined.
@@ -1646,35 +1712,19 @@ class WP_Push_Syndication_Server {
 
 	public function schedule_pull_content( $sites ) {
 
-		// to unschedule a cron we need the original arguements passed to schedule the cron.
-		// we are saving it as a siteoption.
-		$old_pull_sites = get_option( 'syn_old_pull_sites' );
+		// Clear every pull job, whatever its arguments. Jobs scheduled before 2.2.3 carried
+		// whole site posts, which stop matching as soon as a site changes.
+		wp_unschedule_hook( 'syn_pull_content' );
 
-
-		// Clear all previously scheduled jobs.
-		if ( ! empty( $old_pull_sites ) ) {
-			// Clear any jobs that were scheduled the old way: one job to pull many sites.
-				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
-
-			// Clear any jobs that were scheduled the new way: one job to pull one site.
-			foreach ( $old_pull_sites as $old_pull_site ) {
-				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_site ) );
-			}
-
-			wp_clear_scheduled_hook( 'syn_pull_content' );
-		}
-
-		// Schedule new jobs: one job for each site.
+		// Schedule new jobs: one job for each site, by ID.
 		foreach ( $sites as $site ) {
 			wp_schedule_event(
 				time() - 1,
 				'syn_pull_time_interval',
 				'syn_pull_content',
-				array( array( $site ) )
+				array( array( $site->ID ) )
 			);
 		}
-
-		update_option( 'syn_old_pull_sites', $sites );
 	}
 
 	public function pull_get_selected_sites() {
@@ -1724,6 +1774,12 @@ class WP_Push_Syndication_Server {
 		$updated_post_ids = array();
 
 		foreach ( $sites as $site ) {
+			// Pull jobs pass site IDs; jobs scheduled before 2.2.3, and direct callers, pass site posts.
+			$site = is_object( $site ) ? $site : get_post( (int) $site );
+			if ( ! $site || 'syn_site' !== $site->post_type ) {
+				continue;
+			}
+
 			$site_id = $site->ID;
 
 			$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true );
@@ -1732,7 +1788,10 @@ class WP_Push_Syndication_Server {
 			}
 
 			$transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
-			$client         = Syndication_Client_Factory::get_client( $transport_type, $site_id );
+			$client         = $this->get_site_client( $transport_type, $site_id );
+			if ( ! $client ) {
+				continue;
+			}
 			$posts          = apply_filters( 'syn_pre_pull_posts', $client->get_posts(), $site, $client );
 
 			$post_types_processed = array();
@@ -1781,7 +1840,9 @@ class WP_Push_Syndication_Server {
 
 						do_action( 'syn_post_pull_edit_post', $result, $post, $site, $transport_type, $client );
 
-						$updated_post_ids[] = (int) $result;
+						if ( ! is_wp_error( $result ) ) {
+							$updated_post_ids[] = (int) $result;
+						}
 					} else {
 						$pull_new_shortcircuit = apply_filters( 'syn_pre_pull_new_post_shortcircuit', false, $post, $site, $transport_type, $client );
 						if ( true === $pull_new_shortcircuit ) {
@@ -1804,9 +1865,8 @@ class WP_Push_Syndication_Server {
 						if ( ! is_wp_error( $result ) ) {
 							update_post_meta( $result, 'syn_post_guid', $post['post_guid'] );
 							update_post_meta( $result, 'syn_source_site_id', $site_id );
+							$updated_post_ids[] = (int) $result;
 						}
-
-						$updated_post_ids[] = (int) $result;
 					}
 				}
 
@@ -1998,6 +2058,13 @@ class WP_Push_Syndication_Server {
 			if ( $validating ) {
 				add_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 			}
+		}
+
+		// Upgrade to 2.2.3: pull jobs are keyed by site ID. Replace the old jobs, and drop
+		// the site posts that were stored only to unschedule them.
+		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+			delete_option( 'syn_old_pull_sites' );
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
 
 		update_option( 'syn_version', SYNDICATION_VERSION );
