@@ -1104,13 +1104,32 @@ class WP_Push_Syndication_Server {
 	 */
 	public function push_content( $sites ) {
 
-		// if another process running on it return.
-		if ( get_transient( 'syn_syndicate_lock' ) == 'locked' ) {
+		// If another process holds the lock, try again shortly rather than dropping this push.
+		if ( 'locked' === get_transient( 'syn_syndicate_lock' ) ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'syn_push_content', array( $sites ) );
 			return;
 		}
 
 		// set value as locked, valid for 5 mins.
 		set_transient( 'syn_syndicate_lock', 'locked', 60 * 5 );
+
+		// Release the lock whatever happens, or every push waits for it to expire.
+		try {
+			$this->push_content_to_sites( $sites );
+		} finally {
+			delete_transient( 'syn_syndicate_lock' );
+		}
+	}
+
+	/**
+	 * Push a post to its selected sites and remove it from its removed sites.
+	 *
+	 * Callers must hold the push lock.
+	 *
+	 * @param array $sites Array of sites data to syndicate content to.
+	 * @return void
+	 */
+	private function push_content_to_sites( $sites ) {
 
 		/** Start of critical section. */
 
@@ -1204,9 +1223,6 @@ class WP_Push_Syndication_Server {
 
 
 		/** End of critical section. */
-
-		// release the lock.
-		delete_transient( 'syn_syndicate_lock' );
 	}
 
 	public function get_sites_by_post_ID( $post_ID ) {
