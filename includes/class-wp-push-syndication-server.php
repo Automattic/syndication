@@ -398,7 +398,7 @@ class WP_Push_Syndication_Server {
 
 		<div class="wrap">
 
-			<h1><?php esc_html_e( 'Push Syndicate Settings', 'push-syndication' ); ?></h1>
+			<h1><?php esc_html_e( 'Push Syndication Settings', 'push-syndication' ); ?></h1>
 
 			<form action="options.php" method="post">
 
