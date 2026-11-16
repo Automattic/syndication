@@ -504,9 +504,18 @@ class Syndication_Logger {
 					 * unnecessary.
 					 *
 					 * @TODO implement walker
+					 *
+					 * Only sites' logs are read: log meta on any other post is not something this plugin
+					 * wrote. Rows are ordered by meta_id alone, and the newest row for a site wins below,
+					 * so the result doesn't depend on how MySQL picks a row within a GROUP BY.
 					 */
-					$all_log_entries = $wpdb->get_results( "SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = 'syn_log' GROUP BY post_id ORDER BY meta_id DESC LIMIT 0, 100" ); // Cache pass (see note above).
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- See note above.
+					$all_log_entries = $wpdb->get_results( "SELECT pm.post_id, pm.meta_value FROM $wpdb->postmeta pm INNER JOIN $wpdb->posts p ON p.ID = pm.post_id WHERE pm.meta_key = 'syn_log' AND p.post_type = 'syn_site' ORDER BY pm.meta_id DESC LIMIT 0, 100" );
 					foreach ( $all_log_entries as $log_entry ) {
+						if ( isset( $log_entries[ $log_entry->post_id ] ) ) {
+							continue;
+						}
+
 						/*
 						 * Never unserialize the raw column directly. `syn_log` is an unprotected meta key,
 						 * so its contents cannot be assumed to be something this plugin wrote.

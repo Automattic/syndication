@@ -239,12 +239,7 @@ class LoggerTest extends WPIntegrationTestCase {
 	 * @covers Syndication_Logger::get_messages
 	 */
 	public function test_get_messages_never_returns_an_object_from_stored_meta(): void {
-		$post_id = $this->factory()->post->create(
-			array(
-				'post_type'   => 'post',
-				'post_status' => 'draft',
-			)
-		);
+		$post_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
 
 		$inner   = 'x:i:0;a:1:{i:0;s:3:"pwn";};m:a:0:{}';
 		$payload = 'C:11:"ArrayObject":' . strlen( $inner ) . ':{' . $inner . '}';
@@ -258,6 +253,24 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		$this->assertArrayHasKey( $post_id, $log_entries );
 		$this->assertSame( array(), $log_entries[ $post_id ] );
+	}
+
+	/**
+	 * Only sites' logs are read, so log meta on any other post can't crowd them out.
+	 *
+	 * @covers Syndication_Logger::get_messages
+	 */
+	public function test_get_messages_only_reads_logs_on_sites(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+		$post_id = $this->factory()->post->create();
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Logged against a site' );
+		Syndication_Logger::log_post_error( $post_id, 'error', 'Logged against a post' );
+
+		$log_entries = Syndication_Logger::get_messages();
+
+		$this->assertArrayHasKey( $site_id, $log_entries );
+		$this->assertArrayNotHasKey( $post_id, $log_entries );
 	}
 
 	/**
