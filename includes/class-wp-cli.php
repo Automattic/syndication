@@ -284,7 +284,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 					return;
 				}
 
-				WP_CLI::log( sprintf( '-- Added remote post #%d (%s)', $post_ID, $site->post_title ) );
+				WP_CLI::log( sprintf( '-- Added remote post #%d for post #%d (%s)', $result, $post_ID, $site->post_title ) );
 			},
 			10,
 			6 
@@ -299,7 +299,7 @@ class Syndication_CLI_Command extends WP_CLI_Command {
 					return;
 				}
 
-				WP_CLI::log( sprintf( '-- Updated remote post #%d (%s)', $post_ID, $site->post_title ) );
+				WP_CLI::log( sprintf( '-- Updated remote post #%d for post #%d (%s)', $info['ext_ID'], $post_ID, $site->post_title ) );
 			},
 			10,
 			6 

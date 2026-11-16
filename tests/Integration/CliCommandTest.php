@@ -31,6 +31,7 @@ class CliCommandTest extends WPIntegrationTestCase {
 			require_once __DIR__ . '/WP_CLI_Stub.php';
 		}
 		require_once __DIR__ . '/Syndication_Failing_Mock_Client.php';
+		require_once __DIR__ . '/Syndication_Succeeding_Mock_Client.php';
 		require_once dirname( __DIR__, 2 ) . '/includes/class-wp-cli.php';
 	}
 
@@ -43,12 +44,13 @@ class CliCommandTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Create a post whose only sitegroup holds one enabled site using the failing client.
+	 * Create a post whose only sitegroup holds one enabled site.
 	 *
 	 * @param string $site_title Title of the syn_site post.
+	 * @param string $transport  Transport type of the site's client.
 	 * @return array{0: int, 1: int} Post ID and site ID.
 	 */
-	private function create_post_with_failing_site( string $site_title ): array {
+	private function create_post_with_site( string $site_title, string $transport ): array {
 		$sitegroup = 'cli-test-group';
 		if ( ! term_exists( $sitegroup, 'syn_sitegroup' ) ) {
 			wp_insert_term( $sitegroup, 'syn_sitegroup' );
@@ -62,7 +64,7 @@ class CliCommandTest extends WPIntegrationTestCase {
 			)
 		);
 		update_post_meta( $site_id, 'syn_site_enabled', 'on' );
-		update_post_meta( $site_id, 'syn_transport_type', 'Failing_Mock' );
+		update_post_meta( $site_id, 'syn_transport_type', $transport );
 		wp_set_object_terms( $site_id, $sitegroup, 'syn_sitegroup' );
 
 		$post_id = $this->factory()->post->create();
@@ -94,7 +96,7 @@ class CliCommandTest extends WPIntegrationTestCase {
 	 */
 	public function test_push_all_posts_continues_past_posts_without_sitegroups(): void {
 		$first_unsyndicated = $this->factory()->post->create();
-		list( $syndicated ) = $this->create_post_with_failing_site( 'Failing site' );
+		list( $syndicated ) = $this->create_post_with_site( 'Failing site', 'Failing_Mock' );
 		$last_unsyndicated  = $this->factory()->post->create();
 
 		( new Syndication_CLI_Command() )->push_all_posts( array(), array() );
@@ -106,12 +108,39 @@ class CliCommandTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A successful push of a new post logs both the remote and the local post ID.
+	 *
+	 * @covers ::push_post
+	 */
+	public function test_push_post_logs_remote_and_local_ids_for_new_post(): void {
+		list( $post_id ) = $this->create_post_with_site( 'Working site', 'Succeeding_Mock' );
+
+		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
+
+		$this->assertContains( "-- Added remote post #501 for post #{$post_id} (Working site)", WP_CLI::messages( 'log' ) );
+	}
+
+	/**
+	 * A successful update of a previously pushed post logs both the remote and the local post ID.
+	 *
+	 * @covers ::push_post
+	 */
+	public function test_push_post_logs_remote_and_local_ids_for_edited_post(): void {
+		list( $post_id, $site_id ) = $this->create_post_with_site( 'Working site', 'Succeeding_Mock' );
+		update_post_meta( $post_id, '_syn_slave_post_states', array( 'success' => array( $site_id => array( 'ext_ID' => 42 ) ) ) );
+
+		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
+
+		$this->assertContains( "-- Updated remote post #42 for post #{$post_id} (Working site)", WP_CLI::messages( 'log' ) );
+	}
+
+	/**
 	 * A failed push of a new post is reported, not logged as a success.
 	 *
 	 * @covers ::push_post
 	 */
 	public function test_push_post_reports_failed_new_post(): void {
-		list( $post_id ) = $this->create_post_with_failing_site( 'Failing site' );
+		list( $post_id ) = $this->create_post_with_site( 'Failing site', 'Failing_Mock' );
 
 		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
 
@@ -130,7 +159,7 @@ class CliCommandTest extends WPIntegrationTestCase {
 	 * @covers ::push_post
 	 */
 	public function test_push_post_reports_failed_edit_post(): void {
-		list( $post_id, $site_id ) = $this->create_post_with_failing_site( 'Failing site' );
+		list( $post_id, $site_id ) = $this->create_post_with_site( 'Failing site', 'Failing_Mock' );
 		update_post_meta( $post_id, '_syn_slave_post_states', array( 'success' => array( $site_id => array( 'ext_ID' => 42 ) ) ) );
 
 		( new Syndication_CLI_Command() )->push_post( array(), array( 'post_id' => $post_id ) );
