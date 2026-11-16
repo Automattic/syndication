@@ -225,12 +225,15 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public static function save_settings( $site_ID ) {
 
-		update_post_meta( $site_ID, 'syn_feed_url', esc_url_raw( $_POST['feed_url'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_type', sanitize_text_field( $_POST['default_post_type'] ) );
-		update_post_meta( $site_ID, 'syn_default_post_status', sanitize_text_field( $_POST['default_post_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_comment_status', sanitize_text_field( $_POST['default_comment_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_ping_status', sanitize_text_field( $_POST['default_ping_status'] ) );
-		update_post_meta( $site_ID, 'syn_default_cat_status', sanitize_text_field( $_POST['default_cat_status'] ) );
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- WP_Push_Syndication_Server::save_site_settings() verifies the nonce before calling this.
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- $site_ID is the parameter name set by Syndication_Client.
+		update_post_meta( $site_ID, 'syn_feed_url', isset( $_POST['feed_url'] ) ? esc_url_raw( wp_unslash( $_POST['feed_url'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_type', isset( $_POST['default_post_type'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_type'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_post_status', isset( $_POST['default_post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_post_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
+		update_post_meta( $site_ID, 'syn_default_cat_status', isset( $_POST['default_cat_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_cat_status'] ) ) : '' );
+		// phpcs:enable
 		return true;
 	}
 
@@ -251,13 +254,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 */
 	public function get_posts( $args = array() ) {
 
-		$site_post = get_post( $this->site_ID );
-
 		$rss_init = $this->init();
 
 		if ( false === $rss_init ) {
 			// translators: %s: Feed URL.
-			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = isset( $site_post->postmeta['is_update'] ) ? $site_post->postmeta['is_update'] : null, $extra = array( 'error' => $this->error() ) );
+			Syndication_Logger::log_post_error( $this->site_ID, $status = 'error', $message = sprintf( __( 'Failed to parse feed at: %s', 'push-syndication' ), $this->feed_url ), $log_time = null, $extra = array( 'error' => $this->error() ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- site_ID predates the naming rule.
 
 			// Track the event.
 			do_action( 'push_syndication_event', 'pull_failure', $this->site_ID );
@@ -289,13 +290,21 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 				'post_excerpt'   => $item->get_description(),
 				'post_type'      => $this->default_post_type,
 				'post_status'    => $this->default_post_status,
-				'post_date'      => date( 'Y-m-d H:i:s', strtotime( $item->get_date() ) ),
 				'comment_status' => $this->default_comment_status,
 				'ping_status'    => $this->default_ping_status,
 				'post_guid'      => $item->get_id(),
 				'post_category'  => $taxonomy['cats'],
 				'tags_input'     => $taxonomy['tags'],
 			);
+
+			// Without a date, leave it to WordPress: the current time for a new post,
+			// and the existing date for an update.
+			$post_date_gmt = $item->get_gmdate( 'Y-m-d H:i:s' );
+			if ( null !== $post_date_gmt ) {
+				$post['post_date_gmt'] = $post_date_gmt;
+				$post['post_date']     = get_date_from_gmt( $post_date_gmt );
+			}
+
 			/**
 			 * Exclude or alter posts during an RSS syndication pull.
 			 *
@@ -324,7 +333,8 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 	 * @return array Array of category and tag IDs.
 	 */
 	public function set_taxonomy( $item ) {
-		$cats = $item->get_categories();
+		// SimplePie returns null, not an empty array, for an item with no categories.
+		$cats = (array) $item->get_categories();
 		$ids  = array(
 			'cats' => array(),
 			'tags' => array(),
@@ -343,8 +353,11 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 			} else {
 				// creates if not.
 				$result = wp_insert_term( $cat->term, 'category' );
-				if ( isset( $result->term_id ) ) {
-					$ids['cats'][] = $result->term_id;
+				if ( ! is_wp_error( $result ) ) {
+					$ids['cats'][] = $result['term_id'];
+				} elseif ( 'term_exists' === $result->get_error_code() ) {
+					// Created since the lookup above; the error data is its ID.
+					$ids['cats'][] = (int) $result->get_error_data();
 				}
 			}
 		}
@@ -367,8 +380,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
 		$metas = $post['postmeta'];
 
 		// handle enclosures separately first.
@@ -407,8 +421,9 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! $result || is_wp_error( $result ) || ! isset( $post['postmeta'] ) ) {
 			return false;
 		}
-		$categories = $post['post_category'];
-		wp_set_post_terms( $result, $categories, 'category', true );
+		if ( ! empty( $post['post_category'] ) ) {
+			wp_set_post_terms( $result, $post['post_category'], 'category', true );
+		}
 		$metas = $post['postmeta'];
 
 		// handle enclosures separately first.
