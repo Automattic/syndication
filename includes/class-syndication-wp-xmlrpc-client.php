@@ -132,6 +132,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		
 		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+		if ( is_wp_error( $post['post_content'] ) ) {
+			return $post['post_content'];
+		}
 
 		// rearranging arguments.
 		$args                  = array();
@@ -221,6 +224,9 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 
 		// Uploads all gallery images to the remote site and replaces [gallery] tags with new IDs.
 		$post['post_content'] = $this->syndicate_gallery_images( $post['post_content'] );
+		if ( is_wp_error( $post['post_content'] ) ) {
+			return $post['post_content'];
+		}
 
 		// rearranging arguments.
 		$args['post_title']    = $post['post_title'];
@@ -262,7 +268,7 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 	 * @access private
 	 * @uses $shortcode_tags global variable
 	 * @param string $post_content Post to be syndicated.
-	 * @return string $post_content - post content with replaced gallery shortcodes
+	 * @return string|WP_Error Post content with replaced gallery shortcodes, or the error from a failed image upload.
 	 */
 	private function syndicate_gallery_images( $post_content ) {
 		$attachment_ids = array();
@@ -317,6 +323,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 		// replace old gallery code with a new one.
 		$lenght = count( $matches[0] );
 		for ( $i = 0; $i < $lenght; $i++ ) {
+			// A gallery without ids shows the post's attached images, so there is nothing to replace.
+			if ( ! isset( $image_ids[ $i ] ) ) {
+				continue;
+			}
+
 			$shortcode = $matches[0][ $i ];
 			// WP regex matches attribute with leading space, required here.
 			$attribute     = ' ids="' . implode( ',', $image_ids[ $i ] ) . '"';
