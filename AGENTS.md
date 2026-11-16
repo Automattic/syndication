@@ -67,8 +67,8 @@ There is no PSR-4 autoloading. Everything is `require_once`d from
 
 Runtime requires only `composer/installers`. Dev: `automattic/vipwpcs`,
 `yoast/wp-test-utils`, `phpunit/phpunit` ^9, `php-parallel-lint/php-parallel-lint`,
-`phpcompatibility/phpcompatibility-wp`, and `sirbrillig/phpcs-changed` (pinned to
-`^2.13`; see the comment in `cs-lint.yml` before bumping it).
+`phpcompatibility/phpcompatibility-wp`, and `sirbrillig/phpcs-changed` (`^3.1`, as 3.0.x
+silently reports nothing; see the comment in `cs-lint.yml` before changing it).
 
 ## Commands
 

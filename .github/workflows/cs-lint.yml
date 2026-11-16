@@ -82,12 +82,14 @@ jobs:
       # which holds new work to the standard without requiring the backlog be
       # cleared first.
       #
-      # Pinned to ^2.13 deliberately. On this repository 3.0.1 reports nothing
-      # and exits 0 whatever it is given: it batches its PHPCS calls through a
-      # temporary directory and looks results up by the absolute path it wrote,
-      # but PHPCS 3.13 keys its JSON by a path with the leading slash stripped
-      # (and symlinks resolved), so every lookup misses. Reported upstream; lift
-      # the pin once a fixed 3.x is released.
+      # Keep the constraint at ^3.1 or later. On this repository 3.0.x reports
+      # nothing and exits 0 whatever it is given: it batches its PHPCS calls
+      # through a temporary directory and looks results up by the absolute path
+      # it wrote, but PHPCS keys its JSON by a path with the leading slash
+      # stripped (and symlinks resolved), so every lookup misses. 3.1.0 reports
+      # correctly. A pull request that changes no PHP files skips this step, so
+      # a green run on a bump of this package proves nothing: plant a violation
+      # and check it is reported before lowering or loosening the constraint.
       - name: Determine changed PHP files
         id: changed
         if: github.event_name == 'pull_request'
