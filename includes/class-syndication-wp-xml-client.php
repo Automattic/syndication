@@ -788,10 +788,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 						<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" value="<?php echo esc_attr( stripcslashes( $storage_location['field'] ) ); ?>" />
 					</li>
 					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
-				<?php endforeach; ?>
-				</ul>
-				<?php
-				++$rowcount;
+					</ul>
+					<?php
+					++$rowcount;
+				endforeach;
 			endforeach;
 		endif;
 		?>
