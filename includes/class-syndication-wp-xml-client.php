@@ -752,95 +752,87 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			?>
 		</p>
 
-		<ul class='syn-xml-client-xpath-head syn-xml-client-list-head'>
-			<li class="text">
-				<span><?php esc_html_e( 'XPath Expression', 'push-syndication' ); ?></span>
-			</li>
-			<li>
-				<span><?php echo esc_html_x( 'Item', 'XPath mapping column: the XPath is relative to each feed item', 'push-syndication' ); ?></span>
-			</li>
-			<li>
-				<span><?php echo esc_html_x( 'Enc.', 'XPath mapping column: abbreviation of Enclosure', 'push-syndication' ); ?></span>
-			</li>
-			<li>
-				<span><?php echo esc_html_x( 'Meta', 'XPath mapping column: store the value as a custom field', 'push-syndication' ); ?></span>
-			</li>
-			<li>
-				<span><?php echo esc_html_x( 'Tax', 'XPath mapping column: abbreviation of Taxonomy', 'push-syndication' ); ?></span>
-			</li>
-			<li class="text">
-				<span><?php esc_html_e( 'Field in Post', 'push-syndication' ); ?></span>
-			</li>
-		</ul>
-
 		<?php
-		$rowcount = 0;
-		if ( ! empty( $custom_nodes ) ) :
-			foreach ( $custom_nodes as $key => $storage_locations ) :
-				foreach ( $storage_locations as $storage_location ) : 
-					?>
-					<ul class='syn-xml-client-xpath-form syn-xml-client-xpath-list syn-xml-client-list' data-row-count="<?php echo (int) $rowcount; ?>">
-					<li class="text">
-						<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" aria-label="<?php esc_attr_e( 'XPath expression', 'push-syndication' ); ?>" value="<?php echo esc_attr( wp_unslash( $key ) ); ?>" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" aria-label="<?php esc_attr_e( 'Item', 'push-syndication' ); ?>" <?php checked( $storage_location['is_item'] ); ?> value="true" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" aria-label="<?php esc_attr_e( 'Enclosure', 'push-syndication' ); ?>" <?php checked( $storage_location['is_photo'] ); ?> value="true" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" aria-label="<?php esc_attr_e( 'Meta', 'push-syndication' ); ?>" <?php checked( $storage_location['is_meta'] ); ?> value="true" />
-					</li>
-					<li>
-						<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" aria-label="<?php esc_attr_e( 'Taxonomy', 'push-syndication' ); ?>" <?php checked( $storage_location['is_tax'] ); ?> value="true" />
-					</li>
-					<li class="text">
-						<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" value="<?php echo esc_attr( stripcslashes( $storage_location['field'] ) ); ?>" />
-					</li>
-					<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
-					</ul>
-					<?php
-					++$rowcount;
-				endforeach;
-			endforeach;
-		endif;
+		// One row per saved mapping, then an empty row to add a new one.
+		$rows = array();
+		foreach ( $custom_nodes as $key => $storage_locations ) {
+			foreach ( $storage_locations as $storage_location ) {
+				$rows[] = array(
+					'xpath'    => wp_unslash( $key ),
+					'is_item'  => $storage_location['is_item'],
+					'is_photo' => $storage_location['is_photo'],
+					'is_meta'  => $storage_location['is_meta'],
+					'is_tax'   => $storage_location['is_tax'],
+					'field'    => stripcslashes( $storage_location['field'] ),
+				);
+			}
+		}
+		$rows[] = array(
+			'xpath'    => '',
+			'is_item'  => false,
+			'is_photo' => false,
+			'is_meta'  => false,
+			'is_tax'   => false,
+			'field'    => '',
+		);
+
+		$checkboxes = array(
+			'is_item'  => _x( 'Item', 'XPath mapping column: the XPath is relative to each feed item', 'push-syndication' ),
+			'is_photo' => __( 'Enclosure', 'push-syndication' ),
+			'is_meta'  => _x( 'Meta', 'XPath mapping column: store the value as a custom field', 'push-syndication' ),
+			'is_tax'   => __( 'Taxonomy', 'push-syndication' ),
+		);
 		?>
 
-		<ul class='syn-xml-client-xpath-form syn-xml-xpath-list syn-xml-client-list' data-row-count="<?php echo (int) $rowcount; ?>">
-			<li class="text">
-				<input type="text" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" aria-label="<?php esc_attr_e( 'XPath expression', 'push-syndication' ); ?>" />
-			</li>
-			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_item]" id="node-<?php echo (int) $rowcount; ?>-is_item" aria-label="<?php esc_attr_e( 'Item', 'push-syndication' ); ?>" />
-			</li>
-			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_photo]" id="node-<?php echo (int) $rowcount; ?>-is_photo" aria-label="<?php esc_attr_e( 'Enclosure', 'push-syndication' ); ?>" />
-			</li>
-			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_meta]" id="node-<?php echo (int) $rowcount; ?>-is_meta" aria-label="<?php esc_attr_e( 'Meta', 'push-syndication' ); ?>" />
-			</li>
-			<li>
-				<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][is_tax]" id="node-<?php echo (int) $rowcount; ?>-is_tax" aria-label="<?php esc_attr_e( 'Taxonomy', 'push-syndication' ); ?>" />
-			</li>
-			<li class="text">
-				<input type="text" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" />
-			</li>
-			<a href="#" class="syn-delete syn-pull-xpath-delete"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></a>
-		</ul>
+		<table class="widefat syn-xml-client-xpath-table">
+			<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'XPath expression', 'push-syndication' ); ?></th>
+					<?php foreach ( $checkboxes as $label ) : ?>
+						<th scope="col" class="syn-xml-client-xpath-check"><?php echo esc_html( $label ); ?></th>
+					<?php endforeach; ?>
+					<th scope="col"><?php esc_html_e( 'Field in post', 'push-syndication' ); ?></th>
+					<th scope="col"><span class="screen-reader-text"><?php esc_html_e( 'Actions', 'push-syndication' ); ?></span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $rows as $rowcount => $row ) : ?>
+					<tr class="syn-xml-client-xpath-form">
+						<td>
+							<input type="text" class="widefat" name="node[<?php echo (int) $rowcount; ?>][xpath]" id="node-<?php echo (int) $rowcount; ?>-xpath" aria-label="<?php esc_attr_e( 'XPath expression', 'push-syndication' ); ?>" value="<?php echo esc_attr( $row['xpath'] ); ?>" />
+						</td>
+						<?php foreach ( $checkboxes as $name => $label ) : ?>
+							<td class="syn-xml-client-xpath-check">
+								<input type="checkbox" name="node[<?php echo (int) $rowcount; ?>][<?php echo esc_attr( $name ); ?>]" id="node-<?php echo (int) $rowcount; ?>-<?php echo esc_attr( $name ); ?>" aria-label="<?php echo esc_attr( $label ); ?>" value="true" <?php checked( $row[ $name ] ); ?> />
+							</td>
+						<?php endforeach; ?>
+						<td>
+							<input type="text" class="widefat" name="node[<?php echo (int) $rowcount; ?>][field]" id="node-<?php echo (int) $rowcount; ?>-field" aria-label="<?php esc_attr_e( 'Field in post', 'push-syndication' ); ?>" value="<?php echo esc_attr( $row['field'] ); ?>" />
+						</td>
+						<td>
+							<?php // The button is named after the row's XPath, so each Delete says which mapping it removes. ?>
+							<button type="button" class="button-link button-link-delete syn-pull-xpath-delete" id="node-<?php echo (int) $rowcount; ?>-delete" aria-labelledby="node-<?php echo (int) $rowcount; ?>-delete node-<?php echo (int) $rowcount; ?>-xpath"><?php esc_html_e( 'Delete', 'push-syndication' ); ?></button>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 
-		<a href="#" class="syn-pull-xpath-add-new button"><?php esc_html_e( 'Add new', 'push-syndication' ); ?></a>
+		<p>
+			<button type="button" class="button syn-pull-xpath-add-new"><?php esc_html_e( 'Add new', 'push-syndication' ); ?></button>
+		</p>
 
 		<script>
-			jQuery( document ).ready( function ( $ ) {
-				// Delegated, so rows added with Add new can be deleted too.
-				$( document ).on( 'click', '.syn-pull-xpath-delete', function ( e ) {
-					var $row = $( this ).closest( '.syn-xml-client-xpath-form' );
+			jQuery( function ( $ ) {
+				var $rows = $( '.syn-xml-client-xpath-table tbody' ),
+					nextRow = $rows.children().length;
 
-					e.preventDefault();
+				// Delegated, so rows added with Add new can be deleted too.
+				$rows.on( 'click', '.syn-pull-xpath-delete', function () {
+					var $row = $( this ).closest( 'tr' );
 
 					// Add new copies the last row, so always keep one: empty it instead.
-					if ( 1 === $( '.syn-xml-client-xpath-form' ).length ) {
+					if ( 1 === $rows.children().length ) {
 						$row.find( 'input[type="text"]' ).val( '' );
 						$row.find( 'input[type="checkbox"]' ).prop( 'checked', false );
 						return;
@@ -849,38 +841,28 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					$row.remove();
 				} );
 
-				$( '.syn-pull-xpath-add-new' ).on( 'click', function ( e ) {
-					e.preventDefault();
+				$( '.syn-pull-xpath-add-new' ).on( 'click', function () {
+					var $row = $rows.children().last().clone(),
+						index = nextRow++;
 
-					var $lastForm = $( '.syn-xml-client-xpath-form:last' ),
-						$newForm = $lastForm.clone(),
-						originalRowCount = parseInt( $lastForm.attr( 'data-row-count' ) ),
-						newRowCount = originalRowCount + 1;
+					$row.find( 'input, button' ).each( function () {
+						var labelledby = this.getAttribute( 'aria-labelledby' );
 
-					$newForm.attr( 'data-row-count', newRowCount );
-
-					$newForm.find( 'input' ).each( function () {
-						var $this = $( this ),
-							name = $this.attr( 'name' ),
-							type = $this.attr( 'type' );
-
-						if ( 'radio' === type || 'checkbox' === type ) {
-							$this.attr( 'checked', false );
+						this.id = this.id.replace( /^node-\d+-/, 'node-' + index + '-' );
+						if ( labelledby ) {
+							this.setAttribute( 'aria-labelledby', labelledby.replace( /node-\d+-/g, 'node-' + index + '-' ) );
 						}
-						else if ( 'select' === type ) {
-							$this.attr( 'selected', false );
+						if ( this.name ) {
+							this.name = this.name.replace( /^node\[\d+\]/, 'node[' + index + ']' );
 						}
-						else {
-							$this.val( '' );
+						if ( 'checkbox' === this.type ) {
+							this.checked = false;
+						} else if ( 'text' === this.type ) {
+							this.value = '';
 						}
-
-						name = name.replace( '[' + ( originalRowCount ) + ']', '[' + newRowCount + ']' );
-						$this.attr( 'name', name ); // hack hack hack!!!
-
-						$this.attr( 'id', $this.attr( 'id' ).replace( 'node-' + originalRowCount + '-', 'node-' + newRowCount + '-' ) );
 					} );
 
-					$newForm.insertAfter( $lastForm );
+					$rows.append( $row );
 				} );
 			} );
 		</script>

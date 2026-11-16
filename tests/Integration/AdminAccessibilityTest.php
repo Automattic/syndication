@@ -14,6 +14,7 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  *
  * @covers WP_Push_Syndication_Server::add_site_status_metabox
  * @covers WP_Push_Syndication_Server::display_transports
+ * @covers Syndication_WP_XML_Client::display_settings
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -113,5 +114,55 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 		$this->assertNotNull( $select );
 		$this->assertFalse( $select->hasAttribute( 'onchange' ), 'Changing the transport submits the form.' );
 		$this->assertSame( 1, $xpath->query( '//button[@type="submit"]' )->length, 'No button to change the transport.' );
+	}
+
+	/**
+	 * The XPath mappings are a table, with real buttons that say which mapping they delete.
+	 */
+	public function test_xml_mappings_are_a_table_with_buttons(): void {
+		update_post_meta(
+			$this->site->ID,
+			'syn_node_config',
+			array(
+				'nodes' => array(
+					'//title' => array(
+						array(
+							'is_item'  => 1,
+							'is_photo' => 0,
+							'is_meta'  => 0,
+							'is_tax'   => 0,
+							'field'    => 'post_title',
+						),
+					),
+				),
+			)
+		);
+
+		$xpath = $this->render(
+			function () {
+				\Syndication_WP_XML_Client::display_settings( $this->site );
+			}
+		);
+
+		$this->assertSame( 0, $xpath->query( '//a[@href="#"]' )->length, 'A link is acting as a button.' );
+		$this->assertSame( 7, $xpath->query( '//table/thead/tr/th[@scope="col"]' )->length, 'Mapping columns have no headers.' );
+
+		$rows = $xpath->query( '//table/tbody/tr' );
+		$this->assertSame( 2, $rows->length, 'Expected the saved mapping and an empty row.' );
+
+		foreach ( $rows as $row ) {
+			$this->assertSame( 2, $xpath->query( './/input[@type="text"][@aria-label]', $row )->length );
+			$this->assertSame( 4, $xpath->query( './/input[@type="checkbox"][@aria-label]', $row )->length );
+
+			$delete = $xpath->query( './/button[@type="button"]', $row )->item( 0 );
+			$this->assertNotNull( $delete, 'Delete is not a button.' );
+
+			// Every id the button is labeled by exists, so its name includes the row's XPath.
+			foreach ( explode( ' ', $delete->getAttribute( 'aria-labelledby' ) ) as $id ) {
+				$this->assertSame( 1, $xpath->query( '//*[@id="' . $id . '"]' )->length, "Missing label element {$id}." );
+			}
+		}
+
+		$this->assertSame( 1, $xpath->query( '//button[@type="button"][contains(@class, "syn-pull-xpath-add-new")]' )->length, 'Add new is not a button.' );
 	}
 }
