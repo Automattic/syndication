@@ -478,7 +478,7 @@ class Syndication_Logger {
 	 * @param  string $status       Status entry.
 	 * @param  string $date_start   Date string for starting date filter.
 	 * @param  string $date_end     Date string for ending date filter.
-	 * @param  string $message      Regular expression for message text matching.
+	 * @param  string $message      Text the message must contain, matched case-insensitively.
 	 * @param  string $storage_type Where the log entry will be stored. Object or option.
 	 * @return array                Array of matching log entries
 	 */
@@ -573,7 +573,7 @@ class Syndication_Logger {
 					}
 					break;
 				case 'message':
-					if ( ! isset( $data['message'] ) || ! preg_match( '#' . preg_quote( $value, '#' ) . '#', $data['message'] ) ) {
+					if ( ! isset( $data['message'] ) || ! preg_match( '#' . preg_quote( $value, '#' ) . '#i', $data['message'] ) ) {
 						return false;
 					}
 					break;

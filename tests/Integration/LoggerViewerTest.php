@@ -8,7 +8,10 @@
 namespace Automattic\Syndication\Tests;
 
 use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
+use ReflectionMethod;
+use Syndication_Logger;
 use Syndication_Logger_List_Table;
+use Syndication_Logger_Viewer;
 
 require_once dirname( __DIR__, 2 ) . '/includes/class-syndication-logger-viewer.php';
 
@@ -41,8 +44,126 @@ class LoggerViewerTest extends WPIntegrationTestCase {
 	 * Clean up request superglobals.
 	 */
 	public function tear_down(): void {
-		unset( $_GET['orderby'], $_GET['order'] );
+		unset( $_GET['orderby'], $_GET['order'], $_GET['page'], $_REQUEST['s'] );
 		parent::tear_down();
+	}
+
+	/**
+	 * The column widths are output on the Logs screen, and only there.
+	 *
+	 * @covers Syndication_Logger_List_Table::admin_header
+	 */
+	public function test_admin_header_outputs_column_styles_only_on_the_logs_screen(): void {
+		$_GET['page'] = 'syndication_dashboard';
+		ob_start();
+		$this->table->admin_header();
+		$this->assertStringContainsString( '.column-message', ob_get_clean() );
+
+		$_GET['page'] = 'push-syndicate-settings';
+		ob_start();
+		$this->table->admin_header();
+		$this->assertSame( '', ob_get_clean() );
+	}
+
+	/**
+	 * Every month between the oldest and newest entry is offered, including short months.
+	 *
+	 * @covers Syndication_Logger_List_Table::_create_months_dropdown
+	 */
+	public function test_months_dropdown_lists_every_month_in_range(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Oldest', '2026-01-31 12:00:00' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Newest', '2026-03-01 08:00:00' );
+
+		$this->table->prepare_items();
+
+		$method = new ReflectionMethod( $this->table, '_create_months_dropdown' );
+		$method->setAccessible( true );
+
+		ob_start();
+		$method->invoke( $this->table );
+		$output = ob_get_clean();
+
+		preg_match_all( "/value='(\d{4}-\d{2})'/", $output, $matches );
+		$this->assertSame( array( '2026-01', '2026-02', '2026-03' ), $matches[1] );
+	}
+
+	/**
+	 * The search box filters entries by message, as plain text rather than a pattern.
+	 *
+	 * @covers Syndication_Logger_List_Table::prepare_items
+	 */
+	public function test_search_filters_entries_by_message_text(): void {
+		$site_id = $this->factory()->post->create( array( 'post_type' => 'syn_site' ) );
+
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Failed to parse feed' );
+		Syndication_Logger::log_post_error( $site_id, 'error', 'Could not reach feed (timeout)' );
+
+		$_REQUEST['s'] = 'failed';
+		$this->table->prepare_items();
+		$this->assertSame( array( 'Failed to parse feed' ), wp_list_pluck( $this->table->items, 'message' ) );
+
+		$_REQUEST['s'] = '(timeout)';
+		$table         = new Syndication_Logger_List_Table();
+		$table->prepare_items();
+		$this->assertSame( array( 'Could not reach feed (timeout)' ), wp_list_pluck( $table->items, 'message' ) );
+
+		$_REQUEST['s'] = 'feed.*';
+		$table         = new Syndication_Logger_List_Table();
+		$table->prepare_items();
+		$this->assertSame( array(), $table->items );
+	}
+
+	/**
+	 * The Logs screen is available to whoever has the plugin's capability.
+	 *
+	 * @covers Syndication_Logger_Viewer::add_menu_items
+	 */
+	public function test_logs_menu_uses_the_syndicate_capability(): void {
+		global $submenu;
+
+		add_filter(
+			'syn_syndicate_cap',
+			static function () {
+				return 'edit_others_posts';
+			}
+		);
+		wp_set_current_user( $this->factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		( new Syndication_Logger_Viewer() )->add_menu_items();
+
+		$logs_item = wp_list_filter( $submenu['edit.php?post_type=syn_site'] ?? array(), array( 2 => 'syndication_dashboard' ) );
+		$submenu   = array();
+
+		$this->assertSame( array( 'edit_others_posts' ), wp_list_pluck( $logs_item, 1 ) );
+	}
+
+	/**
+	 * The filter dropdown labels go through the plugin's text domain.
+	 *
+	 * @covers Syndication_Logger_List_Table::_create_months_dropdown
+	 * @covers Syndication_Logger_List_Table::_create_types_dropdown
+	 */
+	public function test_filter_dropdown_labels_are_translatable(): void {
+		add_filter(
+			'gettext_push-syndication',
+			static function ( $translation ) {
+				return strtoupper( $translation );
+			}
+		);
+
+		ob_start();
+		foreach ( array( '_create_months_dropdown', '_create_types_dropdown' ) as $method_name ) {
+			$method = new ReflectionMethod( $this->table, $method_name );
+			$method->setAccessible( true );
+			$method->invoke( $this->table );
+		}
+		$output = ob_get_clean();
+
+		foreach ( array( 'ALL DATES', 'ALL TYPES', 'SUCCESS', 'INFORMATION', 'ERROR' ) as $label ) {
+			$this->assertStringContainsString( ">{$label}</option>", $output );
+		}
 	}
 
 	/**
