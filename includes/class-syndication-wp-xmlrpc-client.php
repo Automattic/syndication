@@ -77,8 +77,11 @@ class Syndication_WP_XMLRPC_Client extends WP_HTTP_IXR_Client implements Syndica
 						$thumbnail_meta
 					);
 
-					unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); 
-					update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					// Keep tracking the remote thumbnail until it's gone, so a failed delete is retried on the next push.
+					if ( $result ) {
+						unset( $syndicated_thumbnails_by_site[ $this->site_ID ] ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+						update_post_meta( $post_id, $syn_local_meta_key, $syndicated_thumbnails_by_site );
+					}
 				}
 				continue;
 			}
