@@ -1,0 +1,79 @@
+<?php
+/**
+ * Tests for the accessibility of the plugin's admin markup.
+ *
+ * @package Automattic\Syndication\Tests
+ */
+
+namespace Automattic\Syndication\Tests;
+
+use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
+
+/**
+ * Class AdminAccessibilityTest
+ *
+ * @covers WP_Push_Syndication_Server::add_site_status_metabox
+ */
+class AdminAccessibilityTest extends WPIntegrationTestCase {
+
+	/**
+	 * A site post for the site edit screen meta boxes.
+	 *
+	 * @var \WP_Post
+	 */
+	private $site;
+
+	/**
+	 * Create the site, and load the admin template functions the meta boxes use.
+	 */
+	public function set_up(): void {
+		parent::set_up();
+
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		$this->site      = self::factory()->post->create_and_get( array( 'post_type' => 'syn_site' ) );
+		$GLOBALS['post'] = $this->site;
+	}
+
+	/**
+	 * Render some markup and return an XPath over it.
+	 *
+	 * @param callable $render Callback that echoes the markup.
+	 * @return \DOMXPath
+	 */
+	private function render( callable $render ): \DOMXPath {
+		ob_start();
+		$render();
+		$html = ob_get_clean();
+
+		$dom = new \DOMDocument();
+		libxml_use_internal_errors( true );
+		$dom->loadHTML( '<?xml encoding="utf-8"?>' . $html );
+		libxml_clear_errors();
+
+		return new \DOMXPath( $dom );
+	}
+
+	/**
+	 * The server instance that renders the admin screens.
+	 *
+	 * @return \WP_Push_Syndication_Server
+	 */
+	private function server(): \WP_Push_Syndication_Server {
+		return $GLOBALS['push_syndication_server'];
+	}
+
+	/**
+	 * The site status box leaves the page's tab order and keyboard shortcuts alone.
+	 */
+	public function test_site_status_box_keeps_the_natural_tab_order(): void {
+		$xpath = $this->render(
+			function () {
+				$this->server()->add_site_status_metabox( $this->site );
+			}
+		);
+
+		$this->assertSame( 0, $xpath->query( '//*[@tabindex > 0]' )->length, 'Positive tabindex found.' );
+		$this->assertSame( 0, $xpath->query( '//*[@accesskey]' )->length, 'accesskey found.' );
+	}
+}

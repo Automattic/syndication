@@ -748,11 +748,11 @@ class WP_Push_Syndication_Server {
 						?>
 						</span>
 
-						<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php esc_html_e( 'Edit', 'push-syndication' ); ?></a>
+						<a href="#post_status" class="edit-post-status hide-if-no-js"><?php esc_html_e( 'Edit', 'push-syndication' ); ?></a>
 
 						<div id="post-status-select" class="hide-if-js">
 							<input type="hidden" name="post_status" value="publish" />
-							<select name='site_enabled' id='post_status' tabindex='4'>
+							<select name='site_enabled' id='post_status'>
 								<option<?php selected( $site_enabled, 'on' ); ?> value='on'><?php esc_html_e( 'Enabled', 'push-syndication' ); ?></option>
 								<option<?php selected( $site_enabled, 'off' ); ?> value='off'><?php esc_html_e( 'Disabled', 'push-syndication' ); ?></option>
 							</select>
@@ -761,7 +761,7 @@ class WP_Push_Syndication_Server {
 
 					</div>
 
-					<div id="timestampdiv" class="hide-if-js"><?php touch_time( 0, 1, 4 ); ?></div>
+					<div id="timestampdiv" class="hide-if-js"><?php touch_time( 0, 1, 0 ); ?></div>
 				</div>
 				<div class="clear"></div>
 			</div>
@@ -783,16 +783,12 @@ class WP_Push_Syndication_Server {
 							__( 'Add Site', 'push-syndication' ),
 							'primary',
 							'enabled',
-							false,
-							array(
-								'tabindex'  => '5',
-								'accesskey' => 'p',
-							) 
+							false
 						); 
 						?>
 					<?php } else { ?>
 						<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
-						<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
+						<input name="save" type="submit" class="button-primary" id="publish" value="<?php esc_attr_e( 'Update', 'push-syndication' ); ?>" />
 					<?php } ?>
 				</div>
 
