@@ -287,25 +287,24 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 		// TODO: handle constant strings in XML.
 		foreach ( $abs_nodes as $abs_node ) {
-			$value_array = array();
-			try {
-				if ( 'string(' == substr( $abs_node['xpath'], 0, 7 ) ) {
-					$value_array[0] = substr( $abs_node['xpath'], 7, strlen( $abs_node['xpath'] ) - 8 );
-				} else {
-					$value_array = $xml->xpath( stripslashes( $abs_node['xpath'] ) );
-				}
+			$values = self::evaluate_xpath( $xml, $abs_node['xpath'] );
 
-				if ( $abs_node['is_meta'] ) {
-					$abs_meta_data[ $abs_node['field'] ] = (string) $value_array[0];
-				} elseif ( $abs_node['is_tax'] ) {
-					$abs_tax_data[ $abs_node['field'] ] = (string) $value_array[0];
-				} else {
-					$abs_post_fields[ $abs_node['field'] ] = (string) $value_array[0];
-				}
-			} catch ( Exception $e ) {
-				// TODO: catch value not found here and alert for error.
-				// TODO: catch multiple values returned here and alert for error.
+			if ( false === $values ) {
+				$this->log_invalid_xpath( $abs_node['xpath'] );
 				return array();
+			}
+
+			// A field the feed doesn't supply is left unset rather than blank.
+			if ( empty( $values ) ) {
+				continue;
+			}
+
+			if ( $abs_node['is_meta'] ) {
+				$abs_meta_data[ $abs_node['field'] ] = $values[0];
+			} elseif ( $abs_node['is_tax'] ) {
+				$abs_tax_data[ $abs_node['field'] ] = $values[0];
+			} else {
+				$abs_post_fields[ $abs_node['field'] ] = $values[0];
 			}
 		}
 
@@ -327,44 +326,48 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			$meta_data              = array();
 			$meta_data['is_update'] = current_time( 'mysql' );
 			$tax_data               = array();
-			$value_array            = array();
 
 			$item_fields['post_type'] = $this->default_post_type;
 
 			// save photos as enclosures in meta.
 			if ( ( isset( $enc_parent ) && strlen( $enc_parent ) ) && ! empty( $enc_nodes ) ) {
-				$meta_data['enclosures'] = $this->get_encs( $item->xpath( $enc_parent ), $enc_nodes );
+				$feed_enclosures = $item->xpath( $enc_parent );
+
+				if ( false === $feed_enclosures ) {
+					$this->log_invalid_xpath( $enc_parent );
+					return array();
+				}
+
+				$meta_data['enclosures'] = $this->get_encs( $feed_enclosures, $enc_nodes );
+
+				if ( false === $meta_data['enclosures'] ) {
+					return array();
+				}
 			}
 
 			foreach ( $item_nodes as $save_location ) {
-				try {
-					if ( 'string(' == substr( $save_location['xpath'], 0, 7 ) ) {
-						$value_array[0] = substr( $save_location['xpath'], 7, strlen( $save_location['xpath'] ) - 8 );
-					} else {
-						$value_array = $item->xpath( stripslashes( $save_location['xpath'] ) );
-					}
-					if ( isset( $save_location['is_meta'] ) && $save_location['is_meta'] ) {
-						// SimpleXMLElement::xpath returns either an array or false if an element isn't returned.
-						// checking $value_array first avoids the warning we get if the field isn't found.
-						if ( $value_array && ( count( $value_array ) > 1 ) ) {
-							$value_array                          = array_map( 'strval', $value_array );
-							$meta_data[ $save_location['field'] ] = $value_array;
-						} elseif ( $value_array ) {
-							// return a string if $value_array contains only a single element.
-							$meta_data[ $save_location['field'] ] = (string) $value_array[0];
-						}
-					} elseif ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
-						// for some taxonomies, multiple values may be supplied in the field.
-						foreach ( $value_array as $value ) {
-							$tax_data[ $save_location['field'] ] = (string) $value;
-						}
-					} else {
-						$item_fields[ $save_location['field'] ] = (string) $value_array[0];
-					}
-				} catch ( Exception $e ) {
-					// TODO: catch value not found here and alert for error.
-					// TODO: catch multiple values returned here and alert for error.
+				$values = self::evaluate_xpath( $item, $save_location['xpath'] );
+
+				if ( false === $values ) {
+					$this->log_invalid_xpath( $save_location['xpath'] );
 					return array();
+				}
+
+				// A field this item doesn't supply is left unset rather than blank.
+				if ( empty( $values ) ) {
+					continue;
+				}
+
+				if ( isset( $save_location['is_meta'] ) && $save_location['is_meta'] ) {
+					// Return a string if there's only a single value.
+					$meta_data[ $save_location['field'] ] = 1 === count( $values ) ? $values[0] : $values;
+				} elseif ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
+					// for some taxonomies, multiple values may be supplied in the field.
+					foreach ( $values as $value ) {
+						$tax_data[ $save_location['field'] ] = $value;
+					}
+				} else {
+					$item_fields[ $save_location['field'] ] = $values[0];
 				}
 			}
 
@@ -406,7 +409,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 	 *
 	 * @param array $feed_enclosures Optional.
 	 * @param array $enc_nodes Optional.
-	 * @return array The list of enclosures in the feed.
+	 * @return array|false The list of enclosures in the feed, or false if an XPath expression is invalid.
 	 */
 	private function get_encs( $feed_enclosures = array(), $enc_nodes = array() ) {
 		$enclosures = array();
@@ -425,20 +428,15 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				$enc_array = array();
 			}
 
-			$enc_value = array();
-
 			foreach ( $enc_nodes as $post_value ) {
-				try {
-					if ( 'string(' == substr( $post_value['xpath'], 0, 7 ) ) {
-						$enc_value[0] = substr( $post_value['xpath'], 7, strlen( $post_value['xpath'] ) - 8 );
-					} else {
-						$enc_value = $enc->xpath( stripslashes( $post_value['xpath'] ) );
-					}
-					$enc_array[ $post_value['field'] ] = esc_attr( (string) $enc_value[0] );
-				} catch ( Exception $e ) {
-					// TODO: catch value not found here and alert for error or not.
-					return true;
+				$enc_value = self::evaluate_xpath( $enc, $post_value['xpath'] );
+
+				if ( false === $enc_value ) {
+					$this->log_invalid_xpath( $post_value['xpath'] );
+					return false;
 				}
+
+				$enc_array[ $post_value['field'] ] = esc_attr( empty( $enc_value ) ? '' : $enc_value[0] );
 			}
 			// if position is not provided in the feed, use the order in which they appear in the feed.
 			if ( empty( $enc_array['position'] ) ) {
@@ -448,6 +446,39 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 
 		return $enclosures;
+	}
+
+	/**
+	 * Evaluate a node mapping's XPath expression, or unwrap its string(...) constant.
+	 *
+	 * SimpleXMLElement::xpath() doesn't throw: it returns false for an invalid
+	 * expression and an empty array when nothing matches.
+	 *
+	 * @param SimpleXMLElement $context The element to evaluate the expression against.
+	 * @param string           $xpath   The XPath expression, or a string(...) constant.
+	 * @return string[]|false The matched values, or false if the expression is invalid.
+	 */
+	private static function evaluate_xpath( $context, $xpath ) {
+		if ( 'string(' === substr( $xpath, 0, 7 ) ) {
+			return array( substr( $xpath, 7, -1 ) );
+		}
+
+		$values = $context->xpath( stripslashes( $xpath ) );
+
+		return false === $values ? false : array_map( 'strval', $values );
+	}
+
+	/**
+	 * Log an XPath expression in the node mapping that couldn't be evaluated.
+	 *
+	 * @param string $xpath The invalid XPath expression.
+	 */
+	private function log_invalid_xpath( $xpath ) {
+		// translators: %s: XPath expression from the site's node mapping.
+		$message = sprintf( __( 'Invalid XPath expression "%s" in the node mapping', 'push-syndication' ), $xpath );
+
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Existing property name.
+		Syndication_Logger::log_post_error( $this->site_ID, 'error', $message );
 	}
 
 	/**

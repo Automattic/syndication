@@ -137,4 +137,98 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 		$this->assertSame( 'error', $entry['msg_type'] );
 		$this->assertStringContainsString( 'No post nodes found', $entry['message'] );
 	}
+
+	/**
+	 * Invalid XPath expressions, at item and feed level.
+	 *
+	 * @return array<string, array{0: array<string, mixed>}>
+	 */
+	public function data_invalid_xpath(): array {
+		return array(
+			'item field' => array( array( 'title[@' => $this->node( 'post_title', array( 'is_item' ) ) ) ),
+			'feed field' => array( array( '/rss/channel/title[@' => $this->node( 'post_excerpt', array() ) ) ),
+		);
+	}
+
+	/**
+	 * An invalid XPath aborts the pull with a logged error, instead of producing empty posts.
+	 *
+	 * @dataProvider data_invalid_xpath
+	 *
+	 * @param array<string, mixed> $nodes XPath-to-storage mappings.
+	 */
+	public function test_invalid_xpath_aborts_with_a_logged_error( array $nodes ): void {
+		$site_id = $this->make_site( $nodes );
+
+		$posts = ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts();
+
+		$this->assertSame( array(), $posts );
+		$entry = $this->last_log_entry( $site_id );
+		$this->assertSame( 'error', $entry['msg_type'] );
+		$this->assertStringContainsString( 'Invalid XPath', $entry['message'] );
+	}
+
+	/**
+	 * A valid XPath that matches nothing leaves the field unset, rather than blank.
+	 */
+	public function test_xpath_without_a_match_leaves_the_field_unset(): void {
+		$site_id = $this->make_site(
+			array(
+				'title'       => $this->node( 'post_title', array( 'is_item' ) ),
+				'description' => $this->node( 'post_content', array( 'is_item' ) ),
+				'/rss/channel/subtitle' => $this->node( 'subtitle', array( 'is_meta' ) ),
+			)
+		);
+
+		$posts = ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts();
+
+		$this->assertCount( 1, $posts );
+		$this->assertSame( 'First', $posts[0]['post_title'] );
+		$this->assertArrayNotHasKey( 'post_content', $posts[0] );
+		$this->assertArrayNotHasKey( 'subtitle', $posts[0]['postmeta'] );
+	}
+
+	/**
+	 * Enclosures are still collected, and an invalid enclosure XPath aborts the pull.
+	 */
+	public function test_enclosures_are_parsed_and_invalid_enclosure_xpath_aborts(): void {
+		$this->feed_body = '<?xml version="1.0"?><rss><channel><item><title>First</title>'
+			. '<media><url>https://example.com/a.jpg</url></media>'
+			. '<media><url>https://example.com/b.jpg</url><caption>B</caption></media>'
+			. '</item></channel></rss>';
+
+		$nodes   = array(
+			'title'   => $this->node( 'post_title', array( 'is_item' ) ),
+			'url'     => $this->node( 'url', array( 'is_photo' ) ),
+			'caption' => $this->node( 'caption', array( 'is_photo' ) ),
+		);
+		$site_id = $this->make_site( $nodes );
+		$config  = get_post_meta( $site_id, 'syn_node_config', true );
+		update_post_meta( $site_id, 'syn_node_config', array_merge( $config, array( 'enc_parent' => 'media' ) ) );
+
+		$posts = ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts();
+
+		$this->assertSame(
+			array(
+				array(
+					'url'      => 'https://example.com/a.jpg',
+					'caption'  => '',
+					'position' => 0,
+				),
+				array(
+					'url'      => 'https://example.com/b.jpg',
+					'caption'  => 'B',
+					'position' => 1,
+				),
+			),
+			$posts[0]['postmeta']['enclosures']
+		);
+
+		$nodes['caption[@'] = $this->node( 'caption', array( 'is_photo' ) );
+		$config['nodes']    = $nodes;
+		update_post_meta( $site_id, 'syn_node_config', array_merge( $config, array( 'enc_parent' => 'media' ) ) );
+
+		$this->assertSame( array(), ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts() );
+		$this->assertStringContainsString( 'Invalid XPath', $this->last_log_entry( $site_id )['message'] );
+	}
 }
