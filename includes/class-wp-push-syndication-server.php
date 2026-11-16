@@ -1646,35 +1646,19 @@ class WP_Push_Syndication_Server {
 
 	public function schedule_pull_content( $sites ) {
 
-		// to unschedule a cron we need the original arguements passed to schedule the cron.
-		// we are saving it as a siteoption.
-		$old_pull_sites = get_option( 'syn_old_pull_sites' );
+		// Clear every pull job, whatever its arguments. Jobs scheduled before 2.2.3 carried
+		// whole site posts, which stop matching as soon as a site changes.
+		wp_unschedule_hook( 'syn_pull_content' );
 
-
-		// Clear all previously scheduled jobs.
-		if ( ! empty( $old_pull_sites ) ) {
-			// Clear any jobs that were scheduled the old way: one job to pull many sites.
-				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_sites ) );
-
-			// Clear any jobs that were scheduled the new way: one job to pull one site.
-			foreach ( $old_pull_sites as $old_pull_site ) {
-				wp_clear_scheduled_hook( 'syn_pull_content', array( $old_pull_site ) );
-			}
-
-			wp_clear_scheduled_hook( 'syn_pull_content' );
-		}
-
-		// Schedule new jobs: one job for each site.
+		// Schedule new jobs: one job for each site, by ID.
 		foreach ( $sites as $site ) {
 			wp_schedule_event(
 				time() - 1,
 				'syn_pull_time_interval',
 				'syn_pull_content',
-				array( array( $site ) )
+				array( array( $site->ID ) )
 			);
 		}
-
-		update_option( 'syn_old_pull_sites', $sites );
 	}
 
 	public function pull_get_selected_sites() {
@@ -1724,6 +1708,12 @@ class WP_Push_Syndication_Server {
 		$updated_post_ids = array();
 
 		foreach ( $sites as $site ) {
+			// Pull jobs pass site IDs; jobs scheduled before 2.2.3, and direct callers, pass site posts.
+			$site = is_object( $site ) ? $site : get_post( (int) $site );
+			if ( ! $site || 'syn_site' !== $site->post_type ) {
+				continue;
+			}
+
 			$site_id = $site->ID;
 
 			$site_enabled = get_post_meta( $site_id, 'syn_site_enabled', true );
@@ -1998,6 +1988,13 @@ class WP_Push_Syndication_Server {
 			if ( $validating ) {
 				add_filter( 'sanitize_option_push_syndicate_settings', array( $this, 'push_syndicate_settings_validate' ) );
 			}
+		}
+
+		// Upgrade to 2.2.3: pull jobs are keyed by site ID. Replace the old jobs, and drop
+		// the site posts that were stored only to unschedule them.
+		if ( version_compare( $this->version, '2.2.3', '<' ) ) {
+			delete_option( 'syn_old_pull_sites' );
+			$this->schedule_deferred_pull_jobs_refresh();
 		}
 
 		update_option( 'syn_version', SYNDICATION_VERSION );
