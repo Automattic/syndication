@@ -105,4 +105,46 @@ class PushContentTest extends WPIntegrationTestCase {
 			$this->assertFalse( get_transient( 'syn_syndicate_lock' ) );
 		}
 	}
+
+	/**
+	 * A site whose client can't be built is skipped, and the rest still get the push.
+	 */
+	public function test_a_site_with_an_unknown_transport_is_skipped(): void {
+		global $push_syndication_server;
+
+		$post_id = self::factory()->post->create();
+		$sites   = $this->sites_for( $post_id, array( $this->create_site( 'No_Such_Transport' ), $this->create_site() ) );
+
+		$push_syndication_server->push_content( $sites );
+
+		$this->assertCount( 1, Syndication_Recording_Client::calls_to( 'new_post' ) );
+		$this->assertFalse( get_transient( 'syn_syndicate_lock' ) );
+	}
+
+	/**
+	 * A site whose client can't be built is skipped when deleting remote copies.
+	 *
+	 * @covers WP_Push_Syndication_Server::delete_content
+	 */
+	public function test_delete_content_skips_a_site_with_an_unknown_transport(): void {
+		global $push_syndication_server;
+
+		$broken_id = $this->create_site( 'No_Such_Transport' );
+		$site_id   = $this->create_site();
+		$post_id   = self::factory()->post->create();
+		update_post_meta(
+			$post_id,
+			'_syn_slave_post_states',
+			array(
+				'success' => array(
+					$broken_id => array( 'ext_ID' => 11 ),
+					$site_id   => array( 'ext_ID' => 22 ),
+				),
+			)
+		);
+
+		$push_syndication_server->delete_content( $post_id );
+
+		$this->assertCount( 1, Syndication_Recording_Client::calls_to( 'delete_post' ) );
+	}
 }

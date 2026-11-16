@@ -1147,8 +1147,11 @@ class WP_Push_Syndication_Server {
 				$states_before_site = $slave_post_states;
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				$client         = $this->get_site_client( $transport_type, $site->ID );
+				if ( ! $client ) {
+					continue;
+				}
+				$info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// Check if post already exists on target to prevent syndication loops.
 				// Only before the first push: after that the target holds our own copy, which carries the same post_uniqueid.
@@ -1197,8 +1200,11 @@ class WP_Push_Syndication_Server {
 				$states_before_site = $slave_post_states;
 
 				$transport_type = get_post_meta( $site->ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site->ID );
-				$info           = $this->get_site_info( $site->ID, $slave_post_states, $client );
+				$client         = $this->get_site_client( $transport_type, $site->ID );
+				if ( ! $client ) {
+					continue;
+				}
+				$info = $this->get_site_info( $site->ID, $slave_post_states, $client );
 
 				// if the post is not pushed we do not need to delete them.
 				if ( 'success' === $info['state'] || 'edit-error' === $info['state'] || 'remove-error' === $info['state'] ) {
@@ -1506,7 +1512,10 @@ class WP_Push_Syndication_Server {
 			// check whether the site is enabled.
 			if ( 'on' === $site_enabled ) {
 				$transport_type = get_post_meta( $site_ID, 'syn_transport_type', true );
-				$client         = Syndication_Client_Factory::get_client( $transport_type, $site_ID );
+				$client         = $this->get_site_client( $transport_type, $site_ID ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Existing variable.
+				if ( ! $client ) {
+					continue;
+				}
 
 				if ( $client->is_post_exists( $ext_ID ) ) {
 					$push_delete_shortcircuit = apply_filters( 'syn_pre_push_delete_post_shortcircuit', false, $ext_ID, $post_ID, $site_ID, $transport_type, $client );
@@ -1626,6 +1635,27 @@ class WP_Push_Syndication_Server {
 		return current_user_can( $syndicate_cap );
 	}
 
+	/**
+	 * Build the client for a site, logging and skipping a site whose transport is unknown.
+	 *
+	 * @param string $transport_type Transport type stored on the site.
+	 * @param int    $site_id        Site ID.
+	 * @return Syndication_Client|null The client, or null if it can't be built.
+	 */
+	private function get_site_client( $transport_type, $site_id ) {
+		try {
+			return Syndication_Client_Factory::get_client( $transport_type, $site_id );
+		} catch ( Exception $e ) {
+			Syndication_Logger::log_post_error(
+				$site_id,
+				'unknown_transport',
+				// translators: %s: Transport type of the site.
+				sprintf( __( 'skipping site with unknown transport type "%s"', 'push-syndication' ), $transport_type )
+			);
+			return null;
+		}
+	}
+
 	public function cron_add_pull_time_interval( $schedules ) {
 
 		// Only add custom interval if syndication settings are defined.
@@ -1738,7 +1768,10 @@ class WP_Push_Syndication_Server {
 			}
 
 			$transport_type = get_post_meta( $site_id, 'syn_transport_type', true );
-			$client         = Syndication_Client_Factory::get_client( $transport_type, $site_id );
+			$client         = $this->get_site_client( $transport_type, $site_id );
+			if ( ! $client ) {
+				continue;
+			}
 			$posts          = apply_filters( 'syn_pre_pull_posts', $client->get_posts(), $site, $client );
 
 			$post_types_processed = array();

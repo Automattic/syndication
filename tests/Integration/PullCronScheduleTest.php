@@ -192,6 +192,20 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 	}
 
 	/**
+	 * A site with an unknown transport is skipped, and the rest are still pulled.
+	 */
+	public function test_pull_content_skips_a_site_with_an_unknown_transport(): void {
+		global $push_syndication_server;
+
+		$broken_id = $this->create_site( 'No_Such_Transport' );
+		$site_id   = $this->create_site();
+
+		$push_syndication_server->pull_content( array( $broken_id, $site_id ) );
+
+		$this->assertNotEmpty( get_post_meta( $site_id, 'syn_last_pull_time', true ) );
+	}
+
+	/**
 	 * Upgrading from before 2.2.3 drops the stored site objects and refreshes the jobs.
 	 */
 	public function test_upgrade_clears_stored_site_objects_and_refreshes_jobs(): void {
