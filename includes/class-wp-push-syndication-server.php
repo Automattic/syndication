@@ -1223,6 +1223,9 @@ class WP_Push_Syndication_Server {
 			}
 		}
 
+		// A site still targeted by a ticked sitegroup, directly or through a parent, keeps its copy.
+		$listed_site_ids = wp_list_pluck( $data['selected_sites'], 'ID' );
+
 		if ( ! empty( $removed_sitegroups ) ) {
 			foreach ( $removed_sitegroups as $removed_sitegroup ) {
 
@@ -1234,8 +1237,9 @@ class WP_Push_Syndication_Server {
 
 				foreach ( $sites as $site ) {
 					$site_enabled = get_post_meta( $site->ID, 'syn_site_enabled', true );
-					if ( 'on' === $site_enabled ) {
+					if ( 'on' === $site_enabled && ! in_array( $site->ID, $listed_site_ids, true ) ) {
 						$data['removed_sites'][] = $site;
+						$listed_site_ids[]       = $site->ID;
 					}
 				}
 			}
