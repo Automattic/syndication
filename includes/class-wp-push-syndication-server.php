@@ -690,46 +690,6 @@ class WP_Push_Syndication_Server {
 		) . '</p>';
 	}
 
-	public function display_sitegroups_selection() {
-
-		echo '<h3>' . esc_html__( 'Select site groups', 'push-syndication' ) . '</h3>';
-
-		$selected_sitegroups = get_option( 'syn_selected_sitegroups' );
-		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array();
-
-		// get all sitegroups.
-		$sitegroups = get_terms(
-			'syn_sitegroup',
-			array(
-				'fields'     => 'all',
-				'hide_empty' => false,
-				'orderby'    => 'name',
-			) 
-		);
-
-		// if there are no sitegroups defined return.
-		if ( empty( $sitegroups ) ) {
-			echo '<p>' . esc_html__( 'No site groups defined yet. You must group your sites into site groups to syndicate content.', 'push-syndication' ) . '</p>';
-			echo '<p><a href="' . esc_url( get_admin_url() . 'edit-tags.php?taxonomy=syn_sitegroup&post_type=syn_site' ) . '" target="_blank" >' . esc_html__( 'Create new', 'push-syndication' ) . '</a></p>';
-			return;
-		}
-
-		foreach ( $sitegroups as $sitegroup ) {
-
-			?>
-
-			<p>
-				<label>
-					<input type="checkbox" name="syn_selected_sitegroups[]" value="<?php echo esc_html( $sitegroup->slug ); ?>" <?php $this->checked_array( $sitegroup->slug, $selected_sitegroups ); ?> />
-					<?php echo esc_html( $sitegroup->name ); ?>
-				</label>
-				<?php echo esc_html( $sitegroup->description ); ?>
-			</p>
-
-			<?php
-		}
-	}
-
 	public function site_metaboxes() {
 		add_meta_box( 'sitediv', __( 'Site Settings', 'push-syndication' ), array( $this, 'add_site_settings_metabox' ), 'syn_site', 'normal', 'high' );
 		remove_meta_box( 'submitdiv', 'syn_site', 'side' );
