@@ -231,4 +231,28 @@ class XmlClientPullTest extends WPIntegrationTestCase {
 		$this->assertSame( array(), ( new \Syndication_WP_XML_Client( $site_id ) )->get_posts() );
 		$this->assertStringContainsString( 'Invalid XPath', $this->last_log_entry( $site_id )['message'] );
 	}
+
+	/**
+	 * Every value of a multi-valued taxonomy node is kept and assigned.
+	 */
+	public function test_multiple_taxonomy_values_are_all_kept(): void {
+		$site_id = $this->make_site(
+			array(
+				'title'    => $this->node( 'post_title', array( 'is_item' ) ),
+				'category' => $this->node( 'post_tag', array( 'is_item', 'is_tax' ) ),
+			)
+		);
+		$client  = new \Syndication_WP_XML_Client( $site_id );
+
+		$posts = $client->get_posts();
+
+		$this->assertSame( array( 'news', 'sport' ), $posts[0]['tax']['post_tag'] );
+
+		$post_id = self::factory()->post->create();
+		\Syndication_WP_XML_Client::save_tax( $post_id, $posts[0], get_post( $site_id ), 'WP_XML', $client );
+		$this->assertEqualsCanonicalizing( array( 'news', 'sport' ), wp_get_post_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) ) );
+
+		\Syndication_WP_XML_Client::update_tax( $post_id, array( 'tax' => array( 'post_tag' => array( 'politics', 'sport' ) ) ), get_post( $site_id ), 'WP_XML', $client );
+		$this->assertEqualsCanonicalizing( array( 'politics', 'sport' ), wp_get_post_terms( $post_id, 'post_tag', array( 'fields' => 'names' ) ) );
+	}
 }

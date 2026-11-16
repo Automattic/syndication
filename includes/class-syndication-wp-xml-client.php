@@ -302,7 +302,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			if ( $abs_node['is_meta'] ) {
 				$abs_meta_data[ $abs_node['field'] ] = $values[0];
 			} elseif ( $abs_node['is_tax'] ) {
-				$abs_tax_data[ $abs_node['field'] ] = $values[0];
+				$abs_tax_data[ $abs_node['field'] ] = $values;
 			} else {
 				$abs_post_fields[ $abs_node['field'] ] = $values[0];
 			}
@@ -362,10 +362,8 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 					// Return a string if there's only a single value.
 					$meta_data[ $save_location['field'] ] = 1 === count( $values ) ? $values[0] : $values;
 				} elseif ( isset( $save_location['is_tax'] ) && $save_location['is_tax'] ) {
-					// for some taxonomies, multiple values may be supplied in the field.
-					foreach ( $values as $value ) {
-						$tax_data[ $save_location['field'] ] = $value;
-					}
+					// For some taxonomies, multiple values may be supplied in the field.
+					$tax_data[ $save_location['field'] ] = $values;
 				} else {
 					$item_fields[ $save_location['field'] ] = $values[0];
 				}
@@ -981,7 +979,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			if ( ! taxonomy_exists( $tax_name ) ) {
 				continue;
 			}
-			wp_set_object_terms( $result, (string) $tax_value, $tax_name, true );
+			wp_set_object_terms( $result, array_map( 'strval', (array) $tax_value ), $tax_name, true );
 		}
 	}
 
@@ -1009,11 +1007,11 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 			}
 			if ( ! in_array( $tax_name, $replace_tax_list ) ) {
 				// if we haven't processed this taxonomy before, replace any terms on the post with the first new one.
-				wp_set_object_terms( $result, (string) $tax_value, $tax_name );
+				wp_set_object_terms( $result, array_map( 'strval', (array) $tax_value ), $tax_name );
 				$replace_tax_list[] = $tax_name;
 			} else {
 				// if we've already added one term for this taxonomy, append any others.
-				wp_set_object_terms( $result, (string) $tax_value, $tax_name, true );
+				wp_set_object_terms( $result, array_map( 'strval', (array) $tax_value ), $tax_name, true );
 			}
 		}
 	}
