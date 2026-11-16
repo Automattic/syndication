@@ -191,7 +191,7 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 
 			<?php
 
-			$post_types = get_post_types();
+			$post_types = WP_Push_Syndication_Server::get_pull_post_types();
 
 			foreach ( $post_types as $post_type ) {
 				echo '<option value="' . esc_attr( $post_type ) . '"' . selected( $post_type, $default_post_type ) . '>' . esc_html( $post_type ) . '</option>';
@@ -418,10 +418,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! empty( $post['post_category'] ) ) {
 			wp_set_post_terms( $result, $post['post_category'], 'category', true );
 		}
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( 'Syndication_WP_XML_Client', 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && Syndication_WP_XML_Client::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates) if any.
@@ -459,10 +459,10 @@ class Syndication_WP_RSS_Client extends SimplePie implements Syndication_Client 
 		if ( ! empty( $post['post_category'] ) ) {
 			wp_set_post_terms( $result, $post['post_category'], 'category', true );
 		}
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( 'Syndication_WP_XML_Client', 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && Syndication_WP_XML_Client::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates).

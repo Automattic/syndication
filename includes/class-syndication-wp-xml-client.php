@@ -564,7 +564,7 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		<p>
 			<select name="default_post_type" id="default_post_type">
 			<?php
-			$post_types = get_post_types();
+			$post_types = WP_Push_Syndication_Server::get_pull_post_types();
 
 			foreach ( $post_types as $post_type ) {
 				?>
@@ -669,6 +669,21 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		</p>
 
 		<h2><?php esc_html_e( 'XPath-to-Data Mapping', 'push-syndication' ); ?></h2>
+
+		<?php
+		$rejected_keys = get_transient( 'syn_rejected_meta_keys_' . $site->ID );
+		if ( $rejected_keys ) :
+			delete_transient( 'syn_rejected_meta_keys_' . $site->ID );
+			?>
+			<div class="notice notice-error inline">
+				<p>
+					<?php
+					// translators: %s: Comma-separated list of post fields and meta keys.
+					echo esc_html( sprintf( __( 'These fields were not saved, because pulled content may not be written to them: %s', 'push-syndication' ), implode( ', ', $rejected_keys ) ) );
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
 
 		<p>
 			<?php
@@ -835,7 +850,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		update_post_meta( $site_ID, 'syn_default_comment_status', isset( $_POST['default_comment_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_comment_status'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_default_ping_status', isset( $_POST['default_ping_status'] ) ? sanitize_text_field( wp_unslash( $_POST['default_ping_status'] ) ) : '' );
 		update_post_meta( $site_ID, 'syn_id_field', isset( $_POST['id_field'] ) ? sanitize_text_field( wp_unslash( $_POST['id_field'] ) ) : '' );
-		update_post_meta( $site_ID, 'syn_enc_field', isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '' );
+
+		// Fields that the config names but pulled data may not be written to.
+		$rejected_keys = array();
+
+		$enc_field = isset( $_POST['enc_field'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_field'] ) ) : '';
+		if ( '' !== $enc_field && ! self::is_allowed_meta_key( $enc_field ) ) {
+			$rejected_keys[] = $enc_field;
+			$enc_field       = '';
+		}
+		update_post_meta( $site_ID, 'syn_enc_field', $enc_field );
 		update_post_meta( $site_ID, 'syn_enc_is_photo', isset( $_POST['enc_is_photo'] ) ? sanitize_text_field( wp_unslash( $_POST['enc_is_photo'] ) ) : null );
 
 		// Each row is sanitized field by field below.
@@ -864,6 +888,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 
 					$row_data['field'] = sanitize_text_field( $row['field'] );
 
+					// pull_content() also strips ID and import_id, which would pick the local post written to.
+					$is_disallowed = $row_data['is_meta']
+						? '' !== $row_data['field'] && ! self::is_allowed_meta_key( $row_data['field'] )
+						: in_array( $row_data['field'], array( 'ID', 'import_id' ), true );
+
+					if ( $is_disallowed ) {
+						$rejected_keys[] = $row_data['field'];
+						continue;
+					}
+
 					if ( ! isset( $custom_nodes[ $xpath ] ) ) {
 						$custom_nodes[ $xpath ] = array();
 					}
@@ -879,6 +913,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		$node_config['categories'] = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
 		$node_config['nodes']      = $custom_nodes;
 		update_post_meta( $site_ID, 'syn_node_config', $node_config );
+
+		if ( $rejected_keys ) {
+			set_transient( 'syn_rejected_meta_keys_' . $site_ID, $rejected_keys, 5 * MINUTE_IN_SECONDS );
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 		return true;
 	}
@@ -913,10 +951,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		$categories = $post['post_category'];
 		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( __CLASS__, 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && self::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates) if any.
@@ -954,10 +992,10 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		}
 		$categories = $post['post_category'];
 		wp_set_post_terms( $result, $categories, 'category', true );
-		$metas = $post['postmeta'];
+		$metas = array_filter( $post['postmeta'], array( __CLASS__, 'is_allowed_meta_key' ), ARRAY_FILTER_USE_KEY );
 
 		// handle enclosures separately first.
-		$enc_field  = isset( $metas['enc_field'] ) ? $metas['enc_field'] : null;
+		$enc_field  = isset( $metas['enc_field'] ) && self::is_allowed_meta_key( $metas['enc_field'] ) ? $metas['enc_field'] : null;
 		$enclosures = isset( $metas['enclosures'] ) ? $metas['enclosures'] : null;
 		if ( isset( $enclosures ) && isset( $enc_field ) ) {
 			// First remove all enclosures for the post (for updates).
@@ -976,6 +1014,26 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 		foreach ( $metas as $meta_key => $meta_value ) {
 			update_post_meta( $result, $meta_key, $meta_value );
 		}
+	}
+
+	/**
+	 * Whether pulled feed data may be written to a post meta key.
+	 *
+	 * Refuses protected keys and the plugin's own syn_ and _syn_ keys. The key is
+	 * checked as add_post_meta() will store it, unslashed, and keys outside printable
+	 * ASCII are refused because MySQL's default collations can match them to one of
+	 * those keys.
+	 *
+	 * @param string $meta_key Meta key named by the site's configuration.
+	 * @return bool True if the key may be written.
+	 */
+	public static function is_allowed_meta_key( $meta_key ) {
+		$meta_key = wp_unslash( (string) $meta_key );
+
+		return '' !== $meta_key
+			&& ! preg_match( '/[^\x20-\x7E]/', $meta_key )
+			&& ! is_protected_meta( $meta_key, 'post' )
+			&& ! preg_match( '/^_?syn_/i', $meta_key );
 	}
 
 	/**
