@@ -11,6 +11,7 @@ namespace Automattic\Syndication\Tests\Unit;
 
 use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
+use RuntimeException;
 use Syndication_Logger_Admin_Notice;
 
 /**
@@ -120,6 +121,26 @@ class AdminNoticesTest extends TestCase {
 			->with( 'syn_notice_bundles', array( $summary_key => array( $message_key ) ) );
 
 		Syndication_Logger_Admin_Notice::display_valid_notices();
+	}
+
+	/**
+	 * A dismiss link without a nonce fails the security check rather than raising a warning.
+	 */
+	public function test_dismiss_without_a_nonce_fails_the_security_check(): void {
+		$_GET['syn_dismiss'] = 'abc';
+
+		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\expect( 'wp_verify_nonce' )->once()->with( '', 'abc' )->andReturn( false );
+		Functions\when( 'wp_die' )->alias(
+			static function ( $message ) {
+				throw new RuntimeException( $message );
+			}
+		);
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Invalid security check' );
+
+		Syndication_Logger_Admin_Notice::handle_dismiss_syndication_notice();
 	}
 
 	/**

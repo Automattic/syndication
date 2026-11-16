@@ -153,7 +153,7 @@ class Syndication_Logger_Admin_Notice {
 		// Add nonce.
 		if ( isset( $_GET[ self::$dismiss_parameter ] ) && current_user_can( $capability ) ) {
 			$dismiss_key   = esc_attr( $_GET[ self::$dismiss_parameter ] );
-			$dismiss_nonce = esc_attr( $_GET['syn_dismiss_nonce'] );
+			$dismiss_nonce = isset( $_GET['syn_dismiss_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['syn_dismiss_nonce'] ) ) : '';
 			if ( ! wp_verify_nonce( $dismiss_nonce, $dismiss_key ) ) {
 				wp_die( esc_html__( 'Invalid security check', 'push-syndication' ) );
 			}
