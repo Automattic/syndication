@@ -176,6 +176,11 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 			)
 		);
 
+		// The old bug turned the WP_Error into post ID 1, so make sure there is a post 1 to clean.
+		if ( ! get_post( 1 ) ) {
+			self::factory()->post->create( array( 'import_id' => 1 ) );
+		}
+
 		$cleaned = array();
 		add_action(
 			'clean_post_cache',
@@ -188,7 +193,7 @@ class PullCronScheduleTest extends WPIntegrationTestCase {
 
 		\Syndication_Mock_Client::set_posts( array() );
 
-		$this->assertNotContains( 1, $cleaned );
+		$this->assertSame( array(), $cleaned, 'Only posts that were saved should have their cache cleaned.' );
 	}
 
 	/**

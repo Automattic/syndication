@@ -117,7 +117,6 @@ class AutoRetryTest extends TestCase {
 				return 'syn_feed_url' === $key ? $url : $retry_count;
 			}
 		);
-		Functions\when( 'update_post_meta' )->justReturn( true );
 	}
 
 	/**
@@ -206,7 +205,12 @@ class AutoRetryTest extends TestCase {
 	public function test_retry_is_scheduled_for_valid_urls( $url ) {
 		$this->given_site( $url );
 
-		Functions\expect( 'wp_schedule_single_event' )->once();
+		Functions\expect( 'wp_schedule_single_event' )
+			->once()
+			->with( Mockery::type( 'int' ), 'syn_pull_content', Mockery::on( static function ( $args ) {
+				return 1 === count( $args ) && 1 === count( $args[0] ) && 123 === $args[0][0]->ID;
+			} ) );
+		Functions\expect( 'update_post_meta' )->once()->with( 123, 'syn_failed_auto_retry_attempts', 1 );
 
 		$this->handler->handle_pull_failure_event( 123, 1 );
 
@@ -278,7 +282,7 @@ class AutoRetryTest extends TestCase {
 		$this->assertCount( 1, LoggerSpy::$entries );
 		$this->assertSame( 'error', LoggerSpy::$entries[0][0] );
 		$this->assertSame( 'end_auto_retry', LoggerSpy::$entries[0][2] );
-		$this->assertNotEmpty( LoggerSpy::$entries[0][4], 'The cleanup entry should carry the same log time as the others.' );
+		$this->assertStringStartsWith( 'site ', LoggerSpy::$entries[0][4], 'The cleanup entry should carry the same log time as the others.' );
 	}
 
 	/**
@@ -287,6 +291,7 @@ class AutoRetryTest extends TestCase {
 	public function test_log_entries_use_site_time() {
 		$this->given_site();
 		Functions\when( 'wp_schedule_single_event' )->justReturn( true );
+		Functions\when( 'update_post_meta' )->justReturn( true );
 
 		$this->handler->handle_pull_failure_event( 123, 1 );
 

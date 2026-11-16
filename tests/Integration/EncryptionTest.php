@@ -39,6 +39,7 @@ class EncryptionTest extends WPIntegrationTestCase {
 		$encrypted_simple_different = push_syndicate_encrypt( $this->simple_string . '1' );
 		$encrypted_complex          = push_syndicate_encrypt( $this->complex_array );
 
+		self::assertNotSame( base64_encode( wp_json_encode( $this->simple_string ) ), $encrypted_simple, 'assert the string is encrypted, not only encoded' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		self::assertIsString( $encrypted_simple, 'assert if the string is encrypted' );
 		self::assertIsString( $encrypted_complex, 'assert if the array is encrypted' );
 

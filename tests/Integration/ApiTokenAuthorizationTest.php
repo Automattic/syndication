@@ -275,6 +275,8 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 
 		$this->assertStringNotContainsString( '<b>token</b>', $html );
 		$this->assertStringNotContainsString( '<script>', $html );
+		$this->assertStringContainsString( '<td>&lt;b&gt;token&lt;/b&gt;</td>', $html );
+		$this->assertStringContainsString( '&lt;script&gt;alert(1)&lt;/script&gt;</td>', $html );
 	}
 
 	/**
@@ -287,5 +289,6 @@ class ApiTokenAuthorizationTest extends WPIntegrationTestCase {
 		$html = $this->render();
 
 		$this->assertStringNotContainsString( 'alert(1)', html_entity_decode( $html, ENT_QUOTES ) );
+		$this->assertStringContainsString( 'client_id=42%27%29%3Balert%281%29%3B%2F%2F', $html, 'The button should carry the encoded client ID.' );
 	}
 }

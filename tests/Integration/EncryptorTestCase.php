@@ -39,6 +39,7 @@ abstract class EncryptorTestCase extends WPIntegrationTestCase {
 	public function test_simple_encryption() {
 		$encrypted = $this->encryptor->encrypt( $this->simple_string );
 
+		self::assertNotSame( base64_encode( wp_json_encode( $this->simple_string ) ), $encrypted, 'assert the data is encrypted, not only encoded' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		self::assertIsString( $encrypted, 'assert if the string encryption returns string' );
 		self::assertEquals( base64_encode( base64_decode( $encrypted ) ), $encrypted, 'assert if the encrypted data is encoded in base64' );
 
@@ -63,6 +64,7 @@ abstract class EncryptorTestCase extends WPIntegrationTestCase {
 	public function test_complex_encryption() {
 		$encrypted = $this->encryptor->encrypt( $this->complex_array );
 
+		self::assertNotSame( base64_encode( wp_json_encode( $this->complex_array ) ), $encrypted, 'assert the data is encrypted, not only encoded' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		self::assertIsString( $encrypted, 'assert if the array encryption returns string' );
 		self::assertEquals( base64_encode( base64_decode( $encrypted ) ), $encrypted, 'assert if the encrypted data is encoded in base64' );
 

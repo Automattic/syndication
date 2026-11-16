@@ -48,8 +48,11 @@ class LoggerTest extends WPIntegrationTestCase {
 
 		// Verify the log was stored.
 		$log = get_post_meta( $site_id, '_syn_log', true );
-		$this->assertIsArray( $log );
-		$this->assertNotEmpty( $log );
+		$this->assertCount( 1, $log );
+		$entry = reset( $log );
+		$this->assertSame( 'error', $entry['msg_type'] );
+		$this->assertSame( 'test_status', $entry['status'] );
+		$this->assertSame( 'Test message', $entry['message'] );
 	}
 
 	/**
@@ -111,8 +114,11 @@ class LoggerTest extends WPIntegrationTestCase {
 		);
 
 		$log = get_post_meta( $site_id, '_syn_log', true );
-		$this->assertIsArray( $log );
-		$this->assertNotEmpty( $log );
+		$this->assertCount( 1, $log );
+		$entry = reset( $log );
+		$this->assertSame( 'error', $entry['msg_type'] );
+		$this->assertSame( 'error_status', $entry['status'] );
+		$this->assertSame( 'Error message', $entry['message'] );
 
 		// Error count should be tracked.
 		$errors = get_post_meta( $site_id, '_syn_log_errors', true );

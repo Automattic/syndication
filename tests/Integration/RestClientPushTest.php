@@ -175,7 +175,7 @@ class RestClientPushTest extends WPIntegrationTestCase {
 	 */
 	public function data_failed_responses(): array {
 		return array(
-			'HTML error page'         => array( self::html_error(), '' ),
+			'HTML error page'         => array( self::html_error(), 'Unexpected response from WordPress.com (HTTP status 500).' ),
 			'JSON error'              => array(
 				self::json_response(
 					403,
@@ -186,8 +186,8 @@ class RestClientPushTest extends WPIntegrationTestCase {
 				),
 				'User cannot edit posts',
 			),
-			'error status, JSON body' => array( self::json_response( 503, array( 'ID' => 999 ) ), '' ),
-			'success, not JSON'       => array( self::response( 200, 'OK' ), '' ),
+			'error status, JSON body' => array( self::json_response( 503, array( 'ID' => 999 ) ), 'Unexpected response from WordPress.com (HTTP status 503).' ),
+			'success, not JSON'       => array( self::response( 200, 'OK' ), 'Unexpected response from WordPress.com (HTTP status 200).' ),
 		);
 	}
 
@@ -197,7 +197,7 @@ class RestClientPushTest extends WPIntegrationTestCase {
 	 * @dataProvider data_failed_responses
 	 *
 	 * @param array  $response Intercepted response.
-	 * @param string $message  Expected error message, or '' for any non-empty message.
+	 * @param string $message  Expected error message.
 	 */
 	public function test_new_post_returns_wp_error_on_failed_response( array $response, string $message ): void {
 		$this->response = $response;
@@ -215,7 +215,7 @@ class RestClientPushTest extends WPIntegrationTestCase {
 
 		$result = $this->client->new_post( self::factory()->post->create() );
 
-		$this->assert_wp_error( $result, 'rest-push-new-fail', '' );
+		$this->assert_wp_error( $result, 'rest-push-new-fail', 'WordPress.com did not return the ID of the new post.' );
 	}
 
 	/**
@@ -224,7 +224,7 @@ class RestClientPushTest extends WPIntegrationTestCase {
 	 * @dataProvider data_failed_responses
 	 *
 	 * @param array  $response Intercepted response.
-	 * @param string $message  Expected error message, or '' for any non-empty message.
+	 * @param string $message  Expected error message.
 	 */
 	public function test_edit_post_returns_wp_error_on_failed_response( array $response, string $message ): void {
 		$this->response = $response;
@@ -240,7 +240,7 @@ class RestClientPushTest extends WPIntegrationTestCase {
 	 * @dataProvider data_failed_responses
 	 *
 	 * @param array  $response Intercepted response.
-	 * @param string $message  Expected error message, or '' for any non-empty message.
+	 * @param string $message  Expected error message.
 	 */
 	public function test_delete_post_returns_wp_error_on_failed_response( array $response, string $message ): void {
 		$this->response = $response;
@@ -351,20 +351,15 @@ class RestClientPushTest extends WPIntegrationTestCase {
 	}
 
 	/**
-	 * Assert a WP_Error with the given code and a readable message.
+	 * Assert a WP_Error with the given code and message.
 	 *
 	 * @param mixed  $result  The value to check.
 	 * @param string $code    Expected error code.
-	 * @param string $message Expected message, or '' for any non-empty message.
+	 * @param string $message Expected message.
 	 */
 	private function assert_wp_error( $result, string $code, string $message ): void {
 		$this->assertWPError( $result );
 		$this->assertSame( $code, $result->get_error_code() );
-
-		if ( '' === $message ) {
-			$this->assertNotEmpty( $result->get_error_message() );
-		} else {
-			$this->assertSame( $message, $result->get_error_message() );
-		}
+		$this->assertSame( $message, $result->get_error_message() );
 	}
 }

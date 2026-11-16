@@ -93,6 +93,7 @@ class LogMetaUpgradeTest extends WPIntegrationTestCase {
 		$this->upgrade_from_2_2_1();
 
 		$this->assertFalse( metadata_exists( 'post', $post_id, '_syn_log' ) );
+		$this->assertSame( array( array( 'message' => 'Planted' ) ), get_post_meta( $post_id, 'syn_log', true ), 'Meta the plugin did not write should be left alone.' );
 	}
 
 	/**
