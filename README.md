@@ -61,9 +61,9 @@ To add a site, go to the WordPress admin and find the "Sites" menu item, below S
 
 To store passwords securely, define an encryption key in your `wp-config.php`:
 
-```php
+~~~php
 define( 'PUSH_SYNDICATE_KEY', 'your-random-encryption-key-here' );
-```
+~~~
 
 This key is used to encrypt credentials when saved to the database.
 
