@@ -753,16 +753,16 @@ class Syndication_WP_XML_Client implements Syndication_Client {
 				<span><?php esc_html_e( 'XPath Expression', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Item', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Item', 'XPath mapping column: the XPath is relative to each feed item', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Enc.', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Enc.', 'XPath mapping column: abbreviation of Enclosure', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Meta', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Meta', 'XPath mapping column: store the value as a custom field', 'push-syndication' ); ?></span>
 			</li>
 			<li>
-				<span><?php esc_html_e( 'Tax', 'push-syndication' ); ?></span>
+				<span><?php echo esc_html_x( 'Tax', 'XPath mapping column: abbreviation of Taxonomy', 'push-syndication' ); ?></span>
 			</li>
 			<li class="text">
 				<span><?php esc_html_e( 'Field in Post', 'push-syndication' ); ?></span>
