@@ -16,6 +16,9 @@ use Yoast\WPTestUtils\WPIntegration\TestCase as WPIntegrationTestCase;
  * @covers WP_Push_Syndication_Server::display_transports
  * @covers Syndication_WP_XML_Client::display_settings
  * @covers WP_Push_Syndication_Server::load_scripts_and_styles
+ * @covers WP_Push_Syndication_Server::display_pull_sitegroups_selection
+ * @covers WP_Push_Syndication_Server::display_post_types_selection
+ * @covers WP_Push_Syndication_Server::add_syndicate_metabox
  */
 class AdminAccessibilityTest extends WPIntegrationTestCase {
 
@@ -187,5 +190,48 @@ class AdminAccessibilityTest extends WPIntegrationTestCase {
 		$this->server()->load_scripts_and_styles( 'post.php' );
 
 		$this->assertTrue( wp_script_is( 'wp-a11y', 'enqueued' ) );
+	}
+
+	/**
+	 * Each group of checkboxes is a fieldset with a legend.
+	 *
+	 * @dataProvider data_checkbox_groups
+	 *
+	 * @param string $method Server method that renders the group.
+	 */
+	public function test_checkbox_groups_have_a_legend( string $method ): void {
+		self::factory()->term->create(
+			array(
+				'taxonomy' => 'syn_sitegroup',
+				'name'     => 'Group A',
+			)
+		);
+		$GLOBALS['post'] = self::factory()->post->create_and_get();
+
+		$xpath = $this->render(
+			function () use ( $method ) {
+				$this->server()->$method();
+			}
+		);
+
+		$checkboxes = $xpath->query( '//input[@type="checkbox"]' );
+		$this->assertGreaterThan( 0, $checkboxes->length );
+
+		foreach ( $checkboxes as $checkbox ) {
+			$this->assertSame( 1, $xpath->query( 'ancestor::fieldset[legend[normalize-space()]]', $checkbox )->length, 'Checkbox is not in a fieldset with a legend.' );
+		}
+	}
+
+	/**
+	 * Methods that render a group of checkboxes.
+	 *
+	 * @return array[]
+	 */
+	public static function data_checkbox_groups(): array {
+		return array(
+			'pull sitegroups on the settings screen' => array( 'display_pull_sitegroups_selection' ),
+			'post types on the settings screen'      => array( 'display_post_types_selection' ),
+			'sitegroups in the Syndicate meta box'   => array( 'add_syndicate_metabox' ),
+		);
 	}
 }

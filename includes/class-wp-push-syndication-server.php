@@ -452,6 +452,8 @@ class WP_Push_Syndication_Server {
 			return;
 		}
 
+		echo '<fieldset><legend class="screen-reader-text">' . esc_html__( 'Select site groups', 'push-syndication' ) . '</legend>';
+
 		foreach ( $sitegroups as $sitegroup ) {
 
 			?>
@@ -466,6 +468,8 @@ class WP_Push_Syndication_Server {
 
 			<?php
 		}
+
+		echo '</fieldset>';
 	}
 
 	public function display_pull_options_description() {
@@ -524,6 +528,7 @@ class WP_Push_Syndication_Server {
 		// @TODO add more suitable filters.
 		$post_types = get_post_types( array( 'public' => true ) );
 
+		echo '<fieldset><legend class="screen-reader-text">' . esc_html__( 'Select post types', 'push-syndication' ) . '</legend>';
 		echo '<ul>';
 
 		foreach ( $post_types as $post_type ) {
@@ -540,7 +545,7 @@ class WP_Push_Syndication_Server {
 			<?php
 		}
 
-		echo '</ul>';
+		echo '</ul></fieldset>';
 	}
 
 	public function display_delete_pushed_posts_description() {
@@ -984,6 +989,7 @@ class WP_Push_Syndication_Server {
 		$selected_sitegroups = get_post_meta( $post->ID, '_syn_selected_sitegroups', true );
 		$selected_sitegroups = ! empty( $selected_sitegroups ) ? $selected_sitegroups : array();
 
+		echo '<fieldset><legend class="screen-reader-text">' . esc_html__( 'Select site groups', 'push-syndication' ) . '</legend>';
 		echo '<ul>';
 
 		foreach ( $sitegroups as $sitegroup ) {
@@ -999,7 +1005,7 @@ class WP_Push_Syndication_Server {
 			<?php
 		}
 
-		echo '</ul>';
+		echo '</ul></fieldset>';
 
 		$post_source = get_post_meta( $post->ID, 'syn_source_url', true );
 		if ( ! empty( $post_source ) ) {
