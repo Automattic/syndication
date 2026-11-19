@@ -2,6 +2,7 @@
   "plugins": [
     "."
   ],
+  "core": "WordPress/WordPress#master",
   "phpVersion": "7.4",
   "config": {
     "WP_DEBUG": true,
@@ -17,7 +18,7 @@
         "WP_DEBUG": true
       },
       "phpVersion": "8.4",
-      "core": "WordPress/WordPress#trunk"
+      "core": "WordPress/WordPress#master"
     }
   }
 }
