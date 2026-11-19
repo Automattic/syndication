@@ -37,7 +37,7 @@
 		"coverage": [
 			"@php ./vendor/bin/phpunit --coverage-html ./.phpunit.cache/coverage-html"
 		],
-		"coverage-ci": "wp-env run tests-cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" ./vendor/bin/phpunit --testsuite integration",
+		"coverage-ci": "wp-env run cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" ./vendor/bin/phpunit --testsuite integration",
 		"cs": [
 			"@php ./vendor/bin/phpcs -q"
 		],
@@ -54,8 +54,8 @@
 			"@php ./vendor/php-parallel-lint/php-parallel-lint/parallel-lint . -e php --exclude vendor --exclude .git --checkstyle"
 		],
 		"test:unit": "@php ./vendor/bin/phpunit --testsuite Unit",
-		"test:integration": "wp-env run tests-cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" ./vendor/bin/phpunit --testsuite integration",
-		"test:integration-ms": "wp-env run tests-cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" /bin/bash -c 'WP_MULTISITE=1 ./vendor/bin/phpunit --testsuite integration'"
+		"test:integration": "wp-env run cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" ./vendor/bin/phpunit --testsuite integration",
+		"test:integration-ms": "wp-env run cli \"--env-cwd=wp-content/plugins/$(basename \"$(pwd)\")\" /bin/bash -c 'WP_MULTISITE=1 ./vendor/bin/phpunit --testsuite integration'"
 	},
 	"scripts-descriptions": {
 		"coverage": "Run tests with code coverage reporting",
