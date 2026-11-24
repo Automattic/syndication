@@ -388,7 +388,7 @@ class Syndication_Logger {
 			// Storing the log alongside the object.
 
 			if ( 'post' == $object_type ) {
-				if ( ! is_integer( $object_id ) ) {
+				if ( ! is_int( $object_id ) ) {
 					return new WP_Error( 'logger_no_post_id', __( 'You need to provide a valid post_id or use log_option instead', 'push-syndication' ) );
 				}
 
